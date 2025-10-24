@@ -1,8 +1,8 @@
 "use client";
-import { AuthGate } from "@/components/AuthGate";
+import { AuthGate } from "src/components/AuthGate";
 import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { api } from "@/lib/apiClient";
+import { api } from "src/lib/appClient";
 
 export default function CampaignDetailPage() {
   const params = useParams<{ id: string }>();

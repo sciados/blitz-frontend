@@ -1,5 +1,5 @@
 "use client";
-import { getToken } from "@/lib/auth";
+import { getToken } from "src/lib/auth";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 

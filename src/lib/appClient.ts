@@ -1,5 +1,5 @@
 import axios from "axios";
-import { getToken, clearToken } from "./auth";
+import { getToken, clearToken } from "src/lib/auth";
 
 const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 

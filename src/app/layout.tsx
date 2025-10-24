@@ -1,8 +1,8 @@
 import "./globals.css";
 import type { Metadata } from "next";
-import { QueryProvider } from "@/lib/queryClient";
+import { QueryProvider } from "src/lib/queryClient";
 import { Toaster } from "sonner";
-import { AuthGate } from "@/components/AuthGate";
+import { AuthGate } from "src/components/AuthGate";
 
 export const metadata: Metadata = {
   title: "Blitz",

@@ -1,8 +1,8 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { api } from "@/lib/apiClient";
-import { setToken } from "@/lib/auth";
+import { api } from "src/lib/appClient";
+import { setToken } from "src/lib/auth";
 import { toast } from "sonner";
 
 export default function LoginPage() {

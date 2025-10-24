@@ -1,7 +1,7 @@
 "use client";
-import { AuthGate } from "@/components/AuthGate";
+import { AuthGate } from "src/components/AuthGate";
 import { useState } from "react";
-import { api } from "@/lib/apiClient";
+import { api } from "src/lib/appClient";
 
 export default function CompliancePage() {
   const [content, setContent] = useState("");

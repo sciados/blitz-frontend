@@ -1,7 +1,7 @@
 "use client";
-import { AuthGate } from "@/components/AuthGate";
+import { AuthGate } from "src/components/AuthGate";
 import { useQuery } from "@tanstack/react-query";
-import { api } from "@/lib/apiClient";
+import { api } from "src/lib/appClient";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";

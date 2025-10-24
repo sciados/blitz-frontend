@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { api } from "@/lib/apiClient";
+import { api } from "src/lib/appClient";
 import { toast } from "sonner";
 
 export default function RegisterPage() {
