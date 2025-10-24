@@ -1,116 +1,36 @@
-# =====================================
-# Node & Next.js
-# =====================================
-node_modules/
-.next/
-out/
-dist/
-build/
-.cache/
-coverage/
-.npm/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-package-lock.json
-pnpm-lock.yaml
-yarn.lock
+# Dependencies
+/node_modules
+/.pnp
+.pnp.js
 
-# =====================================
-# Environment & Config
-# =====================================
-.env
-.env.local
-.env.development
-.env.production
-.env.test
-.env.staging
-*.env
+# Testing
+/coverage
 
-# Avoid committing private keys or API secrets
-.env.*.local
+# Next.js
+/.next/
+/out/
+
+# Production
+/build
+
+# Misc
+.DS_Store
 *.pem
 
-# =====================================
-# Vercel & Deployment
-# =====================================
-.vercel/
-.vercel_build_output/
-vercel-build.log
-
-# =====================================
-# IDEs & Editors
-# =====================================
-.vscode/
-.idea/
-*.swp
-*.swo
-*.swn
-*.sw?
-*.bak
-.DS_Store
-Thumbs.db
-
-# =====================================
-# Logs & Temp
-# =====================================
-logs/
-*.log
+# Debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-pnpm-debug.log*
-debug.log
-.tmp/
-temp/
-__pycache__/
-*.pid
-*.seed
-*.pid.lock
 
-# =====================================
-# Local Development Files
-# =====================================
-*.local
-*.iml
-*.sublime-workspace
-*.sublime-project
+# Local env files
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
-# =====================================
-# Test & Coverage
-# =====================================
-coverage/
-*.lcov
-*.spec.js
-*.test.js
-*.spec.ts
-*.test.ts
-jest/
-cypress/screenshots/
-cypress/videos/
+# Vercel
+.vercel
 
-# =====================================
-# OS Files
-# =====================================
-.DS_Store
-ehthumbs.db
-Icon?
-Thumbs.db
-Desktop.ini
-
-# =====================================
-# Miscellaneous
-# =====================================
-*.tgz
-*.zip
-*.tar
-*.gz
-*.rar
-*.7z
-
-# =====================================
-# Build artifacts for static exports
-# =====================================
-.next/
-out/
-public/tmp/
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
