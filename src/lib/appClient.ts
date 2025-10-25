@@ -1,7 +1,8 @@
 import axios from "axios";
 import { getToken, clearToken } from "./auth";
 
-const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+// const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+const baseURL = "https://blitz-backend-production.up.railway.app";
 
 export const api = axios.create({
     baseURL,
