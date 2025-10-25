@@ -1,8 +1,13 @@
 import axios from "axios";
 import { getToken, clearToken } from "./auth";
 
-// const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
-const baseURL = "https://blitz-backend-production.up.railway.app";
+const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+
+// TEMP: log what the client is using at runtime (remove after verifying)
+if (typeof window !== "undefined") {
+    // eslint-disable-next-line no-console
+    console.log("Blitz API baseURL:", baseURL);
+}
 
 export const api = axios.create({
     baseURL,
@@ -21,9 +26,7 @@ api.interceptors.response.use(
         const status = err?.response?.status;
         if (status === 401) {
             clearToken();
-            if (typeof window !== "undefined") {
-                window.location.href = "/login";
-            }
+            if (typeof window !== "undefined") window.location.href = "/login";
         }
         return Promise.reject(err);
     }
