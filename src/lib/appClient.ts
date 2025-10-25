@@ -1,7 +1,7 @@
 import axios from "axios";
 import { getToken, clearToken } from "./auth";
 
-const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL || "https://blitz-frontend-three.vercel.app";
+const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL || "https://blitz-backend-production.up.railway.app";
 
 // TEMP: log what the client is using at runtime (remove after verifying)
 if (typeof window !== "undefined") {
