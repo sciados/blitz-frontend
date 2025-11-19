@@ -296,3 +296,12 @@ export type ImageVariationRequest = {
     num_variations?: number; // 1-5, default 3
     variation_strength?: number; // 0.0-1.0, default 0.7
 };
+
+export type ImageUpgradeRequest = {
+    campaign_id: number;
+    draft_image_url: string;
+    custom_prompt?: string;
+    style?: ImageStyle;
+    aspect_ratio?: AspectRatio;
+    quality_boost?: boolean;
+};
