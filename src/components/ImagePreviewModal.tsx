@@ -35,24 +35,32 @@ export function ImagePreviewModal({
   if (!isOpen) return null;
 
   const handleUpgradeToPremium = async () => {
+    if (!draftImage?.image_url) {
+      toast.error("No draft image to upgrade");
+      return;
+    }
+
     setIsUpgrading(true);
     setPremiumImage(null);
 
     try {
       const payload = {
         campaign_id: campaignId,
-        image_type: imageSettings.imageType,
+        draft_image_url: draftImage.image_url,
+        custom_prompt: imageSettings.customPrompt || undefined,
         style: imageSettings.style,
         aspect_ratio: imageSettings.aspectRatio,
-        custom_prompt: imageSettings.customPrompt || undefined,
         quality_boost: true,
       };
 
-      const { data } = await api.post("/api/content/images/generate", payload);
+      // Call /upgrade endpoint to enhance the draft image
+      const { data } = await api.post("/api/content/images/upgrade", payload);
       setPremiumImage(data);
-      toast.success(`Premium image generated using ${data.provider}!`);
+      toast.success(`Premium image enhanced using ${data.provider}!`);
     } catch (err: any) {
-      toast.error(err.response?.data?.detail || "Failed to generate premium image");
+      toast.error(
+        err.response?.data?.detail || "Failed to enhance premium image"
+      );
     } finally {
       setIsUpgrading(false);
     }
@@ -84,15 +92,34 @@ export function ImagePreviewModal({
 
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-gray-900 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="bg-white dark:bg-gray-900 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="p-6">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>
+            <h2
+              className="text-2xl font-bold"
+              style={{ color: "var(--text-primary)" }}
+            >
               {premiumImage ? "Premium Image" : "Draft Preview"}
             </h2>
-            <button onClick={onClose} className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <button
+              onClick={onClose}
+              className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+            >
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
           </div>
@@ -100,16 +127,25 @@ export function ImagePreviewModal({
           {!premiumImage && draftImage && (
             <div className="space-y-6">
               <div className="relative bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden">
-                <img src={draftImage.image_url} alt={draftImage.prompt} className="w-full h-auto" />
+                <img
+                  src={draftImage.image_url}
+                  alt={draftImage.prompt}
+                  className="w-full h-auto"
+                />
                 <div className="absolute top-4 right-4 bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium">
                   DRAFT (Free)
                 </div>
               </div>
 
               <div className="flex items-center justify-between">
-                <div className="text-sm" style={{ color: "var(--text-secondary)" }}>
-                  <p className="font-medium">Generated with {draftImage.provider}</p>
-                  <p className="text-xs mt-1">Draft images are free and not saved. Upgrade to premium to save.</p>
+                <div
+                  className="text-sm"
+                  style={{ color: "var(--text-secondary)" }}
+                >
+                  <p className="font-medium">
+                    Generated with {draftImage.provider}
+                  </p>
+                  <p className="text-xs mt-1">Draft images are not saved.</p>
                 </div>
 
                 <div className="flex items-center space-x-3">
@@ -120,8 +156,18 @@ export function ImagePreviewModal({
                       className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition flex items-center space-x-2"
                       style={{ color: "var(--text-primary)" }}
                     >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                        />
                       </svg>
                       <span>Regenerate Draft</span>
                     </button>
@@ -139,8 +185,18 @@ export function ImagePreviewModal({
                       </>
                     ) : (
                       <>
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3l14 9-14 9V3z" />
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M5 3l14 9-14 9V3z"
+                          />
                         </svg>
                         <span>Upgrade to Premium</span>
                       </>
@@ -154,16 +210,29 @@ export function ImagePreviewModal({
           {premiumImage && (
             <div className="space-y-6">
               <div className="relative bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden">
-                <img src={premiumImage.image_url} alt={premiumImage.prompt} className="w-full h-auto" />
+                <img
+                  src={premiumImage.image_url}
+                  alt={premiumImage.prompt}
+                  className="w-full h-auto"
+                />
                 <div className="absolute top-4 right-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium">
                   PREMIUM
                 </div>
               </div>
 
               <div className="flex items-center justify-between">
-                <div className="text-sm" style={{ color: "var(--text-secondary)" }}>
-                  <p className="font-medium">Cost: ${(premiumImage.ai_generation_cost || 0).toFixed(4)} | Provider: {premiumImage.provider}</p>
-                  <p className="text-xs mt-1">Premium images include 8K quality enhancement and are saved to your library</p>
+                <div
+                  className="text-sm"
+                  style={{ color: "var(--text-secondary)" }}
+                >
+                  <p className="font-medium">
+                    Cost: ${(premiumImage.ai_generation_cost || 0).toFixed(4)} |
+                    Provider: {premiumImage.provider}
+                  </p>
+                  <p className="text-xs mt-1">
+                    Premium images include 8K quality enhancement and are saved
+                    to your library
+                  </p>
                 </div>
 
                 <div className="flex items-center space-x-3">
@@ -172,8 +241,18 @@ export function ImagePreviewModal({
                     className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition flex items-center space-x-2"
                     style={{ color: "var(--text-primary)" }}
                   >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                      />
                     </svg>
                     <span>Download</span>
                   </button>
