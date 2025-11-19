@@ -1,4 +1,4 @@
-# Blitz Backend (FastAPI)
+# Blitz Frontend (FastAPI)
 
 AI-Powered Modular SaaS Platform for Affiliate Marketing Campaign Generation.
 
