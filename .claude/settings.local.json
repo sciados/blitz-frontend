@@ -99,7 +99,9 @@
       "Bash(/tmp/r2_part1.txt)",
       "Bash(/tmp/upload_method.txt)",
       "Bash(/tmp/r2_part2.txt)",
-      "Bash(app/utils/r2_storage.py)"
+      "Bash(app/utils/r2_storage.py)",
+      "Bash(git remote set-url:*)",
+      "Bash(git restore:*)"
     ],
     "deny": [],
     "ask": []
