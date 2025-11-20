@@ -5,7 +5,7 @@
 import { AuthGate } from "src/components/AuthGate";
 import { CampaignSelector } from "src/components/CampaignSelector";
 import { ImagePreviewModal } from "src/components/ImagePreviewModal";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 import { api } from "src/lib/appClient";
@@ -156,6 +156,7 @@ export default function ImagesPage() {
   // Modal state for library image viewer
   const [selectedLibraryImage, setSelectedLibraryImage] = useState<GeneratedImage | null>(null);
   const [isLibraryModalOpen, setIsLibraryModalOpen] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const { refetch: refetchImages } = useQuery({
     queryKey: ["images", campaignId],
@@ -364,6 +365,45 @@ export default function ImagesPage() {
     setSelectedDraftImage(null);
     setIsModalOpen(false);
   }
+
+  // Navigation for library images
+  function handleImageClick(image: GeneratedImage, index: number) {
+    setSelectedLibraryImage(image);
+    setCurrentImageIndex(index);
+    setIsLibraryModalOpen(true);
+  }
+
+  function handlePreviousImage() {
+    if (currentImageIndex > 0) {
+      const newIndex = currentImageIndex - 1;
+      setCurrentImageIndex(newIndex);
+      setSelectedLibraryImage(allImages[newIndex]);
+    }
+  }
+
+  function handleNextImage() {
+    if (currentImageIndex < allImages.length - 1) {
+      const newIndex = currentImageIndex + 1;
+      setCurrentImageIndex(newIndex);
+      setSelectedLibraryImage(allImages[newIndex]);
+    }
+  }
+
+  // Keyboard navigation for library modal
+  useEffect(() => {
+    if (!isLibraryModalOpen) return;
+
+    function handleKeyPress(e: KeyboardEvent) {
+      if (e.key === "ArrowLeft") {
+        handlePreviousImage();
+      } else if (e.key === "ArrowRight") {
+        handleNextImage();
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyPress);
+    return () => window.removeEventListener("keydown", handleKeyPress);
+  }, [isLibraryModalOpen, currentImageIndex, allImages]);
 
   return (
     <AuthGate requiredRole="user">
@@ -997,14 +1037,11 @@ export default function ImagesPage() {
             {/* Image Grid */}
             {allImages.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {allImages.map((image) => (
+                {allImages.map((image, index) => (
                   <div
                     key={image.id}
                     className="card rounded-lg overflow-hidden group cursor-pointer"
-                    onClick={() => {
-                      setSelectedLibraryImage(image);
-                      setIsLibraryModalOpen(true);
-                    }}
+                    onClick={() => handleImageClick(image, index)}
                   >
                     {/* Image */}
                     <div className="relative bg-gray-100 dark:bg-gray-800 aspect-square">
@@ -1117,12 +1154,24 @@ export default function ImagesPage() {
           >
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
-                <h2
-                  className="text-2xl font-bold"
-                  style={{ color: "var(--text-primary)" }}
-                >
-                  Premium Image
-                </h2>
+                <div>
+                  <h2
+                    className="text-2xl font-bold"
+                    style={{ color: "var(--text-primary)" }}
+                  >
+                    Premium Image
+                  </h2>
+                  {allImages.length > 1 && (
+                    <div>
+                      <p
+                        className="text-sm mt-1"
+                        style={{ color: "var(--text-secondary)" }}
+                      >
+                        {currentImageIndex + 1} of {allImages.length} • Use ← → keys to navigate
+                      </p>
+                    </div>
+                  )}
+                </div>
                 <button
                   onClick={() => setIsLibraryModalOpen(false)}
                   className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
@@ -1169,6 +1218,57 @@ export default function ImagesPage() {
                 <div className="absolute top-4 right-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium">
                   PREMIUM
                 </div>
+
+                {/* Navigation Arrows */}
+                {allImages.length > 1 && (
+                  <>
+                    {/* Previous Button */}
+                    {currentImageIndex > 0 && (
+                      <button
+                        onClick={handlePreviousImage}
+                        className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center transition-colors"
+                        title="Previous image"
+                      >
+                        <svg
+                          className="w-6 h-6"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M15 19l-7-7 7-7"
+                          />
+                        </svg>
+                      </button>
+                    )}
+
+                    {/* Next Button */}
+                    {currentImageIndex < allImages.length - 1 && (
+                      <button
+                        onClick={handleNextImage}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center transition-colors"
+                        title="Next image"
+                      >
+                        <svg
+                          className="w-6 h-6"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 5l7 7-7 7"
+                          />
+                        </svg>
+                      </button>
+                    )}
+                  </>
+                )}
               </div>
 
               {/* Image Details */}
@@ -1185,25 +1285,50 @@ export default function ImagesPage() {
                   </p>
                 </div>
 
-                <button
-                  onClick={() => handleDownload(selectedLibraryImage)}
-                  className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition font-medium flex items-center space-x-2"
-                >
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
+                <div className="flex items-center space-x-3">
+                  <button
+                    onClick={() => handleDownload(selectedLibraryImage)}
+                    className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition font-medium flex items-center space-x-2"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                    />
-                  </svg>
-                  <span>Download</span>
-                </button>
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                      />
+                    </svg>
+                    <span>Download</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      handleDelete(selectedLibraryImage.id);
+                      setIsLibraryModalOpen(false);
+                    }}
+                    className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition font-medium flex items-center space-x-2"
+                  >
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                      />
+                    </svg>
+                    <span>Delete</span>
+                  </button>
+                </div>
               </div>
 
               {/* Prompt Display */}
