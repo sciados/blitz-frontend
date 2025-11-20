@@ -133,6 +133,13 @@ export default function ContentLibraryPage() {
     return true;
   });
 
+  // Filter images based on campaign
+  const filteredImages = allImages.filter((image) => {
+    if (filterCampaignId && image.campaign_id !== filterCampaignId)
+      return false;
+    return true;
+  });
+
   // Group content by campaign and content type
   const groupedContent = filteredContent.reduce((acc, content) => {
     const key = `${content.campaign_id}-${content.content_type}`;
@@ -176,6 +183,22 @@ export default function ContentLibraryPage() {
     setCurrentImageIndex(index);
     setIsLibraryModalOpen(true);
   };
+
+  function handlePreviousImage() {
+    if (currentImageIndex > 0) {
+      const newIndex = currentImageIndex - 1;
+      setCurrentImageIndex(newIndex);
+      setSelectedLibraryImage(filteredImages[newIndex]);
+    }
+  }
+
+  function handleNextImage() {
+    if (currentImageIndex < filteredImages.length - 1) {
+      const newIndex = currentImageIndex + 1;
+      setCurrentImageIndex(newIndex);
+      setSelectedLibraryImage(filteredImages[newIndex]);
+    }
+  }
 
   async function handleDownloadImage(image: GeneratedImage) {
     try {
@@ -519,9 +542,9 @@ export default function ContentLibraryPage() {
           ) : (
             /* Image Grid */
             <>
-              {allImages.length > 0 ? (
+              {filteredImages.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {allImages.map((image, index) => (
+                  {filteredImages.map((image, index) => (
                     <div
                       key={image.id}
                       className="card rounded-lg overflow-hidden group cursor-pointer hover:shadow-lg transition-shadow"
@@ -660,12 +683,12 @@ export default function ContentLibraryPage() {
                   >
                     Premium Image
                   </h2>
-                  {allImages.length > 1 && (
+                  {filteredImages.length > 1 && (
                     <p
                       className="text-sm mt-1"
                       style={{ color: "var(--text-secondary)" }}
                     >
-                      {currentImageIndex + 1} of {allImages.length}
+                      {currentImageIndex + 1} of {filteredImages.length}
                     </p>
                   )}
                 </div>
@@ -715,6 +738,57 @@ export default function ContentLibraryPage() {
                 <div className="absolute top-4 right-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium">
                   PREMIUM
                 </div>
+
+                {/* Navigation Arrows */}
+                {filteredImages.length > 1 && (
+                  <>
+                    {/* Previous Button */}
+                    {currentImageIndex > 0 && (
+                      <button
+                        onClick={handlePreviousImage}
+                        className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center transition-colors"
+                        title="Previous image"
+                      >
+                        <svg
+                          className="w-6 h-6"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M15 19l-7-7 7-7"
+                          />
+                        </svg>
+                      </button>
+                    )}
+
+                    {/* Next Button */}
+                    {currentImageIndex < filteredImages.length - 1 && (
+                      <button
+                        onClick={handleNextImage}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center transition-colors"
+                        title="Next image"
+                      >
+                        <svg
+                          className="w-6 h-6"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 5l7 7-7 7"
+                          />
+                        </svg>
+                      </button>
+                    )}
+                  </>
+                )}
               </div>
 
               {/* Image Details */}
