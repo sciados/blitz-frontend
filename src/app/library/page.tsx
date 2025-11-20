@@ -267,131 +267,6 @@ export default function ContentLibraryPage() {
             </button>
           </div>
 
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <div className="card rounded-lg p-4">
-              <div
-                className="text-sm"
-                style={{ color: "var(--text-secondary)" }}
-              >
-                Total Content
-              </div>
-              <div
-                className="text-2xl font-bold mt-1"
-                style={{ color: "var(--text-primary)" }}
-              >
-                {complianceStats.total}
-              </div>
-            </div>
-            <div className="card rounded-lg p-4">
-              <div
-                className="text-sm"
-                style={{ color: "var(--text-secondary)" }}
-              >
-                Compliant
-              </div>
-              <div className="text-2xl font-bold mt-1 text-green-600 dark:text-green-400">
-                {complianceStats.compliant}
-              </div>
-            </div>
-            <div className="card rounded-lg p-4">
-              <div
-                className="text-sm"
-                style={{ color: "var(--text-secondary)" }}
-              >
-                Warnings
-              </div>
-              <div className="text-2xl font-bold mt-1 text-yellow-600 dark:text-yellow-400">
-                {complianceStats.warning}
-              </div>
-            </div>
-            <div className="card rounded-lg p-4">
-              <div
-                className="text-sm"
-                style={{ color: "var(--text-secondary)" }}
-              >
-                Violations
-              </div>
-              <div className="text-2xl font-bold mt-1 text-red-600 dark:text-red-400">
-                {complianceStats.violation}
-              </div>
-            </div>
-          </div>
-
-          {/* Filters */}
-          <div className="card rounded-lg p-6 mb-6">
-            <h2
-              className="text-lg font-semibold mb-4"
-              style={{ color: "var(--text-primary)" }}
-            >
-              Filters
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Campaign Filter */}
-              <div>
-                <CampaignSelector
-                  selectedCampaignId={filterCampaignId}
-                  onSelect={setFilterCampaignId}
-                  label="Campaign"
-                  placeholder="All Campaigns"
-                  showAllOption={true}
-                />
-              </div>
-
-              {/* Content Type Filter */}
-              <div>
-                <label
-                  className="block text-sm font-medium mb-2"
-                  style={{ color: "var(--text-secondary)" }}
-                >
-                  Content Type
-                </label>
-                <select
-                  value={filterContentType}
-                  onChange={(e) => setFilterContentType(e.target.value)}
-                  className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                  style={{
-                    borderColor: "var(--card-border)",
-                    background: "var(--card-bg)",
-                    color: "var(--text-primary)",
-                  }}
-                >
-                  {CONTENT_TYPES.map((type) => (
-                    <option key={type.value} value={type.value}>
-                      {type.icon} {type.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Compliance Filter */}
-              <div>
-                <label
-                  className="block text-sm font-medium mb-2"
-                  style={{ color: "var(--text-secondary)" }}
-                >
-                  Compliance Status
-                </label>
-                <select
-                  value={filterCompliance}
-                  onChange={(e) => setFilterCompliance(e.target.value)}
-                  className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                  style={{
-                    borderColor: "var(--card-border)",
-                    background: "var(--card-bg)",
-                    color: "var(--text-primary)",
-                  }}
-                >
-                  {COMPLIANCE_FILTERS.map((filter) => (
-                    <option key={filter.value} value={filter.value}>
-                      {filter.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          </div>
-
           {/* Tab Navigation */}
           <div className="flex items-center space-x-2 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg mb-6">
             <button
@@ -415,6 +290,159 @@ export default function ContentLibraryPage() {
               🖼️ Images ({allImages.length})
             </button>
           </div>
+
+          {/* Tab-Specific Filters and Stats */}
+          {activeLibraryTab === "text" ? (
+            /* Text Content Filters */
+            <>
+              {/* Stats Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <div className="card rounded-lg p-4">
+                  <div
+                    className="text-sm"
+                    style={{ color: "var(--text-secondary)" }}
+                  >
+                    Total Content
+                  </div>
+                  <div
+                    className="text-2xl font-bold mt-1"
+                    style={{ color: "var(--text-primary)" }}
+                  >
+                    {complianceStats.total}
+                  </div>
+                </div>
+                <div className="card rounded-lg p-4">
+                  <div
+                    className="text-sm"
+                    style={{ color: "var(--text-secondary)" }}
+                  >
+                    Compliant
+                  </div>
+                  <div className="text-2xl font-bold mt-1 text-green-600 dark:text-green-400">
+                    {complianceStats.compliant}
+                  </div>
+                </div>
+                <div className="card rounded-lg p-4">
+                  <div
+                    className="text-sm"
+                    style={{ color: "var(--text-secondary)" }}
+                  >
+                    Warnings
+                  </div>
+                  <div className="text-2xl font-bold mt-1 text-yellow-600 dark:text-yellow-400">
+                    {complianceStats.warning}
+                  </div>
+                </div>
+                <div className="card rounded-lg p-4">
+                  <div
+                    className="text-sm"
+                    style={{ color: "var(--text-secondary)" }}
+                  >
+                    Violations
+                  </div>
+                  <div className="text-2xl font-bold mt-1 text-red-600 dark:text-red-400">
+                    {complianceStats.violation}
+                  </div>
+                </div>
+              </div>
+
+              {/* Filters */}
+              <div className="card rounded-lg p-6 mb-6">
+                <h2
+                  className="text-lg font-semibold mb-4"
+                  style={{ color: "var(--text-primary)" }}
+                >
+                  Filters
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* Campaign Filter */}
+                  <div>
+                    <CampaignSelector
+                      selectedCampaignId={filterCampaignId}
+                      onSelect={setFilterCampaignId}
+                      label="Campaign"
+                      placeholder="All Campaigns"
+                      showAllOption={true}
+                    />
+                  </div>
+
+                  {/* Content Type Filter */}
+                  <div>
+                    <label
+                      className="block text-sm font-medium mb-2"
+                      style={{ color: "var(--text-secondary)" }}
+                    >
+                      Content Type
+                    </label>
+                    <select
+                      value={filterContentType}
+                      onChange={(e) => setFilterContentType(e.target.value)}
+                      className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                      style={{
+                        borderColor: "var(--card-border)",
+                        background: "var(--card-bg)",
+                        color: "var(--text-primary)",
+                      }}
+                    >
+                      {CONTENT_TYPES.map((type) => (
+                        <option key={type.value} value={type.value}>
+                          {type.icon} {type.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Compliance Filter */}
+                  <div>
+                    <label
+                      className="block text-sm font-medium mb-2"
+                      style={{ color: "var(--text-secondary)" }}
+                    >
+                      Compliance Status
+                    </label>
+                    <select
+                      value={filterCompliance}
+                      onChange={(e) => setFilterCompliance(e.target.value)}
+                      className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                      style={{
+                        borderColor: "var(--card-border)",
+                        background: "var(--card-bg)",
+                        color: "var(--text-primary)",
+                      }}
+                    >
+                      {COMPLIANCE_FILTERS.map((filter) => (
+                        <option key={filter.value} value={filter.value}>
+                          {filter.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </>
+          ) : (
+            /* Image Filters */
+            <div className="card rounded-lg p-6 mb-6">
+              <h2
+                className="text-lg font-semibold mb-4"
+                style={{ color: "var(--text-primary)" }}
+              >
+                Filters
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Campaign Filter */}
+                <div>
+                  <CampaignSelector
+                    selectedCampaignId={filterCampaignId}
+                    onSelect={setFilterCampaignId}
+                    label="Campaign"
+                    placeholder="All Campaigns"
+                    showAllOption={true}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Tab Content */}
           {activeLibraryTab === "text" ? (

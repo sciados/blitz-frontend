@@ -161,6 +161,7 @@ export function ContentList({ contents, loading = false, onEdit, onDelete, onVie
               <option value="all">All Types</option>
               <option value="article">Article</option>
               <option value="email">Email</option>
+              <option value="email_sequence">Email Sequences</option>
               <option value="video_script">Video Script</option>
               <option value="social_post">Social Post</option>
               <option value="landing_page">Landing Page</option>

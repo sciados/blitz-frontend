@@ -552,40 +552,6 @@ IMPORTANT: The **Affiliate Disclosure** must be a separate, clearly labeled sect
             </div>
           )}
 
-          {/* Compliance Warnings Summary Card */}
-          {!complianceJustFixed && (() => {
-            const violations = allContent.filter(c => c.compliance_status === "violation").length;
-            const warnings = allContent.filter(c => c.compliance_status === "warning").length;
-            const compliant = allContent.filter(c => c.compliance_status === "compliant").length;
-
-            if (violations === 0 && warnings === 0) return null;
-
-            return (
-              <div className="mb-6 p-4 bg-orange-50 dark:bg-orange-900/20 border-l-4 border-orange-500 rounded-lg">
-                <div className="flex items-start space-x-3">
-                  <div className="flex-shrink-0">
-                    <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                    </svg>
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="text-sm font-semibold text-orange-800 dark:text-orange-300 mb-1">
-                      Compliance Issues in Your Content Library
-                    </h4>
-                    <div className="text-xs text-orange-700 dark:text-orange-400 mb-2 space-y-1">
-                      {violations > 0 && <p>• {violations} content piece{violations > 1 ? 's' : ''} with violations</p>}
-                      {warnings > 0 && <p>• {warnings} content piece{warnings > 1 ? 's' : ''} with warnings</p>}
-                      {compliant > 0 && <p>• {compliant} compliant content piece{compliant > 1 ? 's' : ''}</p>}
-                    </div>
-                    <p className="text-xs text-orange-700 dark:text-orange-400">
-                      Review and fix issues before publishing. Use the "Fix Compliance" button to regenerate content with better compliance.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            );
-          })()}
-
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Left: Settings Panel */}
             <div className="space-y-6">

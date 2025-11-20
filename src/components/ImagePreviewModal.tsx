@@ -18,6 +18,10 @@ interface ImagePreviewModalProps {
   };
   onSavePremium: (image: GeneratedImage) => void;
   onRegenerate?: () => void;
+  currentIndex: number;
+  totalDrafts: number;
+  onPrevious?: () => void;
+  onNext?: () => void;
 }
 
 export function ImagePreviewModal({
@@ -28,6 +32,10 @@ export function ImagePreviewModal({
   imageSettings,
   onSavePremium,
   onRegenerate,
+  currentIndex,
+  totalDrafts,
+  onPrevious,
+  onNext,
 }: ImagePreviewModalProps) {
   const [isUpgrading, setIsUpgrading] = useState(false);
   const [premiumImage, setPremiumImage] = useState<GeneratedImage | null>(null);
@@ -127,12 +135,71 @@ export function ImagePreviewModal({
       >
         <div className="p-6">
           <div className="flex items-center justify-between mb-6">
-            <h2
-              className="text-2xl font-bold"
-              style={{ color: "var(--text-primary)" }}
-            >
-              {premiumImage ? "Premium Image" : "Draft Preview"}
-            </h2>
+            <div className="flex items-center space-x-4">
+              <h2
+                className="text-2xl font-bold"
+                style={{ color: "var(--text-primary)" }}
+              >
+                {premiumImage ? "Premium Image" : "Draft Preview"}
+              </h2>
+              {totalDrafts > 1 && !premiumImage && (
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={onPrevious}
+                    disabled={currentIndex === 0 || !onPrevious}
+                    className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                    style={{ color: "var(--text-primary)" }}
+                    title="Previous draft"
+                  >
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15 19l-7-7 7-7"
+                      />
+                    </svg>
+                  </button>
+                  <span
+                    className="text-sm font-medium px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-800"
+                    style={{ color: "var(--text-secondary)" }}
+                  >
+                    {currentIndex + 1} of {totalDrafts}
+                  </span>
+                  <button
+                    onClick={onNext}
+                    disabled={currentIndex === totalDrafts - 1 || !onNext}
+                    className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                    style={{ color: "var(--text-primary)" }}
+                    title="Next draft"
+                  >
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 5l7 7-7 7"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              )}
+              {totalDrafts > 1 && !premiumImage && (
+                <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
+                  Use ← → keys to navigate
+                </p>
+              )}
+            </div>
             <button
               onClick={onClose}
               className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"

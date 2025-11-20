@@ -152,6 +152,7 @@ export default function ImagesPage() {
   // Modal state for draft preview
   const [selectedDraftImage, setSelectedDraftImage] = useState<GeneratedImage | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentDraftIndex, setCurrentDraftIndex] = useState(0);
 
   // Modal state for library image viewer
   const [selectedLibraryImage, setSelectedLibraryImage] = useState<GeneratedImage | null>(null);
@@ -356,8 +357,9 @@ export default function ImagesPage() {
   }
 
   // Modal handlers for draft preview
-  function handleOpenDraftModal(image: GeneratedImage) {
+  function handleOpenDraftModal(image: GeneratedImage, index: number) {
     setSelectedDraftImage(image);
+    setCurrentDraftIndex(index);
     setIsModalOpen(true);
   }
 
@@ -365,6 +367,39 @@ export default function ImagesPage() {
     setSelectedDraftImage(null);
     setIsModalOpen(false);
   }
+
+  // Navigation for draft modal
+  function handlePreviousDraft() {
+    if (currentDraftIndex > 0) {
+      const newIndex = currentDraftIndex - 1;
+      setCurrentDraftIndex(newIndex);
+      setSelectedDraftImage(draftImages[newIndex]);
+    }
+  }
+
+  function handleNextDraft() {
+    if (currentDraftIndex < draftImages.length - 1) {
+      const newIndex = currentDraftIndex + 1;
+      setCurrentDraftIndex(newIndex);
+      setSelectedDraftImage(draftImages[newIndex]);
+    }
+  }
+
+  // Keyboard navigation for draft modal
+  useEffect(() => {
+    if (!isModalOpen) return;
+
+    function handleKeyPress(e: KeyboardEvent) {
+      if (e.key === "ArrowLeft") {
+        handlePreviousDraft();
+      } else if (e.key === "ArrowRight") {
+        handleNextDraft();
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyPress);
+    return () => window.removeEventListener("keydown", handleKeyPress);
+  }, [isModalOpen, currentDraftIndex, draftImages]);
 
   // Navigation for library images
   function handleImageClick(image: GeneratedImage, index: number) {
@@ -872,7 +907,7 @@ export default function ImagesPage() {
                         {/* Image - Fixed height with object-cover for consistent sizing */}
                         <div
                           className="aspect-square w-full cursor-pointer"
-                          onClick={() => handleOpenDraftModal(draft)}
+                          onClick={() => handleOpenDraftModal(draft, index)}
                           title="Click to preview in full size"
                         >
                           <img
@@ -1140,6 +1175,10 @@ export default function ImagesPage() {
           setGeneratedImage(image);
           refetchImages();
         }}
+        currentIndex={currentDraftIndex}
+        totalDrafts={draftImages.length}
+        onPrevious={handlePreviousDraft}
+        onNext={handleNextDraft}
       />
 
       {/* Library Image Viewer Modal */}
