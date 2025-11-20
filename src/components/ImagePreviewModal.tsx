@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { api } from "src/lib/appClient";
 import { GeneratedImage } from "src/lib/types";
@@ -31,6 +31,13 @@ export function ImagePreviewModal({
 }: ImagePreviewModalProps) {
   const [isUpgrading, setIsUpgrading] = useState(false);
   const [premiumImage, setPremiumImage] = useState<GeneratedImage | null>(null);
+
+  // Reset premium image when draft image changes or modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setPremiumImage(null);
+    }
+  }, [draftImage?.image_url, isOpen]);
 
   if (!isOpen) return null;
 
