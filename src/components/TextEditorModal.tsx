@@ -130,6 +130,9 @@ export function TextEditorModal({
   };
 
   const handleMouseDown = (e: React.MouseEvent, layerId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+
     if (!canvasRef.current) return;
 
     const rect = canvasRef.current.getBoundingClientRect();
@@ -143,6 +146,9 @@ export function TextEditorModal({
     const offsetY = startY - layer.y;
 
     const handleMouseMove = (e: MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+
       const newX = e.clientX - rect.left - offsetX;
       const newY = e.clientY - rect.top - offsetY;
 
@@ -150,13 +156,16 @@ export function TextEditorModal({
       handleLayerChange(layerId, "y", Math.max(0, newY));
     };
 
-    const handleMouseUp = () => {
+    const handleMouseUp = (e: MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+
       document.removeEventListener("mousemove", handleMouseMove);
       document.removeEventListener("mouseup", handleMouseUp);
     };
 
-    document.addEventListener("mousemove", handleMouseMove);
-    document.addEventListener("mouseup", handleMouseUp);
+    document.addEventListener("mousemove", handleMouseMove, { passive: false });
+    document.addEventListener("mouseup", handleMouseUp, { once: true });
   };
 
   const handleSave = async () => {
@@ -223,8 +232,9 @@ export function TextEditorModal({
                   ref={imageRef}
                   src={sourceImage.image_url}
                   alt="Source"
-                  className="w-full h-full object-contain select-none"
+                  className="w-full h-full object-contain select-none pointer-events-none"
                   draggable={false}
+                  style={{ userSelect: "none", pointerEvents: "none" }}
                 />
 
                 {/* Text Layers */}
