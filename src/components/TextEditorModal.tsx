@@ -209,26 +209,27 @@ export function TextEditorModal({
 
       console.log("[SAVE] Scale factors - X:", scaleX, "Y:", scaleY);
 
-      // Calculate font size multiplier based on image resolution
-      // For large images, we need to scale up the font SIGNIFICANTLY
+      // Calculate font size multiplier based on how much the image is downscaled
+      // If image is barely downscaled (scaleX ~ 1-3), we need a SMALLER multiplier
+      // If image is heavily downscaled (scaleX > 10), we need a LARGER multiplier
       let fontMultiplier = 1;
 
-      if (imageElement.naturalWidth > 3840) {
-        // 4K or larger: 32x multiplier
-        fontMultiplier = 32;
-        console.log("[SAVE] Detected 4K+ image, applying 32x font multiplier");
-      } else if (imageElement.naturalWidth > 1920) {
-        // 2K/1080p range: 16x multiplier
-        fontMultiplier = 16;
-        console.log("[SAVE] Detected 1080p+ image, applying 16x font multiplier");
-      } else if (imageElement.naturalWidth > 1024) {
-        // Standard HD: 8x multiplier
-        fontMultiplier = 8;
-        console.log("[SAVE] Detected HD image, applying 8x font multiplier");
+      if (scaleX > 10) {
+        // Heavily downscaled 4K+ images: 4x multiplier
+        fontMultiplier = 4;
+        console.log("[SAVE] Heavily downscaled image (4K+), applying 4x font multiplier");
+      } else if (scaleX > 5) {
+        // Moderately downscaled images (2K/1080p): 3x multiplier
+        fontMultiplier = 3;
+        console.log("[SAVE] Moderately downscaled image (1080p), applying 3x font multiplier");
+      } else if (scaleX > 2) {
+        // Lightly downscaled images (HD): 2x multiplier
+        fontMultiplier = 2;
+        console.log("[SAVE] Lightly downscaled image (HD), applying 2x font multiplier");
       } else {
-        // Small images: no multiplier
+        // Barely downscaled small images: 1x multiplier
         fontMultiplier = 1;
-        console.log("[SAVE] Small image detected, no font multiplier");
+        console.log("[SAVE] Barely downscaled image, no font multiplier");
       }
 
       // Scale text layer coordinates, font size with both scale AND multiplier
