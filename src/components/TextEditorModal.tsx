@@ -209,35 +209,19 @@ export function TextEditorModal({
 
       console.log("[SAVE] Scale factors - X:", scaleX, "Y:", scaleY);
 
-      // Calculate font size multiplier based on how much the image is downscaled
-      // If image is barely downscaled (scaleX ~ 1-3), we need a SMALLER multiplier
-      // If image is heavily downscaled (scaleX > 10), we need a LARGER multiplier
-      let fontMultiplier = 1;
+      // Calculate proportional font size based on image width
+      // Reference: 48px font on 600px screen should be much larger on actual image
+      const fontPercentage = 0.20;  // 20% of image width (much more visible!)
+      const proportionalFont = Math.round(imageElement.naturalWidth * fontPercentage);
 
-      if (scaleX > 10) {
-        // Heavily downscaled 4K+ images: 4x multiplier
-        fontMultiplier = 4;
-        console.log("[SAVE] Heavily downscaled image (4K+), applying 4x font multiplier");
-      } else if (scaleX > 5) {
-        // Moderately downscaled images (2K/1080p): 3x multiplier
-        fontMultiplier = 3;
-        console.log("[SAVE] Moderately downscaled image (1080p), applying 3x font multiplier");
-      } else if (scaleX > 2) {
-        // Lightly downscaled images (HD): 2x multiplier
-        fontMultiplier = 2;
-        console.log("[SAVE] Lightly downscaled image (HD), applying 2x font multiplier");
-      } else {
-        // Barely downscaled small images: 1x multiplier
-        fontMultiplier = 1;
-        console.log("[SAVE] Barely downscaled image, no font multiplier");
-      }
+      console.log("[SAVE] Proportional font size (20% of width):", proportionalFont, "px");
 
-      // Scale text layer coordinates, font size with both scale AND multiplier
+      // Scale text layer coordinates (position scales with display size)
       const scaledTextLayers = textLayers.map(({ id, ...layer }) => ({
         ...layer,
         x: Math.round(layer.x * scaleX),
         y: Math.round(layer.y * scaleY),
-        font_size: Math.round(layer.font_size * scaleX * fontMultiplier), // Scale font with both factors
+        font_size: proportionalFont,  // Use proportional font size
       }));
 
       console.log("[SAVE] Original layer:", textLayers[0]);
@@ -251,6 +235,8 @@ export function TextEditorModal({
         image_type: sourceImage.image_type,
         style: sourceImage.style,
         aspect_ratio: sourceImage.aspect_ratio,
+        display_width: Math.round(imageRect.width),   // Send display dimensions
+        display_height: Math.round(imageRect.height),
       };
 
       console.log("[SAVE] Sending scaled text layers to backend:", JSON.stringify(scaledTextLayers, null, 2));
