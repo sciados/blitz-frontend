@@ -101,14 +101,18 @@ export default function CompliancePage() {
   }
 
   function getStatusColor(status: ComplianceStatus) {
-    if (status === "compliant") return "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 border-green-200 dark:border-green-800";
-    if (status === "needs_review") return "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800";
+    if (status === "compliant")
+      return "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 border-green-200 dark:border-green-800";
+    if (status === "needs_review")
+      return "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800";
     return "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 border-red-200 dark:border-red-800";
   }
 
   function getSeverityColor(severity: "critical" | "high" | "medium") {
-    if (severity === "critical") return "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 border-red-300 dark:border-red-700";
-    if (severity === "high") return "bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300 border-orange-300 dark:border-orange-700";
+    if (severity === "critical")
+      return "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 border-red-300 dark:border-red-700";
+    if (severity === "high")
+      return "bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300 border-orange-300 dark:border-orange-700";
     return "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 border-yellow-300 dark:border-yellow-700";
   }
 
@@ -124,11 +128,15 @@ export default function CompliancePage() {
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <div className="mb-6">
-            <h1 className="text-3xl font-bold mb-2" style={{ color: "var(--text-primary)" }}>
+            <h1
+              className="text-3xl font-bold mb-2"
+              style={{ color: "var(--text-primary)" }}
+            >
               Content Compliance Checker
             </h1>
             <p style={{ color: "var(--text-secondary)" }}>
-              Check your marketing content for FTC compliance, affiliate disclosures, and prohibited claims.
+              Check your marketing content for FTC compliance, affiliate
+              disclosures, and prohibited claims.
             </p>
           </div>
 
@@ -137,14 +145,21 @@ export default function CompliancePage() {
             <div className="lg:col-span-2 space-y-6">
               {/* Configuration */}
               <div className="card rounded-lg p-6">
-                <h2 className="text-xl font-semibold mb-4" style={{ color: "var(--text-primary)" }}>
+                <h2
+                  className="text-xl font-semibold mb-4"
+                  style={{ color: "var(--text-primary)" }}
+                >
                   Content Settings
                 </h2>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Content Type */}
                   <div>
-                    <label htmlFor="contentType" className="block text-sm font-medium mb-2" style={{ color: "var(--text-secondary)" }}>
+                    <label
+                      htmlFor="contentType"
+                      className="block text-sm font-medium mb-2"
+                      style={{ color: "var(--text-secondary)" }}
+                    >
                       Content Type *
                     </label>
                     <select
@@ -168,7 +183,11 @@ export default function CompliancePage() {
 
                   {/* Product Category */}
                   <div>
-                    <label htmlFor="category" className="block text-sm font-medium mb-2" style={{ color: "var(--text-secondary)" }}>
+                    <label
+                      htmlFor="category"
+                      className="block text-sm font-medium mb-2"
+                      style={{ color: "var(--text-secondary)" }}
+                    >
                       Product Category
                     </label>
                     <select
@@ -188,14 +207,21 @@ export default function CompliancePage() {
                         </option>
                       ))}
                     </select>
-                    <p className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>
+                    <p
+                      className="text-xs mt-1"
+                      style={{ color: "var(--text-secondary)" }}
+                    >
                       Health & Finance categories have stricter compliance rules
                     </p>
                   </div>
 
                   {/* Affiliate Network */}
                   <div>
-                    <label htmlFor="network" className="block text-sm font-medium mb-2" style={{ color: "var(--text-secondary)" }}>
+                    <label
+                      htmlFor="network"
+                      className="block text-sm font-medium mb-2"
+                      style={{ color: "var(--text-secondary)" }}
+                    >
                       Affiliate Network
                     </label>
                     <select
@@ -227,7 +253,11 @@ export default function CompliancePage() {
                       onChange={(e) => setAutoCheck(e.target.checked)}
                       className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
                     />
-                    <label htmlFor="autoCheck" className="ml-2 text-sm font-medium" style={{ color: "var(--text-primary)" }}>
+                    <label
+                      htmlFor="autoCheck"
+                      className="ml-2 text-sm font-medium"
+                      style={{ color: "var(--text-primary)" }}
+                    >
                       Auto-check as I type
                     </label>
                   </div>
@@ -236,14 +266,17 @@ export default function CompliancePage() {
 
               {/* Content Input */}
               <div className="card rounded-lg p-6">
-                <h2 className="text-xl font-semibold mb-4" style={{ color: "var(--text-primary)" }}>
+                <h2
+                  className="text-xl font-semibold mb-4"
+                  style={{ color: "var(--text-primary)" }}
+                >
                   Content to Check
                 </h2>
                 <textarea
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                   placeholder="Paste your marketing content here to check for compliance..."
-                  className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 min-h-[300px] font-mono text-sm"
+                  className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 min-h-[250px] font-mono text-sm"
                   style={{
                     borderColor: "var(--card-border)",
                     background: "var(--bg-primary)",
@@ -251,7 +284,10 @@ export default function CompliancePage() {
                   }}
                 />
                 <div className="flex items-center justify-between mt-4">
-                  <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+                  <p
+                    className="text-sm"
+                    style={{ color: "var(--text-secondary)" }}
+                  >
                     {content.length} characters
                   </p>
                   <button
@@ -266,8 +302,18 @@ export default function CompliancePage() {
                       </>
                     ) : (
                       <>
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
                         </svg>
                         <span>Check Compliance</span>
                       </>
@@ -283,17 +329,31 @@ export default function CompliancePage() {
                 <>
                   {/* Compliance Score */}
                   <div className="card rounded-lg p-6">
-                    <h2 className="text-lg font-semibold mb-4" style={{ color: "var(--text-primary)" }}>
+                    <h2
+                      className="text-lg font-semibold mb-4"
+                      style={{ color: "var(--text-primary)" }}
+                    >
                       Compliance Score
                     </h2>
                     <div className="text-center">
-                      <div className={`text-6xl font-bold mb-2 ${getScoreColor(result.score)}`}>
+                      <div
+                        className={`text-6xl font-bold mb-2 ${getScoreColor(
+                          result.score
+                        )}`}
+                      >
                         {result.score}
                       </div>
-                      <div className="text-sm mb-4" style={{ color: "var(--text-secondary)" }}>
+                      <div
+                        className="text-sm mb-4"
+                        style={{ color: "var(--text-secondary)" }}
+                      >
                         out of 100
                       </div>
-                      <div className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold border ${getStatusColor(result.status)}`}>
+                      <div
+                        className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold border ${getStatusColor(
+                          result.status
+                        )}`}
+                      >
                         {result.status === "compliant" && "✓ Compliant"}
                         {result.status === "needs_review" && "⚠ Needs Review"}
                         {result.status === "non_compliant" && "✗ Non-Compliant"}
@@ -302,24 +362,44 @@ export default function CompliancePage() {
 
                     {/* FTC & Network Compliance */}
                     <div className="mt-6 space-y-2">
-                      <div className="flex items-center justify-between p-3 rounded-lg" style={{ background: "var(--bg-secondary)" }}>
-                        <span className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>
+                      <div
+                        className="flex items-center justify-between p-3 rounded-lg"
+                        style={{ background: "var(--bg-secondary)" }}
+                      >
+                        <span
+                          className="text-sm font-medium"
+                          style={{ color: "var(--text-primary)" }}
+                        >
                           FTC Compliance
                         </span>
                         {result.ftc_compliance ? (
-                          <span className="text-green-600 dark:text-green-400 font-semibold">✓ Pass</span>
+                          <span className="text-green-600 dark:text-green-400 font-semibold">
+                            ✓ Pass
+                          </span>
                         ) : (
-                          <span className="text-red-600 dark:text-red-400 font-semibold">✗ Fail</span>
+                          <span className="text-red-600 dark:text-red-400 font-semibold">
+                            ✗ Fail
+                          </span>
                         )}
                       </div>
-                      <div className="flex items-center justify-between p-3 rounded-lg" style={{ background: "var(--bg-secondary)" }}>
-                        <span className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>
+                      <div
+                        className="flex items-center justify-between p-3 rounded-lg"
+                        style={{ background: "var(--bg-secondary)" }}
+                      >
+                        <span
+                          className="text-sm font-medium"
+                          style={{ color: "var(--text-primary)" }}
+                        >
                           Network Compliance
                         </span>
                         {result.network_compliance ? (
-                          <span className="text-green-600 dark:text-green-400 font-semibold">✓ Pass</span>
+                          <span className="text-green-600 dark:text-green-400 font-semibold">
+                            ✓ Pass
+                          </span>
                         ) : (
-                          <span className="text-red-600 dark:text-red-400 font-semibold">✗ Fail</span>
+                          <span className="text-red-600 dark:text-red-400 font-semibold">
+                            ✗ Fail
+                          </span>
                         )}
                       </div>
                     </div>
@@ -328,17 +408,24 @@ export default function CompliancePage() {
                   {/* Issues */}
                   {result.issues && result.issues.length > 0 && (
                     <div className="card rounded-lg p-6">
-                      <h2 className="text-lg font-semibold mb-4" style={{ color: "var(--text-primary)" }}>
+                      <h2
+                        className="text-lg font-semibold mb-4"
+                        style={{ color: "var(--text-primary)" }}
+                      >
                         Issues Found ({result.issues.length})
                       </h2>
                       <div className="space-y-3">
                         {result.issues.map((issue, index) => (
                           <div
                             key={index}
-                            className={`p-4 rounded-lg border ${getSeverityColor(issue.severity)}`}
+                            className={`p-4 rounded-lg border ${getSeverityColor(
+                              issue.severity
+                            )}`}
                           >
                             <div className="flex items-start space-x-2">
-                              <span className="text-lg">{getSeverityIcon(issue.severity)}</span>
+                              <span className="text-lg">
+                                {getSeverityIcon(issue.severity)}
+                              </span>
                               <div className="flex-1">
                                 <div className="flex items-center justify-between mb-1">
                                   <span className="text-xs font-semibold uppercase">
@@ -372,13 +459,22 @@ export default function CompliancePage() {
                   {/* Suggestions */}
                   {result.suggestions && result.suggestions.length > 0 && (
                     <div className="card rounded-lg p-6">
-                      <h2 className="text-lg font-semibold mb-4" style={{ color: "var(--text-primary)" }}>
+                      <h2
+                        className="text-lg font-semibold mb-4"
+                        style={{ color: "var(--text-primary)" }}
+                      >
                         Recommendations
                       </h2>
                       <ul className="space-y-2">
                         {result.suggestions.map((suggestion, index) => (
-                          <li key={index} className="flex items-start space-x-2 text-sm" style={{ color: "var(--text-secondary)" }}>
-                            <span className="text-blue-600 dark:text-blue-400 mt-0.5">→</span>
+                          <li
+                            key={index}
+                            className="flex items-start space-x-2 text-sm"
+                            style={{ color: "var(--text-secondary)" }}
+                          >
+                            <span className="text-blue-600 dark:text-blue-400 mt-0.5">
+                              →
+                            </span>
                             <span>{suggestion}</span>
                           </li>
                         ))}
@@ -388,14 +484,32 @@ export default function CompliancePage() {
                 </>
               ) : (
                 <div className="card rounded-lg p-12 text-center">
-                  <svg className="w-16 h-16 mx-auto mb-4 opacity-30" style={{ color: "var(--text-secondary)" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <svg
+                    className="w-16 h-16 mx-auto mb-4 opacity-30"
+                    style={{ color: "var(--text-secondary)" }}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
                   </svg>
-                  <h3 className="text-lg font-medium mb-2" style={{ color: "var(--text-primary)" }}>
+                  <h3
+                    className="text-lg font-medium mb-2"
+                    style={{ color: "var(--text-primary)" }}
+                  >
                     No Results Yet
                   </h3>
-                  <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
-                    Enter your content and click "Check Compliance" to analyze it for FTC and affiliate network compliance.
+                  <p
+                    className="text-sm"
+                    style={{ color: "var(--text-secondary)" }}
+                  >
+                    Enter your content and click "Check Compliance" to analyze
+                    it for FTC and affiliate network compliance.
                   </p>
                 </div>
               )}

@@ -49,13 +49,16 @@ export function ContentRefinementModal({
   if (!isOpen || !content) return null;
 
   // Parse refined content to separate actual content from AI notes and intro
-  const parseRefinedContent = (text: string): { content: string; intro: string; notes: string } => {
+  const parseRefinedContent = (
+    text: string
+  ): { content: string; intro: string; notes: string } => {
     let workingText = text;
     let intro = "";
     let notes = "";
 
     // First, extract the introductory phrase (e.g., "Here's a refined version...")
-    const introPattern = /^(Here'?s?\s+(?:a|the)\s+refined\s+.*?:|Here'?s?\s+.*?with\s+.*?:)/i;
+    const introPattern =
+      /^(Here'?s?\s+(?:a|the)\s+refined\s+.*?:|Here'?s?\s+.*?with\s+.*?:)/i;
     const introMatch = workingText.match(introPattern);
     if (introMatch) {
       intro = introMatch[1].trim();
@@ -65,7 +68,7 @@ export function ContentRefinementModal({
 
     // Then, separate content from notes using common separators
     const separators = [
-      /\n+---+\s*\n/i,  // Horizontal line separator (one or more newlines)
+      /\n+---+\s*\n/i, // Horizontal line separator (one or more newlines)
       /\n+(Changes made|Modifications|Note|I've refined|I've made|I've updated|Key changes|What I changed|Changes:|Notes:)/i,
     ];
 
@@ -117,7 +120,10 @@ export function ContentRefinementModal({
     const complianceInstructions = `Fix all FTC compliance issues to achieve a score of 90+.
 
 Current compliance issues:
-${content.compliance_notes || "Review for FTC guidelines, affiliate disclosure, and claim substantiation."}
+${
+  content.compliance_notes ||
+  "Review for FTC guidelines, affiliate disclosure, and claim substantiation."
+}
 
 CRITICAL FIX FOR LANDING PAGES:
 Add a separate **Affiliate Disclosure** section right after the **Subheadline** section:
@@ -148,7 +154,9 @@ ADDITIONAL REQUIREMENTS:
 IMPORTANT: The **Affiliate Disclosure** must be a separate, clearly labeled section for template integration!`;
 
     setRefinementInstructions(complianceInstructions);
-    toast.info("Compliance fix instructions loaded. Click 'Refine Content' to apply.");
+    toast.info(
+      "Compliance fix instructions loaded. Click 'Refine Content' to apply."
+    );
   };
 
   const handleRefine = async () => {
@@ -165,7 +173,11 @@ IMPORTANT: The **Affiliate Disclosure** must be a separate, clearly labeled sect
       });
 
       // Parse the refined content to separate actual content from AI intro and notes
-      const { content: cleanContent, intro, notes } = parseRefinedContent(data.content_data.text);
+      const {
+        content: cleanContent,
+        intro,
+        notes,
+      } = parseRefinedContent(data.content_data.text);
 
       setRefinedContent(cleanContent);
       setAiIntro(intro);
@@ -182,9 +194,13 @@ IMPORTANT: The **Affiliate Disclosure** must be a separate, clearly labeled sect
 
       // Show success message with compliance info
       if (data.compliance_status === "compliant") {
-        toast.success(`✅ Content refined successfully! Compliance: ${data.compliance_score}/100`);
+        toast.success(
+          `✅ Content refined successfully! Compliance: ${data.compliance_score}/100`
+        );
       } else {
-        toast.success("Content refined successfully! Review the changes below.");
+        toast.success(
+          "Content refined successfully! Review the changes below."
+        );
       }
     } catch (err: any) {
       console.error("Failed to refine content:", err);
@@ -276,7 +292,7 @@ IMPORTANT: The **Affiliate Disclosure** must be a separate, clearly labeled sect
             <textarea
               value={editedBody}
               onChange={(e) => setEditedBody(e.target.value)}
-              className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 min-h-[300px] font-mono text-sm"
+              className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 min-h-[250px] font-mono text-sm"
               style={{
                 borderColor: "var(--card-border)",
                 background: "var(--card-bg)",
@@ -291,8 +307,18 @@ IMPORTANT: The **Affiliate Disclosure** must be a separate, clearly labeled sect
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center mb-2">
-                    <svg className="w-5 h-5 text-orange-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    <svg
+                      className="w-5 h-5 text-orange-600 mr-2"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                      />
                     </svg>
                     <h4 className="text-sm font-semibold text-orange-800 dark:text-orange-300">
                       Compliance Score: {currentCompliance.score}/100
@@ -307,8 +333,18 @@ IMPORTANT: The **Affiliate Disclosure** must be a separate, clearly labeled sect
                     onClick={handleFixCompliance}
                     className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white text-sm rounded-lg transition font-medium flex items-center space-x-2"
                   >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
                     </svg>
                     <span>Fix Compliance Issues with AI</span>
                   </button>
