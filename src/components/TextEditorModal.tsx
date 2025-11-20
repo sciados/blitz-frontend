@@ -10,11 +10,11 @@ interface TextLayer {
   text: string;
   x: number;
   y: number;
-  fontSize: number;
-  fontFamily: string;
+  font_size: number;
+  font_family: string;
   color: string;
-  strokeColor?: string;
-  strokeWidth: number;
+  stroke_color?: string;
+  stroke_width: number;
   opacity: number;
 }
 
@@ -56,11 +56,11 @@ export function TextEditorModal({
       text: "Your Text Here",
       x: 50,
       y: 50,
-      fontSize: 48,
-      fontFamily: "Arial",
+      font_size: 48,
+      font_family: "Arial",
       color: "#FFFFFF",
-      strokeColor: "#000000",
-      strokeWidth: 2,
+      stroke_color: "#000000",
+      stroke_width: 2,
       opacity: 1.0,
     },
   ]);
@@ -81,11 +81,11 @@ export function TextEditorModal({
           text: "Your Text Here",
           x: 50,
           y: 50,
-          fontSize: 48,
-          fontFamily: "Arial",
+          font_size: 48,
+          font_family: "Arial",
           color: "#FFFFFF",
-          strokeColor: "#000000",
-          strokeWidth: 2,
+          stroke_color: "#000000",
+          stroke_width: 2,
           opacity: 1.0,
         },
       ]);
@@ -102,10 +102,10 @@ export function TextEditorModal({
         text: "New Text",
         x: 100,
         y: 100,
-        fontSize: 36,
-        fontFamily: "Arial",
+        font_size: 36,
+        font_family: "Arial",
         color: "#FFFFFF",
-        strokeWidth: 0,
+        stroke_width: 0,
         opacity: 1.0,
       },
     ]);
@@ -122,10 +122,15 @@ export function TextEditorModal({
   };
 
   const handleLayerChange = (id: string, field: keyof TextLayer, value: any) => {
+    console.log(`[STATE] Updating layer ${id}, field ${field} to value:`, value);
     setTextLayers(
-      textLayers.map((layer) =>
-        layer.id === id ? { ...layer, [field]: value } : layer
-      )
+      textLayers.map((layer) => {
+        const updated = layer.id === id ? { ...layer, [field]: value } : layer;
+        if (layer.id === id) {
+          console.log(`[STATE] Layer updated - x: ${updated.x}, y: ${updated.y}`);
+        }
+        return updated;
+      })
     );
   };
 
@@ -152,6 +157,10 @@ export function TextEditorModal({
       const newX = e.clientX - rect.left - offsetX;
       const newY = e.clientY - rect.top - offsetY;
 
+      // Debug logging to track coordinates
+      console.log(`[DRAG] layerId=${layerId}, mouseX=${e.clientX}, mouseY=${e.clientY}, rect.left=${rect.left}, rect.top=${rect.top}`);
+      console.log(`[DRAG] offsetX=${offsetX}, offsetY=${offsetY}, newX=${newX}, newY=${newY}`);
+
       handleLayerChange(layerId, "x", Math.max(0, newX));
       handleLayerChange(layerId, "y", Math.max(0, newY));
     };
@@ -166,6 +175,8 @@ export function TextEditorModal({
 
     document.addEventListener("mousemove", handleMouseMove, { passive: false });
     document.addEventListener("mouseup", handleMouseUp, { once: true });
+
+    console.log(`[MOUSE] Started drag - layerId=${layerId}, initial x=${layer.x}, y=${layer.y}`);
   };
 
   const handleSave = async () => {
@@ -174,19 +185,24 @@ export function TextEditorModal({
     setIsProcessing(true);
 
     try {
-      const { data } = await api.post("/api/content/images/text-overlay", {
+      // Log the payload before sending
+      const payload = {
         image_url: sourceImage.image_url,
         text_layers: textLayers.map(({ id, ...layer }) => layer),
         campaign_id: campaignId,
         image_type: sourceImage.image_type,
         style: sourceImage.style,
         aspect_ratio: sourceImage.aspect_ratio,
-      });
+      };
+      console.log("[SAVE] Sending text layers to backend:", JSON.stringify(payload.text_layers, null, 2));
+
+      const { data } = await api.post("/api/content/images/text-overlay", payload);
 
       toast.success("Text overlay added successfully!");
       onSave(data);
       onClose();
     } catch (err: any) {
+      console.error("[SAVE] Error:", err);
       toast.error(err.response?.data?.detail || "Failed to add text overlay");
     } finally {
       setIsProcessing(false);
@@ -245,19 +261,40 @@ export function TextEditorModal({
                     style={{
                       left: layer.x,
                       top: layer.y,
-                      fontSize: layer.fontSize,
-                      fontFamily: layer.fontFamily,
+                      fontSize: layer.font_size,
+                      fontFamily: layer.font_family,
                       color: layer.color,
                       opacity: layer.opacity,
                       whiteSpace: "nowrap",
                       position: "absolute",
-                      WebkitTextStroke: layer.strokeWidth > 0 ? `${layer.strokeWidth}px ${layer.strokeColor || "#000"}` : "none",
-                      textShadow: layer.strokeWidth > 0 ? `0 0 ${layer.strokeWidth}px ${layer.strokeColor || "#000"}` : "none",
+                      display: "inline-block",
+                      WebkitTextStroke: layer.stroke_width > 0 ? `${layer.stroke_width}px ${layer.stroke_color || "#000"}` : "none",
+                      textShadow: layer.stroke_width > 0 ? `0 0 ${layer.stroke_width}px ${layer.stroke_color || "#000"}` : "none",
                     }}
                     onMouseDown={(e) => handleMouseDown(e, layer.id)}
                     onClick={() => setActiveLayerId(layer.id)}
                   >
-                    {layer.text}
+                    <span style={{ display: "inline-block", pointerEvents: "none" }}>
+                      {layer.text}
+                    </span>
+                    {/* Debug indicator */}
+                    {activeLayerId === layer.id && (
+                      <div
+                        style={{
+                          position: "absolute",
+                          top: -20,
+                          left: 0,
+                          fontSize: 10,
+                          color: "red",
+                          background: "white",
+                          padding: "2px 4px",
+                          borderRadius: 3,
+                          pointerEvents: "none",
+                        }}
+                      >
+                        x: {Math.round(layer.x)}, y: {Math.round(layer.y)}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -336,14 +373,14 @@ export function TextEditorModal({
 
                   <div>
                     <label className="block text-sm font-medium mb-1" style={{ color: "var(--text-secondary)" }}>
-                      Font Size: {activeLayer.fontSize}px
+                      Font Size: {activeLayer.font_size}px
                     </label>
                     <input
                       type="range"
                       min="12"
                       max="120"
-                      value={activeLayer.fontSize}
-                      onChange={(e) => handleLayerChange(activeLayer.id, "fontSize", parseInt(e.target.value))}
+                      value={activeLayer.font_size}
+                      onChange={(e) => handleLayerChange(activeLayer.id, "font_size", parseInt(e.target.value))}
                       className="w-full"
                     />
                   </div>
@@ -353,8 +390,8 @@ export function TextEditorModal({
                       Font Family
                     </label>
                     <select
-                      value={activeLayer.fontFamily}
-                      onChange={(e) => handleLayerChange(activeLayer.id, "fontFamily", e.target.value)}
+                      value={activeLayer.font_family}
+                      onChange={(e) => handleLayerChange(activeLayer.id, "font_family", e.target.value)}
                       className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
                       style={{
                         borderColor: "var(--card-border)",
@@ -397,27 +434,27 @@ export function TextEditorModal({
 
                   <div>
                     <label className="block text-sm font-medium mb-1" style={{ color: "var(--text-secondary)" }}>
-                      Stroke Width: {activeLayer.strokeWidth}px
+                      Stroke Width: {activeLayer.stroke_width}px
                     </label>
                     <input
                       type="range"
                       min="0"
                       max="10"
-                      value={activeLayer.strokeWidth}
-                      onChange={(e) => handleLayerChange(activeLayer.id, "strokeWidth", parseInt(e.target.value))}
+                      value={activeLayer.stroke_width}
+                      onChange={(e) => handleLayerChange(activeLayer.id, "stroke_width", parseInt(e.target.value))}
                       className="w-full"
                     />
                   </div>
 
-                  {activeLayer.strokeWidth > 0 && (
+                  {activeLayer.stroke_width > 0 && (
                     <div>
                       <label className="block text-sm font-medium mb-1" style={{ color: "var(--text-secondary)" }}>
                         Stroke Color
                       </label>
                       <input
                         type="color"
-                        value={activeLayer.strokeColor || "#000000"}
-                        onChange={(e) => handleLayerChange(activeLayer.id, "strokeColor", e.target.value)}
+                        value={activeLayer.stroke_color || "#000000"}
+                        onChange={(e) => handleLayerChange(activeLayer.id, "stroke_color", e.target.value)}
                         className="w-full h-10 rounded cursor-pointer"
                       />
                     </div>
