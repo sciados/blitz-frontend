@@ -2,7 +2,6 @@
 
 import { AuthGate } from "src/components/AuthGate";
 import { CampaignSelector } from "src/components/CampaignSelector";
-import { ImagePreviewModal } from "src/components/ImagePreviewModal";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
@@ -143,10 +142,9 @@ export default function ImagesPage() {
   );
   const [allImages, setAllImages] = useState<GeneratedImage[]>([]);
 
-  // Modal state
-  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
-  const [draftImage, setDraftImage] = useState<GeneratedImage | null>(null);
-  const [isGeneratingDraft, setIsGeneratingDraft] = useState(false);
+  // 4 Draft Grid state
+  const [draftImages, setDraftImages] = useState<GeneratedImage[]>([]);
+  const [isGeneratingDrafts, setIsGeneratingDrafts] = useState(false);
 
   const { refetch: refetchImages } = useQuery({
     queryKey: ["images", campaignId],
@@ -171,8 +169,8 @@ export default function ImagesPage() {
       return;
     }
 
-    setIsGeneratingDraft(true);
-    setDraftImage(null);
+    setIsGeneratingDrafts(true);
+    setDraftImages([]);
 
     try {
       const payload: any = {
@@ -187,27 +185,26 @@ export default function ImagesPage() {
         payload.custom_prompt = customPrompt.trim();
       }
 
-      // Call preview endpoint (not saved to database)
-      const { data } = await api.post("/api/content/images/preview", payload);
+      // Call previews endpoint to get 4 unique drafts
+      const { data } = await api.post("/api/content/images/previews", payload);
 
-      setDraftImage(data);
-      setIsPreviewModalOpen(true);
-      toast.success(`Draft preview generated using ${data.provider}`);
+      setDraftImages(data);
+      toast.success(`Generated 4 draft previews using ${data[0]?.provider}`);
     } catch (err: any) {
-      console.error("Failed to generate draft preview:", err);
-      toast.error(err.response?.data?.detail || "Failed to generate draft preview");
+      console.error("Failed to generate draft previews:", err);
+      toast.error(err.response?.data?.detail || "Failed to generate draft previews");
     } finally {
-      setIsGeneratingDraft(false);
+      setIsGeneratingDrafts(false);
     }
   }
 
-  async function handleRegenerateDraft() {
+  async function handleRegenerateDrafts() {
     if (!campaignId) {
       toast.error("Please select a campaign");
       return;
     }
 
-    setIsGeneratingDraft(true);
+    setIsGeneratingDrafts(true);
 
     try {
       const payload: any = {
@@ -222,15 +219,15 @@ export default function ImagesPage() {
         payload.custom_prompt = customPrompt.trim();
       }
 
-      const { data } = await api.post("/api/content/images/preview", payload);
+      const { data } = await api.post("/api/content/images/previews", payload);
 
-      setDraftImage(data);
-      toast.success(`New draft generated using ${data.provider}`);
+      setDraftImages(data);
+      toast.success(`Generated 4 new drafts using ${data[0]?.provider}`);
     } catch (err: any) {
-      console.error("Failed to regenerate draft:", err);
-      toast.error(err.response?.data?.detail || "Failed to regenerate draft");
+      console.error("Failed to regenerate drafts:", err);
+      toast.error(err.response?.data?.detail || "Failed to regenerate drafts");
     } finally {
-      setIsGeneratingDraft(false);
+      setIsGeneratingDrafts(false);
     }
   }
 
@@ -256,6 +253,55 @@ export default function ImagesPage() {
       toast.error("Failed to download image");
     }
   }
+
+  async function handleSaveDraft(image: GeneratedImage) {
+    try {
+      const { data } = await api.post("/api/content/images/save-draft", {
+        campaign_id: campaignId,
+        image_url: image.image_url,
+        image_type: image.image_type,
+        style: imageSettings.style,
+        aspect_ratio: imageSettings.aspectRatio,
+        custom_prompt: imageSettings.customPrompt,
+        provider: image.provider,
+        model: image.model,
+        prompt: image.prompt,
+      });
+      toast.success("Draft image saved to library!");
+      refetchImages();
+    } catch (err: any) {
+      toast.error(
+        err.response?.data?.detail || "Failed to save draft image"
+      );
+    }
+  }
+
+  async function handleUpgradeDraft(image: GeneratedImage) {
+    try {
+      const { data } = await api.post("/api/content/images/upgrade", {
+        campaign_id: campaignId,
+        draft_image_url: image.image_url,
+        custom_prompt: imageSettings.customPrompt || undefined,
+        style: imageSettings.style,
+        aspect_ratio: imageSettings.aspectRatio,
+        quality_boost: true,
+      });
+      setGeneratedImage(data);
+      toast.success(`Premium image enhanced using ${data.provider}!`);
+      refetchImages();
+    } catch (err: any) {
+      toast.error(
+        err.response?.data?.detail || "Failed to enhance premium image"
+      );
+    }
+  }
+
+  const imageSettings = {
+    imageType,
+    style,
+    aspectRatio,
+    customPrompt,
+  };
 
   async function handleRegenerate(image: GeneratedImage) {
     setIsGenerating(true);
@@ -529,16 +575,16 @@ export default function ImagesPage() {
                     </div>
                   </div>
 
-                  {/* Generate Draft Preview Button */}
+                  {/* Generate 4 Draft Previews Button */}
                   <button
                     type="submit"
-                    disabled={isGeneratingDraft || !campaignId}
+                    disabled={isGeneratingDrafts || !campaignId}
                     className="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg transition font-medium flex items-center justify-center space-x-2"
                   >
-                    {isGeneratingDraft ? (
+                    {isGeneratingDrafts ? (
                       <>
                         <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                        <span>Generating Preview...</span>
+                        <span>Generating 4 Drafts...</span>
                       </>
                     ) : (
                       <>
@@ -555,7 +601,7 @@ export default function ImagesPage() {
                             d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                           />
                         </svg>
-                        <span>Generate Draft Preview (Free)</span>
+                        <span>Generate 4 Draft Previews (Free)</span>
                       </>
                     )}
                   </button>
@@ -635,7 +681,8 @@ export default function ImagesPage() {
 
             {/* Right: Image Display */}
             <div className="lg:col-span-2 space-y-6">
-              {generatedImage ? (
+              {/* Premium Generated Image Display */}
+              {generatedImage && !draftImages.length && (
                 <div className="card rounded-lg p-6">
                   <div className="flex items-center justify-between mb-4">
                     <h2
@@ -711,7 +758,143 @@ export default function ImagesPage() {
                     </p>
                   </div>
                 </div>
-              ) : (
+              )}
+
+              {/* 4 Draft Previews Grid */}
+              {draftImages.length > 0 && (
+                <div className="card rounded-lg p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h2
+                      className="text-xl font-semibold"
+                      style={{ color: "var(--text-primary)" }}
+                    >
+                      Draft Previews (4 Options)
+                    </h2>
+                    <button
+                      onClick={handleRegenerateDrafts}
+                      disabled={isGeneratingDrafts}
+                      className="px-4 py-2 border border-blue-600 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition flex items-center space-x-2"
+                    >
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                        />
+                      </svg>
+                      <span>Generate 4 New</span>
+                    </button>
+                  </div>
+
+                  {/* 2x2 Grid of Drafts */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {draftImages.map((draft, index) => (
+                      <div
+                        key={index}
+                        className="relative bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden"
+                      >
+                        {/* DRAFT Badge */}
+                        <div className="absolute top-3 left-3 z-10 bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium">
+                          Draft {index + 1}
+                        </div>
+
+                        {/* Image */}
+                        <img
+                          src={draft.image_url}
+                          alt={draft.prompt}
+                          className="w-full h-auto"
+                        />
+
+                        {/* Action Buttons Overlay */}
+                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
+                          <div className="flex items-center justify-between">
+                            <div className="text-white text-xs">
+                              <span className="font-medium">{draft.provider}</span>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <button
+                                onClick={() => handleDownload(draft)}
+                                className="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded text-sm transition flex items-center space-x-1"
+                                title="Download"
+                              >
+                                <svg
+                                  className="w-4 h-4"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                                  />
+                                </svg>
+                              </button>
+                              <button
+                                onClick={() => handleSaveDraft(draft)}
+                                className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition flex items-center space-x-1"
+                                title="Save Draft"
+                              >
+                                <svg
+                                  className="w-4 h-4"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"
+                                  />
+                                </svg>
+                              </button>
+                              <button
+                                onClick={() => handleUpgradeDraft(draft)}
+                                className="px-3 py-1.5 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded text-sm transition flex items-center space-x-1"
+                                title="Upgrade to Premium"
+                              >
+                                <svg
+                                  className="w-4 h-4"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M5 3l14 9-14 9V3z"
+                                  />
+                                </svg>
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Helper Text */}
+                  <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                    <p className="text-sm" style={{ color: "var(--text-primary)" }}>
+                      <span className="font-semibold">💡 Draft Images are Free:</span>{" "}
+                      Each draft is generated with a different seed for unique variations.
+                      Save drafts to your library or upgrade any to premium quality.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Empty State - Show when no generated image and no drafts */}
+              {!generatedImage && !draftImages.length && (
                 <div className="card rounded-lg p-12 text-center">
                   <svg
                     className="w-20 h-20 mx-auto mb-4 opacity-30"
@@ -731,15 +914,15 @@ export default function ImagesPage() {
                     className="text-xl font-medium mb-2"
                     style={{ color: "var(--text-primary)" }}
                   >
-                    Ready to Generate A Draft Image
+                    Ready to Generate 4 Draft Images
                   </h3>
                   <p
                     className="text-sm max-w-md mx-auto"
                     style={{ color: "var(--text-secondary)" }}
                   >
-                    Configure your settings and click "Generate Image" to create
-                    AI-powered marketing images using your campaign
-                    intelligence.
+                    Configure your settings and click "Generate 4 Draft Previews" to
+                    create AI-powered marketing images using your campaign
+                    intelligence. Each draft uses a unique seed for variation.
                   </p>
                 </div>
               )}
@@ -885,22 +1068,6 @@ export default function ImagesPage() {
           </div>
         </div>
       </div>
-
-      {/* Image Preview Modal */}
-      <ImagePreviewModal
-        isOpen={isPreviewModalOpen}
-        onClose={() => setIsPreviewModalOpen(false)}
-        draftImage={draftImage}
-        campaignId={campaignId || 0}
-        imageSettings={{
-          imageType,
-          style,
-          aspectRatio,
-          customPrompt,
-        }}
-        onSavePremium={handleSavePremium}
-        onRegenerate={handleRegenerateDraft}
-      />
     </AuthGate>
   );
 }
