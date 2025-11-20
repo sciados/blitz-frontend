@@ -564,3 +564,212 @@ The Admin Configuration system allows administrators to manage pricing tiers, AI
 🔄 Database models (planned)
 🔄 CRUD operations (planned)
 
+
+---
+
+## Unified Content Library
+
+### Overview
+
+The Unified Content Library creates a single view to display **all campaign content** (text, images, and future media types) in one unified interface. This allows users to view and manage all their campaign assets together rather than navigating between separate pages for text and image content.
+
+### Architecture
+
+#### Backend Implementation
+
+**New Unified Endpoint:**
+```
+GET /api/content/campaign/{campaign_id}/all
+```
+
+**Response Structure:**
+```typescript
+{
+  contents: Array<
+    | {
+        type: "text";
+        data: GeneratedContent;
+      }
+    | {
+        type: "image";
+        data: GeneratedImage;
+      }
+  >;
+  total: number;
+  page: number;
+  per_page: number;
+}
+```
+
+**Implementation Location:** `app/api/content/all.py`
+
+**Key Logic:**
+1. Fetch `GeneratedContent[]` from database (text-based content)
+2. Fetch `GeneratedImage[]` from database (image content)
+3. Combine into unified array with type discriminator
+4. Sort by `created_at` descending
+5. Apply pagination to combined results
+
+#### Frontend Implementation
+
+**Updated Pages:**
+- `/content/page.tsx` → Update to use unified endpoint
+- Update `ContentList` component to handle mixed content types
+- Create new `ImageCard` component alongside existing `ContentCard`
+
+**New Components:**
+
+1. **ImageCard.tsx**
+   - Display image thumbnail (150px height)
+   - Show metadata: provider, dimensions, aspect ratio
+   - Actions: Download, Edit, Delete, View
+   - Compliance indicator (if applicable)
+
+2. **UnifiedContentList.tsx**
+   - Renders mixed `ContentCard` and `ImageCard` components
+   - Supports filtering: "All", "Text Only", "Images Only"
+   - Supports sorting: Newest, Oldest, Compliance Score
+   - Search across text and image metadata
+
+3. **ContentCard Enhancements**
+   - Add `content_type` badge: "📝 Text" or "🖼️ Image"
+   - Consistent hover states and actions
+   - Unified styling with image cards
+
+### UI/UX Design
+
+#### Filter & Sort Controls
+```typescript
+Filter: [All Content ▼]
+├─ All
+├─ Text
+└─ Images
+
+Sort: [Newest ▼]
+├─ Newest
+├─ Oldest
+└─ Compliance Score
+
+Search: [Search text and images...]
+```
+
+#### Card Layout
+
+**Text Content Card:**
+```
+┌─────────────────────────────────────┐
+│ 📝 Article     [View] [Edit] [Del]  │
+│ "The Complete Guide to Mitolyn..." │
+│ 1,247 words | ✓ Compliant | 2 days │
+└─────────────────────────────────────┘
+```
+
+**Image Content Card:**
+```
+┌─────────────────────────────────────┐
+│ 🖼️ Hero Image  [Download] [Del]      │
+│ ┌─────────┐  Stability (ultra)     │
+│ │[Thumb]  │  1024×1024 | 2 days    │
+│ └─────────┘                        │
+└─────────────────────────────────────┘
+```
+
+#### Timeline View
+All content displayed chronologically within the selected filter:
+- **Filter "All"**: Mixed text + images chronologically
+- **Filter "Text"**: Only text content, newest first
+- **Filter "Images"**: Only images, newest first
+
+### Filtering & Sorting Logic
+
+```typescript
+// Apply filter first (reduces dataset)
+const filtered = contents.filter(item => {
+  if (filter === "all") return true;
+  if (filter === "text") return item.type === "text";
+  if (filter === "images") return item.type === "image";
+});
+
+// Then sort the filtered results
+filtered.sort((a, b) => {
+  switch (sortBy) {
+    case "newest":
+      return new Date(b.data.created_at).getTime() - new Date(a.data.created_at).getTime();
+    case "oldest":
+      return new Date(a.data.created_at).getTime() - new Date(b.data.created_at).getTime();
+    case "compliance_high":
+      // Sort by compliance score (text only)
+      return (b.data.compliance_score ?? 0) - (a.data.compliance_score ?? 0);
+    case "compliance_low":
+      return (a.data.compliance_score ?? 0) - (b.data.compliance_score ?? 0);
+  }
+});
+```
+
+### Migration Path
+
+**Phase 1: Backend**
+1. Create `/api/content/all` endpoint
+2. Test with sample data
+3. Add pagination support
+
+**Phase 2: Frontend**
+1. Create `ImageCard` component
+2. Update `ContentList` to render mixed types
+3. Add filter/sort controls
+4. Test with real data
+
+**Phase 3: Integration**
+1. Update `/content/page.tsx` to use unified endpoint
+2. Remove separate image library page (or keep as direct link)
+3. Add navigation breadcrumbs
+
+**Phase 4: Future Media Types**
+1. Video content support (same pattern)
+2. Audio content support
+3. Document support (PDFs, etc.)
+
+### Benefits
+
+1. **Holistic Campaign View** - See all assets together
+2. **Improved Workflow** - No page switching for content review
+3. **Better Planning** - Visual content strategy view
+4. **Consistent UX** - Same interface for all content types
+5. **Extensible** - Easy to add new media types
+
+### Technical Considerations
+
+1. **Performance** - Combined queries may be slower than separate calls
+   - Solution: Implement database-level UNION queries
+   - Add caching for frequently accessed campaigns
+
+2. **Card Rendering** - Different card heights cause layout jumps
+   - Solution: Use consistent card heights (min-height)
+   - Or use Masonry layout for variable heights
+
+3. **Search** - Text search across different data structures
+   - Solution: Search in both `GeneratedContent.content_data.text` and `GeneratedImage.prompt`
+
+4. **Pagination** - Need to paginate across different table data
+   - Solution: Implement offset-based pagination on combined results
+
+### File Locations
+
+**Backend:**
+- `app/api/content/all.py` - New unified endpoint
+- Update `app/main.py` to include new router
+
+**Frontend:**
+- `src/components/ImageCard.tsx` - New image card component
+- `src/components/UnifiedContentList.tsx` - New unified list component
+- `src/components/ContentCard.tsx` - Update with type badge
+- `src/components/ContentList.tsx` - Update or deprecate
+- `src/app/content/page.tsx` - Update to use unified data
+
+### Status
+
+🔄 **Planned** - Ready for implementation
+🔄 Backend API design (in progress)
+🔄 Frontend component design (in progress)
+🔄 Not started
+

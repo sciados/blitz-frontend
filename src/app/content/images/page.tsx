@@ -4,6 +4,7 @@
 
 import { AuthGate } from "src/components/AuthGate";
 import { CampaignSelector } from "src/components/CampaignSelector";
+import { ImagePreviewModal } from "src/components/ImagePreviewModal";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
@@ -147,6 +148,10 @@ export default function ImagesPage() {
   // 4 Draft Grid state
   const [draftImages, setDraftImages] = useState<GeneratedImage[]>([]);
   const [isGeneratingDrafts, setIsGeneratingDrafts] = useState(false);
+
+  // Modal state for draft preview
+  const [selectedDraftImage, setSelectedDraftImage] = useState<GeneratedImage | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const { refetch: refetchImages } = useQuery({
     queryKey: ["images", campaignId],
@@ -343,6 +348,17 @@ export default function ImagesPage() {
     } catch (err: any) {
       toast.error(err.response?.data?.detail || "Failed to delete image");
     }
+  }
+
+  // Modal handlers for draft preview
+  function handleOpenDraftModal(image: GeneratedImage) {
+    setSelectedDraftImage(image);
+    setIsModalOpen(true);
+  }
+
+  function handleCloseModal() {
+    setSelectedDraftImage(null);
+    setIsModalOpen(false);
   }
 
   return (
@@ -810,11 +826,15 @@ export default function ImagesPage() {
                         </div>
 
                         {/* Image - Fixed height with object-cover for consistent sizing */}
-                        <div className="aspect-square w-full">
+                        <div
+                          className="aspect-square w-full cursor-pointer"
+                          onClick={() => handleOpenDraftModal(draft)}
+                          title="Click to preview in full size"
+                        >
                           <img
                             src={draft.image_url}
                             alt={draft.prompt}
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-cover hover:opacity-90 transition-opacity"
                           />
                         </div>
 
@@ -1084,6 +1104,19 @@ export default function ImagesPage() {
           </div>
         </div>
       </div>
+
+      {/* Draft Preview Modal */}
+      <ImagePreviewModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        draftImage={selectedDraftImage}
+        campaignId={campaignId || 0}
+        imageSettings={imageSettings}
+        onSavePremium={(image) => {
+          setGeneratedImage(image);
+          refetchImages();
+        }}
+      />
     </AuthGate>
   );
 }

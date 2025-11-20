@@ -149,11 +149,28 @@ export function ImagePreviewModal({
           {!premiumImage && draftImage && (
             <div className="space-y-6">
               <div className="relative bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden">
-                <img
-                  src={draftImage.image_url}
-                  alt={draftImage.prompt}
-                  className="w-full h-auto"
-                />
+                {/* Image with proper aspect ratio */}
+                <div
+                  className={`w-full ${
+                    draftImage.aspect_ratio === "1:1"
+                      ? "aspect-square"
+                      : draftImage.aspect_ratio === "16:9"
+                      ? "aspect-video"
+                      : draftImage.aspect_ratio === "9:16"
+                      ? "aspect-[9/16]"
+                      : draftImage.aspect_ratio === "4:3"
+                      ? "aspect-[4/3]"
+                      : draftImage.aspect_ratio === "21:9"
+                      ? "aspect-[21/9]"
+                      : "aspect-square"
+                  } flex items-center justify-center`}
+                >
+                  <img
+                    src={draftImage.image_url}
+                    alt={draftImage.prompt}
+                    className="max-w-full max-h-full object-contain"
+                  />
+                </div>
                 <div className="absolute top-4 right-4 bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium">
                   DRAFT (Free)
                 </div>
@@ -275,11 +292,28 @@ export function ImagePreviewModal({
           {premiumImage && (
             <div className="space-y-6">
               <div className="relative bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden">
-                <img
-                  src={premiumImage.image_url}
-                  alt={premiumImage.prompt}
-                  className="w-full h-auto"
-                />
+                {/* Image with proper aspect ratio */}
+                <div
+                  className={`w-full ${
+                    premiumImage.aspect_ratio === "1:1"
+                      ? "aspect-square"
+                      : premiumImage.aspect_ratio === "16:9"
+                      ? "aspect-video"
+                      : premiumImage.aspect_ratio === "9:16"
+                      ? "aspect-[9/16]"
+                      : premiumImage.aspect_ratio === "4:3"
+                      ? "aspect-[4/3]"
+                      : premiumImage.aspect_ratio === "21:9"
+                      ? "aspect-[21/9]"
+                      : "aspect-square"
+                  } flex items-center justify-center`}
+                >
+                  <img
+                    src={premiumImage.image_url}
+                    alt={premiumImage.prompt}
+                    className="max-w-full max-h-full object-contain"
+                  />
+                </div>
                 <div className="absolute top-4 right-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium">
                   PREMIUM
                 </div>
