@@ -29,7 +29,7 @@ interface TextEditorModalProps {
 const FONT_FAMILIES = [
   { value: "Arial", label: "Arial" },
   { value: "Helvetica", label: "Helvetica" },
-  { value: "Times New Roman", label: "Times New Roman },
+  { value: "Times New Roman", label: "Times New Roman" },
   { value: "Georgia", label: "Georgia" },
   { value: "Verdana", label: "Verdana" },
   { value: "Trebuchet MS", label: "Trebuchet MS" },
