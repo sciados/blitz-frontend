@@ -209,19 +209,25 @@ export function TextEditorModal({
 
       console.log("[SAVE] Scale factors - X:", scaleX, "Y:", scaleY);
 
-      // Calculate proportional font size based on image width
-      // Reference: 48px font on 600px screen should be much larger on actual image
-      const fontPercentage = 0.20;  // 20% of image width (much more visible!)
-      const proportionalFont = Math.round(imageElement.naturalWidth * fontPercentage);
+      // Calculate font size to match the visual size in the editor
+      // Base size: 48px font on 600px image looks good
+      const baseWidth = 600;
+      const baseFont = 48;
+      const displayWidth = imageRect.width;
+      const fontMultiplier = displayWidth / baseWidth;
+      const finalFontSize = Math.round(baseFont * fontMultiplier);
 
-      console.log("[SAVE] Proportional font size (20% of width):", proportionalFont, "px");
+      console.log("[SAVE] Font size:", baseFont, "px @", baseWidth, "px width");
+      console.log("[SAVE] Display width:", displayWidth, "px");
+      console.log("[SAVE] Font multiplier:", fontMultiplier);
+      console.log("[SAVE] Final font size:", finalFontSize, "px");
 
       // Scale text layer coordinates (position scales with display size)
       const scaledTextLayers = textLayers.map(({ id, ...layer }) => ({
         ...layer,
         x: Math.round(layer.x * scaleX),
         y: Math.round(layer.y * scaleY),
-        font_size: proportionalFont,  // Use proportional font size
+        font_size: finalFontSize,
       }));
 
       console.log("[SAVE] Original layer:", textLayers[0]);
