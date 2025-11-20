@@ -1,3 +1,5 @@
+// app\content\images\page.tsx
+
 "use client";
 
 import { AuthGate } from "src/components/AuthGate";
@@ -192,7 +194,9 @@ export default function ImagesPage() {
       toast.success(`Generated 4 draft previews using ${data[0]?.provider}`);
     } catch (err: any) {
       console.error("Failed to generate draft previews:", err);
-      toast.error(err.response?.data?.detail || "Failed to generate draft previews");
+      toast.error(
+        err.response?.data?.detail || "Failed to generate draft previews"
+      );
     } finally {
       setIsGeneratingDrafts(false);
     }
@@ -270,9 +274,7 @@ export default function ImagesPage() {
       toast.success("Draft image saved to library!");
       refetchImages();
     } catch (err: any) {
-      toast.error(
-        err.response?.data?.detail || "Failed to save draft image"
-      );
+      toast.error(err.response?.data?.detail || "Failed to save draft image");
     }
   }
 
@@ -373,7 +375,10 @@ export default function ImagesPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Left: Settings Panel */}
             <div className="space-y-6">
-              <form onSubmit={handleGenerateDraftPreview} className="card rounded-lg p-6">
+              <form
+                onSubmit={handleGenerateDraftPreview}
+                className="card rounded-lg p-6"
+              >
                 <h2
                   className="text-xl font-semibold mb-4"
                   style={{ color: "var(--text-primary)" }}
@@ -815,7 +820,9 @@ export default function ImagesPage() {
                         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
                           <div className="flex items-center justify-between">
                             <div className="text-white text-xs">
-                              <span className="font-medium">{draft.provider}</span>
+                              <span className="font-medium">
+                                {draft.provider}
+                              </span>
                             </div>
                             <div className="flex items-center space-x-2">
                               <button
@@ -884,10 +891,16 @@ export default function ImagesPage() {
 
                   {/* Helper Text */}
                   <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-                    <p className="text-sm" style={{ color: "var(--text-primary)" }}>
-                      <span className="font-semibold">💡 Draft Images are Free:</span>{" "}
-                      Each draft is generated with a different seed for unique variations.
-                      Save drafts to your library or upgrade any to premium quality.
+                    <p
+                      className="text-sm"
+                      style={{ color: "var(--text-primary)" }}
+                    >
+                      <span className="font-semibold">
+                        💡 Draft Images are Free:
+                      </span>{" "}
+                      Each draft is generated with a different seed for unique
+                      variations. Save drafts to your library or upgrade any to
+                      premium quality.
                     </p>
                   </div>
                 </div>
@@ -920,9 +933,10 @@ export default function ImagesPage() {
                     className="text-sm max-w-md mx-auto"
                     style={{ color: "var(--text-secondary)" }}
                   >
-                    Configure your settings and click "Generate 4 Draft Previews" to
-                    create AI-powered marketing images using your campaign
-                    intelligence. Each draft uses a unique seed for variation.
+                    Configure your settings and click "Generate 4 Draft
+                    Previews" to create AI-powered marketing images using your
+                    campaign intelligence. Each draft uses a unique seed for
+                    variation.
                   </p>
                 </div>
               )}

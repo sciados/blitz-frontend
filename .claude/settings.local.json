@@ -101,7 +101,8 @@
       "Bash(/tmp/r2_part2.txt)",
       "Bash(app/utils/r2_storage.py)",
       "Bash(git remote set-url:*)",
-      "Bash(git restore:*)"
+      "Bash(git restore:*)",
+      "Bash(npm run lint)"
     ],
     "deny": [],
     "ask": []
