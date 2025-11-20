@@ -109,7 +109,8 @@
       "WebFetch(domain:upscale.media)",
       "WebFetch(domain:www.upscale.media)",
       "WebFetch(domain:www.pixelbin.io)",
-      "WebFetch(domain:subnp.com)"
+      "WebFetch(domain:subnp.com)",
+      "WebFetch(domain:www.githubstatus.com)"
     ],
     "deny": [],
     "ask": []
