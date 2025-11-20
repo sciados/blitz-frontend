@@ -149,9 +149,9 @@ export function ImagePreviewModal({
           {!premiumImage && draftImage && (
             <div className="space-y-6">
               <div className="relative bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden">
-                {/* Image with proper aspect ratio */}
+                {/* Image with proper aspect ratio - constrained to fit on screen */}
                 <div
-                  className={`w-full ${
+                  className={`max-h-[60vh] max-w-full mx-auto ${
                     draftImage.aspect_ratio === "1:1"
                       ? "aspect-square"
                       : draftImage.aspect_ratio === "16:9"
@@ -168,7 +168,7 @@ export function ImagePreviewModal({
                   <img
                     src={draftImage.image_url}
                     alt={draftImage.prompt}
-                    className="max-w-full max-h-full object-contain"
+                    className="w-full h-full object-contain"
                   />
                 </div>
                 <div className="absolute top-4 right-4 bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium">
@@ -292,9 +292,9 @@ export function ImagePreviewModal({
           {premiumImage && (
             <div className="space-y-6">
               <div className="relative bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden">
-                {/* Image with proper aspect ratio */}
+                {/* Image with proper aspect ratio - constrained to fit on screen */}
                 <div
-                  className={`w-full ${
+                  className={`max-h-[60vh] max-w-full mx-auto ${
                     premiumImage.aspect_ratio === "1:1"
                       ? "aspect-square"
                       : premiumImage.aspect_ratio === "16:9"
@@ -311,7 +311,7 @@ export function ImagePreviewModal({
                   <img
                     src={premiumImage.image_url}
                     alt={premiumImage.prompt}
-                    className="max-w-full max-h-full object-contain"
+                    className="w-full h-full object-contain"
                   />
                 </div>
                 <div className="absolute top-4 right-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium">
