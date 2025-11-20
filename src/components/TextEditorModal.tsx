@@ -243,16 +243,12 @@ export function TextEditorModal({
                     key={layer.id}
                     className={`absolute cursor-move ${activeLayerId === layer.id ? "ring-2 ring-blue-500" : ""}`}
                     style={{
-                      left: layer.x,
-                      top: layer.y,
+                      transform: `translate(${layer.x}px, ${layer.y}px)`,
                       fontSize: layer.fontSize,
                       fontFamily: layer.fontFamily,
                       color: layer.color,
                       opacity: layer.opacity,
-                      display: "block",
                       whiteSpace: "nowrap",
-                      width: "auto",
-                      height: "auto",
                       WebkitTextStroke: layer.strokeWidth > 0 ? `${layer.strokeWidth}px ${layer.strokeColor || "#000"}` : "none",
                       textShadow: layer.strokeWidth > 0 ? `0 0 ${layer.strokeWidth}px ${layer.strokeColor || "#000"}` : "none",
                     }}
