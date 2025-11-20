@@ -239,6 +239,7 @@ export function TextEditorModal({
                       fontFamily: layer.fontFamily,
                       color: layer.color,
                       opacity: layer.opacity,
+                      display: "block",
                       WebkitTextStroke: layer.strokeWidth > 0 ? `${layer.strokeWidth}px ${layer.strokeColor || "#000"}` : "none",
                       textShadow: layer.strokeWidth > 0 ? `0 0 ${layer.strokeWidth}px ${layer.strokeColor || "#000"}` : "none",
                     }}
