@@ -240,6 +240,9 @@ export function TextEditorModal({
                       color: layer.color,
                       opacity: layer.opacity,
                       display: "block",
+                      whiteSpace: "nowrap",
+                      width: "auto",
+                      height: "auto",
                       WebkitTextStroke: layer.strokeWidth > 0 ? `${layer.strokeWidth}px ${layer.strokeColor || "#000"}` : "none",
                       textShadow: layer.strokeWidth > 0 ? `0 0 ${layer.strokeWidth}px ${layer.strokeColor || "#000"}` : "none",
                     }}
