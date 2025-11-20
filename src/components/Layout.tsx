@@ -127,7 +127,7 @@ export default function Layout({ children }: LayoutProps) {
       { href: "/campaigns", label: "Campaigns", icon: "📢" },
       { href: "/products", label: "Product Library", icon: "📦" },
       { href: "/library", label: "Content Library", icon: "📚" },
-      { href: "/content", label: "Image Generation", icon: "✍️" },
+      { href: "/content", label: "Content Generation", icon: "✍️" },
       { href: "/intelligence", label: "Intelligence", icon: "🧠" },
       { href: "/compliance", label: "Compliance", icon: "✓" },
       { href: "/analytics", label: "Analytics", icon: "📈" },
