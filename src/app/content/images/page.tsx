@@ -809,12 +809,14 @@ export default function ImagesPage() {
                           Draft {index + 1}
                         </div>
 
-                        {/* Image */}
-                        <img
-                          src={draft.image_url}
-                          alt={draft.prompt}
-                          className="w-full h-auto"
-                        />
+                        {/* Image - Fixed height with object-cover for consistent sizing */}
+                        <div className="aspect-square w-full">
+                          <img
+                            src={draft.image_url}
+                            alt={draft.prompt}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
 
                         {/* Action Buttons Overlay */}
                         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
