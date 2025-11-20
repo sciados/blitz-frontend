@@ -205,21 +205,21 @@ export function TextEditorModal({
       console.log("[SAVE] Scale factors - X:", scaleX, "Y:", scaleY);
 
       // Calculate font size multiplier based on image resolution
-      // For large images, we need to scale up the font significantly
+      // For large images, we need to scale up the font SIGNIFICANTLY
       let fontMultiplier = 1;
 
       if (imageElement.naturalWidth > 3840) {
-        // 4K or larger: 8x multiplier
-        fontMultiplier = 8;
-        console.log("[SAVE] Detected 4K+ image, applying 8x font multiplier");
+        // 4K or larger: 32x multiplier
+        fontMultiplier = 32;
+        console.log("[SAVE] Detected 4K+ image, applying 32x font multiplier");
       } else if (imageElement.naturalWidth > 1920) {
-        // 2K/1080p range: 4x multiplier
-        fontMultiplier = 4;
-        console.log("[SAVE] Detected 1080p+ image, applying 4x font multiplier");
+        // 2K/1080p range: 16x multiplier
+        fontMultiplier = 16;
+        console.log("[SAVE] Detected 1080p+ image, applying 16x font multiplier");
       } else if (imageElement.naturalWidth > 1024) {
-        // Standard HD: 2x multiplier
-        fontMultiplier = 2;
-        console.log("[SAVE] Detected HD image, applying 2x font multiplier");
+        // Standard HD: 8x multiplier
+        fontMultiplier = 8;
+        console.log("[SAVE] Detected HD image, applying 8x font multiplier");
       } else {
         // Small images: no multiplier
         fontMultiplier = 1;
