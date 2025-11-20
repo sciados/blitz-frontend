@@ -105,7 +105,11 @@
       "Bash(npm run lint)",
       "Bash(else:*)",
       "Bash(pkill:*)",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:upscale.media)",
+      "WebFetch(domain:www.upscale.media)",
+      "WebFetch(domain:www.pixelbin.io)",
+      "WebFetch(domain:subnp.com)"
     ],
     "deny": [],
     "ask": []
