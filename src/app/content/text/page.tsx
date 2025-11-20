@@ -238,7 +238,7 @@ export default function ContentPage() {
     setIsLibraryModalOpen(true);
   };
 
-  async function handleDownload(image: GeneratedImage) {
+  async function handleDownloadImage(image: GeneratedImage) {
     try {
       const response = await fetch(image.image_url);
       const blob = await response.blob();
@@ -1245,7 +1245,7 @@ IMPORTANT: The **Affiliate Disclosure** must be a separate, clearly labeled sect
 
                 <div className="flex items-center space-x-3">
                   <button
-                    onClick={() => handleDownload(selectedLibraryImage)}
+                    onClick={() => handleDownloadImage(selectedLibraryImage)}
                     className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition font-medium flex items-center space-x-2"
                   >
                     <svg
