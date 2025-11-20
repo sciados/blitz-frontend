@@ -305,3 +305,15 @@ export type ImageUpgradeRequest = {
     aspect_ratio?: AspectRatio;
     quality_boost?: boolean;
 };
+
+export type ImageSaveDraftRequest = {
+    campaign_id: number;
+    image_url: string;
+    image_type: string;
+    style?: ImageStyle;
+    aspect_ratio?: AspectRatio;
+    custom_prompt?: string;
+    provider: string;
+    model: string;
+    prompt: string;
+};
