@@ -111,7 +111,8 @@
       "WebFetch(domain:www.pixelbin.io)",
       "WebFetch(domain:subnp.com)",
       "WebFetch(domain:www.githubstatus.com)",
-      "Bash(heroku logs --tail --app blitz-backend)"
+      "Bash(heroku logs --tail --app blitz-backend)",
+      "Bash(heroku apps:info:*)"
     ],
     "deny": [],
     "ask": []
