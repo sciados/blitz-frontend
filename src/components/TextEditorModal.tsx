@@ -171,31 +171,47 @@ export function TextEditorModal({
     e.preventDefault();
     e.stopPropagation();
 
-    if (!canvasRef.current) return;
+    if (!canvasRef.current || !imageRef.current) return;
 
     const layer = textLayers.find((l) => l.id === layerId);
     if (!layer) return;
 
+    const canvasRect = canvasRef.current.getBoundingClientRect();
+    const imageRect = imageRef.current.getBoundingClientRect();
+
+    // Calculate mouse position relative to the IMAGE (not canvas or viewport)
+    const mouseX = e.clientX - imageRect.left;
+    const mouseY = e.clientY - imageRect.top;
+
     // Store the initial mouse position and layer position
-    const initialMouseX = e.clientX;
-    const initialMouseY = e.clientY;
+    const initialMouseX = mouseX;
+    const initialMouseY = mouseY;
     const initialLayerX = layer.x;
     const initialLayerY = layer.y;
 
-    console.log(`[MOUSE] Started drag - layerId=${layerId}, initial mouse=(${initialMouseX}, ${initialMouseY}), initial layer=(${initialLayerX}, ${initialLayerY})`);
+    console.log(`[MOUSE] Started drag - layerId=${layerId}`);
+    console.log(`[MOUSE] Canvas rect:`, canvasRect);
+    console.log(`[MOUSE] Image rect:`, imageRect);
+    console.log(`[MOUSE] Initial mouse (relative to image): (${initialMouseX}, ${initialMouseY})`);
+    console.log(`[MOUSE] Initial layer position: (${initialLayerX}, ${initialLayerY})`);
 
     const handleMouseMove = (e: MouseEvent) => {
       e.preventDefault();
       e.stopPropagation();
 
+      // Calculate current mouse position relative to the IMAGE
+      const currentMouseX = e.clientX - imageRect.left;
+      const currentMouseY = e.clientY - imageRect.top;
+
       // Calculate movement delta
-      const deltaX = e.clientX - initialMouseX;
-      const deltaY = e.clientY - initialMouseY;
+      const deltaX = currentMouseX - initialMouseX;
+      const deltaY = currentMouseY - initialMouseY;
 
       // Apply delta to initial layer position
       const newX = initialLayerX + deltaX;
       const newY = initialLayerY + deltaY;
 
+      console.log(`[DRAG] Current mouse (relative to image): (${currentMouseX}, ${currentMouseY})`);
       console.log(`[DRAG] deltaX=${deltaX}, deltaY=${deltaY}, newX=${newX}, newY=${newY}`);
 
       // Update both x and y in a single state update to avoid batching issues
@@ -243,16 +259,16 @@ export function TextEditorModal({
       console.log("[SAVE] Scale factors - X:", scaleX, "Y:", scaleY);
 
       // Calculate font size to match the visual size in the editor
-      // Base size: 48px font on 600px image looks good
-      const baseWidth = 600;
-      const baseFont = 48;
+      // Scale the selected font size based on display width vs a reference width
+      // This ensures text looks the same size relative to the image
+      const referenceWidth = 600; // Reference image width for "standard" font sizing
       const displayWidth = imageRect.width;
-      const fontMultiplier = displayWidth / baseWidth;
-      const finalFontSize = Math.round(baseFont * fontMultiplier);
+      const fontScaleFactor = displayWidth / referenceWidth;
+      const finalFontSize = Math.round(activeLayer.font_size * fontScaleFactor);
 
-      console.log("[SAVE] Font size:", baseFont, "px @", baseWidth, "px width");
+      console.log("[SAVE] Selected font size:", activeLayer.font_size, "px");
       console.log("[SAVE] Display width:", displayWidth, "px");
-      console.log("[SAVE] Font multiplier:", fontMultiplier);
+      console.log("[SAVE] Font scale factor:", fontScaleFactor);
       console.log("[SAVE] Final font size:", finalFontSize, "px");
 
       // DON'T scale coordinates - use display coordinates directly!
