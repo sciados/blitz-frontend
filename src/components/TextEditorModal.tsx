@@ -18,6 +18,11 @@ interface TextLayer {
   opacity: number;
 }
 
+interface FontOption {
+  value: string;
+  label: string;
+}
+
 interface TextEditorModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -25,17 +30,6 @@ interface TextEditorModalProps {
   campaignId: number;
   onSave: (image: GeneratedImage) => void;
 }
-
-const FONT_FAMILIES = [
-  { value: "Arial", label: "Arial" },
-  { value: "Helvetica", label: "Helvetica" },
-  { value: "Times New Roman", label: "Times New Roman" },
-  { value: "Georgia", label: "Georgia" },
-  { value: "Verdana", label: "Verdana" },
-  { value: "Trebuchet MS", label: "Trebuchet MS" },
-  { value: "Impact", label: "Impact" },
-  { value: "Comic Sans MS", label: "Comic Sans MS" },
-];
 
 const PRESET_COLORS = [
   "#FFFFFF", "#000000", "#FF0000", "#00FF00", "#0000FF",
@@ -57,7 +51,7 @@ export function TextEditorModal({
       x: 50,
       y: 50,
       font_size: 48,
-      font_family: "Arial",
+      font_family: "Arial", // Will be updated after fonts load
       color: "#FFFFFF",
       stroke_color: "#000000",
       stroke_width: 2,
@@ -67,14 +61,52 @@ export function TextEditorModal({
 
   const [activeLayerId, setActiveLayerId] = useState<string>("1");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [fonts, setFonts] = useState<FontOption[]>([]);
+  const [fontsLoading, setFontsLoading] = useState(false);
   const canvasRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
 
   const activeLayer = textLayers.find((layer) => layer.id === activeLayerId);
 
+  // Fetch available fonts when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setFontsLoading(true);
+      api.get("/api/content/images/fonts")
+        .then(({ data }) => {
+          console.log("📝 Loaded fonts:", data);
+          setFonts(data);
+
+          // Update default font if not set or not in available fonts
+          if (data && data.length > 0) {
+            setTextLayers((prev) =>
+              prev.map((layer) => ({
+                ...layer,
+                font_family: data[0].value, // Use first available font
+              }))
+            );
+          }
+        })
+        .catch((err) => {
+          console.error("Failed to load fonts:", err);
+          // Fallback to default fonts
+          setFonts([
+            { value: "Arial", label: "Arial" },
+            { value: "Helvetica", label: "Helvetica" },
+            { value: "Times New Roman", label: "Times New Roman" },
+          ]);
+          toast.error("Failed to load fonts");
+        })
+        .finally(() => {
+          setFontsLoading(false);
+        });
+    }
+  }, [isOpen]);
+
   // Reset layers when modal opens with new image
   useEffect(() => {
     if (isOpen) {
+      const defaultFont = fonts.length > 0 ? fonts[0].value : "Arial";
       setTextLayers([
         {
           id: "1",
@@ -82,7 +114,7 @@ export function TextEditorModal({
           x: 50,
           y: 50,
           font_size: 48,  // Keep as base size
-          font_family: "Arial",
+          font_family: defaultFont,
           color: "#FFFFFF",
           stroke_color: "#000000",
           stroke_width: 2,
@@ -91,10 +123,11 @@ export function TextEditorModal({
       ]);
       setActiveLayerId("1");
     }
-  }, [isOpen, sourceImage.id]);
+  }, [isOpen, sourceImage.id, fonts]);
 
   const handleAddTextLayer = () => {
     const newId = (textLayers.length + 1).toString();
+    const defaultFont = fonts.length > 0 ? fonts[0].value : "Arial";
     setTextLayers([
       ...textLayers,
       {
@@ -103,7 +136,7 @@ export function TextEditorModal({
         x: 100,
         y: 100,
         font_size: 36,  // Keep as base size
-        font_family: "Arial",
+        font_family: defaultFont,
         color: "#FFFFFF",
         stroke_width: 0,
         opacity: 1.0,
@@ -439,7 +472,7 @@ export function TextEditorModal({
 
                   <div>
                     <label className="block text-sm font-medium mb-1" style={{ color: "var(--text-secondary)" }}>
-                      Font Family
+                      Font Family {fontsLoading && "(Loading...)"}
                     </label>
                     <select
                       value={activeLayer.font_family}
@@ -450,12 +483,19 @@ export function TextEditorModal({
                         background: "var(--card-bg)",
                         color: "var(--text-primary)",
                       }}
+                      disabled={fontsLoading}
                     >
-                      {FONT_FAMILIES.map((font) => (
-                        <option key={font.value} value={font.value} style={{ fontFamily: font.value }}>
-                          {font.label}
-                        </option>
-                      ))}
+                      {fontsLoading ? (
+                        <option value="">Loading fonts...</option>
+                      ) : fonts.length > 0 ? (
+                        fonts.map((font) => (
+                          <option key={font.value} value={font.value} style={{ fontFamily: font.value }}>
+                            {font.label}
+                          </option>
+                        ))
+                      ) : (
+                        <option value="Arial">Arial (default)</option>
+                      )}
                     </select>
                   </div>
 
