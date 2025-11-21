@@ -222,11 +222,12 @@ export function TextEditorModal({
       console.log("[SAVE] Font multiplier:", fontMultiplier);
       console.log("[SAVE] Final font size:", finalFontSize, "px");
 
-      // Scale text layer coordinates (position scales with display size)
+      // DON'T scale coordinates - use display coordinates directly!
+      // The backend will save at display size, so coordinates should match display
       const scaledTextLayers = textLayers.map(({ id, ...layer }) => ({
         ...layer,
-        x: Math.round(layer.x * scaleX),
-        y: Math.round(layer.y * scaleY),
+        x: layer.x,  // Use display coordinates as-is
+        y: layer.y,  // Use display coordinates as-is
         font_size: finalFontSize,
       }));
 
