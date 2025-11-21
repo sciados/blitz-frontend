@@ -112,7 +112,8 @@
       "WebFetch(domain:subnp.com)",
       "WebFetch(domain:www.githubstatus.com)",
       "Bash(heroku logs --tail --app blitz-backend)",
-      "Bash(heroku apps:info:*)"
+      "Bash(heroku apps:info:*)",
+      "Bash(app/services/text_renderer.py)"
     ],
     "deny": [],
     "ask": []
