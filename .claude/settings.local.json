@@ -114,7 +114,10 @@
       "Bash(heroku logs --tail --app blitz-backend)",
       "Bash(heroku apps:info:*)",
       "Bash(app/services/text_renderer.py)",
-      "WebFetch(domain:www.pythontutorials.net)"
+      "WebFetch(domain:www.pythontutorials.net)",
+      "Bash(/tmp/part1.txt)",
+      "Bash(/tmp/part3.txt)",
+      "Bash(/c/Users/shaun/OneDrive/Documents/GitHub/blitz-backend/app/api/content/images.py)"
     ],
     "deny": [],
     "ask": []
