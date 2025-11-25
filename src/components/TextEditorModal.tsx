@@ -293,7 +293,7 @@ export function TextEditorModal({
         };
       });
 
-      console.log("[SAVE] Final scaled text layers:", JSON.stringify(scaledTextLayers.map(l => ({ id: l.id, x: l.x, y: l.y, font_size: l.font_size })), null, 2));
+      console.log("[SAVE] Final scaled text layers:", JSON.stringify(scaledTextLayers.map(({ id, x, y, font_size }) => ({ id, x, y, font_size })), null, 2));
 
       console.log("[SAVE] Original layer:", textLayers[0]);
       console.log("[SAVE] Scaled layer:", scaledTextLayers[0]);
