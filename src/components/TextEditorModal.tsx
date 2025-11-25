@@ -271,6 +271,12 @@ export function TextEditorModal({
       // Calculate font size based on ORIGINAL image size using uniform scale
       const finalFontSize = Math.round(activeLayer.font_size * uniformScale);
 
+      // Calculate ascender compensation for Arial font
+      // Arial ascender is ~80% of font size (105px at 131px size)
+      const ascenderPercent = 0.80;  // For Arial
+      const ascenderPixels = Math.round(finalFontSize * ascenderPercent);
+      console.log("[SAVE] Calculated ascender compensation:", ascenderPixels, "px (", Math.round(ascenderPercent * 100), "% of font size)");
+
       console.log("[SAVE] Selected font size (display):", activeLayer.font_size, "px");
       console.log("[SAVE] Final font size (scaled to original):", finalFontSize, "px");
 
@@ -285,17 +291,11 @@ export function TextEditorModal({
         console.log(`[SAVE] Layer ${id}: display (${layer.x}, ${layer.y}) → original (${originalX}, ${originalY})`);
         console.log(`[SAVE] Layer ${id}: font ${finalFontSize}px`);
 
-        // COMPENSATION: PIL's anchor='lt' draws text 24px above the desired position
-        // To position the textbox correctly, we need to send Y + 24px
-        // This matches the green "TEXTBOX" marker position
-        const compensatedY = originalY + 24;
-        console.log(`[SAVE] Layer ${id}: Compensation applied - Y ${originalY} → ${compensatedY} (adds 24px for PIL anchor offset)`);
-
         return {
           id,
           ...layer,
           x: originalX,  // Absolute pixel coordinate on ORIGINAL image
-          y: compensatedY,  // Absolute pixel coordinate on ORIGINAL image (compensated)
+          y: originalY,  // Absolute pixel coordinate on ORIGINAL image (backend handles positioning)
           font_size: finalFontSize,  // Absolute font size for ORIGINAL image
         };
       });
