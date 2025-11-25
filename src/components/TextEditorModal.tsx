@@ -260,36 +260,37 @@ export function TextEditorModal({
       const scaleX = imageElement.naturalWidth / imageRect.width;
       const scaleY = imageElement.naturalHeight / imageRect.height;
 
-      console.log("[SAVE] Scale factors - X:", scaleX, "Y:", scaleY);
+      console.log("[SAVE] Image natural size:", imageElement.naturalWidth, "x", imageElement.naturalHeight);
+      console.log("[SAVE] Image displayed size:", imageRect.width, "x", imageRect.height);
 
-      // Calculate font size - use ABSOLUTE pixel value for precise control
-      // Don't scale - let user control exact pixel size
+      // Calculate scale factors from display to ORIGINAL size
+      const scaleX = imageElement.naturalWidth / imageRect.width;
+      const scaleY = imageElement.naturalHeight / imageRect.height;
+
+      // Calculate font size based on ORIGINAL image size
       const displayWidth = imageRect.width;
-      const finalFontSize = activeLayer.font_size;  // NO scaling - use exact selected size
+      const fontScaleFactor = displayWidth / imageElement.naturalWidth;
+      const finalFontSize = Math.round(activeLayer.font_size / fontScaleFactor);
 
+      console.log("[SAVE] Font scale factor:", fontScaleFactor);
       console.log("[SAVE] Selected font size:", activeLayer.font_size, "px");
-      console.log("[SAVE] Display width:", displayWidth, "px");
-      console.log("[SAVE] Final font size (no scaling):", finalFontSize, "px");
+      console.log("[SAVE] Final font size (scaled to original):", finalFontSize, "px");
 
-      // Convert coordinates to PERCENTAGES for consistent positioning across all image sizes
-      // This way, x=23% means 23% from left, regardless of image size (100px or 2000px)
-      // Font size: Send ABSOLUTE pixel value for precise control
+      // Send ABSOLUTE pixel coordinates (not percentages) based on ORIGINAL image size
+      // This ensures precise positioning at full resolution
       const scaledTextLayers = textLayers.map(({ id, ...layer }) => {
-        const xPercent = (layer.x / displayWidth) * 100;
-        const yPercent = (layer.y / imageRect.height) * 100;
-        const fontSizePercent = (finalFontSize / displayWidth) * 100;
+        // Convert display coordinates to original image coordinates
+        const originalX = Math.round(layer.x * scaleX);
+        const originalY = Math.round(layer.y * scaleY);
 
-        console.log(`[SAVE] Layer ${id}: (${layer.x}, ${layer.y}) = (${xPercent.toFixed(2)}%, ${yPercent.toFixed(2)}%)`);
-        console.log(`[SAVE] Layer ${id}: font ${finalFontSize}px = ${fontSizePercent.toFixed(2)}% of width`);
+        console.log(`[SAVE] Layer ${id}: display (${layer.x}, ${layer.y}) → original (${originalX}, ${originalY})`);
+        console.log(`[SAVE] Layer ${id}: font ${finalFontSize}px`);
 
         return {
           ...layer,
-          x: layer.x,  // Keep absolute for display in editor
-          y: layer.y,  // Keep absolute for display in editor
-          x_percent: xPercent,  // Percentage of image width
-          y_percent: yPercent,  // Percentage of image height
-          // font_size_percent: fontSizePercent,  // DON'T use percentage - causes scaling issues!
-          font_size: finalFontSize,  // Send absolute pixel value for precise control
+          x: originalX,  // Absolute pixel coordinate on ORIGINAL image
+          y: originalY,  // Absolute pixel coordinate on ORIGINAL image
+          font_size: finalFontSize,  // Absolute font size for ORIGINAL image
         };
       });
 
