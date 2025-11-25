@@ -254,6 +254,7 @@ export function TextEditorModal({
       console.log("[SAVE] Canvas size:", canvasRect.width, "x", canvasRect.height);
       console.log("[SAVE] Image natural size:", imageElement.naturalWidth, "x", imageElement.naturalHeight);
       console.log("[SAVE] Image displayed size:", imageRect.width, "x", imageRect.height);
+      console.log("[SAVE] Modal display size:", window.innerWidth, "x", window.innerHeight);
 
       // Calculate UNIFORM scale factors from display to ORIGINAL size
       // Use the same scale for X, Y, and font size to maintain consistency
@@ -265,6 +266,7 @@ export function TextEditorModal({
 
       console.log("[SAVE] Scale X:", scaleX, "Scale Y:", scaleY);
       console.log("[SAVE] Using uniform scale:", uniformScale);
+      console.log("[SAVE] Active layer display coords:", { x: activeLayer.x, y: activeLayer.y, font_size: activeLayer.font_size });
 
       // Calculate font size based on ORIGINAL image size using uniform scale
       const finalFontSize = Math.round(activeLayer.font_size * uniformScale);
@@ -290,6 +292,8 @@ export function TextEditorModal({
           font_size: finalFontSize,  // Absolute font size for ORIGINAL image
         };
       });
+
+      console.log("[SAVE] Final scaled text layers:", JSON.stringify(scaledTextLayers.map(l => ({ id: l.id, x: l.x, y: l.y, font_size: l.font_size })), null, 2));
 
       console.log("[SAVE] Original layer:", textLayers[0]);
       console.log("[SAVE] Scaled layer:", scaledTextLayers[0]);
