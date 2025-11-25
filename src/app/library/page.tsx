@@ -557,13 +557,17 @@ export default function ContentLibraryPage() {
                       {/* Image */}
                       <div className="relative bg-gray-100 dark:bg-gray-800 aspect-square">
                         <img
-                          src={image.thumbnail_url || image.image_url}
+                          src={image.image_url}
                           alt={image.prompt}
                           className="w-full h-full object-cover"
                         />
                         {/* Premium Badge */}
                         <div className="absolute top-3 right-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white px-2 py-1 rounded-full text-xs font-medium">
                           PREMIUM
+                        </div>
+                        {/* Thumbnail Notice */}
+                        <div className="absolute top-3 left-3 bg-black/50 text-white px-2 py-1 rounded-full text-xs">
+                          ⬇ THUMB
                         </div>
                       </div>
 
