@@ -307,8 +307,9 @@ export function TextEditorModal({
         image_type: sourceImage.image_type,
         style: sourceImage.style,
         aspect_ratio: sourceImage.aspect_ratio,
-        display_width: Math.round(imageRect.width),   // Send display dimensions
-        display_height: Math.round(imageRect.height),
+        // DON'T send display dimensions - keep full resolution for marketing
+        // display_width: undefined,
+        // display_height: undefined,
       };
 
       console.log("[SAVE] Sending scaled text layers to backend:", JSON.stringify(scaledTextLayers, null, 2));
