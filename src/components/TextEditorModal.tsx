@@ -16,6 +16,10 @@ interface TextLayer {
   stroke_color?: string;
   stroke_width: number;
   opacity: number;
+  // Percentage-based positioning for consistent placement across image sizes
+  x_percent?: number;
+  y_percent?: number;
+  font_size_percent?: number;
 }
 
 interface FontOption {
@@ -271,14 +275,26 @@ export function TextEditorModal({
       console.log("[SAVE] Font scale factor:", fontScaleFactor);
       console.log("[SAVE] Final font size:", finalFontSize, "px");
 
-      // DON'T scale coordinates - use display coordinates directly!
-      // The backend will save at display size, so coordinates should match display
-      const scaledTextLayers = textLayers.map(({ id, ...layer }) => ({
-        ...layer,
-        x: layer.x,  // Use display coordinates as-is
-        y: layer.y,  // Use display coordinates as-is
-        font_size: finalFontSize,
-      }));
+      // Convert coordinates to PERCENTAGES for consistent positioning across all image sizes
+      // This way, x=23% means 23% from left, regardless of image size (100px or 2000px)
+      const scaledTextLayers = textLayers.map(({ id, ...layer }) => {
+        const xPercent = (layer.x / displayWidth) * 100;
+        const yPercent = (layer.y / imageRect.height) * 100;
+        const fontSizePercent = (finalFontSize / displayWidth) * 100;
+
+        console.log(`[SAVE] Layer ${id}: (${layer.x}, ${layer.y}) = (${xPercent.toFixed(2)}%, ${yPercent.toFixed(2)}%)`);
+        console.log(`[SAVE] Layer ${id}: font ${finalFontSize}px = ${fontSizePercent.toFixed(2)}% of width`);
+
+        return {
+          ...layer,
+          x: layer.x,  // Keep absolute for display in editor
+          y: layer.y,  // Keep absolute for display in editor
+          x_percent: xPercent,  // Percentage of image width
+          y_percent: yPercent,  // Percentage of image height
+          font_size_percent: fontSizePercent,  // Percentage of image width
+          font_size: finalFontSize,
+        };
+      });
 
       console.log("[SAVE] Original layer:", textLayers[0]);
       console.log("[SAVE] Scaled layer:", scaledTextLayers[0]);
