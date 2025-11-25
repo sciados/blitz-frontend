@@ -113,7 +113,8 @@
       "WebFetch(domain:www.githubstatus.com)",
       "Bash(heroku logs --tail --app blitz-backend)",
       "Bash(heroku apps:info:*)",
-      "Bash(app/services/text_renderer.py)"
+      "Bash(app/services/text_renderer.py)",
+      "WebFetch(domain:www.pythontutorials.net)"
     ],
     "deny": [],
     "ask": []
