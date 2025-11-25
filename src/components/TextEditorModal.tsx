@@ -255,25 +255,29 @@ export function TextEditorModal({
       console.log("[SAVE] Image natural size:", imageElement.naturalWidth, "x", imageElement.naturalHeight);
       console.log("[SAVE] Image displayed size:", imageRect.width, "x", imageRect.height);
 
-      // Calculate scale factors from display to ORIGINAL size
+      // Calculate UNIFORM scale factors from display to ORIGINAL size
+      // Use the same scale for X, Y, and font size to maintain consistency
       const scaleX = imageElement.naturalWidth / imageRect.width;
       const scaleY = imageElement.naturalHeight / imageRect.height;
 
-      // Calculate font size based on ORIGINAL image size
-      const displayWidth = imageRect.width;
-      const fontScaleFactor = displayWidth / imageElement.naturalWidth;
-      const finalFontSize = Math.round(activeLayer.font_size / fontScaleFactor);
+      // Use the MINIMUM scale to ensure everything fits proportionally at original resolution
+      const uniformScale = Math.min(scaleX, scaleY);
 
-      console.log("[SAVE] Font scale factor:", fontScaleFactor);
-      console.log("[SAVE] Selected font size:", activeLayer.font_size, "px");
+      console.log("[SAVE] Scale X:", scaleX, "Scale Y:", scaleY);
+      console.log("[SAVE] Using uniform scale:", uniformScale);
+
+      // Calculate font size based on ORIGINAL image size using uniform scale
+      const finalFontSize = Math.round(activeLayer.font_size * uniformScale);
+
+      console.log("[SAVE] Selected font size (display):", activeLayer.font_size, "px");
       console.log("[SAVE] Final font size (scaled to original):", finalFontSize, "px");
 
       // Send ABSOLUTE pixel coordinates (not percentages) based on ORIGINAL image size
       // This ensures precise positioning at full resolution
       const scaledTextLayers = textLayers.map(({ id, ...layer }) => {
-        // Convert display coordinates to original image coordinates
-        const originalX = Math.round(layer.x * scaleX);
-        const originalY = Math.round(layer.y * scaleY);
+        // Convert display coordinates to original image coordinates using uniform scale
+        const originalX = Math.round(layer.x * uniformScale);
+        const originalY = Math.round(layer.y * uniformScale);
 
         console.log(`[SAVE] Layer ${id}: display (${layer.x}, ${layer.y}) → original (${originalX}, ${originalY})`);
         console.log(`[SAVE] Layer ${id}: font ${finalFontSize}px`);
