@@ -286,6 +286,7 @@ export function TextEditorModal({
         console.log(`[SAVE] Layer ${id}: font ${finalFontSize}px`);
 
         return {
+          id,
           ...layer,
           x: originalX,  // Absolute pixel coordinate on ORIGINAL image
           y: originalY,  // Absolute pixel coordinate on ORIGINAL image
