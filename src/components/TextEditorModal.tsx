@@ -276,8 +276,9 @@ export function TextEditorModal({
       // This ensures precise positioning at full resolution
       const scaledTextLayers = textLayers.map(({ id, ...layer }) => {
         // Convert display coordinates to original image coordinates using uniform scale
-        const originalX = Math.round(layer.x * uniformScale);
-        const originalY = Math.round(layer.y * uniformScale);
+        // Use Math.floor to avoid rounding up (which could place text too far)
+        const originalX = Math.floor(layer.x * uniformScale);
+        const originalY = Math.floor(layer.y * uniformScale);
 
         console.log(`[SAVE] Layer ${id}: display (${layer.x}, ${layer.y}) → original (${originalX}, ${originalY})`);
         console.log(`[SAVE] Layer ${id}: font ${finalFontSize}px`);
