@@ -773,3 +773,4 @@ filtered.sort((a, b) => {
 🔄 Frontend component design (in progress)
 🔄 Not started
 
+- You do not add, commit or push. I do that
