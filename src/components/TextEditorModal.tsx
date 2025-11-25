@@ -41,6 +41,7 @@ const PRESET_COLORS = [
   "#FFC0CB", "#A52A2A", "#808080", "#000080", "#008000"
 ];
 
+// Text Editor Modal - Simple coordinate positioning
 export function TextEditorModal({
   isOpen,
   onClose,
