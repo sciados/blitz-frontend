@@ -252,14 +252,6 @@ export function TextEditorModal({
       const imageRect = imageElement.getBoundingClientRect();
 
       console.log("[SAVE] Canvas size:", canvasRect.width, "x", canvasRect.height);
-      console.log("[SAVE] Image position in canvas:", imageRect.left - canvasRect.left, "x", imageRect.top - canvasRect.top);
-      console.log("[SAVE] Image displayed size:", imageRect.width, "x", imageRect.height);
-      console.log("[SAVE] Image natural size:", imageElement.naturalWidth, "x", imageElement.naturalHeight);
-
-      // Calculate scale factor based on the IMAGE, not the canvas
-      const scaleX = imageElement.naturalWidth / imageRect.width;
-      const scaleY = imageElement.naturalHeight / imageRect.height;
-
       console.log("[SAVE] Image natural size:", imageElement.naturalWidth, "x", imageElement.naturalHeight);
       console.log("[SAVE] Image displayed size:", imageRect.width, "x", imageRect.height);
 
