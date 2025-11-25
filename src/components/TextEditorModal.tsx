@@ -262,21 +262,18 @@ export function TextEditorModal({
 
       console.log("[SAVE] Scale factors - X:", scaleX, "Y:", scaleY);
 
-      // Calculate font size to match the visual size in the editor
-      // Scale the selected font size based on display width vs a reference width
-      // This ensures text looks the same size relative to the image
-      const referenceWidth = 600; // Reference image width for "standard" font sizing
+      // Calculate font size - use ABSOLUTE pixel value for precise control
+      // Don't scale - let user control exact pixel size
       const displayWidth = imageRect.width;
-      const fontScaleFactor = displayWidth / referenceWidth;
-      const finalFontSize = Math.round(activeLayer.font_size * fontScaleFactor);
+      const finalFontSize = activeLayer.font_size;  // NO scaling - use exact selected size
 
       console.log("[SAVE] Selected font size:", activeLayer.font_size, "px");
       console.log("[SAVE] Display width:", displayWidth, "px");
-      console.log("[SAVE] Font scale factor:", fontScaleFactor);
-      console.log("[SAVE] Final font size:", finalFontSize, "px");
+      console.log("[SAVE] Final font size (no scaling):", finalFontSize, "px");
 
       // Convert coordinates to PERCENTAGES for consistent positioning across all image sizes
       // This way, x=23% means 23% from left, regardless of image size (100px or 2000px)
+      // Font size: Send ABSOLUTE pixel value for precise control
       const scaledTextLayers = textLayers.map(({ id, ...layer }) => {
         const xPercent = (layer.x / displayWidth) * 100;
         const yPercent = (layer.y / imageRect.height) * 100;
@@ -291,8 +288,8 @@ export function TextEditorModal({
           y: layer.y,  // Keep absolute for display in editor
           x_percent: xPercent,  // Percentage of image width
           y_percent: yPercent,  // Percentage of image height
-          font_size_percent: fontSizePercent,  // Percentage of image width
-          font_size: finalFontSize,
+          // font_size_percent: fontSizePercent,  // DON'T use percentage - causes scaling issues!
+          font_size: finalFontSize,  // Send absolute pixel value for precise control
         };
       });
 
