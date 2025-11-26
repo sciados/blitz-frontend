@@ -551,7 +551,7 @@ export function TextEditorModal({
             <div className="space-y-4">
               <div>
                 <h3
-                  className="font-semibold mb-2"
+                  className="font-normal mb-2"
                   style={{ color: "var(--text-primary)" }}
                 >
                   Text Layers
