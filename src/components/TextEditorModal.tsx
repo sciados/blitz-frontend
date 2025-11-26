@@ -10,7 +10,7 @@ interface TextLayer {
   text: string;
   x: number;
   y: number;
-  font_size: number;  // Base font size
+  font_size: number; // Base font size
   font_family: string;
   color: string;
   stroke_color?: string;
@@ -36,9 +36,21 @@ interface TextEditorModalProps {
 }
 
 const PRESET_COLORS = [
-  "#FFFFFF", "#000000", "#FF0000", "#00FF00", "#0000FF",
-  "#FFFF00", "#FF00FF", "#00FFFF", "#FFA500", "#800080",
-  "#FFC0CB", "#A52A2A", "#808080", "#000080", "#008000"
+  "#FFFFFF",
+  "#000000",
+  "#FF0000",
+  "#00FF00",
+  "#0000FF",
+  "#FFFF00",
+  "#FF00FF",
+  "#00FFFF",
+  "#FFA500",
+  "#800080",
+  "#FFC0CB",
+  "#A52A2A",
+  "#808080",
+  "#000080",
+  "#008000",
 ];
 
 // Text Editor Modal - Simple coordinate positioning
@@ -77,7 +89,8 @@ export function TextEditorModal({
   useEffect(() => {
     if (isOpen) {
       setFontsLoading(true);
-      api.get("/api/content/images/fonts")
+      api
+        .get("/api/content/images/fonts")
         .then(({ data }) => {
           console.log("📝 Loaded fonts:", data);
           setFonts(data);
@@ -118,7 +131,7 @@ export function TextEditorModal({
           text: "Your Text Here",
           x: 50,
           y: 50,
-          font_size: 48,  // Keep as base size
+          font_size: 48, // Keep as base size
           font_family: defaultFont,
           color: "#FFFFFF",
           stroke_color: "#000000",
@@ -140,7 +153,7 @@ export function TextEditorModal({
         text: "New Text",
         x: 100,
         y: 100,
-        font_size: 36,  // Keep as base size
+        font_size: 36, // Keep as base size
         font_family: defaultFont,
         color: "#FFFFFF",
         stroke_width: 0,
@@ -164,7 +177,9 @@ export function TextEditorModal({
       textLayers.map((layer) => {
         if (layer.id === id) {
           const updated = { ...layer, ...updates };
-          console.log(`[STATE] Layer updated - x: ${updated.x}, y: ${updated.y}`);
+          console.log(
+            `[STATE] Layer updated - x: ${updated.x}, y: ${updated.y}`
+          );
           return updated;
         }
         return layer;
@@ -197,8 +212,12 @@ export function TextEditorModal({
     console.log(`[MOUSE] Started drag - layerId=${layerId}`);
     console.log(`[MOUSE] Canvas rect:`, canvasRect);
     console.log(`[MOUSE] Image rect:`, imageRect);
-    console.log(`[MOUSE] Initial mouse (relative to image): (${initialMouseX}, ${initialMouseY})`);
-    console.log(`[MOUSE] Initial layer position: (${initialLayerX}, ${initialLayerY})`);
+    console.log(
+      `[MOUSE] Initial mouse (relative to image): (${initialMouseX}, ${initialMouseY})`
+    );
+    console.log(
+      `[MOUSE] Initial layer position: (${initialLayerX}, ${initialLayerY})`
+    );
 
     const handleMouseMove = (e: MouseEvent) => {
       e.preventDefault();
@@ -216,11 +235,18 @@ export function TextEditorModal({
       const newX = initialLayerX + deltaX;
       const newY = initialLayerY + deltaY;
 
-      console.log(`[DRAG] Current mouse (relative to image): (${currentMouseX}, ${currentMouseY})`);
-      console.log(`[DRAG] deltaX=${deltaX}, deltaY=${deltaY}, newX=${newX}, newY=${newY}`);
+      console.log(
+        `[DRAG] Current mouse (relative to image): (${currentMouseX}, ${currentMouseY})`
+      );
+      console.log(
+        `[DRAG] deltaX=${deltaX}, deltaY=${deltaY}, newX=${newX}, newY=${newY}`
+      );
 
       // Update both x and y in a single state update to avoid batching issues
-      handleLayerChange(layerId, { x: Math.max(0, newX), y: Math.max(0, newY) });
+      handleLayerChange(layerId, {
+        x: Math.max(0, newX),
+        y: Math.max(0, newY),
+      });
     };
 
     const handleMouseUp = (e: MouseEvent) => {
@@ -252,10 +278,30 @@ export function TextEditorModal({
       // Get the actual image position within the canvas
       const imageRect = imageElement.getBoundingClientRect();
 
-      console.log("[SAVE] Canvas size:", canvasRect.width, "x", canvasRect.height);
-      console.log("[SAVE] Image natural size:", imageElement.naturalWidth, "x", imageElement.naturalHeight);
-      console.log("[SAVE] Image displayed size:", imageRect.width, "x", imageRect.height);
-      console.log("[SAVE] Modal display size:", window.innerWidth, "x", window.innerHeight);
+      console.log(
+        "[SAVE] Canvas size:",
+        canvasRect.width,
+        "x",
+        canvasRect.height
+      );
+      console.log(
+        "[SAVE] Image natural size:",
+        imageElement.naturalWidth,
+        "x",
+        imageElement.naturalHeight
+      );
+      console.log(
+        "[SAVE] Image displayed size:",
+        imageRect.width,
+        "x",
+        imageRect.height
+      );
+      console.log(
+        "[SAVE] Modal display size:",
+        window.innerWidth,
+        "x",
+        window.innerHeight
+      );
 
       // Calculate UNIFORM scale factors from display to ORIGINAL size
       // Use the same scale for X, Y, and font size to maintain consistency
@@ -267,19 +313,37 @@ export function TextEditorModal({
 
       console.log("[SAVE] Scale X:", scaleX, "Scale Y:", scaleY);
       console.log("[SAVE] Using uniform scale:", uniformScale);
-      console.log("[SAVE] Active layer display coords:", { x: activeLayer.x, y: activeLayer.y, font_size: activeLayer.font_size });
+      console.log("[SAVE] Active layer display coords:", {
+        x: activeLayer.x,
+        y: activeLayer.y,
+        font_size: activeLayer.font_size,
+      });
 
       // Calculate font size based on ORIGINAL image size using uniform scale
       const finalFontSize = Math.round(activeLayer.font_size * uniformScale);
 
       // Calculate ascender compensation for Arial font
       // Arial ascender is ~80% of font size (105px at 131px size)
-      const ascenderPercent = 0.80;  // For Arial
+      const ascenderPercent = 0.8; // For Arial
       const ascenderPixels = Math.round(finalFontSize * ascenderPercent);
-      console.log("[SAVE] Calculated ascender compensation:", ascenderPixels, "px (", Math.round(ascenderPercent * 100), "% of font size)");
+      console.log(
+        "[SAVE] Calculated ascender compensation:",
+        ascenderPixels,
+        "px (",
+        Math.round(ascenderPercent * 100),
+        "% of font size)"
+      );
 
-      console.log("[SAVE] Selected font size (display):", activeLayer.font_size, "px");
-      console.log("[SAVE] Final font size (scaled to original):", finalFontSize, "px");
+      console.log(
+        "[SAVE] Selected font size (display):",
+        activeLayer.font_size,
+        "px"
+      );
+      console.log(
+        "[SAVE] Final font size (scaled to original):",
+        finalFontSize,
+        "px"
+      );
 
       // Send ABSOLUTE pixel coordinates (not percentages) based on ORIGINAL image size
       // This ensures precise positioning at full resolution
@@ -289,19 +353,33 @@ export function TextEditorModal({
         const originalX = Math.floor(layer.x * uniformScale);
         const originalY = Math.floor(layer.y * uniformScale);
 
-        console.log(`[SAVE] Layer ${id}: display (${layer.x}, ${layer.y}) → original (${originalX}, ${originalY})`);
+        console.log(
+          `[SAVE] Layer ${id}: display (${layer.x}, ${layer.y}) → original (${originalX}, ${originalY})`
+        );
         console.log(`[SAVE] Layer ${id}: font ${finalFontSize}px`);
 
         return {
           id,
           ...layer,
-          x: originalX,  // Absolute pixel coordinate on ORIGINAL image
-          y: originalY,  // Absolute pixel coordinate on ORIGINAL image (backend handles positioning)
-          font_size: finalFontSize,  // Absolute font size for ORIGINAL image
+          x: originalX, // Absolute pixel coordinate on ORIGINAL image
+          y: originalY, // Absolute pixel coordinate on ORIGINAL image (backend handles positioning)
+          font_size: finalFontSize, // Absolute font size for ORIGINAL image
         };
       });
 
-      console.log("[SAVE] Final scaled text layers:", JSON.stringify(scaledTextLayers.map(({ id, x, y, font_size }) => ({ id, x, y, font_size })), null, 2));
+      console.log(
+        "[SAVE] Final scaled text layers:",
+        JSON.stringify(
+          scaledTextLayers.map(({ id, x, y, font_size }) => ({
+            id,
+            x,
+            y,
+            font_size,
+          })),
+          null,
+          2
+        )
+      );
 
       console.log("[SAVE] Original layer:", textLayers[0]);
       console.log("[SAVE] Scaled layer:", scaledTextLayers[0]);
@@ -319,9 +397,15 @@ export function TextEditorModal({
         // display_height: undefined,
       };
 
-      console.log("[SAVE] Sending scaled text layers to backend:", JSON.stringify(scaledTextLayers, null, 2));
+      console.log(
+        "[SAVE] Sending scaled text layers to backend:",
+        JSON.stringify(scaledTextLayers, null, 2)
+      );
 
-      const { data } = await api.post("/api/content/images/text-overlay", payload);
+      const { data } = await api.post(
+        "/api/content/images/text-overlay",
+        payload
+      );
 
       toast.success("Text overlay added successfully!");
       onSave(data);
@@ -345,15 +429,28 @@ export function TextEditorModal({
         {/* Header */}
         <div className="p-6 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>
+            <h2
+              className="text-2xl font-bold"
+              style={{ color: "var(--text-primary)" }}
+            >
               ✨ Text Editor - Premium Feature
             </h2>
             <button
               onClick={onClose}
               className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
           </div>
@@ -367,7 +464,9 @@ export function TextEditorModal({
               <div
                 ref={canvasRef}
                 className="relative bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden"
-                style={{ aspectRatio: getAspectRatio(sourceImage.aspect_ratio) }}
+                style={{
+                  aspectRatio: getAspectRatio(sourceImage.aspect_ratio),
+                }}
               >
                 <img
                   ref={imageRef}
@@ -382,7 +481,9 @@ export function TextEditorModal({
                 {textLayers.map((layer) => (
                   <div
                     key={layer.id}
-                    className={`absolute cursor-move ${activeLayerId === layer.id ? "ring-2 ring-blue-500" : ""}`}
+                    className={`absolute cursor-move ${
+                      activeLayerId === layer.id ? "ring-2 ring-blue-500" : ""
+                    }`}
                     style={{
                       left: layer.x,
                       top: layer.y,
@@ -393,13 +494,25 @@ export function TextEditorModal({
                       whiteSpace: "nowrap",
                       position: "absolute",
                       display: "inline-block",
-                      WebkitTextStroke: layer.stroke_width > 0 ? `${layer.stroke_width}px ${layer.stroke_color || "#000"}` : "none",
-                      textShadow: layer.stroke_width > 0 ? `0 0 ${layer.stroke_width}px ${layer.stroke_color || "#000"}` : "none",
+                      WebkitTextStroke:
+                        layer.stroke_width > 0
+                          ? `${layer.stroke_width}px ${
+                              layer.stroke_color || "#000"
+                            }`
+                          : "none",
+                      textShadow:
+                        layer.stroke_width > 0
+                          ? `0 0 ${layer.stroke_width}px ${
+                              layer.stroke_color || "#000"
+                            }`
+                          : "none",
                     }}
                     onMouseDown={(e) => handleMouseDown(e, layer.id)}
                     onClick={() => setActiveLayerId(layer.id)}
                   >
-                    <span style={{ display: "inline-block", pointerEvents: "none" }}>
+                    <span
+                      style={{ display: "inline-block", pointerEvents: "none" }}
+                    >
                       {layer.text}
                     </span>
                     {/* Debug indicator - shows position */}
@@ -407,14 +520,15 @@ export function TextEditorModal({
                       <div
                         style={{
                           position: "absolute",
-                          top: -20,
+                          top: -24,
                           left: 0,
-                          fontSize: 10,
-                          color: "red",
+                          fontSize: 20,
+                          color: "black",
                           background: "white",
-                          padding: "2px 4px",
+                          padding: "3px 6px",
                           borderRadius: 3,
                           pointerEvents: "none",
+                          fontWeight: "normal",
                         }}
                       >
                         x: {Math.round(layer.x)}, y: {Math.round(layer.y)}
@@ -424,15 +538,22 @@ export function TextEditorModal({
                 ))}
               </div>
 
-              <p className="text-xs mt-2 text-center" style={{ color: "var(--text-secondary)" }}>
-                💡 Click and drag text to position it. Select a layer below to edit its properties.
+              <p
+                className="text-xs mt-2 text-center"
+                style={{ color: "var(--text-secondary)" }}
+              >
+                💡 Click and drag text to position it. Select a layer below to
+                edit its properties.
               </p>
             </div>
 
             {/* Controls */}
             <div className="space-y-4">
               <div>
-                <h3 className="font-semibold mb-2" style={{ color: "var(--text-primary)" }}>
+                <h3
+                  className="font-semibold mb-2"
+                  style={{ color: "var(--text-primary)" }}
+                >
                   Text Layers
                 </h3>
                 <div className="space-y-2">
@@ -447,7 +568,10 @@ export function TextEditorModal({
                       onClick={() => setActiveLayerId(layer.id)}
                     >
                       <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>
+                        <span
+                          className="text-sm font-medium"
+                          style={{ color: "var(--text-primary)" }}
+                        >
                           Layer {layer.id}
                         </span>
                         {textLayers.length > 1 && (
@@ -462,7 +586,10 @@ export function TextEditorModal({
                           </button>
                         )}
                       </div>
-                      <p className="text-xs truncate" style={{ color: "var(--text-secondary)" }}>
+                      <p
+                        className="text-xs truncate"
+                        style={{ color: "var(--text-secondary)" }}
+                      >
                         {layer.text}
                       </p>
                     </div>
@@ -480,12 +607,19 @@ export function TextEditorModal({
               {activeLayer && (
                 <>
                   <div>
-                    <label className="block text-sm font-medium mb-1" style={{ color: "var(--text-secondary)" }}>
+                    <label
+                      className="block text-sm font-medium mb-1"
+                      style={{ color: "var(--text-secondary)" }}
+                    >
                       Text
                     </label>
                     <textarea
                       value={activeLayer.text}
-                      onChange={(e) => handleLayerChange(activeLayer.id, { text: e.target.value })}
+                      onChange={(e) =>
+                        handleLayerChange(activeLayer.id, {
+                          text: e.target.value,
+                        })
+                      }
                       className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
                       style={{
                         borderColor: "var(--card-border)",
@@ -497,7 +631,10 @@ export function TextEditorModal({
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-1" style={{ color: "var(--text-secondary)" }}>
+                    <label
+                      className="block text-sm font-medium mb-1"
+                      style={{ color: "var(--text-secondary)" }}
+                    >
                       Font Size: {activeLayer.font_size}px
                     </label>
                     <input
@@ -505,18 +642,29 @@ export function TextEditorModal({
                       min="12"
                       max="120"
                       value={activeLayer.font_size}
-                      onChange={(e) => handleLayerChange(activeLayer.id, { font_size: parseInt(e.target.value) })}
+                      onChange={(e) =>
+                        handleLayerChange(activeLayer.id, {
+                          font_size: parseInt(e.target.value),
+                        })
+                      }
                       className="w-full"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-1" style={{ color: "var(--text-secondary)" }}>
+                    <label
+                      className="block text-sm font-medium mb-1"
+                      style={{ color: "var(--text-secondary)" }}
+                    >
                       Font Family {fontsLoading && "(Loading...)"}
                     </label>
                     <select
                       value={activeLayer.font_family}
-                      onChange={(e) => handleLayerChange(activeLayer.id, { font_family: e.target.value })}
+                      onChange={(e) =>
+                        handleLayerChange(activeLayer.id, {
+                          font_family: e.target.value,
+                        })
+                      }
                       className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
                       style={{
                         borderColor: "var(--card-border)",
@@ -529,7 +677,11 @@ export function TextEditorModal({
                         <option value="">Loading fonts...</option>
                       ) : fonts.length > 0 ? (
                         fonts.map((font) => (
-                          <option key={font.value} value={font.value} style={{ fontFamily: font.value }}>
+                          <option
+                            key={font.value}
+                            value={font.value}
+                            style={{ fontFamily: font.value }}
+                          >
                             {font.label}
                           </option>
                         ))
@@ -540,16 +692,23 @@ export function TextEditorModal({
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-2" style={{ color: "var(--text-secondary)" }}>
+                    <label
+                      className="block text-sm font-medium mb-2"
+                      style={{ color: "var(--text-secondary)" }}
+                    >
                       Text Color
                     </label>
                     <div className="grid grid-cols-5 gap-2">
                       {PRESET_COLORS.map((color) => (
                         <button
                           key={color}
-                          onClick={() => handleLayerChange(activeLayer.id, { color })}
+                          onClick={() =>
+                            handleLayerChange(activeLayer.id, { color })
+                          }
                           className={`w-full aspect-square rounded border-2 ${
-                            activeLayer.color === color ? "border-gray-800 dark:border-white" : "border-gray-300"
+                            activeLayer.color === color
+                              ? "border-gray-800 dark:border-white"
+                              : "border-gray-300"
                           }`}
                           style={{ backgroundColor: color }}
                           title={color}
@@ -559,13 +718,20 @@ export function TextEditorModal({
                     <input
                       type="color"
                       value={activeLayer.color}
-                      onChange={(e) => handleLayerChange(activeLayer.id, { color: e.target.value })}
+                      onChange={(e) =>
+                        handleLayerChange(activeLayer.id, {
+                          color: e.target.value,
+                        })
+                      }
                       className="w-full mt-2 h-10 rounded cursor-pointer"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-1" style={{ color: "var(--text-secondary)" }}>
+                    <label
+                      className="block text-sm font-medium mb-1"
+                      style={{ color: "var(--text-secondary)" }}
+                    >
                       Stroke Width: {activeLayer.stroke_width}px
                     </label>
                     <input
@@ -573,27 +739,41 @@ export function TextEditorModal({
                       min="0"
                       max="10"
                       value={activeLayer.stroke_width}
-                      onChange={(e) => handleLayerChange(activeLayer.id, { stroke_width: parseInt(e.target.value) })}
+                      onChange={(e) =>
+                        handleLayerChange(activeLayer.id, {
+                          stroke_width: parseInt(e.target.value),
+                        })
+                      }
                       className="w-full"
                     />
                   </div>
 
                   {activeLayer.stroke_width > 0 && (
                     <div>
-                      <label className="block text-sm font-medium mb-1" style={{ color: "var(--text-secondary)" }}>
+                      <label
+                        className="block text-sm font-medium mb-1"
+                        style={{ color: "var(--text-secondary)" }}
+                      >
                         Stroke Color
                       </label>
                       <input
                         type="color"
                         value={activeLayer.stroke_color || "#000000"}
-                        onChange={(e) => handleLayerChange(activeLayer.id, { stroke_color: e.target.value })}
+                        onChange={(e) =>
+                          handleLayerChange(activeLayer.id, {
+                            stroke_color: e.target.value,
+                          })
+                        }
                         className="w-full h-10 rounded cursor-pointer"
                       />
                     </div>
                   )}
 
                   <div>
-                    <label className="block text-sm font-medium mb-1" style={{ color: "var(--text-secondary)" }}>
+                    <label
+                      className="block text-sm font-medium mb-1"
+                      style={{ color: "var(--text-secondary)" }}
+                    >
                       Opacity: {Math.round(activeLayer.opacity * 100)}%
                     </label>
                     <input
@@ -602,7 +782,11 @@ export function TextEditorModal({
                       max="1"
                       step="0.1"
                       value={activeLayer.opacity}
-                      onChange={(e) => handleLayerChange(activeLayer.id, { opacity: parseFloat(e.target.value) })}
+                      onChange={(e) =>
+                        handleLayerChange(activeLayer.id, {
+                          opacity: parseFloat(e.target.value),
+                        })
+                      }
                       className="w-full"
                     />
                   </div>
@@ -634,8 +818,18 @@ export function TextEditorModal({
               </>
             ) : (
               <>
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 13l4 4L19 7"
+                  />
                 </svg>
                 <span>Save with Text</span>
               </>
