@@ -321,7 +321,23 @@ export default function ImagesPage() {
   // They show a "Protected" or "Close" button instead of "Delete"
   // Images with text overlays or other modifications remain deletable
   const isSeedImage = (image: GeneratedImage) => {
-    return image.metadata?.is_enhanced === true;
+    // Handle both string and boolean values for is_enhanced
+    // Also handle null/undefined metadata gracefully
+    if (!image.metadata) {
+      return false;
+    }
+    const isEnhanced = image.metadata.is_enhanced;
+    // Type assertion to handle both string and boolean values
+    const result = isEnhanced === true || (isEnhanced as any) === "true";
+    // Debug logging to track down the issue
+    console.log('=== Seed Image Check ===');
+    console.log('Image ID:', image.id);
+    console.log('metadata:', image.metadata);
+    console.log('is_enhanced value:', isEnhanced);
+    console.log('is_enhanced type:', typeof isEnhanced);
+    console.log('isSeed:', result);
+    console.log('=====================');
+    return result;
   };
 
   async function handleRegenerate(image: GeneratedImage) {
