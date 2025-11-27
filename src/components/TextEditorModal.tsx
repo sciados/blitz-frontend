@@ -80,6 +80,8 @@ export function TextEditorModal({
   const [isProcessing, setIsProcessing] = useState(false);
   const [fonts, setFonts] = useState<FontOption[]>([]);
   const [fontsLoading, setFontsLoading] = useState(false);
+  const [imageWidth, setImageWidth] = useState<number>(0);
+  const [imageHeight, setImageHeight] = useState<number>(0);
   const canvasRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
 
@@ -140,6 +142,8 @@ export function TextEditorModal({
         },
       ]);
       setActiveLayerId("1");
+      setImageWidth(0); // Reset for new image
+      setImageHeight(0); // Reset for new image
     }
   }, [isOpen, sourceImage.id, fonts]);
 
@@ -341,10 +345,22 @@ export function TextEditorModal({
 
   if (!isOpen) return null;
 
+  // Calculate optimal modal width based on image width
+  // Sidebar is 320px (w-80), plus gaps and padding
+  const sidebarWidth = 320;
+  const paddingAndGaps = 64; // header/footer padding + gaps between sections
+  const optimalWidth = imageWidth > 0 ? imageWidth + sidebarWidth + paddingAndGaps : 800;
+  const maxViewportWidth = typeof window !== "undefined" ? window.innerWidth * 0.95 : optimalWidth;
+  const modalWidth = Math.min(optimalWidth, maxViewportWidth);
+
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
       <div
-        className="bg-white dark:bg-gray-900 rounded-lg max-w-[95vw] w-full max-h-[90vh] overflow-hidden flex flex-col"
+        className="bg-white dark:bg-gray-900 rounded-lg max-h-[90vh] overflow-hidden flex flex-col"
+        style={{
+          width: `${modalWidth}px`,
+          maxWidth: "95vw",
+        }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -381,6 +397,18 @@ export function TextEditorModal({
         <div className="flex-1 overflow-hidden flex">
           {/* Left Sidebar - Controls */}
           <div className="w-80 bg-gray-50 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto p-4">
+            {/* Image Dimensions */}
+            <div className="mb-4 p-3 bg-white dark:bg-gray-900 rounded border border-gray-200 dark:border-gray-700">
+              <div className="text-xs font-medium mb-1" style={{ color: "var(--text-secondary)" }}>
+                📐 Image Dimensions
+              </div>
+              <div className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>
+                {imageWidth > 0 && imageHeight > 0
+                  ? `${imageWidth} × ${imageHeight}px`
+                  : "Loading..."}
+              </div>
+            </div>
+
             <div className="space-y-4">
               <div>
                 <h3
@@ -652,6 +680,8 @@ export function TextEditorModal({
                   // Store natural dimensions for reference
                   const img = e.currentTarget;
                   console.log("[LOAD] Full size image:", img.naturalWidth, "x", img.naturalHeight);
+                  setImageWidth(img.naturalWidth);
+                  setImageHeight(img.naturalHeight);
                 }}
               />
 
