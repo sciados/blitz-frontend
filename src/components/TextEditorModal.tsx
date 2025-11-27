@@ -327,6 +327,14 @@ export function TextEditorModal({
         font_size: activeLayer.font_size,
       });
 
+      // DEBUG: Show what happens with and without offset
+      const xWithoutOffset = activeLayer.x * uniformScale;
+      const yWithoutOffset = activeLayer.y * uniformScale;
+      const xWithOffset = (activeLayer.x - imageOffsetX) * uniformScale;
+      const yWithOffset = (activeLayer.y - imageOffsetY) * uniformScale;
+      console.log("[SAVE] Without offset:", { x: xWithoutOffset, y: yWithoutOffset });
+      console.log("[SAVE] With offset:", { x: xWithOffset, y: yWithOffset });
+
       // Calculate font size based on ORIGINAL image size using uniform scale
       const finalFontSize = Math.round(activeLayer.font_size * uniformScale);
 
@@ -356,18 +364,14 @@ export function TextEditorModal({
       // Send ABSOLUTE pixel coordinates (not percentages) based on ORIGINAL image size
       // This ensures precise positioning at full resolution
       const scaledTextLayers = textLayers.map(({ id, ...layer }) => {
-        // Calculate text position relative to the IMAGE (not canvas)
-        // Subtract image offset, then scale to original size
-        const displayXRelativeToImage = layer.x - imageOffsetX;
-        const displayYRelativeToImage = layer.y - imageOffsetY;
-
-        // Convert display coordinates to original image coordinates using uniform scale
+        // Send coordinates as-is - DO NOT multiply by uniformScale
+        // The image is centered in the canvas, so display coordinates map 1:1 to image coordinates
         // Use Math.floor to avoid rounding up (which could place text too far)
-        const originalX = Math.floor(displayXRelativeToImage * uniformScale);
-        const originalY = Math.floor(displayYRelativeToImage * uniformScale);
+        const originalX = Math.floor(layer.x);
+        const originalY = Math.floor(layer.y);
 
         console.log(
-          `[SAVE] Layer ${id}: display (${layer.x}, ${layer.y}) relative to canvas, image offset (${imageOffsetX}, ${imageOffsetY}), relative to image (${displayXRelativeToImage}, ${displayYRelativeToImage}) → original (${originalX}, ${originalY})`
+          `[SAVE] Layer ${id}: display (${layer.x}, ${layer.y}) → original (${originalX}, ${originalY})`
         );
         console.log(`[SAVE] Layer ${id}: font ${finalFontSize}px`);
 
