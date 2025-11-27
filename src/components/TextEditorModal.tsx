@@ -526,7 +526,7 @@ export function TextEditorModal({
                           color: "black",
                           background: "white",
                           padding: "3px 6px",
-                          borderRadius: 3,
+                          borderRadius: 2,
                           pointerEvents: "none",
                           fontWeight: "normal",
                         }}
