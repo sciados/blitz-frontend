@@ -626,7 +626,6 @@ export function TextEditorModal({
                 </>
               )}
             </div>
-            </div>
           </div>
 
           {/* Right Side - Image Canvas */}
