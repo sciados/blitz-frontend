@@ -82,10 +82,24 @@ export function TextEditorModal({
   const [fontsLoading, setFontsLoading] = useState(false);
   const [imageWidth, setImageWidth] = useState<number>(0);
   const [imageHeight, setImageHeight] = useState<number>(0);
+  const [modalWidth, setModalWidth] = useState<number>(800);
   const canvasRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
 
   const activeLayer = textLayers.find((layer) => layer.id === activeLayerId);
+
+  // Calculate modal width when image dimensions change
+  useEffect(() => {
+    if (imageWidth > 0 && imageHeight > 0) {
+      const sidebarWidth = 320;
+      const paddingAndGaps = 64;
+      const optimalWidth = imageWidth + sidebarWidth + paddingAndGaps;
+      const maxViewportWidth = typeof window !== "undefined" ? window.innerWidth * 0.95 : optimalWidth;
+      const newModalWidth = Math.min(optimalWidth, maxViewportWidth);
+      setModalWidth(newModalWidth);
+      console.log(`[MODAL] Width calculated: ${newModalWidth}px (image: ${imageWidth}x${imageHeight})`);
+    }
+  }, [imageWidth, imageHeight]);
 
   // Fetch available fonts when modal opens
   useEffect(() => {
@@ -344,14 +358,6 @@ export function TextEditorModal({
   };
 
   if (!isOpen) return null;
-
-  // Calculate optimal modal width based on image width
-  // Sidebar is 320px (w-80), plus gaps and padding
-  const sidebarWidth = 320;
-  const paddingAndGaps = 64; // header/footer padding + gaps between sections
-  const optimalWidth = imageWidth > 0 ? imageWidth + sidebarWidth + paddingAndGaps : 800;
-  const maxViewportWidth = typeof window !== "undefined" ? window.innerWidth * 0.95 : optimalWidth;
-  const modalWidth = Math.min(optimalWidth, maxViewportWidth);
 
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
