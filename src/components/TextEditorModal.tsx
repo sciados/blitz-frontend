@@ -199,9 +199,9 @@ export function TextEditorModal({
     const canvasRect = canvasRef.current.getBoundingClientRect();
     const imageRect = imageRef.current.getBoundingClientRect();
 
-    // Calculate mouse position relative to the IMAGE (not canvas or viewport)
-    const mouseX = e.clientX - imageRect.left;
-    const mouseY = e.clientY - imageRect.top;
+    // Calculate mouse position relative to the CANVAS (where text layers are positioned)
+    const mouseX = e.clientX - canvasRect.left;
+    const mouseY = e.clientY - canvasRect.top;
 
     // Store the initial mouse position and layer position
     const initialMouseX = mouseX;
@@ -213,7 +213,7 @@ export function TextEditorModal({
     console.log(`[MOUSE] Canvas rect:`, canvasRect);
     console.log(`[MOUSE] Image rect:`, imageRect);
     console.log(
-      `[MOUSE] Initial mouse (relative to image): (${initialMouseX}, ${initialMouseY})`
+      `[MOUSE] Initial mouse (relative to canvas): (${initialMouseX}, ${initialMouseY})`
     );
     console.log(
       `[MOUSE] Initial layer position: (${initialLayerX}, ${initialLayerY})`
@@ -223,9 +223,9 @@ export function TextEditorModal({
       e.preventDefault();
       e.stopPropagation();
 
-      // Calculate current mouse position relative to the IMAGE
-      const currentMouseX = e.clientX - imageRect.left;
-      const currentMouseY = e.clientY - imageRect.top;
+      // Calculate current mouse position relative to the CANVAS
+      const currentMouseX = e.clientX - canvasRect.left;
+      const currentMouseY = e.clientY - canvasRect.top;
 
       // Calculate movement delta
       const deltaX = currentMouseX - initialMouseX;
