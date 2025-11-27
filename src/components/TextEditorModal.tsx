@@ -344,7 +344,7 @@ export function TextEditorModal({
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
       <div
-        className="bg-white dark:bg-gray-900 rounded-lg max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col"
+        className="bg-white dark:bg-gray-900 rounded-lg max-w-[95vw] w-full max-h-[90vh] overflow-hidden flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -378,109 +378,9 @@ export function TextEditorModal({
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-auto p-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Canvas - Full Size */}
-            <div className="lg:col-span-2">
-              <div
-                ref={canvasRef}
-                className="relative bg-gray-100 dark:bg-gray-800 rounded-lg overflow-auto"
-                style={{
-                  maxHeight: "calc(90vh - 200px)", // Scrollable if image is large
-                }}
-              >
-                <img
-                  ref={imageRef}
-                  src={sourceImage.image_url}
-                  alt="Source"
-                  className="select-none pointer-events-none block"
-                  draggable={false}
-                  style={{
-                    userSelect: "none",
-                    pointerEvents: "none",
-                    width: "auto",
-                    height: "auto",
-                    maxWidth: "100%",
-                    maxHeight: "100%",
-                  }}
-                  onLoad={(e) => {
-                    // Store natural dimensions for reference
-                    const img = e.currentTarget;
-                    console.log("[LOAD] Full size image:", img.naturalWidth, "x", img.naturalHeight);
-                  }}
-                />
-
-                {/* Text Layers - Full Size Coordinates */}
-                {textLayers.map((layer) => (
-                  <div
-                    key={layer.id}
-                    className={`absolute cursor-move ${
-                      activeLayerId === layer.id ? "ring-2 ring-blue-500" : ""
-                    }`}
-                    style={{
-                      left: layer.x,
-                      top: layer.y,
-                      fontSize: layer.font_size,
-                      fontFamily: layer.font_family,
-                      color: layer.color,
-                      opacity: layer.opacity,
-                      whiteSpace: "nowrap",
-                      position: "absolute",
-                      display: "inline-block",
-                      WebkitTextStroke:
-                        layer.stroke_width > 0
-                          ? `${layer.stroke_width}px ${
-                              layer.stroke_color || "#000"
-                            }`
-                          : "none",
-                      textShadow:
-                        layer.stroke_width > 0
-                          ? `0 0 ${layer.stroke_width}px ${
-                              layer.stroke_color || "#000"
-                            }`
-                          : "none",
-                    }}
-                    onMouseDown={(e) => handleMouseDown(e, layer.id)}
-                    onClick={() => setActiveLayerId(layer.id)}
-                  >
-                    <span
-                      style={{ display: "inline-block", pointerEvents: "none" }}
-                    >
-                      {layer.text}
-                    </span>
-                    {/* Debug indicator - shows position */}
-                    {activeLayerId === layer.id && (
-                      <div
-                        style={{
-                          position: "absolute",
-                          top: -24,
-                          left: 0,
-                          fontSize: 20,
-                          color: "black",
-                          background: "white",
-                          padding: "3px 6px",
-                          borderRadius: 2,
-                          pointerEvents: "none",
-                          fontWeight: "normal",
-                        }}
-                      >
-                        x: {Math.round(layer.x)}, y: {Math.round(layer.y)}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              <p
-                className="text-xs mt-2 text-center"
-                style={{ color: "var(--text-secondary)" }}
-              >
-                💡 Click and drag text to position it. Select a layer below to
-                edit its properties.
-              </p>
-            </div>
-
-            {/* Controls */}
+        <div className="flex-1 overflow-hidden flex">
+          {/* Left Sidebar - Controls */}
+          <div className="w-80 bg-gray-50 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto p-4">
             <div className="space-y-4">
               <div>
                 <h3
@@ -726,6 +626,107 @@ export function TextEditorModal({
                 </>
               )}
             </div>
+            </div>
+          </div>
+
+          {/* Right Side - Image Canvas */}
+          <div className="flex-1 overflow-auto p-4">
+            <div
+              ref={canvasRef}
+              className="relative bg-gray-100 dark:bg-gray-800 rounded-lg overflow-auto"
+              style={{
+                minHeight: "calc(90vh - 220px)",
+              }}
+            >
+              <img
+                ref={imageRef}
+                src={sourceImage.image_url}
+                alt="Source"
+                className="select-none pointer-events-none block"
+                draggable={false}
+                style={{
+                  userSelect: "none",
+                  pointerEvents: "none",
+                  width: "auto",
+                  height: "auto",
+                  minWidth: "100%",
+                  minHeight: "auto",
+                }}
+                onLoad={(e) => {
+                  // Store natural dimensions for reference
+                  const img = e.currentTarget;
+                  console.log("[LOAD] Full size image:", img.naturalWidth, "x", img.naturalHeight);
+                }}
+              />
+
+              {/* Text Layers - Full Size Coordinates */}
+              {textLayers.map((layer) => (
+                <div
+                  key={layer.id}
+                  className={`absolute cursor-move ${
+                    activeLayerId === layer.id ? "ring-2 ring-blue-500" : ""
+                  }`}
+                  style={{
+                    left: layer.x,
+                    top: layer.y,
+                    fontSize: layer.font_size,
+                    fontFamily: layer.font_family,
+                    color: layer.color,
+                    opacity: layer.opacity,
+                    whiteSpace: "nowrap",
+                    position: "absolute",
+                    display: "inline-block",
+                    WebkitTextStroke:
+                      layer.stroke_width > 0
+                        ? `${layer.stroke_width}px ${
+                            layer.stroke_color || "#000"
+                          }`
+                        : "none",
+                    textShadow:
+                      layer.stroke_width > 0
+                        ? `0 0 ${layer.stroke_width}px ${
+                            layer.stroke_color || "#000"
+                          }`
+                        : "none",
+                  }}
+                  onMouseDown={(e) => handleMouseDown(e, layer.id)}
+                  onClick={() => setActiveLayerId(layer.id)}
+                >
+                  <span
+                    style={{ display: "inline-block", pointerEvents: "none" }}
+                  >
+                    {layer.text}
+                  </span>
+                  {/* Debug indicator - shows position */}
+                  {activeLayerId === layer.id && (
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: -24,
+                        left: 0,
+                        fontSize: 20,
+                        color: "black",
+                        background: "white",
+                        padding: "3px 6px",
+                        borderRadius: 2,
+                        pointerEvents: "none",
+                        fontWeight: "normal",
+                      }}
+                    >
+                      x: {Math.round(layer.x)}, y: {Math.round(layer.y)}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            <p
+              className="text-xs mt-2 text-center"
+              style={{ color: "var(--text-secondary)" }}
+            >
+              💡 Click and drag text to position it. Select a layer on the left to
+              edit its properties.
+            </p>
           </div>
         </div>
 
