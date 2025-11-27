@@ -347,20 +347,24 @@ export function TextEditorModal({
       const scaledTextLayers = textLayers.map(({ id, ...layer }) => {
         // Convert display coordinates to ORIGINAL image coordinates
         // Simple proportion: displayCoord * (naturalSize / displayedSize)
-        // Use full precision - DON'T truncate with Math.floor
-        const originalX = layer.x * scaleFactor;
-        const originalY = layer.y * scaleFactor;
+        // Use full precision in calculation, then round to nearest integer for backend
+        const originalXFloat = layer.x * scaleFactor;
+        const originalYFloat = layer.y * scaleFactor;
+
+        // Round to nearest integer (backend Pydantic validation requires integers)
+        const originalX = Math.round(originalXFloat);
+        const originalY = Math.round(originalYFloat);
 
         console.log(
-          `[SAVE] Layer ${id}: display (${layer.x}, ${layer.y}) → original (${originalX.toFixed(2)}, ${originalY.toFixed(2)})`
+          `[SAVE] Layer ${id}: display (${layer.x}, ${layer.y}) → calc (${originalXFloat.toFixed(2)}, ${originalYFloat.toFixed(2)}) → sent (${originalX}, ${originalY})`
         );
         console.log(`[SAVE] Layer ${id}: font ${finalFontSize}px`);
 
         return {
           id,
           ...layer,
-          x: originalX, // Absolute pixel coordinate on ORIGINAL image
-          y: originalY, // Absolute pixel coordinate on ORIGINAL image (backend handles positioning)
+          x: originalX, // Absolute pixel coordinate on ORIGINAL image (integer)
+          y: originalY, // Absolute pixel coordinate on ORIGINAL image (integer)
           font_size: finalFontSize, // Absolute font size for ORIGINAL image
         };
       });
