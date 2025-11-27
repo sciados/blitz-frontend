@@ -335,6 +335,11 @@ export function TextEditorModal({
       console.log("[SAVE] Without offset:", { x: xWithoutOffset, y: yWithoutOffset });
       console.log("[SAVE] With offset:", { x: xWithOffset, y: yWithOffset });
 
+      // Calculate the DISPLAY SCALE (inverse of uniformScale)
+      // The image is scaled down in the UI by uniformScale, so we need to scale coords back up
+      const displayScale = uniformScale;
+      console.log("[SAVE] Display scale:", displayScale);
+
       // Calculate font size based on ORIGINAL image size using uniform scale
       const finalFontSize = Math.round(activeLayer.font_size * uniformScale);
 
@@ -364,11 +369,11 @@ export function TextEditorModal({
       // Send ABSOLUTE pixel coordinates (not percentages) based on ORIGINAL image size
       // This ensures precise positioning at full resolution
       const scaledTextLayers = textLayers.map(({ id, ...layer }) => {
-        // Send coordinates as-is - DO NOT multiply by uniformScale
-        // The image is centered in the canvas, so display coordinates map 1:1 to image coordinates
+        // Convert display coordinates to ORIGINAL image coordinates
+        // The image is scaled down in the UI, so multiply by uniformScale
         // Use Math.floor to avoid rounding up (which could place text too far)
-        const originalX = Math.floor(layer.x);
-        const originalY = Math.floor(layer.y);
+        const originalX = Math.floor(layer.x * uniformScale);
+        const originalY = Math.floor(layer.y * uniformScale);
 
         console.log(
           `[SAVE] Layer ${id}: display (${layer.x}, ${layer.y}) → original (${originalX}, ${originalY})`
