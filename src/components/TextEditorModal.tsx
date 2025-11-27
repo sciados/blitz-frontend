@@ -669,17 +669,22 @@ export function TextEditorModal({
                 ref={imageRef}
                 src={sourceImage.image_url}
                 alt="Source"
-                className="select-none pointer-events-none block"
+                className="select-none pointer-events-none"
                 draggable={false}
                 style={{
                   userSelect: "none",
                   pointerEvents: "none",
                   display: "block",
+                  width: "auto",
+                  height: "auto",
+                  maxWidth: "none",
+                  maxHeight: "none",
                 }}
                 onLoad={(e) => {
                   // Store natural dimensions for reference
                   const img = e.currentTarget;
                   console.log("[LOAD] Full size image:", img.naturalWidth, "x", img.naturalHeight);
+                  console.log("[LOAD] Display size:", img.width, "x", img.height);
                   setImageWidth(img.naturalWidth);
                   setImageHeight(img.naturalHeight);
                 }}
