@@ -94,10 +94,13 @@ export function TextEditorModal({
       const sidebarWidth = 320;
       const paddingAndGaps = 64;
       const optimalWidth = imageWidth + sidebarWidth + paddingAndGaps;
-      const maxViewportWidth = typeof window !== "undefined" ? window.innerWidth * 0.95 : optimalWidth;
+      const maxViewportWidth =
+        typeof window !== "undefined" ? window.innerWidth * 0.95 : optimalWidth;
       const newModalWidth = Math.min(optimalWidth, maxViewportWidth);
       setModalWidth(newModalWidth);
-      console.log(`[MODAL] Width calculated: ${newModalWidth}px (image: ${imageWidth}x${imageHeight})`);
+      console.log(
+        `[MODAL] Width calculated: ${newModalWidth}px (image: ${imageWidth}x${imageHeight})`
+      );
     }
   }, [imageWidth, imageHeight]);
 
@@ -405,10 +408,16 @@ export function TextEditorModal({
           <div className="w-80 bg-gray-50 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto p-4">
             {/* Image Dimensions */}
             <div className="mb-4 p-3 bg-white dark:bg-gray-900 rounded border border-gray-200 dark:border-gray-700">
-              <div className="text-xs font-medium mb-1" style={{ color: "var(--text-secondary)" }}>
+              <div
+                className="text-xs font-medium mb-1"
+                style={{ color: "var(--text-secondary)" }}
+              >
                 📐 Image Dimensions
               </div>
-              <div className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>
+              <div
+                className="text-lg font-bold"
+                style={{ color: "var(--text-primary)" }}
+              >
                 {imageWidth > 0 && imageHeight > 0
                   ? `${imageWidth} × ${imageHeight}px`
                   : "Loading..."}
@@ -669,7 +678,7 @@ export function TextEditorModal({
               className="relative bg-gray-100 dark:bg-gray-800 rounded-lg overflow-auto"
               style={{
                 minHeight: "calc(90vh - 220px)",
-                paddingLeft: "16px", // Add breathing room for the image
+                paddingLeft: "1px", // Add breathing room for the image
               }}
             >
               <img
@@ -690,8 +699,18 @@ export function TextEditorModal({
                 onLoad={(e) => {
                   // Store natural dimensions for reference
                   const img = e.currentTarget;
-                  console.log("[LOAD] Full size image:", img.naturalWidth, "x", img.naturalHeight);
-                  console.log("[LOAD] Display size:", img.width, "x", img.height);
+                  console.log(
+                    "[LOAD] Full size image:",
+                    img.naturalWidth,
+                    "x",
+                    img.naturalHeight
+                  );
+                  console.log(
+                    "[LOAD] Display size:",
+                    img.width,
+                    "x",
+                    img.height
+                  );
                   setImageWidth(img.naturalWidth);
                   setImageHeight(img.naturalHeight);
                 }}
@@ -762,8 +781,8 @@ export function TextEditorModal({
               className="text-xs mt-2 text-center"
               style={{ color: "var(--text-secondary)" }}
             >
-              💡 Click and drag text to position it. Select a layer on the left to
-              edit its properties.
+              💡 Click and drag text to position it. Select a layer on the left
+              to edit its properties.
             </p>
           </div>
         </div>
