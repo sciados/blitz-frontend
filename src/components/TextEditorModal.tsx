@@ -669,6 +669,7 @@ export function TextEditorModal({
               className="relative bg-gray-100 dark:bg-gray-800 rounded-lg overflow-auto"
               style={{
                 minHeight: "calc(90vh - 220px)",
+                paddingLeft: "16px", // Add breathing room for the image
               }}
             >
               <img
