@@ -646,10 +646,7 @@ export function TextEditorModal({
                 style={{
                   userSelect: "none",
                   pointerEvents: "none",
-                  width: "auto",
-                  height: "auto",
-                  minWidth: "100%",
-                  minHeight: "auto",
+                  display: "block",
                 }}
                 onLoad={(e) => {
                   // Store natural dimensions for reference
