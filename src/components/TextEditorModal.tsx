@@ -345,18 +345,28 @@ export function TextEditorModal({
       // Send ABSOLUTE pixel coordinates (not percentages) based on ORIGINAL image size
       // This ensures precise positioning at full resolution
       const scaledTextLayers = textLayers.map(({ id, ...layer }) => {
-        // Convert display coordinates to ORIGINAL image coordinates
-        // Simple proportion: displayCoord * (naturalSize / displayedSize)
-        // Use full precision in calculation, then round to nearest integer for backend
-        const originalXFloat = layer.x * scaleFactor;
-        const originalYFloat = layer.y * scaleFactor;
+        // Calculate IMAGE OFFSET (image is centered in canvas with object-contain)
+        const imageOffsetX = (imageRect.width - imageElement.naturalWidth / scaleFactor) / 2;
+        const imageOffsetY = (imageRect.height - imageElement.naturalHeight / scaleFactor) / 2;
+
+        console.log(`[SAVE] Image offset in canvas: X=${imageOffsetX.toFixed(2)}, Y=${imageOffsetY.toFixed(2)}`);
+
+        // Adjust display coordinates to account for image centering
+        const adjX = layer.x - imageOffsetX;
+        const adjY = layer.y - imageOffsetY;
+
+        console.log(`[SAVE] Adjusted display coords: (${adjX.toFixed(2)}, ${adjY.toFixed(2)})`);
+
+        // Convert to ORIGINAL image coordinates
+        const originalXFloat = adjX * scaleFactor;
+        const originalYFloat = adjY * scaleFactor;
 
         // Round to nearest integer (backend Pydantic validation requires integers)
         const originalX = Math.round(originalXFloat);
         const originalY = Math.round(originalYFloat);
 
         console.log(
-          `[SAVE] Layer ${id}: display (${layer.x}, ${layer.y}) → calc (${originalXFloat.toFixed(2)}, ${originalYFloat.toFixed(2)}) → sent (${originalX}, ${originalY})`
+          `[SAVE] Layer ${id}: display (${layer.x}, ${layer.y}) → adj (${adjX.toFixed(2)}, ${adjY.toFixed(2)}) → calc (${originalXFloat.toFixed(2)}, ${originalYFloat.toFixed(2)}) → sent (${originalX}, ${originalY})`
         );
         console.log(`[SAVE] Layer ${id}: font ${finalFontSize}px`);
 
