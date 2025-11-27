@@ -267,122 +267,40 @@ export function TextEditorModal({
     setIsProcessing(true);
 
     try {
-      // Calculate scale factor between displayed image and actual image
+      // Full-size image: coordinates map 1:1 (no scaling needed!)
       if (!canvasRef.current || !imageRef.current) {
         throw new Error("Canvas or image reference not available");
       }
 
-      const canvasRect = canvasRef.current.getBoundingClientRect();
       const imageElement = imageRef.current;
 
-      // Get the actual image position within the canvas
-      const imageRect = imageElement.getBoundingClientRect();
-
       console.log(
-        "[SAVE] Canvas size:",
-        canvasRect.width,
-        "x",
-        canvasRect.height
-      );
-      console.log(
-        "[SAVE] Image natural size:",
+        "[SAVE] Full size image dimensions:",
         imageElement.naturalWidth,
         "x",
         imageElement.naturalHeight
       );
-      console.log(
-        "[SAVE] Image displayed size:",
-        imageRect.width,
-        "x",
-        imageRect.height
-      );
-      console.log(
-        "[SAVE] Modal display size:",
-        window.innerWidth,
-        "x",
-        window.innerHeight
-      );
 
-      // Calculate SIMPLE scale factor: natural size / displayed size
-      // This is the ratio to convert display coords to original image coords
-      const scaleX = imageElement.naturalWidth / imageRect.width;
-      const scaleY = imageElement.naturalHeight / imageRect.height;
-
-      // Use average of X and Y scales for consistency
-      const scaleFactor = (scaleX + scaleY) / 2;
-
-      console.log("[SAVE] Image natural size:", imageElement.naturalWidth, "x", imageElement.naturalHeight);
-      console.log("[SAVE] Image displayed size:", Math.round(imageRect.width), "x", Math.round(imageRect.height));
-      console.log("[SAVE] Scale X:", scaleX.toFixed(6), "Scale Y:", scaleY.toFixed(6));
-      console.log("[SAVE] Average scale factor:", scaleFactor.toFixed(6));
-
-      // Calculate font size based on ORIGINAL image size
-      const finalFontSize = Math.round(activeLayer.font_size * scaleFactor);
-
-      // Calculate ascender compensation for Arial font
-      // Arial ascender is ~80% of font size (105px at 131px size)
-      const ascenderPercent = 0.8; // For Arial
-      const ascenderPixels = Math.round(finalFontSize * ascenderPercent);
-      console.log(
-        "[SAVE] Calculated ascender compensation:",
-        ascenderPixels,
-        "px (",
-        Math.round(ascenderPercent * 100),
-        "% of font size)"
-      );
-
-      console.log(
-        "[SAVE] Selected font size (display):",
-        activeLayer.font_size,
-        "px"
-      );
-      console.log(
-        "[SAVE] Final font size (scaled to original):",
-        finalFontSize,
-        "px"
-      );
-
-      // Send ABSOLUTE pixel coordinates (not percentages) based on ORIGINAL image size
-      // This ensures precise positioning at full resolution
-      const scaledTextLayers = textLayers.map(({ id, ...layer }) => {
-        // Calculate IMAGE OFFSET (image is centered in canvas with object-contain)
-        const imageOffsetX = (imageRect.width - imageElement.naturalWidth / scaleFactor) / 2;
-        const imageOffsetY = (imageRect.height - imageElement.naturalHeight / scaleFactor) / 2;
-
-        console.log(`[SAVE] Image offset in canvas: X=${imageOffsetX.toFixed(2)}, Y=${imageOffsetY.toFixed(2)}`);
-
-        // Adjust display coordinates to account for image centering
-        const adjX = layer.x - imageOffsetX;
-        const adjY = layer.y - imageOffsetY;
-
-        console.log(`[SAVE] Adjusted display coords: (${adjX.toFixed(2)}, ${adjY.toFixed(2)})`);
-
-        // Convert to ORIGINAL image coordinates
-        const originalXFloat = adjX * scaleFactor;
-        const originalYFloat = adjY * scaleFactor;
-
-        // Round to nearest integer (backend Pydantic validation requires integers)
-        const originalX = Math.round(originalXFloat);
-        const originalY = Math.round(originalYFloat);
-
+      // Send coordinates DIRECTLY - no scaling calculation needed!
+      // Use floats for sub-pixel precision!
+      const textLayersToSend = textLayers.map(({ id, ...layer }) => {
         console.log(
-          `[SAVE] Layer ${id}: display (${layer.x}, ${layer.y}) → adj (${adjX.toFixed(2)}, ${adjY.toFixed(2)}) → calc (${originalXFloat.toFixed(2)}, ${originalYFloat.toFixed(2)}) → sent (${originalX}, ${originalY})`
+          `[SAVE] Layer ${id}: (${layer.x}, ${layer.y}), font=${layer.font_size}px`
         );
-        console.log(`[SAVE] Layer ${id}: font ${finalFontSize}px`);
 
         return {
           id,
           ...layer,
-          x: originalX, // Absolute pixel coordinate on ORIGINAL image (integer)
-          y: originalY, // Absolute pixel coordinate on ORIGINAL image (integer)
-          font_size: finalFontSize, // Absolute font size for ORIGINAL image
+          x: layer.x, // Float - supports sub-pixel precision!
+          y: layer.y, // Float - supports sub-pixel precision!
+          font_size: Math.round(layer.font_size),
         };
       });
 
       console.log(
-        "[SAVE] Final scaled text layers:",
+        "[SAVE] Sending text layers (direct coords, no scaling):",
         JSON.stringify(
-          scaledTextLayers.map(({ id, x, y, font_size }) => ({
+          textLayersToSend.map(({ id, x, y, font_size }) => ({
             id,
             x,
             y,
@@ -393,26 +311,17 @@ export function TextEditorModal({
         )
       );
 
-      console.log("[SAVE] Original layer:", textLayers[0]);
-      console.log("[SAVE] Scaled layer:", scaledTextLayers[0]);
-
       // Log the payload before sending
       const payload = {
         image_url: sourceImage.image_url,
-        text_layers: scaledTextLayers,
+        text_layers: textLayersToSend,
         campaign_id: campaignId,
         image_type: sourceImage.image_type,
         style: sourceImage.style,
         aspect_ratio: sourceImage.aspect_ratio,
-        // DON'T send display dimensions - keep full resolution for marketing
-        // display_width: undefined,
-        // display_height: undefined,
       };
 
-      console.log(
-        "[SAVE] Sending scaled text layers to backend:",
-        JSON.stringify(scaledTextLayers, null, 2)
-      );
+      console.log("[SAVE] Payload prepared, sending to backend...");
 
       const { data } = await api.post(
         "/api/content/images/text-overlay",
@@ -471,25 +380,37 @@ export function TextEditorModal({
         {/* Content */}
         <div className="flex-1 overflow-auto p-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Canvas */}
+            {/* Canvas - Full Size */}
             <div className="lg:col-span-2">
               <div
                 ref={canvasRef}
-                className="relative bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden"
+                className="relative bg-gray-100 dark:bg-gray-800 rounded-lg overflow-auto"
                 style={{
-                  aspectRatio: getAspectRatio(sourceImage.aspect_ratio),
+                  maxHeight: "calc(90vh - 200px)", // Scrollable if image is large
                 }}
               >
                 <img
                   ref={imageRef}
                   src={sourceImage.image_url}
                   alt="Source"
-                  className="w-full h-full object-contain select-none pointer-events-none"
+                  className="select-none pointer-events-none block"
                   draggable={false}
-                  style={{ userSelect: "none", pointerEvents: "none" }}
+                  style={{
+                    userSelect: "none",
+                    pointerEvents: "none",
+                    width: "auto",
+                    height: "auto",
+                    maxWidth: "100%",
+                    maxHeight: "100%",
+                  }}
+                  onLoad={(e) => {
+                    // Store natural dimensions for reference
+                    const img = e.currentTarget;
+                    console.log("[LOAD] Full size image:", img.naturalWidth, "x", img.naturalHeight);
+                  }}
                 />
 
-                {/* Text Layers */}
+                {/* Text Layers - Full Size Coordinates */}
                 {textLayers.map((layer) => (
                   <div
                     key={layer.id}
