@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
 import { api } from "src/lib/appClient";
-import { GeneratedImage } from "src/lib/types";
+import { GeneratedImage, Campaign } from "src/lib/types";
 
 interface OverlayData {
   id: string;
@@ -37,6 +37,9 @@ export function ImageEditorModal({
   const [imageWidth, setImageWidth] = useState<number>(0);
   const [imageHeight, setImageHeight] = useState<number>(0);
   const [modalWidth, setModalWidth] = useState<number>(800);
+  const [showCampaignImages, setShowCampaignImages] = useState(false);
+  const [campaignImages, setCampaignImages] = useState<any[]>([]);
+  const [loadingImages, setLoadingImages] = useState(false);
   const canvasRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
 
@@ -54,6 +57,36 @@ export function ImageEditorModal({
       setModalWidth(newModalWidth);
     }
   }, [imageWidth, imageHeight]);
+
+  const fetchCampaignImages = async () => {
+    try {
+      setLoadingImages(true);
+      const { data: campaign } = await api.get(`/api/campaigns/${campaignId}`);
+
+      if (campaign.intelligence_data?.images && Array.isArray(campaign.intelligence_data.images)) {
+        setCampaignImages(campaign.intelligence_data.images);
+      } else {
+        setCampaignImages([]);
+      }
+    } catch (error) {
+      console.error("Failed to fetch campaign images:", error);
+      toast.error("Failed to load campaign images");
+    } finally {
+      setLoadingImages(false);
+    }
+  };
+
+  const handleBrowseCampaignImages = () => {
+    setShowCampaignImages(true);
+    if (campaignImages.length === 0) {
+      fetchCampaignImages();
+    }
+  };
+
+  const handleSelectCampaignImage = (imageUrl: string) => {
+    handleImageUpload(imageUrl);
+    setShowCampaignImages(false);
+  };
 
   const handleImageUpload = async (imageUrl: string) => {
     try {
@@ -357,8 +390,29 @@ export function ImageEditorModal({
                 </>
               )}
 
-              {/* Upload Button */}
+              {/* Browse Campaign Images Button */}
               <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                <button
+                  onClick={handleBrowseCampaignImages}
+                  className="w-full px-4 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition flex items-center justify-center space-x-2 mb-2"
+                >
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    />
+                  </svg>
+                  <span>Browse Campaign Images</span>
+                </button>
+
+                {/* Upload Button */}
                 <label className="w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition cursor-pointer flex items-center justify-center space-x-2">
                   <svg
                     className="w-5 h-5"
@@ -373,7 +427,7 @@ export function ImageEditorModal({
                       d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
                     />
                   </svg>
-                  <span>Upload Product Image</span>
+                  <span>Upload New Image</span>
                   <input
                     type="file"
                     accept="image/png,image/jpeg"
@@ -391,7 +445,7 @@ export function ImageEditorModal({
                   className="text-xs mt-2 text-center"
                   style={{ color: "var(--text-secondary)" }}
                 >
-                  Upload transparent PNG or JPEG product images
+                  Use scraped images from campaign intelligence or upload your own
                 </p>
               </div>
             </div>
@@ -501,6 +555,107 @@ export function ImageEditorModal({
           </button>
         </div>
       </div>
+
+      {/* Campaign Images Browser Modal */}
+      {showCampaignImages && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[60] p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-lg max-w-4xl w-full max-h-[80vh] overflow-hidden flex flex-col">
+            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-bold" style={{ color: "var(--text-primary)" }}>
+                  📸 Campaign Intelligence Images
+                </h3>
+                <button
+                  onClick={() => setShowCampaignImages(false)}
+                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                >
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-auto p-6">
+              {loadingImages ? (
+                <div className="text-center py-12">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+                  <p style={{ color: "var(--text-secondary)" }}>Loading campaign images...</p>
+                </div>
+              ) : campaignImages.length > 0 ? (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {campaignImages.map((image, idx) => (
+                    <div
+                      key={idx}
+                      className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-purple-500 cursor-pointer transition"
+                      onClick={() => handleSelectCampaignImage(image.r2_url)}
+                    >
+                      <div className="mb-2">
+                        <img
+                          src={image.r2_url}
+                          alt={`Product ${idx + 1}`}
+                          className="w-full h-32 object-contain rounded"
+                        />
+                      </div>
+                      <div className="text-xs font-medium" style={{ color: "var(--text-primary)" }}>
+                        {image.type || "Unknown"}
+                      </div>
+                      {image.quality_score && (
+                        <div className="text-xs" style={{ color: "var(--text-secondary)" }}>
+                          Quality: {(image.quality_score * 100).toFixed(0)}%
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <svg
+                    className="w-16 h-16 mx-auto mb-4 opacity-30"
+                    style={{ color: "var(--text-secondary)" }}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    />
+                  </svg>
+                  <h3 className="text-lg font-semibold mb-2" style={{ color: "var(--text-primary)" }}>
+                    No Images Available
+                  </h3>
+                  <p style={{ color: "var(--text-secondary)" }}>
+                    This campaign doesn't have any scraped images in its intelligence data yet.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="p-6 border-t border-gray-200 dark:border-gray-700 flex justify-end">
+              <button
+                onClick={() => setShowCampaignImages(false)}
+                className="px-6 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+                style={{ color: "var(--text-primary)" }}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
