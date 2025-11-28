@@ -230,7 +230,7 @@ export default function ContentLibraryPage() {
       return false;
     }
     const isEnhanced = image.metadata.is_enhanced;
-    return isEnhanced === true || isEnhanced === "true";
+    return isEnhanced === true;
   };
 
   async function handleDeleteImage(imageId: number) {
