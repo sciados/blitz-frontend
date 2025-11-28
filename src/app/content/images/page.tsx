@@ -1203,21 +1203,226 @@ export default function ImagesPage() {
       </div>
 
       {/* Draft Preview Modal */}
-      <ImagePreviewModal
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-        draftImage={selectedDraftImage}
-        campaignId={campaignId || 0}
-        imageSettings={imageSettings}
-        onSavePremium={(image) => {
-          setGeneratedImage(image);
-          refetchImages();
-        }}
-        currentIndex={currentDraftIndex}
-        totalDrafts={draftImages.length}
-        onPrevious={handlePreviousDraft}
-        onNext={handleNextDraft}
-      />
+      {isModalOpen && selectedDraftImage && (
+        <div
+          className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
+          onClick={handleCloseModal}
+        >
+          <div
+            className="bg-white dark:bg-gray-900 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2
+                    className="text-2xl font-bold"
+                    style={{ color: "var(--text-primary)" }}
+                  >
+                    Draft Image Preview
+                  </h2>
+                  {draftImages.length > 1 && (
+                    <div>
+                      <p
+                        className="text-sm mt-1"
+                        style={{ color: "var(--text-secondary)" }}
+                      >
+                        {currentDraftIndex + 1} of {draftImages.length} • Use ← → keys to navigate
+                      </p>
+                    </div>
+                  )}
+                </div>
+                <button
+                  onClick={handleCloseModal}
+                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                >
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Image Display */}
+              <div className="relative bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden mb-4">
+                <div
+                  className={`max-h-[60vh] max-w-full mx-auto ${
+                    selectedDraftImage.aspect_ratio === "1:1"
+                      ? "aspect-square"
+                      : selectedDraftImage.aspect_ratio === "16:9"
+                      ? "aspect-video"
+                      : selectedDraftImage.aspect_ratio === "9:16"
+                      ? "aspect-[9/16]"
+                      : selectedDraftImage.aspect_ratio === "4:3"
+                      ? "aspect-[4/3]"
+                      : selectedDraftImage.aspect_ratio === "21:9"
+                      ? "aspect-[21/9]"
+                      : "aspect-square"
+                  } flex items-center justify-center`}
+                >
+                  <img
+                    src={selectedDraftImage.image_url}
+                    alt={selectedDraftImage.prompt}
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+                <div className="absolute top-4 right-4 bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium">
+                  DRAFT
+                </div>
+
+                {/* Navigation Arrows */}
+                {draftImages.length > 1 && (
+                  <>
+                    <button
+                      onClick={handlePreviousDraft}
+                      disabled={currentDraftIndex === 0}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 disabled:bg-black/30 disabled:opacity-50 text-white p-2 rounded-full transition"
+                    >
+                      <svg
+                        className="w-6 h-6"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M15 19l-7-7 7-7"
+                        />
+                      </svg>
+                    </button>
+                    <button
+                      onClick={handleNextDraft}
+                      disabled={currentDraftIndex === draftImages.length - 1}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 disabled:bg-black/30 disabled:opacity-50 text-white p-2 rounded-full transition"
+                    >
+                      <svg
+                        className="w-6 h-6"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 5l7 7-7 7"
+                        />
+                      </svg>
+                    </button>
+                  </>
+                )}
+              </div>
+
+              {/* Image Details */}
+              <div className="flex items-center justify-between mb-4">
+                <div
+                  className="text-sm"
+                  style={{ color: "var(--text-secondary)" }}
+                >
+                  <p className="font-medium">
+                    Provider: {selectedDraftImage.provider} | Cost: ${(selectedDraftImage.ai_generation_cost || 0).toFixed(4)}
+                  </p>
+                  <p className="text-xs mt-1">
+                    Created: {new Date(selectedDraftImage.created_at).toLocaleString()}
+                  </p>
+                </div>
+
+                <div className="flex items-center space-x-3">
+                  <button
+                    onClick={() => handleDownload(selectedDraftImage)}
+                    className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition font-medium flex items-center space-x-2"
+                  >
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                      />
+                    </svg>
+                    <span>Download</span>
+                  </button>
+
+                  <button
+                    onClick={() => handleSaveDraft(selectedDraftImage)}
+                    className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition font-medium flex items-center space-x-2"
+                  >
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"
+                      />
+                    </svg>
+                    <span>Save Draft</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      handleUpgradeDraft(selectedDraftImage);
+                      handleCloseModal();
+                    }}
+                    className="px-6 py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-lg transition font-medium flex items-center space-x-2"
+                  >
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
+                      />
+                    </svg>
+                    <span>Upgrade to Premium</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Prompt Display */}
+              <div>
+                <p
+                  className="text-xs font-medium mb-1"
+                  style={{ color: "var(--text-secondary)" }}
+                >
+                  Prompt:
+                </p>
+                <p
+                  className="text-sm"
+                  style={{ color: "var(--text-primary)" }}
+                >
+                  {selectedDraftImage.prompt}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Library Image Viewer Modal */}
       {isLibraryModalOpen && selectedLibraryImage && (
