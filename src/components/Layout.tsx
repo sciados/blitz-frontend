@@ -96,6 +96,7 @@ export default function Layout({ children }: LayoutProps) {
         { href: "/admin/campaigns", label: "Campaigns", icon: "📢" },
         { href: "/products", label: "Product Library", icon: "📦" },
         { href: "/admin/tools", label: "Admin Tools", icon: "🔧" },
+        { href: "/admin/images", label: "Image Management", icon: "🖼️" },
         { href: "/admin/config", label: "Configuration", icon: "🎛️" },
         { href: "/admin/ai_router", label: "AI Router", icon: "🤖" },
         { href: "/admin/credits", label: "AI Credits", icon: "💳" },
