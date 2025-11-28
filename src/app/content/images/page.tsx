@@ -294,6 +294,7 @@ export default function ImagesPage() {
       const { data } = await api.post("/api/content/images/upgrade", {
         campaign_id: campaignId,
         draft_image_url: image.image_url,
+        image_type: image.image_type,  // Preserve the original image type
         custom_prompt: imageSettings.customPrompt || undefined,
         style: imageSettings.style,
         aspect_ratio: imageSettings.aspectRatio,
