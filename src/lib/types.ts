@@ -2,8 +2,7 @@ export type User = {
     id: number;
     email: string;
     full_name?: string | null;
-    role: string; // "user" | "admin"
-    role: string; // "user" | "business" | "affiliate" | "creator" | "admin"|role: string; // "user" | "business" | "affiliate" | "creator" | "admin"|role: string; // "user" | "business" | "affiliate" | "creator" | "admin"
+    role: string; // "user" | "business" | "affiliate" | "creator" | "admin"
     developer_tier?: string | null; // "new" | "verified" | "premium"
     developer_tier_upgraded_at?: string | null;
     stripe_subscription_id?: string | null;

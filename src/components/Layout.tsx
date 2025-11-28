@@ -21,10 +21,11 @@ type MenuItem = {
 };
 
 type UserInfo = {
-  role: string;
+  email: string;
   role: string; // "user" | "business" | "affiliate" | "creator" | "admin"
   profile_image_url?: string;
   full_name?: string;
+  user_type?: string; // For backward compatibility
 };
 
 export default function Layout({ children }: LayoutProps) {
@@ -203,8 +204,10 @@ export default function Layout({ children }: LayoutProps) {
                     ? "Product Developer"
                     : userInfo.role === "affiliate"
                     ? "Affiliate Marketer"
-                    : role: string; // "user" | "business" | "affiliate" | "creator" | "admin"
-                    "Business"
+                    : userInfo.role === "business"
+                    ? "Business"
+                    : userInfo.role === "admin"
+                    ? "Admin"
                     : userInfo.role}
                 </span>
               </div>
@@ -349,14 +352,14 @@ export default function Layout({ children }: LayoutProps) {
                       className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
                         userInfo.role === "creator"
                           ? "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300"
-                          : role: string; // "user" | "business" | "affiliate" | "creator" | "admin"
+                          : userInfo.role === "business"
                           ? "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300"
                           : "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
                       }`}
                     >
                       {userInfo.role === "creator"
                         ? "🎯 Product Developer"
-                        : role: string; // "user" | "business" | "affiliate" | "creator" | "admin"
+                        : userInfo.role === "business"
                         ? "💼 Business"
                         : "🚀 Affiliate Marketer"}
                     </div>
