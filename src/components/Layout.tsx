@@ -21,9 +21,8 @@ type MenuItem = {
 };
 
 type UserInfo = {
-  email: string;
   role: string;
-  user_type?: string; // "Creator" | "Affiliate" | "Business"
+  role: string; // "user" | "business" | "affiliate" | "creator" | "admin"
   profile_image_url?: string;
   full_name?: string;
 };
@@ -108,7 +107,7 @@ export default function Layout({ children }: LayoutProps) {
     }
 
     // Product Creator menu
-    if (userInfo?.user_type === "Creator") {
+    if (userInfo?.role === "creator") {
       return [
         { href: "/dashboard", label: "Dashboard", icon: "🏠" },
         { href: "/products", label: "Product Library", icon: "📦" },
@@ -200,12 +199,12 @@ export default function Layout({ children }: LayoutProps) {
                   {userInfo.email}
                 </span>
                 <span className="text-xs text-[var(--text-secondary)] capitalize">
-                  {userInfo.user_type === "Creator"
+                  {userInfo.role === "creator"
                     ? "Product Developer"
-                    : userInfo.user_type === "Affiliate"
+                    : userInfo.role === "affiliate"
                     ? "Affiliate Marketer"
-                    : userInfo.user_type === "Business"
-                    ? "Business"
+                    : role: string; // "user" | "business" | "affiliate" | "creator" | "admin"
+                    "Business"
                     : userInfo.role}
                 </span>
               </div>
@@ -293,11 +292,11 @@ export default function Layout({ children }: LayoutProps) {
                               "Loading..."}
                           </p>
                           <p className="text-xs text-[var(--text-secondary)] capitalize">
-                            {userInfo?.user_type === "Creator"
+                            {userInfo?.role === "creator"
                               ? "Product Developer"
-                              : userInfo?.user_type === "Affiliate"
+                              : userInfo?.role === "affiliate"
                               ? "Affiliate Marketer"
-                              : userInfo?.user_type === "Business"
+                              : userInfo?.role === "business"
                               ? "Business"
                               : userInfo?.role || "user"}
                           </p>
@@ -348,16 +347,16 @@ export default function Layout({ children }: LayoutProps) {
                     </div>
                     <div
                       className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
-                        userInfo.user_type === "Creator"
+                        userInfo.role === "creator"
                           ? "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300"
-                          : userInfo.user_type === "Business"
+                          : role: string; // "user" | "business" | "affiliate" | "creator" | "admin"
                           ? "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300"
                           : "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
                       }`}
                     >
-                      {userInfo.user_type === "Creator"
+                      {userInfo.role === "creator"
                         ? "🎯 Product Developer"
-                        : userInfo.user_type === "Business"
+                        : role: string; // "user" | "business" | "affiliate" | "creator" | "admin"
                         ? "💼 Business"
                         : "🚀 Affiliate Marketer"}
                     </div>

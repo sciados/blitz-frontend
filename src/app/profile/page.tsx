@@ -143,9 +143,9 @@ export default function ProfilePage() {
   }
 
   const getUserTypeLabel = (userType: string) => {
-    if (userType === "Creator") return "Product Developer";
-    if (userType === "Affiliate") return "Affiliate Marketer";
-    if (userType === "Business") return "Business";
+    if (userType === "creator") return "Product Developer";
+    if (userType === "affiliate") return "Affiliate Marketer";
+    if (userType === "business") return "Business";
     return userType;
   };
 
@@ -155,9 +155,9 @@ export default function ProfilePage() {
   };
 
   const getUserTypeColor = (userType: string) => {
-    if (userType === "Creator") return "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300";
-    if (userType === "Affiliate") return "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300";
-    if (userType === "Business") return "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300";
+    if (userType === "creator") return "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300";
+    if (userType === "affiliate") return "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300";
+    if (userType === "business") return "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300";
     return "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300";
   };
 
@@ -323,8 +323,8 @@ export default function ProfilePage() {
               <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
                 Account Type
               </label>
-              <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${getUserTypeColor(user?.user_type || "")}`}>
-                {user?.user_type === "Creator" ? "🎯" : user?.user_type === "Affiliate" ? "🚀" : user?.user_type === "Business" ? "💼" : "👤"} {getUserTypeLabel(user?.user_type || "")}
+              <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${getUserTypeColor(user?.role || "")}`}>
+                {user?.role === "creator" ? "🎯" : user?.role === "affiliate" ? "🚀" : user?.user_type === "Business" ? "💼" : "👤"} {getUserTypeLabel(user?.role || "")}
               </span>
             </div>
 
@@ -373,7 +373,7 @@ export default function ProfilePage() {
         </div>
 
         {/* User Type Specific Statistics */}
-        {user?.user_type === "Creator" && (
+        {user?.role === "creator" && (
           <div className="card p-6 space-y-4">
             <div className="flex items-center space-x-2">
               <span className="text-2xl">🎯</span>
@@ -413,7 +413,7 @@ export default function ProfilePage() {
           </div>
         )}
 
-        {user?.user_type === "Affiliate" && (
+        {user?.role === "affiliate" && (
           <div className="card p-6 space-y-4">
             <div className="flex items-center space-x-2">
               <span className="text-2xl">🚀</span>

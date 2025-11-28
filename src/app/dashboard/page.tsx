@@ -36,7 +36,7 @@ export default function DashboardPage() {
     );
   }
 
-  const isProductCreator = userInfo?.user_type === "Creator";
+  const isProductCreator = userInfo?.role === "creator";
 
   return (
     <AuthGate requiredRole="user">

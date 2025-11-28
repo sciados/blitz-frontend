@@ -124,7 +124,8 @@
       "Bash(node -e:*)",
       "Bash(lsof:*)",
       "Bash(xargs:*)",
-      "Bash(/dev/null)"
+      "Bash(/dev/null)",
+      "Bash(perl:*)"
     ],
     "deny": [],
     "ask": []
