@@ -9,7 +9,7 @@ import { ContentRefinementModal } from "src/components/ContentRefinementModal";
 import { ContentVariationsModal } from "src/components/ContentVariationsModal";
 import { ContentViewModal } from "src/components/ContentViewModal";
 import { TextEditorModal } from "src/components/TextEditorModal";
-import { ProductImageUpload } from "src/components/editor/ProductImageUpload";
+import { ImageEditorModal } from "src/components/ImageEditorModal";
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -65,32 +65,8 @@ export default function ContentLibraryPage() {
   // Text editor state for library images
   const [showTextEditor, setShowTextEditor] = useState(false);
 
-  // Image upload state for library images
-  const [showImageUpload, setShowImageUpload] = useState(false);
-
-  // Handler for image upload
-  const handleImageUploaded = async (imageUrl: string) => {
-    if (!selectedLibraryImage) return;
-
-    try {
-      await api.post(`/api/campaigns/${selectedLibraryImage.campaign_id}/overlays`, {
-        image_url: imageUrl,
-        image_source: "uploaded",
-        position_x: 50,
-        position_y: 50,
-        scale: 1,
-        rotation: 0,
-        opacity: 1,
-        z_index: 1,
-      });
-
-      setShowImageUpload(false);
-      toast.success("Product image added!");
-    } catch (err) {
-      console.error("Failed to save overlay:", err);
-      toast.error("Failed to add product image");
-    }
-  };
+  // Image editor state for library images
+  const [showImageEditor, setShowImageEditor] = useState(false);
 
   // Fetch all content for the user
   const { refetch: refetchContent, isLoading } = useQuery({
@@ -894,7 +870,7 @@ export default function ContentLibraryPage() {
                   </button>
 
                   <button
-                    onClick={() => setShowImageUpload(true)}
+                    onClick={() => setShowImageEditor(true)}
                     className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition font-medium flex items-center space-x-2"
                   >
                     <svg
@@ -995,44 +971,21 @@ export default function ContentLibraryPage() {
         />
       )}
 
-      {/* Image Upload Modal for Library Images */}
-      {showImageUpload && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[60]">
-          <div className="bg-white dark:bg-gray-900 rounded-lg max-w-md w-full mx-4 p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-                Add Product Image
-              </h3>
-              <button
-                onClick={() => setShowImageUpload(false)}
-                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-              >
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
-            </div>
-
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-              Upload a transparent PNG image of your product to position it on the campaign image.
-            </p>
-
-            <ProductImageUpload
-              campaignId={selectedLibraryImage?.campaign_id || 0}
-              onUploaded={handleImageUploaded}
-            />
-          </div>
-        </div>
+      {/* Image Editor Modal for Library Images */}
+      {selectedLibraryImage && (
+        <ImageEditorModal
+          isOpen={showImageEditor}
+          onClose={() => setShowImageEditor(false)}
+          sourceImage={selectedLibraryImage}
+          campaignId={selectedLibraryImage.campaign_id}
+          onSave={(image) => {
+            // Handle the saved image with image overlay
+            toast.success("Image with overlay saved to library!");
+            setShowImageEditor(false);
+            setIsLibraryModalOpen(false);
+            refetchImages();
+          }}
+        />
       )}
     </AuthGate>
   );
