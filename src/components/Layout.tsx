@@ -23,7 +23,7 @@ type MenuItem = {
 type UserInfo = {
   email: string;
   role: string;
-  user_type?: string; // "product_creator" | "affiliate_marketer"
+  user_type?: string; // "Creator" | "Affiliate" | "Business"
   profile_image_url?: string;
   full_name?: string;
 };
@@ -108,7 +108,7 @@ export default function Layout({ children }: LayoutProps) {
     }
 
     // Product Creator menu
-    if (userInfo?.user_type === "product_creator") {
+    if (userInfo?.user_type === "Creator") {
       return [
         { href: "/dashboard", label: "Dashboard", icon: "🏠" },
         { href: "/products", label: "Product Library", icon: "📦" },
@@ -122,7 +122,7 @@ export default function Layout({ children }: LayoutProps) {
       ];
     }
 
-    // Affiliate Marketer menu (default for regular users)
+    // Affiliate/Business menu (default for regular users)
     return [
       { href: "/dashboard", label: "Dashboard", icon: "🏠" },
       { href: "/campaigns", label: "Campaigns", icon: "📢" },
@@ -200,10 +200,12 @@ export default function Layout({ children }: LayoutProps) {
                   {userInfo.email}
                 </span>
                 <span className="text-xs text-[var(--text-secondary)] capitalize">
-                  {userInfo.user_type === "product_creator"
+                  {userInfo.user_type === "Creator"
                     ? "Product Developer"
-                    : userInfo.user_type === "affiliate_marketer"
+                    : userInfo.user_type === "Affiliate"
                     ? "Affiliate Marketer"
+                    : userInfo.user_type === "Business"
+                    ? "Business"
                     : userInfo.role}
                 </span>
               </div>
@@ -291,10 +293,12 @@ export default function Layout({ children }: LayoutProps) {
                               "Loading..."}
                           </p>
                           <p className="text-xs text-[var(--text-secondary)] capitalize">
-                            {userInfo?.user_type === "product_creator"
+                            {userInfo?.user_type === "Creator"
                               ? "Product Developer"
-                              : userInfo?.user_type === "affiliate_marketer"
+                              : userInfo?.user_type === "Affiliate"
                               ? "Affiliate Marketer"
+                              : userInfo?.user_type === "Business"
+                              ? "Business"
                               : userInfo?.role || "user"}
                           </p>
                         </div>
@@ -344,13 +348,17 @@ export default function Layout({ children }: LayoutProps) {
                     </div>
                     <div
                       className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
-                        userInfo.user_type === "product_creator"
+                        userInfo.user_type === "Creator"
                           ? "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300"
+                          : userInfo.user_type === "Business"
+                          ? "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300"
                           : "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
                       }`}
                     >
-                      {userInfo.user_type === "product_creator"
+                      {userInfo.user_type === "Creator"
                         ? "🎯 Product Developer"
+                        : userInfo.user_type === "Business"
+                        ? "💼 Business"
                         : "🚀 Affiliate Marketer"}
                     </div>
                   </div>
