@@ -37,6 +37,7 @@ export function ProductDetailsPanel({
   const [isCheckingCompliance, setIsCheckingCompliance] = useState(false);
   const [complianceResult, setComplianceResult] =
     useState<ComplianceResult | null>(null);
+  const [isTogglingPublic, setIsTogglingPublic] = useState(false);
 
   useEffect(() => {
     // Fetch current user info to get user ID
@@ -108,6 +109,29 @@ export function ProductDetailsPanel({
     if (product) {
       // Navigate to campaigns page with this product pre-selected
       router.push(`/campaigns?productId=${product.id}`);
+    }
+  };
+
+  const handleTogglePublic = async () => {
+    if (!product) return;
+
+    setIsTogglingPublic(true);
+    try {
+      const newPublicStatus = !(product as any).is_public;
+      const response = await api.patch(`/api/products/${product.id}`, {
+        is_public: newPublicStatus,
+      });
+      setProduct(response.data);
+      toast.success(
+        `Product ${newPublicStatus ? "activated" : "deactivated"} successfully`
+      );
+    } catch (err: any) {
+      console.error("Failed to toggle product visibility:", err);
+      toast.error(
+        err.response?.data?.detail || "Failed to update product visibility"
+      );
+    } finally {
+      setIsTogglingPublic(false);
     }
   };
 
@@ -345,6 +369,62 @@ export function ProductDetailsPanel({
             </>
           ) : (
             <>
+              {/* Admin Toggle - Only for Admins */}
+              {isAdmin && product && (
+                <button
+                  onClick={handleTogglePublic}
+                  disabled={isTogglingPublic}
+                  className={`px-6 py-3 font-medium rounded-lg transition flex items-center space-x-2 ${
+                    (product as any).is_public === "true" || (product as any).is_public === true
+                      ? "bg-green-600 hover:bg-green-700 text-white"
+                      : "bg-gray-600 hover:bg-gray-700 text-white"
+                  }`}
+                  title={
+                    (product as any).is_public === "true" || (product as any).is_public === true
+                      ? "Click to deactivate (hide from public library)"
+                      : "Click to activate (show in public library)"
+                  }
+                >
+                  {isTogglingPublic ? (
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                  ) : (product as any).is_public === "true" || (product as any).is_public === true ? (
+                    <>
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                      <span>Active</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                      <span>Inactive</span>
+                    </>
+                  )}
+                </button>
+              )}
+
               {/* Show edit controls for admins OR product owners */}
               {(isAdmin ||
                 (currentUserId &&
