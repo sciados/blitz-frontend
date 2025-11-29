@@ -289,6 +289,12 @@ export function ProductDetailsPanel({
   // Normalize is_public value to boolean (handles both string and boolean from API)
   const isProductPublic = String((product as any).is_public) === "true";
 
+  // Check if current user is the product owner
+  const isProductOwner = currentUserId && product.created_by_user_id === currentUserId;
+
+  // Show publish toggle for Admins or Product Owners
+  const canTogglePublish = isAdmin || isProductOwner;
+
   return (
     <div className="h-full flex flex-col animate-slide-in">
       {/* Header */}
@@ -375,8 +381,8 @@ export function ProductDetailsPanel({
             </>
           ) : (
             <>
-              {/* Admin Toggle - Only for Admins */}
-              {isAdmin && product && (
+              {/* Publish Toggle - For Admins and Product Owners */}
+              {canTogglePublish && product && (
                 <button
                   onClick={handleTogglePublic}
                   disabled={isTogglingPublic}
@@ -387,8 +393,8 @@ export function ProductDetailsPanel({
                   }`}
                   title={
                     isProductPublic
-                      ? "Click to deactivate (hide from public library)"
-                      : "Click to activate (show in public library)"
+                      ? "Click to deactivate (hide from affiliates)"
+                      : "Click to activate/publish (make visible to affiliates)"
                   }
                 >
                   {isTogglingPublic ? (
