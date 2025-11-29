@@ -299,6 +299,26 @@ export default function AdminDashboardPage() {
                 Advanced administrative tools and utilities
               </p>
             </Link>
+
+            {/* Email Signups */}
+            <Link
+              href="/admin/signups"
+              className="group card rounded-xl p-6 hover:shadow-lg hover:border-pink-500 dark:hover:border-pink-500 transition-all"
+            >
+              <div className="flex items-center space-x-4 mb-3">
+                <div className="w-12 h-12 bg-pink-100 dark:bg-pink-900/30 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <svg className="w-6 h-6 text-pink-600 dark:text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold" style={{ color: 'var(--text-primary)' }}>
+                  Email Signups
+                </h3>
+              </div>
+              <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                Manage pre-launch signups and send email campaigns
+              </p>
+            </Link>
           </div>
         </div>
       </div>

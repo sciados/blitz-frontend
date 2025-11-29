@@ -629,3 +629,513 @@ await resend.emails.send({
 **Estimated Implementation Time:** 30 minutes to 1 hour
 
 You're all set to send emails! 📧✨
+
+---
+
+## 🎯 **INTEGRATION WITH EXISTING ADMIN SIGNUPS PAGE**
+
+### **Quick Start: Add Email Sending to Admin UI**
+
+You now have `/admin/signups` page with export functionality. To add **direct email sending** from the admin interface:
+
+### **Step 1: Add Email Service to Backend**
+
+**File: `app/services/resend_service.py`**
+
+```python
+import os
+import asyncio
+from typing import List, Optional, Dict, Any
+from resend import Resend
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+
+class ResendService:
+    def __init__(self):
+        self.resend = Resend(api_key=os.getenv("RESEND_API_KEY"))
+        self.from_email = os.getenv("FROM_EMAIL", "Blitz <hello@blitz.com>")
+
+    async def send_email(
+        self,
+        to: str | List[str],
+        subject: str,
+        html: str,
+        text: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """Send single email or batch"""
+        try:
+            response = self.resend.emails.send({
+                "from": self.from_email,
+                "to": to if isinstance(to, list) else [to],
+                "subject": subject,
+                "html": html,
+                "text": text
+            })
+            return {"success": True, "data": response}
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+
+    async def send_campaign_to_audience(
+        self,
+        emails: List[str],
+        subject: str,
+        template: str,
+        variables: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, int]:
+        """Send campaign to audience group"""
+        success_count = 0
+        error_count = 0
+        errors = []
+
+        # Resend supports up to 100 emails per request
+        for i in range(0, len(emails), 100):
+            batch = emails[i:i + 100]
+
+            # Personalize content for each email
+            personalized_emails = []
+            for email in batch:
+                personalized_html = template
+                if variables:
+                    for key, value in variables.items():
+                        personalized_html = personalized_html.replace(f"{{{{ {key} }}}}", str(value))
+
+                try:
+                    result = await self.send_email(
+                        to=email,
+                        subject=subject,
+                        html=personalized_html
+                    )
+
+                    if result["success"]:
+                        success_count += 1
+                    else:
+                        error_count += 1
+                        errors.append({"email": email, "error": result["error"]})
+
+                except Exception as e:
+                    error_count += 1
+                    errors.append({"email": email, "error": str(e)})
+
+        return {
+            "success_count": success_count,
+            "error_count": error_count,
+            "total_sent": len(emails),
+            "errors": errors[:10]  # First 10 errors
+        }
+
+    def get_launch_template(self, audience_type: str, variables: Dict[str, Any] = None) -> str:
+        """Get email template based on audience type"""
+
+        templates = {
+            "product-dev": {
+                "preheader": "Get your products promoted by our affiliate network",
+                "title": "🎯 Your Products Are Ready for Promotion",
+                "hero_emoji": "🎯",
+                "primary_color": "#8b5cf6",
+                "cta_text": "Add Your Products →",
+                "cta_url": "https://blitz.com/login",
+                "features": [
+                    "Access our network of 1000+ affiliate marketers",
+                    "AI-powered product intelligence and descriptions",
+                    "Real-time performance tracking and analytics",
+                    "Automated commission management"
+                ]
+            },
+            "affiliate": {
+                "preheader": "Start earning with AI-powered campaigns",
+                "title": "💰 Start Earning with Blitz Today",
+                "hero_emoji": "💰",
+                "primary_color": "#10b981",
+                "cta_text": "Browse Products →",
+                "cta_url": "https://blitz.com/login",
+                "features": [
+                    "Browse hundreds of products to promote",
+                    "Generate content in minutes with AI",
+                    "Create articles, emails, videos, and social posts",
+                    "Track earnings in real-time"
+                ]
+            },
+            "business": {
+                "preheader": "Your AI marketing team is ready",
+                "title": "🚀 Your AI Marketing Team is Here",
+                "hero_emoji": "🚀",
+                "primary_color": "#3b82f6",
+                "cta_text": "Launch Campaigns →",
+                "cta_url": "https://blitz.com/login",
+                "features": [
+                    "Generate professional content instantly",
+                    "Access AI-powered marketing campaigns",
+                    "Connect with affiliate marketers",
+                    "Save $150k+/year vs agencies"
+                ]
+            }
+        }
+
+        template_data = templates.get(audience_type, templates["affiliate"])
+
+        if variables:
+            template_data.update(variables)
+
+        html = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <style>
+                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                .header {{ text-align: center; padding: 40px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }}
+                .content {{ background: white; padding: 40px; border-radius: 10px; margin-top: -20px; position: relative; }}
+                .footer {{ text-align: center; padding: 20px; color: #666; font-size: 12px; }}
+                .cta-button {{
+                    display: inline-block;
+                    background: linear-gradient(to right, {template_data['primary_color']}, #667eea);
+                    color: white;
+                    padding: 15px 30px;
+                    text-decoration: none;
+                    border-radius: 8px;
+                    font-weight: bold;
+                    margin: 20px 0;
+                }}
+                .feature-list {{ list-style: none; padding: 0; }}
+                .feature-list li {{ padding: 10px 0; border-bottom: 1px solid #eee; }}
+                .feature-list li:before {{ content: "✅ "; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <div style="font-size: 60px; margin-bottom: 20px;">{template_data['hero_emoji']}</div>
+                    <h1 style="margin: 0; font-size: 28px;">Blitz is Now Live!</h1>
+                    <p style="margin: 10px 0 0 0; font-size: 16px; opacity: 0.9;">{template_data['preheader']}</p>
+                </div>
+
+                <div class="content">
+                    <h2 style="color: #222; font-size: 24px;">{template_data['title']}</h2>
+
+                    <p style="font-size: 16px; color: #555;">
+                        Hi {{{{ first_name }}}},
+                    </p>
+
+                    <p style="font-size: 16px; color: #555;">
+                        Great news! Blitz is officially launched and ready to use.
+                    </p>
+
+                    <p style="font-size: 16px; color: #555; font-weight: bold;">
+                        What you can do now:
+                    </p>
+
+                    <ul class="feature-list">
+                        {"".join([f"<li>{feature}</li>" for feature in template_data['features']])}
+                    </ul>
+
+                    <div style="text-align: center; margin: 30px 0;">
+                        <a href="{template_data['cta_url']}" class="cta-button">
+                            {template_data['cta_text']}
+                        </a>
+                    </div>
+
+                    <p style="font-size: 16px; color: #555;">
+                        Questions? Just reply to this email—we're here to help!
+                    </p>
+
+                    <p style="font-size: 16px; color: #555;">
+                        — The Blitz Team
+                    </p>
+                </div>
+
+                <div class="footer">
+                    <p>© 2024 Blitz. All rights reserved.</p>
+                    <p>
+                        <a href="{{{{ unsubscribe_url }}}}">Unsubscribe</a> |
+                        <a href="https://blitz.com">Visit Website</a>
+                    </p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+
+        return html
+```
+
+### **Step 2: Add Email Campaign API Endpoints**
+
+**File: `app/api/admin/campaigns.py`**
+
+```python
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Query
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+from typing import List, Optional
+import asyncio
+
+from app.db.session import get_db
+from app.db.models import EmailSignup
+from app.services.resend_service import ResendService
+from app.auth import get_current_user
+
+router = APIRouter(prefix="/api/admin", tags=["admin-campaigns"])
+resend_service = ResendService()
+
+@router.post("/campaigns/send")
+async def send_campaign(
+    background_tasks: BackgroundTasks,
+    audience_type: Optional[str] = Query(None, description="Filter by audience"),
+    subject: str = Query(..., description="Email subject"),
+    template_type: str = Query("launch", description="Template type"),
+    current_user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Send campaign email to signups.
+    Supports sending to all signups or filtered by audience_type.
+    """
+
+    # Get signups
+    query = select(EmailSignup).where(EmailSignup.is_active == True)
+
+    if audience_type:
+        query = query.where(EmailSignup.audience_type == audience_type)
+
+    result = await db.execute(query)
+    signups = result.scalars().all()
+
+    if not signups:
+        raise HTTPException(status_code=404, detail="No signups found")
+
+    # Get emails list
+    emails = [signup.email for signup in signups]
+
+    # Get template
+    template = resend_service.get_launch_template(
+        audience_type or "affiliate",
+        {"first_name": ""}
+    )
+
+    # Send campaign in background
+    background_tasks.add_task(
+        resend_service.send_campaign_to_audience,
+        emails,
+        subject,
+        template
+    )
+
+    return {
+        "message": f"Campaign started for {len(emails)} recipients",
+        "total_emails": len(emails),
+        "audience_type": audience_type or "all"
+    }
+
+@router.post("/campaigns/send-single")
+async def send_single_email(
+    email: str,
+    subject: str,
+    html: str,
+    current_user=Depends(get_current_user)
+):
+    """Send email to single recipient"""
+
+    result = await resend_service.send_email(email, subject, html)
+
+    if not result["success"]:
+        raise HTTPException(status_code=400, detail=result["error"])
+
+    return {
+        "message": "Email sent successfully",
+        "email_id": result["data"]["id"]
+    }
+```
+
+**Add to `app/main.py`:**
+```python
+from app.api.admin import campaigns as admin_campaigns
+
+app.include_router(admin_campaigns.router)
+```
+
+### **Step 3: Update Admin Signups Page with Email Actions**
+
+**Add to `src/app/admin/signups/page.tsx`:**
+
+```typescript
+// Add these imports
+import { Mail, Send, Users } from "lucide-react";
+
+// Add these states
+const [showEmailModal, setShowEmailModal] = useState(false);
+const [emailSubject, setEmailSubject] = useState("");
+const [selectedAudience, setSelectedAudience] = useState<string>("");
+
+// Add email campaign mutation
+const sendCampaignMutation = useMutation({
+  mutationFn: async ({ audienceType, subject }: { audienceType: string; subject: string }) => {
+    const response = await api.post("/api/admin/campaigns/send", null, {
+      params: {
+        audience_type: audienceType,
+        subject: subject,
+        template_type: "launch"
+      }
+    });
+    return response.data;
+  },
+  onSuccess: (data) => {
+    queryClient.invalidateQueries({ queryKey: ["admin-signups"] });
+    toast.success(`Campaign started! Sending to ${data.total_emails} recipients`);
+    setShowEmailModal(false);
+    setEmailSubject("");
+  },
+  onError: (error: any) => {
+    toast.error(`Failed to send campaign: ${error.message}`);
+  }
+});
+
+// Add button in header
+<button
+  onClick={() => setShowEmailModal(true)}
+  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
+>
+  <Mail size={18} />
+  Send Campaign
+</button>
+
+// Add email modal component (after the main content)
+{showEmailModal && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="bg-[var(--bg-secondary)] rounded-lg p-6 max-w-md w-full mx-4">
+      <h3 className="text-xl font-bold text-[var(--text-primary)] mb-4">
+        Send Email Campaign
+      </h3>
+
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
+            Audience
+          </label>
+          <select
+            value={selectedAudience}
+            onChange={(e) => setSelectedAudience(e.target.value)}
+            className="w-full px-4 py-2 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)]"
+          >
+            <option value="">All Audiences</option>
+            <option value="product-dev">Product Developers</option>
+            <option value="affiliate">Affiliates</option>
+            <option value="business">Businesses</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
+            Subject Line
+          </label>
+          <input
+            type="text"
+            value={emailSubject}
+            onChange={(e) => setEmailSubject(e.target.value)}
+            placeholder="🎉 Blitz is Live!"
+            className="w-full px-4 py-2 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)]"
+          />
+        </div>
+
+        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+          <div className="flex items-start gap-3">
+            <Send className="text-blue-600 mt-1" size={20} />
+            <div>
+              <p className="text-sm font-medium text-[var(--text-primary)]">
+                Email Template
+              </p>
+              <p className="text-xs text-[var(--text-secondary)] mt-1">
+                Launch email template will be sent with subject line above.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex gap-3 mt-6">
+        <button
+          onClick={() => {
+            setShowEmailModal(false);
+            setEmailSubject("");
+            setSelectedAudience("");
+          }}
+          className="flex-1 px-4 py-2 border border-[var(--border-color)] rounded-lg hover:bg-[var(--hover-bg)] transition-colors"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={() => {
+            if (!emailSubject) {
+              toast.error("Please enter a subject line");
+              return;
+            }
+            sendCampaignMutation.mutate({
+              audienceType: selectedAudience,
+              subject: emailSubject
+            });
+          }}
+          disabled={sendCampaignMutation.isPending}
+          className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+        >
+          {sendCampaignMutation.isPending ? "Sending..." : "Send Campaign"}
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+```
+
+### **Step 4: Install Resend SDK**
+
+```bash
+# Backend
+pip install resend
+
+# Frontend (optional, if using Next.js API routes)
+npm install resend
+```
+
+### **Step 5: Environment Variables**
+
+**Railway Backend:**
+```env
+RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxx
+FROM_EMAIL=Blitz <hello@blitz.com>
+```
+
+**Vercel Frontend:**
+```env
+NEXT_PUBLIC_RESEND_ENABLED=true
+```
+
+---
+
+## 🎯 **WHAT YOU GET**
+
+After implementing:
+
+1. **Export CSV** - Download signups for external tools ✓ (Already working)
+2. **Send Campaigns** - Send emails directly from admin UI to:
+   - All signups
+   - Product Developers only
+   - Affiliates only
+   - Businesses only
+   - Selected individuals (future enhancement)
+
+3. **Email Templates** - Professional HTML templates for each audience type
+4. **Analytics** - Track opens/clicks in Resend dashboard
+5. **Unsubscribe** - Built-in unsubscribe links
+
+---
+
+## ⚡ **Quick Implementation (30 minutes)**
+
+1. Install resend: `pip install resend` ✓
+2. Add environment variable: `RESEND_API_KEY` ✓
+3. Create `app/services/resend_service.py` (copy from above) ✓
+4. Create `app/api/admin/campaigns.py` (copy from above) ✓
+5. Update admin/signups page with email button (copy from above) ✓
+6. Test with 1-2 emails ✓
+
+Done! You can now send email campaigns directly from the admin interface! 🚀

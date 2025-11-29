@@ -99,6 +99,7 @@ export default function Layout({ children }: LayoutProps) {
     if (isAdmin) {
       return [
         { href: "/admin/dashboard", label: "Dashboard", icon: "🏠" },
+        { href: "/admin/signups", label: "Email Signups", icon: "📧" },
         { href: "/admin/campaigns", label: "Campaigns", icon: "📢" },
         { href: "/products", label: "Product Library", icon: "📦" },
         { href: "/admin/tools", label: "Admin Tools", icon: "🔧" },
