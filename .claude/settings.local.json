@@ -137,7 +137,8 @@
       "Bash(app/api/overlays.py)",
       "Bash(cmd:*)",
       "Bash(timeout 5 python -m uvicorn:*)",
-      "Bash(PYTHONPATH=/c/Users/shaun/OneDrive/Documents/GitHub/blitz-backend python:*)"
+      "Bash(PYTHONPATH=/c/Users/shaun/OneDrive/Documents/GitHub/blitz-backend python:*)",
+      "Bash(npm install lucide-react)"
     ],
     "deny": [],
     "ask": []
