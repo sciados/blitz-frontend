@@ -44,6 +44,12 @@ export default function Layout({ children }: LayoutProps) {
   // Check if current page is an auth page (login, register)
   const isAuthPage = pathname === "/login" || pathname === "/register";
 
+  // Check if current page is a landing page (no header/sidebar)
+  const isLandingPage = pathname === "/" ||
+                        pathname.startsWith("/product-developers") ||
+                        pathname.startsWith("/affiliate") ||
+                        pathname.startsWith("/business");
+
   // Get help content based on current pathname
   const helpContent = getHelpContent(pathname);
 
@@ -144,9 +150,9 @@ export default function Layout({ children }: LayoutProps) {
     console.debug("[Layout] render");
   }
 
-  // If auth page, render children without layout chrome
+  // If auth page or landing page, render children without layout chrome
   // This comes AFTER all hooks to avoid violating Rules of Hooks
-  if (isAuthPage) {
+  if (isAuthPage || isLandingPage) {
     return <>{children}</>;
   }
 
