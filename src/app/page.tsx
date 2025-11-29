@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from 'react';
 import { Sparkles, ArrowRight, CheckCircle2, Zap } from 'lucide-react';
 import { EmailSignupForm } from 'src/components/EmailSignupForm';
