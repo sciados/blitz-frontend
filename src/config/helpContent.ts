@@ -514,6 +514,116 @@ export const helpContent: Record<string, HelpContent> = {
       "Creating a campaign from the Product Library auto-fills product details",
     ],
   },
+
+  // Add Product
+  "/products/add": {
+    title: "Add New Product",
+    description: "Product Developers can add their products to the library for affiliates to discover and promote. Fill in product details and the system will automatically compile intelligence.",
+    steps: [
+      {
+        number: 1,
+        title: "Enter Product URL",
+        description: "Provide the sales page URL. The system will use this to automatically compile intelligence and extract product information.",
+      },
+      {
+        number: 2,
+        title: "Fill Basic Information",
+        description: "Enter product name, category, affiliate network, and commission rate. Be as detailed as possible to help affiliates promote effectively.",
+      },
+      {
+        number: 3,
+        title: "Add Description (Optional)",
+        description: "Provide an optional product description to give affiliates more context about the product's benefits and target audience.",
+      },
+      {
+        number: 4,
+        title: "Set Recurring Commission",
+        description: "Check 'Recurring Commission' if the affiliate program offers recurring payments. This helps affiliates filter for passive income opportunities.",
+      },
+      {
+        number: 5,
+        title: "Submit and Wait",
+        description: "Click Submit. The system will automatically compile intelligence in the background (30-60 seconds). You'll receive a notification when it's complete.",
+      },
+    ],
+    tips: [
+      "Product is private by default - you can publish it later when ready",
+      "Compile intelligence automatically extracts features, benefits, and pain points",
+      "Detailed product information leads to better affiliate promotion",
+      "Use the Product Details panel to edit or publish your product after creation",
+      "You can unpublish products to hide them from affiliates until ready",
+    ],
+  },
+
+  // Content Library
+  "/library": {
+    title: "Content Library",
+    description: "Browse, manage, and refine all your generated content and images. Access text content and premium images you've created across all campaigns.",
+    steps: [
+      {
+        number: 1,
+        title: "Switch Between Tabs",
+        description: "Use the tabs at the top to switch between Text Content and Images. Each tab shows content from all your campaigns.",
+      },
+      {
+        number: 2,
+        title: "Filter Your Content",
+        description: "Filter by campaign, content type, or compliance status to find exactly what you need.",
+      },
+      {
+        number: 3,
+        title: "View and Edit Content",
+        description: "Click any content item to view, edit, refine, or create variations. All edits are saved automatically.",
+      },
+      {
+        number: 4,
+        title: "Manage Images",
+        description: "Browse your premium images, download them, add text overlays, or layer product images on top.",
+      },
+      {
+        number: 5,
+        title: "Check Compliance",
+        description: "View compliance status for each content piece. Green = compliant, Yellow = warnings, Red = violations need fixing.",
+      },
+    ],
+    tips: [
+      "Content Library shows everything you've generated across all campaigns",
+      "Use filters to quickly find content for specific campaigns or purposes",
+      "Refine existing content instead of starting from scratch for better results",
+      "Premium images are protected from accidental deletion",
+      "Add images from campaign intelligence or upload your own for overlays",
+    ],
+  },
+
+  // Knowledge Base
+  "/knowledge-base": {
+    title: "Knowledge Base Management",
+    description: "Add custom content to your campaign's knowledge base. This data is used for RAG (Retrieval-Augmented Generation) to improve content quality.",
+    steps: [
+      {
+        number: 1,
+        title: "Enter Campaign ID",
+        description: "Specify which campaign's knowledge base you want to add content to by entering the Campaign ID.",
+      },
+      {
+        number: 2,
+        title: "Add Your Content",
+        description: "Type or paste the custom content you want to include in the knowledge base for better AI generation.",
+      },
+      {
+        number: 3,
+        title: "Submit Content",
+        description: "Click 'Add' to save your content to the knowledge base. This information will be used in future content generation.",
+      },
+    ],
+    tips: [
+      "Use knowledge base to add brand voice, company info, or specific messaging",
+      "Include relevant background information that should inform content generation",
+      "Knowledge base content improves RAG responses for more accurate generation",
+      "You can add multiple entries to build comprehensive campaign knowledge",
+      "This is advanced feature - regular users may not need it",
+    ],
+  },
 };
 
 // Helper function to get help content by pathname
