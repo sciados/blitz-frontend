@@ -135,7 +135,9 @@
       "Bash(git -C /c/Users/shaun/OneDrive/Documents/GitHub/blitz-backend diff --stat)",
       "Bash(do grep:*)",
       "Bash(app/api/overlays.py)",
-      "Bash(cmd:*)"
+      "Bash(cmd:*)",
+      "Bash(timeout 5 python -m uvicorn:*)",
+      "Bash(PYTHONPATH=/c/Users/shaun/OneDrive/Documents/GitHub/blitz-backend python:*)"
     ],
     "deny": [],
     "ask": []
