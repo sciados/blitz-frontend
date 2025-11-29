@@ -53,6 +53,11 @@ export default function AdminSignupsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const perPage = 50;
 
+  // Email campaign modal state
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [emailSubject, setEmailSubject] = useState("");
+  const [selectedAudience, setSelectedAudience] = useState<string>("");
+
   const queryClient = useQueryClient();
 
   // Fetch stats
@@ -200,6 +205,29 @@ export default function AdminSignupsPage() {
     }
   };
 
+  // Send campaign mutation
+  const sendCampaignMutation = useMutation({
+    mutationFn: async ({ audienceType, subject }: { audienceType: string; subject: string }) => {
+      const response = await api.post("/api/admin/email-campaigns/send", null, {
+        params: {
+          audience_type: audienceType,
+          subject: subject,
+          template_type: "launch"
+        }
+      });
+      return response.data;
+    },
+    onSuccess: (data) => {
+      toast.success(`Campaign started! Sending to ${data.total_emails} recipients`);
+      setShowEmailModal(false);
+      setEmailSubject("");
+      setSelectedAudience("");
+    },
+    onError: (error: any) => {
+      toast.error(`Failed to send campaign: ${error.response?.data?.detail || error.message}`);
+    }
+  });
+
   const filteredSignups = signupsData?.signups.filter((signup) => {
     const matchesSearch =
       !filters.search ||
@@ -240,6 +268,13 @@ export default function AdminSignupsPage() {
             >
               <RefreshCw size={18} />
               Refresh
+            </button>
+            <button
+              onClick={() => setShowEmailModal(true)}
+              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
+            >
+              <Mail size={18} />
+              Send Campaign
             </button>
             <button
               onClick={handleExport}
@@ -627,6 +662,91 @@ export default function AdminSignupsPage() {
           </div>
         )}
       </div>
+
+      {/* Email Campaign Modal */}
+      {showEmailModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-[var(--bg-secondary)] rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-xl font-bold text-[var(--text-primary)] mb-4">
+              Send Email Campaign
+            </h3>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
+                  Audience
+                </label>
+                <select
+                  value={selectedAudience}
+                  onChange={(e) => setSelectedAudience(e.target.value)}
+                  className="w-full px-4 py-2 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)]"
+                >
+                  <option value="">All Audiences</option>
+                  <option value="product-dev">Product Developers</option>
+                  <option value="affiliate">Affiliates</option>
+                  <option value="business">Businesses</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
+                  Subject Line
+                </label>
+                <input
+                  type="text"
+                  value={emailSubject}
+                  onChange={(e) => setEmailSubject(e.target.value)}
+                  placeholder="🎉 Blitz is Live!"
+                  className="w-full px-4 py-2 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)]"
+                />
+              </div>
+
+              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <Mail className="text-blue-600 mt-1" size={20} />
+                  <div>
+                    <p className="text-sm font-medium text-[var(--text-primary)]">
+                      Email Template
+                    </p>
+                    <p className="text-xs text-[var(--text-secondary)] mt-1">
+                      Launch email template will be sent with subject line above.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => {
+                  setShowEmailModal(false);
+                  setEmailSubject("");
+                  setSelectedAudience("");
+                }}
+                className="flex-1 px-4 py-2 border border-[var(--border-color)] rounded-lg hover:bg-[var(--hover-bg)] transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  if (!emailSubject) {
+                    toast.error("Please enter a subject line");
+                    return;
+                  }
+                  sendCampaignMutation.mutate({
+                    audienceType: selectedAudience,
+                    subject: emailSubject
+                  });
+                }}
+                disabled={sendCampaignMutation.isPending}
+                className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+              >
+                {sendCampaignMutation.isPending ? "Sending..." : "Send Campaign"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </AuthGate>
   );
 }
