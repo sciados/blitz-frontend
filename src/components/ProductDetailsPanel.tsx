@@ -117,7 +117,10 @@ export function ProductDetailsPanel({
 
     setIsTogglingPublic(true);
     try {
-      const newPublicStatus = !(product as any).is_public;
+      // Convert to boolean properly (handle both string and boolean values)
+      const currentStatus = String((product as any).is_public) === "true";
+      const newPublicStatus = !currentStatus;
+
       const response = await api.patch(`/api/products/${product.id}`, {
         is_public: newPublicStatus,
       });
@@ -283,6 +286,9 @@ export function ProductDetailsPanel({
     product.product_description ||
     (isGeneratingDesc ? "Generating description..." : "");
 
+  // Normalize is_public value to boolean (handles both string and boolean from API)
+  const isProductPublic = String((product as any).is_public) === "true";
+
   return (
     <div className="h-full flex flex-col animate-slide-in">
       {/* Header */}
@@ -375,19 +381,19 @@ export function ProductDetailsPanel({
                   onClick={handleTogglePublic}
                   disabled={isTogglingPublic}
                   className={`px-6 py-3 font-medium rounded-lg transition flex items-center space-x-2 ${
-                    (product as any).is_public === "true" || (product as any).is_public === true
+                    isProductPublic
                       ? "bg-green-600 hover:bg-green-700 text-white"
                       : "bg-gray-600 hover:bg-gray-700 text-white"
                   }`}
                   title={
-                    (product as any).is_public === "true" || (product as any).is_public === true
+                    isProductPublic
                       ? "Click to deactivate (hide from public library)"
                       : "Click to activate (show in public library)"
                   }
                 >
                   {isTogglingPublic ? (
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                  ) : (product as any).is_public === "true" || (product as any).is_public === true ? (
+                  ) : isProductPublic ? (
                     <>
                       <svg
                         className="w-5 h-5"
