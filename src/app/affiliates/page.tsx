@@ -142,6 +142,25 @@ export default function AffiliatesPage() {
     return years === 1 ? "1 year experience" : `${years} years experience`;
   };
 
+  // Get border color based on connection status
+  const getCardBorderStyle = (affiliate: Affiliate) => {
+    if (affiliate.is_connected) {
+      return {
+        borderColor: "#10b981", // Green-500
+        boxShadow: "0 0 0 1px #10b981",
+      };
+    } else if (hasPendingRequest(affiliate)) {
+      return {
+        borderColor: "#f59e0b", // Amber-500
+        boxShadow: "0 0 0 1px #f59e0b",
+      };
+    }
+    return {
+      borderColor: "var(--border-color)",
+      boxShadow: "none",
+    };
+  };
+
   const handleRequestConnection = (affiliate: Affiliate) => {
     // Get current user's type from their role in the JWT token
     // We need to determine the message type based on who is initiating the request
@@ -311,6 +330,33 @@ export default function AffiliatesPage() {
           </div>
         </div>
 
+        {/* Legend */}
+        <div className="mb-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border" style={{ borderColor: "var(--border-color)" }}>
+          <h3 className="text-sm font-semibold mb-2" style={{ color: "var(--text-primary)" }}>
+            Card Status Indicators
+          </h3>
+          <div className="flex flex-wrap gap-6">
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 rounded border-2" style={{ borderColor: "#10b981" }}></div>
+              <span className="text-sm" style={{ color: "var(--text-secondary)" }}>
+                Connected
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 rounded border-2" style={{ borderColor: "#f59e0b" }}></div>
+              <span className="text-sm" style={{ color: "var(--text-secondary)" }}>
+                Request Pending
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 rounded border-2" style={{ borderColor: "var(--border-color)" }}></div>
+              <span className="text-sm" style={{ color: "var(--text-secondary)" }}>
+                No Connection
+              </span>
+            </div>
+          </div>
+        </div>
+
         {/* Affiliate List */}
         <div
           className="rounded-lg border"
@@ -343,7 +389,7 @@ export default function AffiliatesPage() {
                   className="rounded-lg border p-6 hover:shadow-lg transition-shadow"
                   style={{
                     backgroundColor: "var(--surface-secondary)",
-                    borderColor: "var(--border-color)",
+                    ...getCardBorderStyle(affiliate),
                   }}
                 >
                   {/* Profile Header */}
