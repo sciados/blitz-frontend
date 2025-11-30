@@ -41,6 +41,7 @@ export default function AffiliatesPage() {
   const [selectedDeveloper, setSelectedDeveloper] =
     useState<Affiliate | null>(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [sortBy, setSortBy] = useState<string>("connection-status");
   const queryClient = useQueryClient();
 
   // Detect current user's type to set appropriate default filter
@@ -161,6 +162,46 @@ export default function AffiliatesPage() {
     };
   };
 
+  // Sort affiliates based on selected option
+  const sortAffiliates = (affiliates: Affiliate[]): Affiliate[] => {
+    const sorted = [...affiliates];
+    switch (sortBy) {
+      case "connection-status":
+        return sorted.sort((a, b) => {
+          // Connected first
+          if (a.is_connected && !b.is_connected) return -1;
+          if (!a.is_connected && b.is_connected) return 1;
+          // Then pending requests
+          if (hasPendingRequest(a) && !hasPendingRequest(b)) return -1;
+          if (!hasPendingRequest(a) && hasPendingRequest(b)) return 1;
+          // Then by reputation score
+          return b.reputation_score - a.reputation_score;
+        });
+      case "name-asc":
+        return sorted.sort((a, b) =>
+          a.full_name.localeCompare(b.full_name)
+        );
+      case "name-desc":
+        return sorted.sort((a, b) =>
+          b.full_name.localeCompare(a.full_name)
+        );
+      case "reputation-desc":
+        return sorted.sort((a, b) => b.reputation_score - a.reputation_score);
+      case "reputation-asc":
+        return sorted.sort((a, b) => a.reputation_score - b.reputation_score);
+      case "user-type":
+        return sorted.sort((a, b) => {
+          // Creators first
+          if (a.user_type === "Creator" && b.user_type === "Affiliate") return -1;
+          if (a.user_type === "Affiliate" && b.user_type === "Creator") return 1;
+          // Then by reputation
+          return b.reputation_score - a.reputation_score;
+        });
+      default:
+        return sorted;
+    }
+  };
+
   const handleRequestConnection = (affiliate: Affiliate) => {
     // Get current user's type from their role in the JWT token
     // We need to determine the message type based on who is initiating the request
@@ -272,7 +313,7 @@ export default function AffiliatesPage() {
             borderColor: "var(--border-color)",
           }}
         >
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {/* Search */}
             <div className="relative">
               <Search
@@ -326,6 +367,25 @@ export default function AffiliatesPage() {
                   {specialty}
                 </option>
               ))}
+            </select>
+
+            {/* Sort Filter */}
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="w-full px-3 py-2 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              style={{
+                backgroundColor: "var(--surface-primary)",
+                borderColor: "var(--border-color)",
+                color: "var(--text-primary)",
+              }}
+            >
+              <option value="connection-status">Sort: Connection Status</option>
+              <option value="user-type">Sort: User Type</option>
+              <option value="name-asc">Sort: Name (A-Z)</option>
+              <option value="name-desc">Sort: Name (Z-A)</option>
+              <option value="reputation-desc">Sort: Reputation (High-Low)</option>
+              <option value="reputation-asc">Sort: Reputation (Low-High)</option>
             </select>
           </div>
         </div>
@@ -383,7 +443,7 @@ export default function AffiliatesPage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
-              {affiliates.map((affiliate) => (
+              {sortAffiliates(affiliates).map((affiliate) => (
                 <div
                   key={affiliate.id}
                   className="rounded-lg border p-6 hover:shadow-lg transition-shadow"
