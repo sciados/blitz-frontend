@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Search, UserCheck, Globe, Mail, Clock } from "lucide-react";
+import { Search, UserCheck, Globe, Mail, Clock, Bell } from "lucide-react";
 import { api } from "src/lib/appClient";
 import { AuthGate } from "src/components/AuthGate";
 import Link from "next/link";

@@ -9,6 +9,7 @@ import { getHelpContent } from "src/config/helpContent";
 import Link from "next/link";
 import { Footer } from "src/components/Footer";
 import { TokenRefresh } from "src/components/TokenRefresh";
+import { MessageRequestNotification } from "src/components/MessageRequestNotification";
 
 type LayoutProps = {
   children: ReactNode;
@@ -88,6 +89,37 @@ export default function Layout({ children }: LayoutProps) {
     };
   }, [role]);
 
+  // Check for pending message requests when user logs in
+  useEffect(() => {
+    if (!userInfo) return; // Wait until we have user info
+
+    const fetchPendingRequests = async () => {
+      try {
+        const res = await api.get("/api/message-requests/received?status=pending");
+        const pendingRequests = res.data as Array<{
+          id: number;
+          sender_id: number;
+          message_type: string;
+          subject: string;
+          created_at: string;
+        }>;
+
+        if (pendingRequests.length > 0) {
+          // Show notification
+          const notification = new CustomEvent('showMessageRequestNotification', {
+            detail: { requests: pendingRequests }
+          });
+          window.dispatchEvent(notification);
+        }
+      } catch (err) {
+        // Silent fail - not critical
+        console.error('Failed to fetch pending requests:', err);
+      }
+    };
+
+    fetchPendingRequests();
+  }, [userInfo]);
+
   const handleLogout = () => {
     clearToken();
     router.push("/login");
@@ -166,6 +198,9 @@ export default function Layout({ children }: LayoutProps) {
     <>
       {/* Automatic token refresh to prevent logout during active sessions */}
       {!isAuthPage && <TokenRefresh />}
+
+      {/* Message request notification banner */}
+      <MessageRequestNotification />
 
       <div className="min-h-screen flex flex-col bg-[var(--bg-secondary)]">
         {/* Header */}
