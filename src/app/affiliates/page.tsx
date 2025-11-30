@@ -106,9 +106,41 @@ export default function AffiliatesPage() {
   };
 
   const handleRequestConnection = (affiliate: Affiliate) => {
-    const messageType = affiliate.user_type === 'Creator'
-      ? 'AFFILIATE_TO_DEV'
-      : 'AFFILIATE_TO_AFFILIATE';
+    // Get current user's type from their role in the JWT token
+    // We need to determine the message type based on who is initiating the request
+    // Default to affiliate view, check token for actual user type
+    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    let currentUserType = 'affiliate'; // fallback
+
+    if (token) {
+      try {
+        // Decode JWT to get user info (simple decode, not verification)
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        // The token contains role, but we need user_type
+        // For now, let's check based on role: if role is 'creator', user_type is 'Creator'
+        if (payload.role === 'creator') {
+          currentUserType = 'Creator';
+        }
+      } catch (e) {
+        console.error('Failed to decode token:', e);
+      }
+    }
+
+    // Determine message type based on who is sending and who is receiving
+    let messageType: string;
+    if (currentUserType === 'Creator' && affiliate.user_type === 'Affiliate') {
+      // Creator initiating contact with Affiliate
+      messageType = 'DEV_TO_AFFILIATE';
+    } else if (currentUserType === 'Creator' && affiliate.user_type === 'Creator') {
+      // Creator initiating contact with Creator
+      messageType = 'CREATOR_TO_CREATOR';
+    } else if (currentUserType === 'Affiliate' && affiliate.user_type === 'Creator') {
+      // Affiliate initiating contact with Creator
+      messageType = 'AFFILIATE_TO_DEV';
+    } else {
+      // Affiliate to Affiliate
+      messageType = 'AFFILIATE_TO_AFFILIATE';
+    }
 
     requestMutation.mutate({
       recipientId: affiliate.user_id,
@@ -181,7 +213,6 @@ export default function AffiliatesPage() {
               <option value="all">All User Types</option>
               <option value="Affiliate">Affiliates Only</option>
               <option value="Creator">Creators Only</option>
-              <option value="Business">Business Only</option>
             </select>
 
             {/* Specialty Filter */}
@@ -252,11 +283,9 @@ export default function AffiliatesPage() {
                         {affiliate.user_type && (
                           <span
                             className={`inline-flex items-center gap-1 ${
-                              affiliate.user_type === 'Affiliate'
-                                ? 'text-xs px-2 py-0.5 rounded bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
-                                : affiliate.user_type === 'Creator'
+                              affiliate.user_type === 'Creator'
                                 ? 'text-xs px-3 py-0.5 rounded-full bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-lg shadow-purple-500/30 font-semibold'
-                                : 'text-xs px-2 py-0.5 rounded bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300'
+                                : 'text-xs px-2 py-0.5 rounded bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
                             }`}
                           >
                             {affiliate.user_type === 'Creator' && (
