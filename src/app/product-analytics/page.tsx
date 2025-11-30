@@ -97,14 +97,19 @@ export default function ProductDeveloperAnalyticsPage() {
     },
   });
 
-  // Fetch all campaigns (with user info)
-  const { data: allCampaigns = [], isLoading: campaignsLoading } = useQuery<AdminCampaign[]>({
-    queryKey: ["allCampaigns"],
+  // Fetch campaigns for my products only (non-admin endpoint)
+  const { data: campaignsData, isLoading: campaignsLoading } = useQuery<{
+    campaigns: AdminCampaign[];
+    total: number;
+  }>({
+    queryKey: ["myProductCampaigns"],
     queryFn: async () => {
-      const response = await api.get("/api/admin/campaigns/list");
-      return response.data.campaigns || [];
+      const response = await api.get("/api/product-analytics/my-campaigns");
+      return response.data;
     },
   });
+
+  const allCampaigns = campaignsData?.campaigns || [];
 
   // Fetch all shortened links
   const { data: allLinks = [], isLoading: linksLoading } = useQuery<ShortenedLink[]>({
