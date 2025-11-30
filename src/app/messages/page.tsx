@@ -56,7 +56,9 @@ export default function MessagesPage() {
   const { data: inboxData, isLoading: inboxLoading } = useQuery({
     queryKey: ["messages", "inbox", page],
     queryFn: async () => {
-      const response = await api.get(`/api/messages/inbox?page=${page}&per_page=20`);
+      const response = await api.get(
+        `/api/messages/inbox?page=${page}&per_page=20`
+      );
       return response.data as InboxData;
     },
   });
@@ -64,7 +66,9 @@ export default function MessagesPage() {
   const { data: sentData, isLoading: sentLoading } = useQuery({
     queryKey: ["messages", "sent", page],
     queryFn: async () => {
-      const response = await api.get(`/api/messages/sent?page=${page}&per_page=20`);
+      const response = await api.get(
+        `/api/messages/sent?page=${page}&per_page=20`
+      );
       return response.data as SentData;
     },
   });
@@ -76,8 +80,10 @@ export default function MessagesPage() {
 
     if (diffInSeconds < 60) return "Just now";
     if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
-    if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d ago`;
+    if (diffInSeconds < 86400)
+      return `${Math.floor(diffInSeconds / 3600)}h ago`;
+    if (diffInSeconds < 604800)
+      return `${Math.floor(diffInSeconds / 86400)}d ago`;
 
     return date.toLocaleDateString("en-US", {
       month: "short",
@@ -117,10 +123,11 @@ export default function MessagesPage() {
     return content.substring(0, maxLength) + "...";
   };
 
-  const messages = activeTab === "inbox" ? inboxData?.messages : sentData?.messages;
+  const messages =
+    activeTab === "inbox" ? inboxData?.messages : sentData?.messages;
   const loading = activeTab === "inbox" ? inboxLoading : sentLoading;
   const total = activeTab === "inbox" ? inboxData?.total : sentData?.total;
-  const unreadCount = activeTab === "inbox" ? (inboxData?.unread_count ?? 0) : 0;
+  const unreadCount = activeTab === "inbox" ? inboxData?.unread_count ?? 0 : 0;
 
   return (
     <AuthGate requiredRole="user">
@@ -134,10 +141,16 @@ export default function MessagesPage() {
                   <MessageSquare className="w-8 h-8 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold tracking-tight" style={{ color: "var(--text-primary)" }}>
+                  <h1
+                    className="text-3xl font-bold tracking-tight"
+                    style={{ color: "var(--text-primary)" }}
+                  >
                     Messages
                   </h1>
-                  <p className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>
+                  <p
+                    className="text-sm mt-1"
+                    style={{ color: "var(--text-secondary)" }}
+                  >
                     Stay connected with your network
                   </p>
                 </div>
@@ -160,7 +173,7 @@ export default function MessagesPage() {
                   className="flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
                 >
                   <Users className="w-4 h-4" />
-                  Affiliate Directory
+                  Directory
                 </Link>
               </div>
             </div>
@@ -186,7 +199,8 @@ export default function MessagesPage() {
                     : "hover:bg-gray-100 dark:hover:bg-gray-800 border border-transparent hover:border-blue-200 dark:hover:border-gray-700"
                 }`}
                 style={{
-                  color: activeTab === "inbox" ? "white" : "var(--text-primary)",
+                  color:
+                    activeTab === "inbox" ? "white" : "var(--text-primary)",
                 }}
               >
                 <Inbox className="w-5 h-5" />
@@ -258,16 +272,25 @@ export default function MessagesPage() {
           }}
         >
           {loading ? (
-            <div className="p-12 text-center" style={{ color: "var(--text-secondary)" }}>
+            <div
+              className="p-12 text-center"
+              style={{ color: "var(--text-secondary)" }}
+            >
               <div className="animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
               <p className="font-medium">Loading messages...</p>
             </div>
           ) : !messages || messages.length === 0 ? (
-            <div className="p-16 text-center" style={{ color: "var(--text-secondary)" }}>
+            <div
+              className="p-16 text-center"
+              style={{ color: "var(--text-secondary)" }}
+            >
               <div className="w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 rounded-full flex items-center justify-center mx-auto mb-6">
                 <MessageSquare className="w-10 h-10 text-gray-400" />
               </div>
-              <h3 className="text-xl font-semibold mb-2" style={{ color: "var(--text-primary)" }}>
+              <h3
+                className="text-xl font-semibold mb-2"
+                style={{ color: "var(--text-primary)" }}
+              >
                 No messages yet
               </h3>
               <p className="text-sm max-w-sm mx-auto">
@@ -276,7 +299,9 @@ export default function MessagesPage() {
                   : "You haven't sent any messages yet. Click compose to get started."}
               </p>
               <Link
-                href={activeTab === "inbox" ? "/affiliates" : "/messages/compose"}
+                href={
+                  activeTab === "inbox" ? "/affiliates" : "/messages/compose"
+                }
                 className="inline-flex items-center gap-2 mt-6 px-5 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
               >
                 {activeTab === "inbox" ? (
@@ -293,7 +318,10 @@ export default function MessagesPage() {
               </Link>
             </div>
           ) : (
-            <div className="divide-y" style={{ borderColor: "var(--border-color)" }}>
+            <div
+              className="divide-y"
+              style={{ borderColor: "var(--border-color)" }}
+            >
               {messages.map((message, index) => (
                 <Link
                   key={message.id}
@@ -407,7 +435,10 @@ export default function MessagesPage() {
                 Previous
               </button>
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium px-3 py-1.5 rounded-lg" style={{ color: "var(--text-secondary)" }}>
+                <span
+                  className="text-sm font-medium px-3 py-1.5 rounded-lg"
+                  style={{ color: "var(--text-secondary)" }}
+                >
                   Page {page} of {Math.ceil(total / 20)}
                 </span>
               </div>

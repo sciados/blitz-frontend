@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Search, UserCheck, Globe, Mail, Clock, Bell } from "lucide-react";
+import { Search, UserCheck, Globe, Mail, Clock, Bell, Eye } from "lucide-react";
 import { api } from "src/lib/appClient";
 import { AuthGate } from "src/components/AuthGate";
+import { DeveloperProfileModal } from "src/components/DeveloperProfileModal";
 import Link from "next/link";
 import { toast } from "sonner";
 
@@ -37,6 +38,9 @@ export default function AffiliatesPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSpecialty, setSelectedSpecialty] = useState<string>("");
   const [selectedUserType, setSelectedUserType] = useState<string>("all");
+  const [selectedDeveloper, setSelectedDeveloper] =
+    useState<ProductDeveloper | null>(null);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const queryClient = useQueryClient();
 
   // Detect current user's type to set appropriate default filter
@@ -47,18 +51,18 @@ export default function AffiliatesPage() {
     if (!token) return null;
 
     try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
+      const payload = JSON.parse(atob(token.split(".")[1]));
       // Check role - if role is 'creator', user_type is 'Creator'
-      return payload.role === 'creator' ? 'Creator' : null;
+      return payload.role === "creator" ? "Creator" : null;
     } catch (e) {
-      console.error('Failed to decode token:', e);
+      console.error("Failed to decode token:", e);
       return null;
     }
   };
 
   // Set default filter based on current user type
   const currentUserType = getCurrentUserType();
-  const defaultUserType = currentUserType === 'Creator' ? 'Creator' : 'all';
+  const defaultUserType = currentUserType === "Creator" ? "Creator" : "all";
 
   // Set the default filter on component mount
   useEffect(() => {
@@ -71,9 +75,12 @@ export default function AffiliatesPage() {
       const params = new URLSearchParams();
       if (searchTerm) params.append("search", searchTerm);
       if (selectedSpecialty) params.append("specialty", selectedSpecialty);
-      if (selectedUserType !== "all") params.append("user_type", selectedUserType);
+      if (selectedUserType !== "all")
+        params.append("user_type", selectedUserType);
 
-      const response = await api.get(`/api/affiliates/search?${params.toString()}`);
+      const response = await api.get(
+        `/api/affiliates/search?${params.toString()}`
+      );
       return response.data as Affiliate[];
     },
   });
@@ -92,7 +99,11 @@ export default function AffiliatesPage() {
   });
 
   const requestMutation = useMutation({
-    mutationFn: async (params: { recipientId: number; messageType: string; name: string }) => {
+    mutationFn: async (params: {
+      recipientId: number;
+      messageType: string;
+      name: string;
+    }) => {
       const response = await api.post("/api/message-requests", {
         recipient_id: params.recipientId,
         message_type: params.messageType,
@@ -135,37 +146,44 @@ export default function AffiliatesPage() {
     // Get current user's type from their role in the JWT token
     // We need to determine the message type based on who is initiating the request
     // Default to affiliate view, check token for actual user type
-    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-    let currentUserType = 'affiliate'; // fallback
+    const token =
+      typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    let currentUserType = "affiliate"; // fallback
 
     if (token) {
       try {
         // Decode JWT to get user info (simple decode, not verification)
-        const payload = JSON.parse(atob(token.split('.')[1]));
+        const payload = JSON.parse(atob(token.split(".")[1]));
         // The token contains role, but we need user_type
         // For now, let's check based on role: if role is 'creator', user_type is 'Creator'
-        if (payload.role === 'creator') {
-          currentUserType = 'Creator';
+        if (payload.role === "creator") {
+          currentUserType = "Creator";
         }
       } catch (e) {
-        console.error('Failed to decode token:', e);
+        console.error("Failed to decode token:", e);
       }
     }
 
     // Determine message type based on who is sending and who is receiving
     let messageType: string;
-    if (currentUserType === 'Creator' && affiliate.user_type === 'Affiliate') {
+    if (currentUserType === "Creator" && affiliate.user_type === "Affiliate") {
       // Creator initiating contact with Affiliate
-      messageType = 'DEV_TO_AFFILIATE';
-    } else if (currentUserType === 'Creator' && affiliate.user_type === 'Creator') {
+      messageType = "DEV_TO_AFFILIATE";
+    } else if (
+      currentUserType === "Creator" &&
+      affiliate.user_type === "Creator"
+    ) {
       // Creator initiating contact with Creator
-      messageType = 'CREATOR_TO_CREATOR';
-    } else if (currentUserType === 'Affiliate' && affiliate.user_type === 'Creator') {
+      messageType = "CREATOR_TO_CREATOR";
+    } else if (
+      currentUserType === "Affiliate" &&
+      affiliate.user_type === "Creator"
+    ) {
       // Affiliate initiating contact with Creator
-      messageType = 'AFFILIATE_TO_DEV';
+      messageType = "AFFILIATE_TO_DEV";
     } else {
       // Affiliate to Affiliate
-      messageType = 'AFFILIATE_TO_AFFILIATE';
+      messageType = "AFFILIATE_TO_AFFILIATE";
     }
 
     requestMutation.mutate({
@@ -179,8 +197,30 @@ export default function AffiliatesPage() {
   const hasPendingRequest = (affiliate: Affiliate) => {
     if (!sentRequests) return false;
     return sentRequests.some(
-      req => req.recipient_id === affiliate.user_id && req.status === 'pending'
+      (req) =>
+        req.recipient_id === affiliate.user_id && req.status === "pending"
     );
+  };
+
+  // Handle viewing developer profile
+  const handleViewProfile = (affiliate: Affiliate) => {
+    if (affiliate.user_type === "Creator") {
+      setSelectedDeveloper(affiliate as ProductDeveloper);
+      setIsProfileModalOpen(true);
+    }
+  };
+
+  // Handle connection request from modal
+  const handleRequestConnectionFromModal = (developer: ProductDeveloper) => {
+    requestMutation.mutate({
+      recipientId: developer.user_id,
+      messageType:
+        currentUserType === "Creator"
+          ? "CREATOR_TO_CREATOR"
+          : "AFFILIATE_TO_DEV",
+      name: developer.full_name,
+    });
+    setIsProfileModalOpen(false);
   };
 
   return (
@@ -190,12 +230,15 @@ export default function AffiliatesPage() {
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
             <UserCheck className="w-8 h-8 text-blue-600" />
-            <h1 className="text-3xl font-bold" style={{ color: "var(--text-primary)" }}>
-              Affiliate Directory
+            <h1
+              className="text-3xl font-bold"
+              style={{ color: "var(--text-primary)" }}
+            >
+              Directory
             </h1>
           </div>
           <p style={{ color: "var(--text-secondary)" }}>
-            Discover and connect with affiliate marketers
+            Discover and connect with associate marketers
           </p>
         </div>
 
@@ -210,7 +253,10 @@ export default function AffiliatesPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Search */}
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" style={{ color: "var(--text-tertiary)" }} />
+              <Search
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5"
+                style={{ color: "var(--text-tertiary)" }}
+              />
               <input
                 type="text"
                 placeholder="Search affiliates..."
@@ -271,11 +317,17 @@ export default function AffiliatesPage() {
           }}
         >
           {isLoading ? (
-            <div className="p-8 text-center" style={{ color: "var(--text-secondary)" }}>
+            <div
+              className="p-8 text-center"
+              style={{ color: "var(--text-secondary)" }}
+            >
               Loading affiliates...
             </div>
           ) : !affiliates || affiliates.length === 0 ? (
-            <div className="p-8 text-center" style={{ color: "var(--text-secondary)" }}>
+            <div
+              className="p-8 text-center"
+              style={{ color: "var(--text-secondary)" }}
+            >
               <UserCheck className="w-12 h-12 mx-auto mb-3 opacity-50" />
               <p className="text-lg font-medium mb-1">No affiliates found</p>
               <p className="text-sm">Try adjusting your search criteria</p>
@@ -297,8 +349,11 @@ export default function AffiliatesPage() {
                       {affiliate.full_name?.charAt(0) || "A"}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-semibold truncate" style={{ color: "var(--text-primary)" }}>
+                      <div className="flex items-start gap-2 mb-1">
+                        <h3
+                          className="font-semibold leading-tight"
+                          style={{ color: "var(--text-primary)" }}
+                        >
                           {affiliate.full_name}
                         </h3>
                         {affiliate.verified && (
@@ -309,13 +364,17 @@ export default function AffiliatesPage() {
                         {affiliate.user_type && (
                           <span
                             className={`inline-flex items-center gap-1 ${
-                              affiliate.user_type === 'Creator'
-                                ? 'text-xs px-3 py-0.5 rounded-full bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-lg shadow-purple-500/30 font-semibold'
-                                : 'text-xs px-2 py-0.5 rounded bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
+                              affiliate.user_type === "Creator"
+                                ? "text-xs px-3 py-0.5 rounded-full bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-lg shadow-purple-500/30 font-semibold"
+                                : "text-xs px-2 py-0.5 rounded bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300"
                             }`}
                           >
-                            {affiliate.user_type === 'Creator' && (
-                              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                            {affiliate.user_type === "Creator" && (
+                              <svg
+                                className="w-3 h-3"
+                                fill="currentColor"
+                                viewBox="0 0 20 20"
+                              >
                                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                               </svg>
                             )}
@@ -323,11 +382,17 @@ export default function AffiliatesPage() {
                           </span>
                         )}
                       </div>
-                      <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+                      <p
+                        className="text-sm"
+                        style={{ color: "var(--text-secondary)" }}
+                      >
                         {affiliate.email}
                       </p>
                       {affiliate.years_experience && (
-                        <p className="text-xs mt-1" style={{ color: "var(--text-tertiary)" }}>
+                        <p
+                          className="text-xs mt-1"
+                          style={{ color: "var(--text-tertiary)" }}
+                        >
                           {formatExperience(affiliate.years_experience)}
                         </p>
                       )}
@@ -337,9 +402,7 @@ export default function AffiliatesPage() {
                   {/* Specialty */}
                   {affiliate.specialty && (
                     <div className="mb-3">
-                      <span
-                        className="text-xs px-2 py-1 rounded bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300"
-                      >
+                      <span className="text-xs px-2 py-1 rounded bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
                         {affiliate.specialty}
                       </span>
                     </div>
@@ -363,38 +426,54 @@ export default function AffiliatesPage() {
                         style={{ width: `${affiliate.reputation_score}%` }}
                       ></div>
                     </div>
-                    <span className="text-xs font-medium" style={{ color: "var(--text-tertiary)" }}>
+                    <span
+                      className="text-xs font-medium"
+                      style={{ color: "var(--text-tertiary)" }}
+                    >
                       {affiliate.reputation_score}%
                     </span>
                   </div>
-                  
+
                   {/* Product Developers */}
-                  {affiliate.mutual_products && affiliate.mutual_products.length > 0 && (
-                    <div className="mb-4">
-                      <h4 className="text-xs font-medium mb-2" style={{ color: "var(--text-tertiary)" }}>
-                        Has Campaigns For:
-                      </h4>
-                      <div className="space-y-2">
-                        {affiliate.mutual_products.slice(0, 2).map((dev) => (
-                          <div key={dev.user_id} className="text-xs">
-                            <div className="font-medium" style={{ color: "var(--text-primary)" }}>
-                              {dev.full_name}
-                            </div>
-                            {dev.product_name && (
-                              <div className="text-xs" style={{ color: "var(--text-secondary)" }}>
-                                {dev.product_name}
+                  {affiliate.mutual_products &&
+                    affiliate.mutual_products.length > 0 && (
+                      <div className="mb-4">
+                        <h4
+                          className="text-xs font-medium mb-2"
+                          style={{ color: "var(--text-tertiary)" }}
+                        >
+                          Has Campaigns For:
+                        </h4>
+                        <div className="space-y-2">
+                          {affiliate.mutual_products.slice(0, 2).map((dev) => (
+                            <div key={dev.user_id} className="text-xs">
+                              <div
+                                className="font-medium"
+                                style={{ color: "var(--text-primary)" }}
+                              >
+                                {dev.full_name}
                               </div>
-                            )}
-                          </div>
-                        ))}
-                        {affiliate.mutual_products.length > 2 && (
-                          <div className="text-xs" style={{ color: "var(--text-tertiary)" }}>
-                            +{affiliate.mutual_products.length - 2} more
-                          </div>
-                        )}
+                              {dev.product_name && (
+                                <div
+                                  className="text-xs"
+                                  style={{ color: "var(--text-secondary)" }}
+                                >
+                                  {dev.product_name}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                          {affiliate.mutual_products.length > 2 && (
+                            <div
+                              className="text-xs"
+                              style={{ color: "var(--text-tertiary)" }}
+                            >
+                              +{affiliate.mutual_products.length - 2} more
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
 
                   {/* Links */}
                   <div className="flex items-center gap-3 mb-4">
@@ -411,26 +490,50 @@ export default function AffiliatesPage() {
                   </div>
 
                   {/* Connection Status and Action */}
-                  <div className="pt-4 border-t" style={{ borderColor: "var(--border-color)" }}>
+                  <div
+                    className="pt-4 border-t"
+                    style={{ borderColor: "var(--border-color)" }}
+                  >
                     {affiliate.is_connected ? (
                       <div className="flex items-center gap-2 text-green-600">
                         <UserCheck className="w-5 h-5" />
                         <span className="text-sm font-medium">Connected</span>
                       </div>
                     ) : hasPendingRequest(affiliate) ? (
-                      <div className="flex items-center gap-2" style={{ color: "var(--text-secondary)" }}>
+                      <div
+                        className="flex items-center gap-2"
+                        style={{ color: "var(--text-secondary)" }}
+                      >
                         <Clock className="w-5 h-5" />
-                        <span className="text-sm font-medium">Request Pending</span>
+                        <span className="text-sm font-medium">
+                          Request Pending
+                        </span>
                       </div>
                     ) : (
-                      <button
-                        onClick={() => handleRequestConnection(affiliate)}
-                        disabled={requestMutation.isPending}
-                        className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <Mail className="w-4 h-4" />
-                        {requestMutation.isPending ? "Sending..." : "Request to Connect"}
-                      </button>
+                      <div className="space-y-2">
+                        {/* View Profile button for Creators */}
+                        {affiliate.user_type === "Creator" && (
+                          <button
+                            onClick={() => handleViewProfile(affiliate)}
+                            className="w-full flex items-center justify-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors"
+                          >
+                            <Eye className="w-4 h-4" />
+                            View Profile & Stats
+                          </button>
+                        )}
+
+                        {/* Request to Connect button */}
+                        <button
+                          onClick={() => handleRequestConnection(affiliate)}
+                          disabled={requestMutation.isPending}
+                          className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <Mail className="w-4 h-4" />
+                          {requestMutation.isPending
+                            ? "Sending..."
+                            : "Request to Connect"}
+                        </button>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -438,6 +541,20 @@ export default function AffiliatesPage() {
             </div>
           )}
         </div>
+
+        {/* Developer Profile Modal */}
+        <DeveloperProfileModal
+          isOpen={isProfileModalOpen}
+          onClose={() => setIsProfileModalOpen(false)}
+          developer={selectedDeveloper}
+          onRequestConnection={handleRequestConnectionFromModal}
+          isRequesting={requestMutation.isPending}
+          hasPendingRequest={
+            selectedDeveloper
+              ? hasPendingRequest(selectedDeveloper as Affiliate)
+              : false
+          }
+        />
       </div>
     </AuthGate>
   );
