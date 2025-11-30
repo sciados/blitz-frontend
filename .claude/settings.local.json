@@ -144,7 +144,8 @@
       "Bash(timeout:*)",
       "Bash(/tmp/build.log)",
       "Bash(awk:*)",
-      "Bash(/tmp/messages_updated.tsx)"
+      "Bash(/tmp/messages_updated.tsx)",
+      "Bash(psql:*)"
     ],
     "deny": [],
     "ask": []
