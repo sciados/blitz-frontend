@@ -8,6 +8,14 @@ import { AuthGate } from "src/components/AuthGate";
 import Link from "next/link";
 import { toast } from "sonner";
 
+type ProductDeveloper = {
+  user_id: number;
+  full_name: string;
+  email: string;
+  product_name?: string;
+  product_url?: string;
+};
+
 type Affiliate = {
   id: number;
   user_id: number;
@@ -236,6 +244,34 @@ export default function AffiliatesPage() {
                       {affiliate.reputation_score}%
                     </span>
                   </div>
+                  
+                  {/* Product Developers */}
+                  {affiliate.mutual_products && affiliate.mutual_products.length > 0 && (
+                    <div className="mb-4">
+                      <h4 className="text-xs font-medium mb-2" style={{ color: "var(--text-tertiary)" }}>
+                        Has Campaigns For:
+                      </h4>
+                      <div className="space-y-2">
+                        {affiliate.mutual_products.slice(0, 2).map((dev) => (
+                          <div key={dev.user_id} className="text-xs">
+                            <div className="font-medium" style={{ color: "var(--text-primary)" }}>
+                              {dev.full_name}
+                            </div>
+                            {dev.product_name && (
+                              <div className="text-xs" style={{ color: "var(--text-secondary)" }}>
+                                {dev.product_name}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                        {affiliate.mutual_products.length > 2 && (
+                          <div className="text-xs" style={{ color: "var(--text-tertiary)" }}>
+                            +{affiliate.mutual_products.length - 2} more
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
 
                   {/* Links */}
                   <div className="flex items-center gap-3 mb-4">

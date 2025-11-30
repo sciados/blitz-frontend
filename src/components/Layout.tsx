@@ -112,6 +112,7 @@ export default function Layout({ children }: LayoutProps) {
         { href: "/admin/analytics", label: "Analytics", icon: "📊" },
         { href: "/admin/compliance", label: "Compliance", icon: "🛡️" },
         { href: "/admin/api-keys", label: "API Keys", icon: "🔑" },
+        { href: "/admin/messages", label: "Messenger", icon: "📨" },
       ];
     }
 
