@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Search, UserCheck, Globe, Mail } from "lucide-react";
+import { Search, UserCheck, Globe, Mail, Clock } from "lucide-react";
 import { api } from "src/lib/appClient";
 import { AuthGate } from "src/components/AuthGate";
 import Link from "next/link";
@@ -52,6 +52,19 @@ export default function AffiliatesPage() {
     },
   });
 
+  // Get sent requests to check for pending requests
+  const { data: sentRequests } = useQuery({
+    queryKey: ["sentRequests"],
+    queryFn: async () => {
+      const response = await api.get("/api/message-requests/sent");
+      return response.data as Array<{
+        id: number;
+        recipient_id: number;
+        status: string;
+      }>;
+    },
+  });
+
   const requestMutation = useMutation({
     mutationFn: async (params: { recipientId: number; messageType: string; name: string }) => {
       const response = await api.post("/api/message-requests", {
@@ -65,6 +78,7 @@ export default function AffiliatesPage() {
     onSuccess: () => {
       toast.success("Connection request sent!");
       queryClient.invalidateQueries({ queryKey: ["affiliates"] });
+      queryClient.invalidateQueries({ queryKey: ["sentRequests"] });
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.detail || "Failed to send request");
@@ -101,6 +115,14 @@ export default function AffiliatesPage() {
       messageType,
       name: affiliate.full_name,
     });
+  };
+
+  // Check if there's a pending request to this affiliate
+  const hasPendingRequest = (affiliate: Affiliate) => {
+    if (!sentRequests) return false;
+    return sentRequests.some(
+      req => req.recipient_id === affiliate.user_id && req.status === 'pending'
+    );
   };
 
   return (
@@ -339,6 +361,11 @@ export default function AffiliatesPage() {
                       <div className="flex items-center gap-2 text-green-600">
                         <UserCheck className="w-5 h-5" />
                         <span className="text-sm font-medium">Connected</span>
+                      </div>
+                    ) : hasPendingRequest(affiliate) ? (
+                      <div className="flex items-center gap-2" style={{ color: "var(--text-secondary)" }}>
+                        <Clock className="w-5 h-5" />
+                        <span className="text-sm font-medium">Request Pending</span>
                       </div>
                     ) : (
                       <button
