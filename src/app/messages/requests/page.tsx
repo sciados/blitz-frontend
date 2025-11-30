@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { UserCheck, UserX, Ban, CheckCircle, XCircle } from "lucide-react";
+import { UserCheck, UserX, Ban, CheckCircle, XCircle, Users } from "lucide-react";
 import { api } from "src/lib/appClient";
 import { AuthGate } from "src/components/AuthGate";
 import { toast } from "sonner";
@@ -19,8 +19,17 @@ type MessageRequest = {
   responded_at?: string;
 };
 
+type Connection = {
+  connection_id: number;
+  user1_id: number;
+  user2_id: number;
+  other_user_id: number;
+  connection_type: string;
+  created_at: string;
+};
+
 export default function MessageRequestsPage() {
-  const [activeTab, setActiveTab] = useState<"received" | "sent">("received");
+  const [activeTab, setActiveTab] = useState<"received" | "sent" | "connections">("received");
 
   const queryClient = useQueryClient();
 
@@ -37,6 +46,14 @@ export default function MessageRequestsPage() {
     queryFn: async () => {
       const response = await api.get("/api/message-requests/sent");
       return response.data as MessageRequest[];
+    },
+  });
+
+  const { data: connections, isLoading: connectionsLoading } = useQuery({
+    queryKey: ["connections"],
+    queryFn: async () => {
+      const response = await api.get("/api/connections");
+      return response.data as Connection[];
     },
   });
 
@@ -76,9 +93,38 @@ export default function MessageRequestsPage() {
     onSuccess: () => {
       toast.success("Sender blocked");
       queryClient.invalidateQueries({ queryKey: ["message-requests"] });
+      queryClient.invalidateQueries({ queryKey: ["connections"] });
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.detail || "Failed to block sender");
+    },
+  });
+
+  const deleteConnectionMutation = useMutation({
+    mutationFn: async (connectionId: number) => {
+      const response = await api.delete(`/api/connections/${connectionId}`);
+      return response.data;
+    },
+    onSuccess: () => {
+      toast.success("Connection removed");
+      queryClient.invalidateQueries({ queryKey: ["connections"] });
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.detail || "Failed to remove connection");
+    },
+  });
+
+  const blockConnectionUserMutation = useMutation({
+    mutationFn: async (userId: number) => {
+      const response = await api.post(`/api/connections/block/${userId}`);
+      return response.data;
+    },
+    onSuccess: () => {
+      toast.success("User blocked and connection removed");
+      queryClient.invalidateQueries({ queryKey: ["connections"] });
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.detail || "Failed to block user");
     },
   });
 
@@ -111,10 +157,15 @@ export default function MessageRequestsPage() {
     }
   };
 
-  const requests = activeTab === "received" ? receivedRequests : sentRequests;
-  const loading = activeTab === "received" ? receivedLoading : sentLoading;
+  const requests = activeTab === "received" ? receivedRequests : activeTab === "sent" ? sentRequests : [];
+  const loading = activeTab === "received" ? receivedLoading : activeTab === "sent" ? sentLoading : connectionsLoading;
 
   const pendingReceived = receivedRequests?.filter((r) => r.status === "pending").length || 0;
+
+  // Filter connections to show only approved ones
+  const approvedConnections = connections?.filter(
+    (conn) => conn.connection_type === "approved_request" || conn.connection_type === "mutual_connection"
+  ) || [];
 
   return (
     <AuthGate requiredRole="user">
@@ -164,6 +215,20 @@ export default function MessageRequestsPage() {
             <UserCheck className="w-4 h-4" />
             Sent
           </button>
+          <button
+            onClick={() => setActiveTab("connections")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+              activeTab === "connections"
+                ? "bg-blue-600 text-white"
+                : "hover:bg-gray-100 dark:hover:bg-gray-800"
+            }`}
+            style={{
+              color: activeTab === "connections" ? "white" : "var(--text-primary)",
+            }}
+          >
+            <Users className="w-4 h-4" />
+            My Connections ({approvedConnections.length})
+          </button>
         </div>
 
         {/* Request List */}
@@ -178,6 +243,68 @@ export default function MessageRequestsPage() {
             <div className="p-8 text-center" style={{ color: "var(--text-secondary)" }}>
               Loading requests...
             </div>
+          ) : activeTab === "connections" ? (
+            /* Connections List */
+            !approvedConnections || approvedConnections.length === 0 ? (
+              <div className="p-8 text-center" style={{ color: "var(--text-secondary)" }}>
+                <Users className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                <p className="text-lg font-medium mb-1">No connections yet</p>
+                <p className="text-sm">
+                  Start networking by approving connection requests
+                </p>
+              </div>
+            ) : (
+              <div className="divide-y" style={{ borderColor: "var(--border-color)" }}>
+                {approvedConnections.map((connection) => (
+                  <div key={connection.connection_id} className="p-6">
+                    <div className="flex items-start justify-between gap-4 mb-3">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <h3
+                            className="font-semibold text-lg"
+                            style={{ color: "var(--text-primary)" }}
+                          >
+                            Connected User #{connection.other_user_id}
+                          </h3>
+                          <span className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
+                            Connected
+                          </span>
+                        </div>
+                        <p
+                          className="text-sm mb-3"
+                          style={{ color: "var(--text-secondary)" }}
+                        >
+                          Connection Type: {connection.connection_type.replace(/_/g, " ")}
+                        </p>
+                        <div className="flex items-center gap-4 text-xs" style={{ color: "var(--text-tertiary)" }}>
+                          <span>Connected: {formatDate(connection.created_at)}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Action Buttons for Connections */}
+                    <div className="flex items-center gap-3 mt-4">
+                      <button
+                        onClick={() => deleteConnectionMutation.mutate(connection.connection_id)}
+                        disabled={deleteConnectionMutation.isPending}
+                        className="flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <UserX className="w-4 h-4" />
+                        Remove Connection
+                      </button>
+                      <button
+                        onClick={() => blockConnectionUserMutation.mutate(connection.other_user_id)}
+                        disabled={blockConnectionUserMutation.isPending}
+                        className="flex items-center gap-2 bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <Ban className="w-4 h-4" />
+                        Block User
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )
           ) : !requests || requests.length === 0 ? (
             <div className="p-8 text-center" style={{ color: "var(--text-secondary)" }}>
               <UserCheck className="w-12 h-12 mx-auto mb-3 opacity-50" />
