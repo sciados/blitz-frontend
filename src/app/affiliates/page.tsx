@@ -21,6 +21,7 @@ type Affiliate = {
   user_id: number;
   email: string;
   full_name: string;
+  user_type?: string;
   profile_image_url?: string;
   bio?: string;
   specialty?: string;
@@ -197,6 +198,17 @@ export default function AffiliatesPage() {
                         {affiliate.verified && (
                           <span className="bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300 text-xs px-2 py-0.5 rounded">
                             ✓ Verified
+                          </span>
+                        )}
+                        {affiliate.user_type && (
+                          <span
+                            className={`text-xs px-2 py-0.5 rounded ${
+                              affiliate.user_type === 'Affiliate'
+                                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
+                                : 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300'
+                            }`}
+                          >
+                            {affiliate.user_type}
                           </span>
                         )}
                       </div>
