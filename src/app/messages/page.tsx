@@ -69,7 +69,7 @@ export default function MessagesPage() {
   const messages = activeTab === "inbox" ? inboxData?.messages : sentData?.messages;
   const loading = activeTab === "inbox" ? inboxLoading : sentLoading;
   const total = activeTab === "inbox" ? inboxData?.total : sentData?.total;
-  const unreadCount = activeTab === "inbox" ? inboxData?.unread_count : 0;
+  const unreadCount = activeTab === "inbox" ? (inboxData?.unread_count ?? 0) : 0;
 
   return (
     <AuthGate requiredRole="user">
