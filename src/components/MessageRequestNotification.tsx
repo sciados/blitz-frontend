@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Bell, X, Mail, Clock } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
+import { usePathname } from "next/navigation";
 
 type MessageRequest = {
   id: number;
@@ -14,6 +15,7 @@ type MessageRequest = {
 };
 
 export function MessageRequestNotification() {
+  const pathname = usePathname();
   const [requests, setRequests] = useState<MessageRequest[]>([]);
   const [showBanner, setShowBanner] = useState(false);
   const [hasShownNotification, setHasShownNotification] = useState(false);
@@ -57,6 +59,13 @@ export function MessageRequestNotification() {
       window.removeEventListener("showMessageRequestNotification", handleShowNotification as EventListener);
     };
   }, []);
+
+  // Hide banner when user visits the message requests page
+  useEffect(() => {
+    if (pathname === "/messages/requests") {
+      setShowBanner(false);
+    }
+  }, [pathname]);
 
   // Don't show on first load if already checked
   if (!showBanner || requests.length === 0) {
