@@ -39,7 +39,7 @@ export default function AffiliatesPage() {
   const [selectedSpecialty, setSelectedSpecialty] = useState<string>("");
   const [selectedUserType, setSelectedUserType] = useState<string>("all");
   const [selectedDeveloper, setSelectedDeveloper] =
-    useState<ProductDeveloper | null>(null);
+    useState<Affiliate | null>(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const queryClient = useQueryClient();
 
@@ -205,13 +205,16 @@ export default function AffiliatesPage() {
   // Handle viewing developer profile
   const handleViewProfile = (affiliate: Affiliate) => {
     if (affiliate.user_type === "Creator") {
-      setSelectedDeveloper(affiliate as ProductDeveloper);
+      setSelectedDeveloper(affiliate);
       setIsProfileModalOpen(true);
     }
   };
 
   // Handle connection request from modal
-  const handleRequestConnectionFromModal = (developer: ProductDeveloper) => {
+  const handleRequestConnectionFromModal = (developer: {
+    user_id: number;
+    full_name: string;
+  }) => {
     requestMutation.mutate({
       recipientId: developer.user_id,
       messageType:

@@ -4,19 +4,6 @@ import { useQuery } from "@tanstack/react-query";
 import { api } from "src/lib/appClient";
 import { X, Package, TrendingUp, Users, MousePointer, Eye } from "lucide-react";
 
-interface Developer {
-  id: number;
-  user_id: number;
-  full_name: string;
-  email: string;
-  specialty?: string;
-  bio?: string;
-  years_experience?: number;
-  website_url?: string;
-  verified: boolean;
-  reputation_score: number;
-}
-
 interface ProductStats {
   product_id: number;
   product_name: string;
@@ -29,8 +16,23 @@ interface ProductStats {
 interface DeveloperProfileModalProps {
   isOpen: boolean;
   onClose: () => void;
-  developer: Developer | null;
-  onRequestConnection: (developer: Developer) => void;
+  developer: {
+    id: number;
+    user_id: number;
+    full_name: string;
+    email: string;
+    specialty?: string;
+    bio?: string;
+    years_experience?: number;
+    website_url?: string;
+    verified: boolean;
+    reputation_score: number;
+    user_type?: string;
+  } | null;
+  onRequestConnection: (developer: {
+    user_id: number;
+    full_name: string;
+  }) => void;
   isRequesting: boolean;
   hasPendingRequest: boolean;
 }
