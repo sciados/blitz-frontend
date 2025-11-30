@@ -51,12 +51,12 @@ export default function AffiliatesPage() {
   });
 
   const requestMutation = useMutation({
-    mutationFn: async (recipientId: number) => {
+    mutationFn: async (params: { recipientId: number; messageType: string; name: string }) => {
       const response = await api.post("/api/message-requests", {
-        recipient_id: recipientId,
-        message_type: "affiliate",
+        recipient_id: params.recipientId,
+        message_type: params.messageType,
         subject: "Request to Connect",
-        content: "I'd like to connect with you to discuss potential collaboration opportunities.",
+        content: `Hi ${params.name}, I'd like to connect with you to discuss potential collaboration opportunities.`,
       });
       return response.data;
     },
@@ -89,8 +89,16 @@ export default function AffiliatesPage() {
     return years === 1 ? "1 year experience" : `${years} years experience`;
   };
 
-  const handleRequestConnection = (userId: number) => {
-    requestMutation.mutate(userId);
+  const handleRequestConnection = (affiliate: Affiliate) => {
+    const messageType = affiliate.user_type === 'Creator'
+      ? 'AFFILIATE_TO_DEV'
+      : 'AFFILIATE_TO_AFFILIATE';
+
+    requestMutation.mutate({
+      recipientId: affiliate.user_id,
+      messageType,
+      name: affiliate.full_name,
+    });
   };
 
   return (
@@ -310,7 +318,7 @@ export default function AffiliatesPage() {
                       </div>
                     ) : (
                       <button
-                        onClick={() => handleRequestConnection(affiliate.user_id)}
+                        onClick={() => handleRequestConnection(affiliate)}
                         disabled={requestMutation.isPending}
                         className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
