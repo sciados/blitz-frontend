@@ -47,7 +47,7 @@ export default function Layout({ children }: LayoutProps) {
   // Check if current page is a landing page (no header/sidebar)
   const isLandingPage = pathname === "/" ||
                         pathname.startsWith("/product-developers") ||
-                        pathname.startsWith("/affiliate") ||
+                        pathname === "/affiliate" ||
                         pathname.startsWith("/business");
 
   // Get help content based on current pathname
