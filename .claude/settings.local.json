@@ -142,7 +142,9 @@
       "Bash(timeout 10 npm run dev:*)",
       "Bash(ls -la:*)",
       "Bash(timeout:*)",
-      "Bash(/tmp/build.log)"
+      "Bash(/tmp/build.log)",
+      "Bash(awk:*)",
+      "Bash(/tmp/messages_updated.tsx)"
     ],
     "deny": [],
     "ask": []

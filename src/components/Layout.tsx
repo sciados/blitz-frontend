@@ -119,6 +119,7 @@ export default function Layout({ children }: LayoutProps) {
     if (userInfo?.role === "creator") {
       return [
         { href: "/dashboard", label: "Dashboard", icon: "🏠" },
+        { href: "/messages", label: "Messages", icon: "💬" },
         { href: "/products", label: "Product Library", icon: "📦" },
         { href: "/intelligence", label: "Intelligence", icon: "🧠" },
         { href: "/content", label: "Content", icon: "✍️" },
@@ -133,6 +134,7 @@ export default function Layout({ children }: LayoutProps) {
     // Affiliate/Business menu (default for regular users)
     return [
       { href: "/dashboard", label: "Dashboard", icon: "🏠" },
+        { href: "/messages", label: "Messages", icon: "💬" },
       { href: "/campaigns", label: "Campaigns", icon: "📢" },
       { href: "/products", label: "Product Library", icon: "📦" },
       { href: "/library", label: "Content Library", icon: "📚" },
