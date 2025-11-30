@@ -145,7 +145,8 @@
       "Bash(/tmp/build.log)",
       "Bash(awk:*)",
       "Bash(/tmp/messages_updated.tsx)",
-      "Bash(psql:*)"
+      "Bash(psql:*)",
+      "WebFetch(domain:docs.railway.com)"
     ],
     "deny": [],
     "ask": []

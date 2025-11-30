@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Search, UserCheck, Globe, Mail, Clock, Bell } from "lucide-react";
 import { api } from "src/lib/appClient";
@@ -38,6 +38,32 @@ export default function AffiliatesPage() {
   const [selectedSpecialty, setSelectedSpecialty] = useState<string>("");
   const [selectedUserType, setSelectedUserType] = useState<string>("all");
   const queryClient = useQueryClient();
+
+  // Detect current user's type to set appropriate default filter
+  const getCurrentUserType = () => {
+    if (typeof window === "undefined") return null;
+
+    const token = localStorage.getItem("token");
+    if (!token) return null;
+
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      // Check role - if role is 'creator', user_type is 'Creator'
+      return payload.role === 'creator' ? 'Creator' : null;
+    } catch (e) {
+      console.error('Failed to decode token:', e);
+      return null;
+    }
+  };
+
+  // Set default filter based on current user type
+  const currentUserType = getCurrentUserType();
+  const defaultUserType = currentUserType === 'Creator' ? 'Creator' : 'all';
+
+  // Set the default filter on component mount
+  useEffect(() => {
+    setSelectedUserType(defaultUserType);
+  }, [defaultUserType]);
 
   const { data: affiliates, isLoading } = useQuery({
     queryKey: ["affiliates", searchTerm, selectedSpecialty, selectedUserType],
