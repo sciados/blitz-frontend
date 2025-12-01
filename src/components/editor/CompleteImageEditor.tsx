@@ -27,7 +27,6 @@ export function CompleteImageEditor({
     setOverlays([...overlays, overlay]);
     setSelectedOverlay(overlay.id);
     setShowTransformControls(true);
-    toast.success("Image added successfully!");
   };
 
   const handleOverlayUpdate = (updatedOverlay: OverlayData) => {

@@ -133,8 +133,6 @@ export function ImageEditorModal({
 
       // Load and store dimensions
       updateOverlayDimensions(newOverlay.id, data.image_url);
-
-      toast.success("Image added successfully!");
     } catch (error) {
       console.error("Failed to add image:", error);
       toast.error("Failed to add image");
