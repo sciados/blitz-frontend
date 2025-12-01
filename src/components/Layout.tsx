@@ -42,31 +42,35 @@ export default function Layout({ children }: LayoutProps) {
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(true);
   const [rightSidebarOpen, setRightSidebarOpen] = useState(true);
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
-  const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({});
+  const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>(
+    {}
+  );
 
   // Check if current page is an auth page (login, register)
   const isAuthPage = pathname === "/login" || pathname === "/register";
 
   // Check if current page is a landing page (no header/sidebar)
-  const isLandingPage = pathname === "/" ||
-                        pathname.startsWith("/product-developers") ||
-                        pathname === "/affiliate" ||
-                        pathname.startsWith("/business");
+  const isLandingPage =
+    pathname === "/" ||
+    pathname.startsWith("/product-developers") ||
+    pathname === "/affiliate" ||
+    pathname.startsWith("/business");
 
   // Get help content based on current pathname
   const helpContent = getHelpContent(pathname);
 
   // Auto-expand Messages menu when on messages-related pages
   useEffect(() => {
-    const isMessagesPage = pathname === "/messages" ||
-                           pathname === "/messages/compose" ||
-                           pathname.startsWith("/message/requests") ||
-                           pathname === "/affiliates";
+    const isMessagesPage =
+      pathname === "/messages" ||
+      pathname === "/messages/compose" ||
+      pathname.startsWith("/messages/requests") ||
+      pathname === "/affiliates";
 
     if (isMessagesPage) {
-      setExpandedMenus(prev => ({
+      setExpandedMenus((prev) => ({
         ...prev,
-        "/messages": true
+        "/messages": true,
       }));
     }
   }, [pathname]);
@@ -112,7 +116,9 @@ export default function Layout({ children }: LayoutProps) {
 
     const fetchPendingRequests = async () => {
       try {
-        const res = await api.get("/api/message-requests/received?status=pending");
+        const res = await api.get(
+          "/api/message-requests/received?status=pending"
+        );
         const pendingRequests = res.data as Array<{
           id: number;
           sender_id: number;
@@ -123,14 +129,17 @@ export default function Layout({ children }: LayoutProps) {
 
         if (pendingRequests.length > 0) {
           // Show notification
-          const notification = new CustomEvent('showMessageRequestNotification', {
-            detail: { requests: pendingRequests }
-          });
+          const notification = new CustomEvent(
+            "showMessageRequestNotification",
+            {
+              detail: { requests: pendingRequests },
+            }
+          );
           window.dispatchEvent(notification);
         }
       } catch (err) {
         // Silent fail - not critical
-        console.error('Failed to fetch pending requests:', err);
+        console.error("Failed to fetch pending requests:", err);
       }
     };
 
@@ -149,7 +158,11 @@ export default function Layout({ children }: LayoutProps) {
       return [
         { href: "/admin/dashboard", label: "Dashboard", icon: "🏠" },
         { href: "/admin/signups", label: "Email Signups", icon: "📧" },
-        { href: "/admin/email-templates", label: "Email Templates", icon: "📝" },
+        {
+          href: "/admin/email-templates",
+          label: "Email Templates",
+          icon: "📝",
+        },
         { href: "/admin/campaigns", label: "Campaigns", icon: "📢" },
         { href: "/products", label: "Product Library", icon: "📦" },
         {
@@ -159,7 +172,7 @@ export default function Layout({ children }: LayoutProps) {
           children: [
             { href: "/messages", label: "Inbox & Sent", icon: "💬" },
             { href: "/messages/compose", label: "Compose", icon: "✏️" },
-            { href: "/message/requests", label: "Requests", icon: "🤝" },
+            { href: "/messages/requests", label: "Requests", icon: "🤝" },
             { href: "/affiliates", label: "Directory", icon: "👥" },
           ],
         },
@@ -186,7 +199,7 @@ export default function Layout({ children }: LayoutProps) {
           children: [
             { href: "/messages", label: "Inbox & Sent", icon: "💬" },
             { href: "/messages/compose", label: "Compose", icon: "✏️" },
-            { href: "/message/requests", label: "Requests", icon: "🤝" },
+            { href: "/messages/requests", label: "Requests", icon: "🤝" },
             { href: "/affiliates", label: "Directory", icon: "👥" },
           ],
         },
@@ -211,7 +224,7 @@ export default function Layout({ children }: LayoutProps) {
         children: [
           { href: "/messages", label: "Inbox & Sent", icon: "💬" },
           { href: "/messages/compose", label: "Compose", icon: "✏️" },
-          { href: "/message/requests", label: "Requests", icon: "🤝" },
+          { href: "/messages/requests", label: "Requests", icon: "🤝" },
           { href: "/affiliates", label: "Directory", icon: "👥" },
         ],
       },
@@ -471,12 +484,16 @@ export default function Layout({ children }: LayoutProps) {
                   <div key={item.href}>
                     {hasChildren ? (
                       <button
-                        onClick={() => setExpandedMenus(prev => ({
-                          ...prev,
-                          [item.href]: !prev[item.href]
-                        }))}
+                        onClick={() =>
+                          setExpandedMenus((prev) => ({
+                            ...prev,
+                            [item.href]: !prev[item.href],
+                          }))
+                        }
                         className={`flex items-center w-full ${
-                          leftSidebarOpen ? "space-x-3 px-4" : "justify-center px-2"
+                          leftSidebarOpen
+                            ? "space-x-3 px-4"
+                            : "justify-center px-2"
                         } py-3 rounded-lg transition-all duration-200 group relative border-l-4 ${
                           isActive
                             ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-semibold border-blue-600 dark:border-blue-400"
@@ -527,7 +544,9 @@ export default function Layout({ children }: LayoutProps) {
                       <Link
                         href={item.href as any}
                         className={`flex items-center ${
-                          leftSidebarOpen ? "space-x-3 px-4" : "justify-center px-2"
+                          leftSidebarOpen
+                            ? "space-x-3 px-4"
+                            : "justify-center px-2"
                         } py-3 rounded-lg transition-all duration-200 group relative border-l-4 ${
                           isActive
                             ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-semibold border-blue-600 dark:border-blue-400"
