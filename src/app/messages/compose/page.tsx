@@ -272,12 +272,17 @@ export default function ComposeMessagePage() {
   };
 
   const toggleRecipient = (recipient: Recipient) => {
-    const isSelected = selectedRecipients.some(r => r.user_id === recipient.user_id);
-    if (isSelected) {
-      setSelectedRecipients(selectedRecipients.filter(r => r.user_id !== recipient.user_id));
-    } else {
-      setSelectedRecipients([...selectedRecipients, recipient]);
-    }
+    // Find the canonical recipient from allRecipients to ensure consistent object reference
+    const canonicalRecipient = allRecipients.find(r => r.user_id === recipient.user_id) || recipient;
+
+    setSelectedRecipients(prevSelected => {
+      const isSelected = prevSelected.some(r => r.user_id === recipient.user_id);
+      if (isSelected) {
+        return prevSelected.filter(r => r.user_id !== recipient.user_id);
+      } else {
+        return [...prevSelected, canonicalRecipient];
+      }
+    });
   };
 
   const removeRecipient = (recipientId: number) => {
