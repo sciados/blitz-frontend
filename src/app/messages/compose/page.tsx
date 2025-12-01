@@ -329,7 +329,7 @@ export default function ComposeMessagePage() {
                                 <input
                                   type="checkbox"
                                   checked={isSelected}
-                                  onChange={() => {}}
+                                  onChange={() => toggleRecipient(recipient)}
                                   className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
                                 />
                                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold">
