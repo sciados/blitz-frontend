@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Search, UserCheck, Globe, Mail, Clock, Bell, Eye } from "lucide-react";
+import { Search, UserCheck, Globe, Mail, Clock, Bell, Eye, MessageSquare } from "lucide-react";
 import { api } from "src/lib/appClient";
 import { AuthGate } from "src/components/AuthGate";
 import { DeveloperProfileModal } from "src/components/DeveloperProfileModal";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 type ProductDeveloper = {
@@ -43,6 +44,7 @@ export default function AffiliatesPage() {
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [sortBy, setSortBy] = useState<string>("connection-status");
   const queryClient = useQueryClient();
+  const router = useRouter();
 
   // Detect current user's type to set appropriate default filter
   const getCurrentUserType = () => {
@@ -284,6 +286,11 @@ export default function AffiliatesPage() {
       name: developer.full_name,
     });
     setIsProfileModalOpen(false);
+  };
+
+  // Handle sending message to connected user
+  const handleSendMessage = (affiliate: Affiliate) => {
+    router.push(`/messages/compose?recipient_id=${affiliate.user_id}&name=${encodeURIComponent(affiliate.full_name)}`);
   };
 
   return (
