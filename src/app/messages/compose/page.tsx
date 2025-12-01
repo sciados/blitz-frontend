@@ -247,20 +247,13 @@ export default function ComposeMessagePage() {
       } catch (err) {
         console.error("Query invalidation error:", err);
       }
-      // Add a small delay to ensure toast is shown before navigation
-      setTimeout(() => {
-        try {
-          router.push("/messages");
-        } catch (err) {
-          console.error("Navigation error:", err);
-          // Fallback: reload the page if navigation fails
-          window.location.href = "/messages";
-        }
-      }, 500);
+      // Navigate immediately - no setTimeout needed
+      router.push("/messages");
     },
     onError: (error: any) => {
       console.error("Message send error:", error);
-      toast.error(error.response?.data?.detail || "Failed to send message");
+      const errorMessage = error.response?.data?.detail || error.message || "Failed to send message";
+      toast.error(errorMessage);
     },
   });
 
