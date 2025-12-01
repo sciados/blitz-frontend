@@ -156,20 +156,35 @@ export function ImageEditorModal({
     const overlay = overlays.find((o) => o.id === overlayId);
     if (!overlay) return;
 
+    if (!canvasRef.current) return;
+
+    const canvasRect = canvasRef.current.getBoundingClientRect();
+
+    // Calculate mouse position relative to the canvas (same as TextEditorModal)
+    const mouseX = e.clientX - canvasRect.left;
+    const mouseY = e.clientY - canvasRect.top;
+
     setIsDragging(true);
+    // Store the initial mouse position and layer position (same as TextEditorModal)
     setDragStart({
-      x: e.clientX - overlay.x,
-      y: e.clientY - overlay.y,
+      x: mouseX - overlay.x,
+      y: mouseY - overlay.y,
     });
   };
 
   const handleMouseMove = (e: MouseEvent) => {
     if (isDragging && selectedOverlayId) {
       const overlay = overlays.find((o) => o.id === selectedOverlayId);
-      if (!overlay) return;
+      if (!overlay || !canvasRef.current) return;
 
-      const newX = Math.max(0, Math.min(e.clientX - dragStart.x, imageWidth));
-      const newY = Math.max(0, Math.min(e.clientY - dragStart.y, imageHeight));
+      const canvasRect = canvasRef.current.getBoundingClientRect();
+
+      // Calculate mouse position relative to the canvas (same as TextEditorModal)
+      const mouseX = e.clientX - canvasRect.left;
+      const mouseY = e.clientY - canvasRect.top;
+
+      const newX = Math.max(0, Math.min(mouseX - dragStart.x, imageWidth));
+      const newY = Math.max(0, Math.min(mouseY - dragStart.y, imageHeight));
 
       handleOverlayUpdate({
         ...overlay,
@@ -230,13 +245,19 @@ export function ImageEditorModal({
     if (!selectedOverlayId) return;
 
     const overlay = overlays.find((o) => o.id === selectedOverlayId);
-    if (!overlay) return;
+    if (!overlay || !canvasRef.current) return;
+
+    const canvasRect = canvasRef.current.getBoundingClientRect();
+
+    // Calculate mouse position relative to the canvas (same as TextEditorModal)
+    const mouseX = e.clientX - canvasRect.left;
+    const mouseY = e.clientY - canvasRect.top;
 
     setIsResizing(true);
     setResizeHandle(handle);
     setResizeStart({
-      x: e.clientX,
-      y: e.clientY,
+      x: mouseX,
+      y: mouseY,
       scale: overlay.scale,
     });
   };
