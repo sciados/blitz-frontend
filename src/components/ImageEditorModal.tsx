@@ -124,8 +124,8 @@ export function ImageEditorModal({
         rotation: data.rotation,
         opacity: data.opacity,
         z_index: data.z_index,
-        naturalWidth: 0,
-        naturalHeight: 0,
+        naturalWidth: 200,  // Default reasonable size until actual dimensions load
+        naturalHeight: 200,
       };
 
       setOverlays([...overlays, newOverlay]);
@@ -717,9 +717,9 @@ export function ImageEditorModal({
               {/* Overlay Images */}
               {overlays.map((overlay) => {
                 // Calculate TOP-LEFT position from CENTER coordinates
-                // Use natural dimensions if available, otherwise estimate
-                const overlayWidth = overlay.naturalWidth || 100;
-                const overlayHeight = overlay.naturalHeight || 100;
+                // Use natural dimensions if available, otherwise use defaults
+                const overlayWidth = overlay.naturalWidth > 0 ? overlay.naturalWidth : 200;
+                const overlayHeight = overlay.naturalHeight > 0 ? overlay.naturalHeight : 200;
                 const scaledWidth = overlayWidth * overlay.scale;
                 const scaledHeight = overlayHeight * overlay.scale;
 
