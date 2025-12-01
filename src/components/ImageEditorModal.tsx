@@ -715,14 +715,28 @@ export function ImageEditorModal({
               />
 
               {/* Overlay Images */}
-              {overlays.map((overlay) => (
+              {overlays.map((overlay) => {
+                // Calculate TOP-LEFT position from CENTER coordinates
+                // Use natural dimensions if available, otherwise estimate
+                const overlayWidth = overlay.naturalWidth || 100;
+                const overlayHeight = overlay.naturalHeight || 100;
+                const scaledWidth = overlayWidth * overlay.scale;
+                const scaledHeight = overlayHeight * overlay.scale;
+
+                // Convert CENTER (overlay.x, overlay.y) to TOP-LEFT
+                const leftPos = overlay.x - (scaledWidth / 2);
+                const topPos = overlay.y - (scaledHeight / 2);
+
+                return (
                 <div
                   key={overlay.id}
                   className="absolute"
                   style={{
-                    left: overlay.x,
-                    top: overlay.y,
-                    transform: `scale(${overlay.scale}) rotate(${overlay.rotation}deg)`,
+                    left: leftPos,
+                    top: topPos,
+                    width: scaledWidth,
+                    height: scaledHeight,
+                    transform: `rotate(${overlay.rotation}deg)`,
                     transformOrigin: "center center",
                     zIndex: overlay.z_index,
                     cursor:
@@ -735,7 +749,7 @@ export function ImageEditorModal({
                   <img
                     src={overlay.image_url}
                     alt="Overlay"
-                    className={`block ${
+                    className={`block w-full h-full object-contain ${
                       selectedOverlayId === overlay.id
                         ? "ring-2 ring-blue-500"
                         : ""
@@ -805,7 +819,8 @@ export function ImageEditorModal({
                     </>
                   )}
                 </div>
-              ))}
+                );
+              })}
             </div>
 
             <p
