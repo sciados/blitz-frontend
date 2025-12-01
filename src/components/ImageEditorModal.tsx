@@ -1,3 +1,5 @@
+// src/components/ImageEditorModal.tsx
+
 "use client";
 
 import { useState, useRef, useEffect } from "react";
@@ -32,7 +34,9 @@ export function ImageEditorModal({
   onSave,
 }: ImageEditorModalProps) {
   const [overlays, setOverlays] = useState<OverlayData[]>([]);
-  const [selectedOverlayId, setSelectedOverlayId] = useState<string | null>(null);
+  const [selectedOverlayId, setSelectedOverlayId] = useState<string | null>(
+    null
+  );
   const [isProcessing, setIsProcessing] = useState(false);
   const [imageWidth, setImageWidth] = useState<number>(0);
   const [imageHeight, setImageHeight] = useState<number>(0);
@@ -68,7 +72,10 @@ export function ImageEditorModal({
       setLoadingImages(true);
       const { data: campaign } = await api.get(`/api/campaigns/${campaignId}`);
 
-      if (campaign.intelligence_data?.images && Array.isArray(campaign.intelligence_data.images)) {
+      if (
+        campaign.intelligence_data?.images &&
+        Array.isArray(campaign.intelligence_data.images)
+      ) {
         setCampaignImages(campaign.intelligence_data.images);
       } else {
         setCampaignImages([]);
@@ -177,10 +184,10 @@ export function ImageEditorModal({
       const deltaY = e.clientY - resizeStart.y;
 
       let newScale = resizeStart.scale;
-      if (resizeHandle.includes('se') || resizeHandle.includes('ne')) {
+      if (resizeHandle.includes("se") || resizeHandle.includes("ne")) {
         newScale = Math.max(0.1, Math.min(resizeStart.scale + deltaX / 100, 3));
       }
-      if (resizeHandle.includes('sw') || resizeHandle.includes('nw')) {
+      if (resizeHandle.includes("sw") || resizeHandle.includes("nw")) {
         newScale = Math.max(0.1, Math.min(resizeStart.scale - deltaX / 100, 3));
       }
 
@@ -207,7 +214,16 @@ export function ImageEditorModal({
         document.removeEventListener("mouseup", handleMouseUp);
       };
     }
-  }, [isDragging, isResizing, dragStart, resizeStart, selectedOverlayId, overlays, imageWidth, imageHeight]);
+  }, [
+    isDragging,
+    isResizing,
+    dragStart,
+    resizeStart,
+    selectedOverlayId,
+    overlays,
+    imageWidth,
+    imageHeight,
+  ]);
 
   const handleResizeMouseDown = (e: React.MouseEvent, handle: string) => {
     e.stopPropagation();
@@ -533,7 +549,8 @@ export function ImageEditorModal({
                   className="text-xs mt-2 text-center"
                   style={{ color: "var(--text-secondary)" }}
                 >
-                  Use scraped images from campaign intelligence or upload your own
+                  Use scraped images from campaign intelligence or upload your
+                  own
                 </p>
               </div>
             </div>
@@ -582,7 +599,10 @@ export function ImageEditorModal({
                     transform: `scale(${overlay.scale}) rotate(${overlay.rotation}deg)`,
                     transformOrigin: "center center",
                     zIndex: overlay.z_index,
-                    cursor: isDragging && selectedOverlayId === overlay.id ? "grabbing" : "grab",
+                    cursor:
+                      isDragging && selectedOverlayId === overlay.id
+                        ? "grabbing"
+                        : "grab",
                   }}
                   onMouseDown={(e) => handleMouseDown(e, overlay.id)}
                 >
@@ -590,7 +610,9 @@ export function ImageEditorModal({
                     src={overlay.image_url}
                     alt="Overlay"
                     className={`block ${
-                      selectedOverlayId === overlay.id ? "ring-2 ring-blue-500" : ""
+                      selectedOverlayId === overlay.id
+                        ? "ring-2 ring-blue-500"
+                        : ""
                     }`}
                     style={{
                       opacity: overlay.opacity,
@@ -649,7 +671,8 @@ export function ImageEditorModal({
               className="text-xs mt-2 text-center"
               style={{ color: "var(--text-secondary)" }}
             >
-              💡 Drag images to move them. Use the blue corner handles to resize. Use sliders for precise control.
+              💡 Drag images to move them. Use the blue corner handles to
+              resize. Use sliders for precise control.
             </p>
           </div>
         </div>
@@ -702,7 +725,10 @@ export function ImageEditorModal({
           <div className="bg-white dark:bg-gray-900 rounded-lg max-w-4xl w-full max-h-[80vh] overflow-hidden flex flex-col">
             <div className="p-6 border-b border-gray-200 dark:border-gray-700">
               <div className="flex items-center justify-between">
-                <h3 className="text-xl font-bold" style={{ color: "var(--text-primary)" }}>
+                <h3
+                  className="text-xl font-bold"
+                  style={{ color: "var(--text-primary)" }}
+                >
                   📸 Campaign Intelligence Images
                 </h3>
                 <button
@@ -730,7 +756,9 @@ export function ImageEditorModal({
               {loadingImages ? (
                 <div className="text-center py-12">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-                  <p style={{ color: "var(--text-secondary)" }}>Loading campaign images...</p>
+                  <p style={{ color: "var(--text-secondary)" }}>
+                    Loading campaign images...
+                  </p>
                 </div>
               ) : campaignImages.length > 0 ? (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -747,11 +775,17 @@ export function ImageEditorModal({
                           className="w-full h-32 object-contain rounded"
                         />
                       </div>
-                      <div className="text-xs font-medium" style={{ color: "var(--text-primary)" }}>
+                      <div
+                        className="text-xs font-medium"
+                        style={{ color: "var(--text-primary)" }}
+                      >
                         {image.type || "Unknown"}
                       </div>
                       {image.quality_score && (
-                        <div className="text-xs" style={{ color: "var(--text-secondary)" }}>
+                        <div
+                          className="text-xs"
+                          style={{ color: "var(--text-secondary)" }}
+                        >
                           Quality: {(image.quality_score * 100).toFixed(0)}%
                         </div>
                       )}
@@ -774,11 +808,15 @@ export function ImageEditorModal({
                       d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                     />
                   </svg>
-                  <h3 className="text-lg font-semibold mb-2" style={{ color: "var(--text-primary)" }}>
+                  <h3
+                    className="text-lg font-semibold mb-2"
+                    style={{ color: "var(--text-primary)" }}
+                  >
                     No Images Available
                   </h3>
                   <p style={{ color: "var(--text-secondary)" }}>
-                    This campaign doesn't have any scraped images in its intelligence data yet.
+                    This campaign doesn't have any scraped images in its
+                    intelligence data yet.
                   </p>
                 </div>
               )}
