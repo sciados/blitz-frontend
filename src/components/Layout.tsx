@@ -209,10 +209,9 @@ export default function Layout({ children }: LayoutProps) {
         label: "Messages",
         icon: "💬",
         children: [
-          { href: "/messages/inbox", label: "Inbox", icon: "📥" },
-          { href: "/messages/sent", label: "Sent", icon: "📤" },
+          { href: "/messages", label: "Inbox & Sent", icon: "💬" },
           { href: "/messages/compose", label: "Compose", icon: "✏️" },
-          { href: "/message-requests", label: "Requests", icon: "🤝" },
+          { href: "/message/requests", label: "Requests", icon: "🤝" },
           { href: "/affiliates", label: "Directory", icon: "👥" },
         ],
       },
