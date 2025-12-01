@@ -49,24 +49,35 @@ export default function MessagesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedType, setSelectedType] = useState<string>("all");
 
+  // Get current user from token for cache isolation
+  const currentUser = useQuery({
+    queryKey: ["current-user"],
+    queryFn: async () => {
+      const response = await api.get("/api/auth/me");
+      return response.data;
+    },
+  });
+
   const { data: inboxData, isLoading: inboxLoading } = useQuery({
-    queryKey: ["messages", "inbox", page],
+    queryKey: ["messages", "inbox", currentUser.data?.id, page],
     queryFn: async () => {
       const response = await api.get(
         `/api/messages/inbox?page=${page}&per_page=20`
       );
       return response.data as InboxData;
     },
+    enabled: !!currentUser.data, // Only fetch after user is loaded
   });
 
   const { data: sentData, isLoading: sentLoading } = useQuery({
-    queryKey: ["messages", "sent", page],
+    queryKey: ["messages", "sent", currentUser.data?.id, page],
     queryFn: async () => {
       const response = await api.get(
         `/api/messages/sent?page=${page}&per_page=20`
       );
       return response.data as SentData;
     },
+    enabled: !!currentUser.data, // Only fetch after user is loaded
   });
 
   const formatRelativeTime = (dateString: string) => {

@@ -53,6 +53,7 @@ export default function MessageDetailPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["message", messageId] });
+      // Invalidate all inbox queries for all users
       queryClient.invalidateQueries({ queryKey: ["messages", "inbox"] });
     },
   });
@@ -71,6 +72,7 @@ export default function MessageDetailPage() {
       toast.success("Reply sent successfully!");
       setReplyContent("");
       setIsReplying(false);
+      // Invalidate all message queries for all users
       queryClient.invalidateQueries({ queryKey: ["messages"] });
     },
     onError: (error: any) => {

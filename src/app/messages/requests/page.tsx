@@ -42,28 +42,40 @@ export default function MessageRequestsPage() {
 
   const queryClient = useQueryClient();
 
+  // Get current user from token for cache isolation
+  const currentUser = useQuery({
+    queryKey: ["current-user"],
+    queryFn: async () => {
+      const response = await api.get("/api/auth/me");
+      return response.data;
+    },
+  });
+
   const { data: receivedRequests, isLoading: receivedLoading } = useQuery({
-    queryKey: ["message-requests", "received"],
+    queryKey: ["message-requests", "received", currentUser.data?.id],
     queryFn: async () => {
       const response = await api.get("/api/message-requests/received");
       return response.data as MessageRequest[];
     },
+    enabled: !!currentUser.data,
   });
 
   const { data: sentRequests, isLoading: sentLoading } = useQuery({
-    queryKey: ["message-requests", "sent"],
+    queryKey: ["message-requests", "sent", currentUser.data?.id],
     queryFn: async () => {
       const response = await api.get("/api/message-requests/sent");
       return response.data as MessageRequest[];
     },
+    enabled: !!currentUser.data,
   });
 
   const { data: connections, isLoading: connectionsLoading } = useQuery({
-    queryKey: ["connections"],
+    queryKey: ["connections", currentUser.data?.id],
     queryFn: async () => {
       const response = await api.get("/api/connections");
       return response.data as Connection[];
     },
+    enabled: !!currentUser.data,
   });
 
   const approveMutation = useMutation({
@@ -75,7 +87,8 @@ export default function MessageRequestsPage() {
     },
     onSuccess: () => {
       toast.success("Request approved successfully!");
-      queryClient.invalidateQueries({ queryKey: ["message-requests"] });
+      queryClient.invalidateQueries({ queryKey: ["message-requests", "received"] });
+      queryClient.invalidateQueries({ queryKey: ["message-requests", "sent"] });
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.detail || "Failed to approve request");
@@ -91,7 +104,8 @@ export default function MessageRequestsPage() {
     },
     onSuccess: () => {
       toast.success("Request rejected");
-      queryClient.invalidateQueries({ queryKey: ["message-requests"] });
+      queryClient.invalidateQueries({ queryKey: ["message-requests", "received"] });
+      queryClient.invalidateQueries({ queryKey: ["message-requests", "sent"] });
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.detail || "Failed to reject request");
@@ -107,7 +121,7 @@ export default function MessageRequestsPage() {
     },
     onSuccess: () => {
       toast.success("Sender blocked");
-      queryClient.invalidateQueries({ queryKey: ["message-requests"] });
+      queryClient.invalidateQueries({ queryKey: ["message-requests", "received"] });
       queryClient.invalidateQueries({ queryKey: ["connections"] });
     },
     onError: (error: any) => {
