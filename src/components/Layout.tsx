@@ -58,8 +58,9 @@ export default function Layout({ children }: LayoutProps) {
 
   // Auto-expand Messages menu when on messages-related pages
   useEffect(() => {
-    const isMessagesPage = pathname.startsWith("/messages") ||
-                           pathname.startsWith("/message-requests") ||
+    const isMessagesPage = pathname === "/messages" ||
+                           pathname === "/messages/compose" ||
+                           pathname.startsWith("/message/requests") ||
                            pathname === "/affiliates";
 
     if (isMessagesPage) {
@@ -156,10 +157,9 @@ export default function Layout({ children }: LayoutProps) {
           label: "Messages",
           icon: "💬",
           children: [
-            { href: "/messages/inbox", label: "Inbox", icon: "📥" },
-            { href: "/messages/sent", label: "Sent", icon: "📤" },
+            { href: "/messages", label: "Inbox & Sent", icon: "💬" },
             { href: "/messages/compose", label: "Compose", icon: "✏️" },
-            { href: "/message-requests", label: "Requests", icon: "🤝" },
+            { href: "/message/requests", label: "Requests", icon: "🤝" },
             { href: "/affiliates", label: "Directory", icon: "👥" },
           ],
         },
@@ -184,10 +184,9 @@ export default function Layout({ children }: LayoutProps) {
           label: "Messages",
           icon: "💬",
           children: [
-            { href: "/messages/inbox", label: "Inbox", icon: "📥" },
-            { href: "/messages/sent", label: "Sent", icon: "📤" },
+            { href: "/messages", label: "Inbox & Sent", icon: "💬" },
             { href: "/messages/compose", label: "Compose", icon: "✏️" },
-            { href: "/message-requests", label: "Requests", icon: "🤝" },
+            { href: "/message/requests", label: "Requests", icon: "🤝" },
             { href: "/affiliates", label: "Directory", icon: "👥" },
           ],
         },
