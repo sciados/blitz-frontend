@@ -66,17 +66,6 @@ export default function ComposeMessagePage() {
     }
   }, []);
 
-  // Update pre-selected recipient when recipients data loads
-  useEffect(() => {
-    if (selectedRecipients.length > 0 && allRecipients.length > 0) {
-      const updatedSelected = selectedRecipients.map(selected => {
-        const found = allRecipients.find(r => r.user_id === selected.user_id);
-        return found || selected;
-      });
-      setSelectedRecipients(updatedSelected);
-    }
-  }, [allRecipients]);
-
   // Fetch allowed recipients
   const { data: recipientsData, isLoading: recipientsLoading } = useQuery({
     queryKey: ["message-recipients"],
@@ -89,6 +78,17 @@ export default function ComposeMessagePage() {
   // Flatten all recipients into a single array
   const allRecipients: Recipient[] = recipientsData ?
     Object.values(recipientsData.connections).flat() as Recipient[] : [];
+
+  // Update pre-selected recipient when recipients data loads
+  useEffect(() => {
+    if (selectedRecipients.length > 0 && allRecipients.length > 0) {
+      const updatedSelected = selectedRecipients.map(selected => {
+        const found = allRecipients.find(r => r.user_id === selected.user_id);
+        return found || selected;
+      });
+      setSelectedRecipients(updatedSelected);
+    }
+  }, [allRecipients, selectedRecipients]);
 
   // Filter recipients based on search
   const filteredRecipients = allRecipients.filter(recipient =>
