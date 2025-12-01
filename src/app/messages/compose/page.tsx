@@ -77,7 +77,7 @@ export default function ComposeMessagePage() {
 
   // Flatten all recipients into a single array
   const allRecipients: Recipient[] = recipientsData ?
-    Object.values(recipientsData.connections).flat() as Recipient[] : [];
+    Object.values(recipientsData.connections || {}).flat() as Recipient[] : [];
 
   // Update pre-selected recipient when recipients data loads
   useEffect(() => {
