@@ -84,6 +84,7 @@ export function ImageEditorModal({
       }
     } catch (error) {
       console.error("Failed to fetch campaign images:", error);
+      toast.error("Failed to load campaign images");
     } finally {
       setLoadingImages(false);
     }
@@ -134,6 +135,7 @@ export function ImageEditorModal({
       updateOverlayDimensions(newOverlay.id, data.image_url);
     } catch (error) {
       console.error("Failed to add image:", error);
+      toast.error("Failed to add image");
     }
   };
 
@@ -294,6 +296,7 @@ export function ImageEditorModal({
 
   const handleSave = async () => {
     if (overlays.length === 0) {
+      toast.error("No images to save");
       return;
     }
 
@@ -325,10 +328,12 @@ export function ImageEditorModal({
         prompt: sourceImage.prompt,
       });
 
+      toast.success("Image with overlay saved successfully!");
       onSave(data);
       onClose();
     } catch (error) {
       console.error("Failed to save image:", error);
+      toast.error("Failed to save image");
     } finally {
       setIsProcessing(false);
     }
@@ -662,6 +667,7 @@ export function ImageEditorModal({
                       const file = e.target.files?.[0];
                       if (file) {
                         // TODO: Implement file upload to server/R2
+                        toast.info("File upload not yet implemented");
                       }
                     }}
                   />

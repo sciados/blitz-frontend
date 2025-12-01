@@ -17,10 +17,12 @@ export function ProductImageUpload({ campaignId, onUploaded }: ProductImageUploa
     if (!file) return;
 
     if (!file.type.match(/^image\/(png|jpe?g|webp)$/)) {
+      toast.error("Please upload a PNG, JPG, or WebP image");
       return;
     }
 
     if (file.size > 10 * 1024 * 1024) {
+      toast.error("Image must be less than 10MB");
       return;
     }
 
@@ -38,7 +40,9 @@ export function ProductImageUpload({ campaignId, onUploaded }: ProductImageUploa
       );
       
       onUploaded(response.data.image_url);
+      toast.success("Image uploaded successfully");
     } catch (error) {
+      toast.error("Failed to upload image");
       console.error(error);
     } finally {
       setUploading(false);
