@@ -611,9 +611,19 @@ export default function AffiliatesPage() {
                     style={{ borderColor: "var(--border-color)" }}
                   >
                     {affiliate.is_connected ? (
-                      <div className="flex items-center gap-2 text-green-600">
-                        <UserCheck className="w-5 h-5" />
-                        <span className="text-sm font-medium">Connected</span>
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2 text-green-600">
+                          <UserCheck className="w-5 h-5" />
+                          <span className="text-sm font-medium">Connected</span>
+                        </div>
+                        {/* Send Message Button */}
+                        <button
+                          onClick={() => handleSendMessage(affiliate)}
+                          className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                        >
+                          <MessageSquare className="w-4 h-4" />
+                          Send Message
+                        </button>
                       </div>
                     ) : hasPendingRequest(affiliate) ? (
                       <div

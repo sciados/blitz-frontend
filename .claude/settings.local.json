@@ -146,7 +146,8 @@
       "Bash(awk:*)",
       "Bash(/tmp/messages_updated.tsx)",
       "Bash(psql:*)",
-      "WebFetch(domain:docs.railway.com)"
+      "WebFetch(domain:docs.railway.com)",
+      "Bash(tree:*)"
     ],
     "deny": [],
     "ask": []
