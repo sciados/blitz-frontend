@@ -717,9 +717,9 @@ export function ImageEditorModal({
               {/* Overlay Images */}
               {overlays.map((overlay) => {
                 // Calculate TOP-LEFT position from CENTER coordinates
-                // Use natural dimensions if available, otherwise use defaults
-                const overlayWidth = overlay.naturalWidth > 0 ? overlay.naturalWidth : 200;
-                const overlayHeight = overlay.naturalHeight > 0 ? overlay.naturalHeight : 200;
+                // Use natural dimensions if available and > 0, otherwise use defaults
+                const overlayWidth = (overlay.naturalWidth && overlay.naturalWidth > 0) ? overlay.naturalWidth : 200;
+                const overlayHeight = (overlay.naturalHeight && overlay.naturalHeight > 0) ? overlay.naturalHeight : 200;
                 const scaledWidth = overlayWidth * overlay.scale;
                 const scaledHeight = overlayHeight * overlay.scale;
 
