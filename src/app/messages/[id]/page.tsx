@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Reply, Send } from "lucide-react";
+import { ArrowLeft, Reply, Send, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { api } from "src/lib/appClient";
 import { AuthGate } from "src/components/AuthGate";
@@ -61,6 +61,7 @@ export default function MessageDetailPage() {
     mutationFn: async (content: string) => {
       const response = await api.post(`/api/messages/${messageId}/reply`, {
         content,
+        subject: `Re: ${message?.subject || "Message"}`,
         message_type: message?.message_type || "general",
         recipient_ids: [message?.sender_id || 0],
       });
@@ -73,7 +74,23 @@ export default function MessageDetailPage() {
       queryClient.invalidateQueries({ queryKey: ["messages"] });
     },
     onError: (error: any) => {
+      console.error("Reply error:", error);
       toast.error(error.response?.data?.detail || "Failed to send reply");
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async () => {
+      await api.delete(`/api/messages/${messageId}`);
+    },
+    onSuccess: () => {
+      toast.success("Message deleted successfully!");
+      queryClient.invalidateQueries({ queryKey: ["messages"] });
+      router.push("/messages");
+    },
+    onError: (error: any) => {
+      console.error("Delete error:", error);
+      toast.error(error.response?.data?.detail || "Failed to delete message");
     },
   });
 
@@ -106,11 +123,13 @@ export default function MessageDetailPage() {
   };
 
   // Mark as read when component loads - use useEffect to avoid infinite loop
+  const [hasMarkedRead, setHasMarkedRead] = useState(false);
   useEffect(() => {
-    if (message && !markAsReadMutation.isPending) {
+    if (message && !hasMarkedRead && !markAsReadMutation.isPending) {
       handleMarkAsRead();
+      setHasMarkedRead(true);
     }
-  }, [message]); // Only run when message changes, not on every render
+  }, [message, hasMarkedRead, markAsReadMutation.isPending]);
 
   if (isLoading) {
     return (
@@ -170,13 +189,27 @@ export default function MessageDetailPage() {
                 )}
               </div>
             </div>
-            <button
-              onClick={() => setIsReplying(!isReplying)}
-              className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              <Reply className="w-4 h-4" />
-              Reply
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setIsReplying(!isReplying)}
+                className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                <Reply className="w-4 h-4" />
+                Reply
+              </button>
+              <button
+                onClick={() => {
+                  if (window.confirm("Are you sure you want to delete this message? This action cannot be undone.")) {
+                    deleteMutation.mutate();
+                  }
+                }}
+                disabled={deleteMutation.isPending}
+                className="flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Trash2 className="w-4 h-4" />
+                {deleteMutation.isPending ? "Deleting..." : "Delete"}
+              </button>
+            </div>
           </div>
         </div>
 
