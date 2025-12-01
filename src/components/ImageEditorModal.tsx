@@ -584,17 +584,19 @@ export function ImageEditorModal({
                     zIndex: overlay.z_index,
                     cursor: isDragging && selectedOverlayId === overlay.id ? "grabbing" : "grab",
                   }}
+                  onMouseDown={(e) => handleMouseDown(e, overlay.id)}
                 >
                   <img
                     src={overlay.image_url}
                     alt="Overlay"
-                    className={`pointer-events-none ${
+                    className={`block ${
                       selectedOverlayId === overlay.id ? "ring-2 ring-blue-500" : ""
                     }`}
                     style={{
                       opacity: overlay.opacity,
+                      pointerEvents: "none",
+                      userSelect: "none",
                     }}
-                    onMouseDown={(e) => handleMouseDown(e, overlay.id)}
                     draggable={false}
                   />
 
