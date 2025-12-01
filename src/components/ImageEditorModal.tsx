@@ -40,6 +40,11 @@ export function ImageEditorModal({
   const [showCampaignImages, setShowCampaignImages] = useState(false);
   const [campaignImages, setCampaignImages] = useState<any[]>([]);
   const [loadingImages, setLoadingImages] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [isResizing, setIsResizing] = useState(false);
+  const [resizeHandle, setResizeHandle] = useState<string | null>(null);
+  const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, scale: 1 });
   const canvasRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
 
@@ -135,6 +140,89 @@ export function ImageEditorModal({
     } else if (updatedOverlays.length === 0) {
       setSelectedOverlayId(null);
     }
+  };
+
+  // Mouse drag handlers
+  const handleMouseDown = (e: React.MouseEvent, overlayId: string) => {
+    e.stopPropagation();
+    setSelectedOverlayId(overlayId);
+    const overlay = overlays.find((o) => o.id === overlayId);
+    if (!overlay) return;
+
+    setIsDragging(true);
+    setDragStart({
+      x: e.clientX - overlay.x,
+      y: e.clientY - overlay.y,
+    });
+  };
+
+  const handleMouseMove = (e: MouseEvent) => {
+    if (isDragging && selectedOverlayId) {
+      const overlay = overlays.find((o) => o.id === selectedOverlayId);
+      if (!overlay) return;
+
+      const newX = Math.max(0, Math.min(e.clientX - dragStart.x, imageWidth));
+      const newY = Math.max(0, Math.min(e.clientY - dragStart.y, imageHeight));
+
+      handleOverlayUpdate({
+        ...overlay,
+        x: newX,
+        y: newY,
+      });
+    } else if (isResizing && selectedOverlayId && resizeHandle) {
+      const overlay = overlays.find((o) => o.id === selectedOverlayId);
+      if (!overlay) return;
+
+      const deltaX = e.clientX - resizeStart.x;
+      const deltaY = e.clientY - resizeStart.y;
+
+      let newScale = resizeStart.scale;
+      if (resizeHandle.includes('se') || resizeHandle.includes('ne')) {
+        newScale = Math.max(0.1, Math.min(resizeStart.scale + deltaX / 100, 3));
+      }
+      if (resizeHandle.includes('sw') || resizeHandle.includes('nw')) {
+        newScale = Math.max(0.1, Math.min(resizeStart.scale - deltaX / 100, 3));
+      }
+
+      handleOverlayUpdate({
+        ...overlay,
+        scale: newScale,
+      });
+    }
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+    setIsResizing(false);
+    setResizeHandle(null);
+  };
+
+  // Attach global mouse events when dragging/resizing
+  useEffect(() => {
+    if (isDragging || isResizing) {
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp);
+      return () => {
+        document.removeEventListener("mousemove", handleMouseMove);
+        document.removeEventListener("mouseup", handleMouseUp);
+      };
+    }
+  }, [isDragging, isResizing, dragStart, resizeStart, selectedOverlayId, overlays, imageWidth, imageHeight]);
+
+  const handleResizeMouseDown = (e: React.MouseEvent, handle: string) => {
+    e.stopPropagation();
+    if (!selectedOverlayId) return;
+
+    const overlay = overlays.find((o) => o.id === selectedOverlayId);
+    if (!overlay) return;
+
+    setIsResizing(true);
+    setResizeHandle(handle);
+    setResizeStart({
+      x: e.clientX,
+      y: e.clientY,
+      scale: overlay.scale,
+    });
   };
 
   const handleSave = async () => {
@@ -485,23 +573,73 @@ export function ImageEditorModal({
 
               {/* Overlay Images */}
               {overlays.map((overlay) => (
-                <img
+                <div
                   key={overlay.id}
-                  src={overlay.image_url}
-                  alt="Overlay"
-                  className={`absolute cursor-move ${
-                    selectedOverlayId === overlay.id ? "ring-2 ring-blue-500" : ""
-                  }`}
+                  className="absolute"
                   style={{
                     left: overlay.x,
                     top: overlay.y,
                     transform: `scale(${overlay.scale}) rotate(${overlay.rotation}deg)`,
-                    opacity: overlay.opacity,
                     transformOrigin: "center center",
                     zIndex: overlay.z_index,
+                    cursor: isDragging && selectedOverlayId === overlay.id ? "grabbing" : "grab",
                   }}
-                  onClick={() => setSelectedOverlayId(overlay.id)}
-                />
+                >
+                  <img
+                    src={overlay.image_url}
+                    alt="Overlay"
+                    className={`pointer-events-none ${
+                      selectedOverlayId === overlay.id ? "ring-2 ring-blue-500" : ""
+                    }`}
+                    style={{
+                      opacity: overlay.opacity,
+                    }}
+                    onMouseDown={(e) => handleMouseDown(e, overlay.id)}
+                    draggable={false}
+                  />
+
+                  {/* Resize handles - only show for selected overlay */}
+                  {selectedOverlayId === overlay.id && (
+                    <>
+                      {/* Top-left handle */}
+                      <div
+                        className="absolute w-3 h-3 bg-blue-600 border-2 border-white rounded-sm cursor-nw-resize"
+                        style={{
+                          left: -8,
+                          top: -8,
+                        }}
+                        onMouseDown={(e) => handleResizeMouseDown(e, "nw")}
+                      />
+                      {/* Top-right handle */}
+                      <div
+                        className="absolute w-3 h-3 bg-blue-600 border-2 border-white rounded-sm cursor-ne-resize"
+                        style={{
+                          right: -8,
+                          top: -8,
+                        }}
+                        onMouseDown={(e) => handleResizeMouseDown(e, "ne")}
+                      />
+                      {/* Bottom-left handle */}
+                      <div
+                        className="absolute w-3 h-3 bg-blue-600 border-2 border-white rounded-sm cursor-sw-resize"
+                        style={{
+                          left: -8,
+                          bottom: -8,
+                        }}
+                        onMouseDown={(e) => handleResizeMouseDown(e, "sw")}
+                      />
+                      {/* Bottom-right handle */}
+                      <div
+                        className="absolute w-3 h-3 bg-blue-600 border-2 border-white rounded-sm cursor-se-resize"
+                        style={{
+                          right: -8,
+                          bottom: -8,
+                        }}
+                        onMouseDown={(e) => handleResizeMouseDown(e, "se")}
+                      />
+                    </>
+                  )}
+                </div>
               ))}
             </div>
 
@@ -509,7 +647,7 @@ export function ImageEditorModal({
               className="text-xs mt-2 text-center"
               style={{ color: "var(--text-secondary)" }}
             >
-              💡 Upload product images and drag to position them on the premium image.
+              💡 Drag images to move them. Use the blue corner handles to resize. Use sliders for precise control.
             </p>
           </div>
         </div>
