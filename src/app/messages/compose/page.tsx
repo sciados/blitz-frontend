@@ -241,16 +241,36 @@ export default function ComposeMessagePage() {
     },
     onSuccess: () => {
       toast.success("Message sent successfully!");
-      queryClient.invalidateQueries({ queryKey: ["messages"] });
-      router.push("/messages");
+      // Invalidate queries with error handling
+      try {
+        queryClient.invalidateQueries({ queryKey: ["messages"] });
+      } catch (err) {
+        console.error("Query invalidation error:", err);
+      }
+      // Add a small delay to ensure toast is shown before navigation
+      setTimeout(() => {
+        try {
+          router.push("/messages");
+        } catch (err) {
+          console.error("Navigation error:", err);
+          // Fallback: reload the page if navigation fails
+          window.location.href = "/messages";
+        }
+      }, 500);
     },
     onError: (error: any) => {
+      console.error("Message send error:", error);
       toast.error(error.response?.data?.detail || "Failed to send message");
     },
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Prevent multiple submissions
+    if (sendMutation.isPending) {
+      return;
+    }
 
     if (!formData.subject.trim()) {
       toast.error("Please enter a subject");
