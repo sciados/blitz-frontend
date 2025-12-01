@@ -104,10 +104,10 @@ export default function ContentLibraryPage() {
       setAllImages(flatImages);
       return flatImages;
     },
-    enabled: activeLibraryTab === "images", // Only fetch when images tab is active
+    // Remove enabled condition so images load immediately with text content
   });
 
-  // Refetch images when tab changes to images
+  // Refetch images when tab changes to images (for manual refresh if needed)
   useEffect(() => {
     if (activeLibraryTab === "images") {
       refetchImages();
