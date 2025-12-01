@@ -54,11 +54,14 @@ export default function ContentLibraryPage() {
   const [allContent, setAllContent] = useState<GeneratedContent[]>([]);
 
   // Content Library Tab State
-  const [activeLibraryTab, setActiveLibraryTab] = useState<"text" | "images">("text");
+  const [activeLibraryTab, setActiveLibraryTab] = useState<"text" | "images">(
+    "text"
+  );
   const [allImages, setAllImages] = useState<GeneratedImage[]>([]);
 
   // Modal state for library image viewer
-  const [selectedLibraryImage, setSelectedLibraryImage] = useState<GeneratedImage | null>(null);
+  const [selectedLibraryImage, setSelectedLibraryImage] =
+    useState<GeneratedImage | null>(null);
   const [isLibraryModalOpen, setIsLibraryModalOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
@@ -545,8 +548,8 @@ export default function ContentLibraryPage() {
                       className="text-sm"
                       style={{ color: "var(--text-secondary)" }}
                     >
-                      Showing {filteredContent.length} of {allContent.length} total
-                      content pieces
+                      Showing {filteredContent.length} of {allContent.length}{" "}
+                      total content pieces
                     </p>
                   </div>
                   <ContentList
@@ -816,7 +819,7 @@ export default function ContentLibraryPage() {
 
               {/* Image Details */}
               <div className="flex items-center justify-between mb-4">
-                <div
+                {/* <div
                   className="text-sm"
                   style={{ color: "var(--text-secondary)" }}
                 >
@@ -826,7 +829,7 @@ export default function ContentLibraryPage() {
                   <p className="text-xs mt-1">
                     Created: {new Date(selectedLibraryImage.created_at).toLocaleString()}
                   </p>
-                </div>
+                </div> */}
 
                 <div className="flex items-center space-x-3">
                   <button
@@ -942,10 +945,7 @@ export default function ContentLibraryPage() {
                 >
                   Prompt:
                 </p>
-                <p
-                  className="text-sm"
-                  style={{ color: "var(--text-primary)" }}
-                >
+                <p className="text-sm" style={{ color: "var(--text-primary)" }}>
                   {selectedLibraryImage.prompt}
                 </p>
               </div>

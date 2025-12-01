@@ -250,10 +250,32 @@ export function ImageEditorModal({
     setIsProcessing(true);
 
     try {
-      // TODO: Implement compose and save logic
-      // For now, just save the overlay data
-      toast.success("Image overlay saved successfully!");
-      onSave(sourceImage);
+      // Prepare overlay data for backend
+      const imageOverlays = overlays.map((overlay) => ({
+        image_url: overlay.image_url,
+        x: overlay.x,
+        y: overlay.y,
+        scale: overlay.scale,
+        rotation: overlay.rotation,
+        opacity: overlay.opacity,
+        z_index: overlay.z_index,
+      }));
+
+      // Send to backend for composition
+      const { data } = await api.post("/api/content/images/image-overlay", {
+        image_url: sourceImage.image_url,
+        image_overlays: imageOverlays,
+        campaign_id: campaignId,
+        image_type: sourceImage.image_type,
+        style: sourceImage.style,
+        aspect_ratio: sourceImage.aspect_ratio,
+        provider: sourceImage.provider,
+        model: sourceImage.model,
+        prompt: sourceImage.prompt,
+      });
+
+      toast.success("Image with overlay saved successfully!");
+      onSave(data);
       onClose();
     } catch (error) {
       console.error("Failed to save image:", error);
@@ -261,6 +283,57 @@ export function ImageEditorModal({
     } finally {
       setIsProcessing(false);
     }
+  };
+
+  // Client-side canvas composition for immediate preview
+  const composeImageClientSide = async (): Promise<string | null> => {
+    return new Promise((resolve) => {
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        resolve(null);
+        return;
+      }
+
+      // Load base image
+      const baseImg = new Image();
+      baseImg.crossOrigin = "anonymous";
+      baseImg.onload = async () => {
+        canvas.width = baseImg.width;
+        canvas.height = baseImg.height;
+
+        // Draw base image
+        ctx.drawImage(baseImg, 0, 0);
+
+        // Draw overlays in order
+        for (const overlay of overlays.sort((a, b) => a.z_index - b.z_index)) {
+          const overlayImg = new Image();
+          overlayImg.crossOrigin = "anonymous";
+
+          await new Promise((imgResolve) => {
+            overlayImg.onload = () => {
+              ctx.save();
+
+              // Apply transformations
+              ctx.translate(overlay.x, overlay.y);
+              ctx.rotate((overlay.rotation * Math.PI) / 180);
+              ctx.scale(overlay.scale, overlay.scale);
+              ctx.globalAlpha = overlay.opacity;
+
+              // Draw centered
+              ctx.drawImage(overlayImg, -overlayImg.width / 2, -overlayImg.height / 2);
+
+              ctx.restore();
+              imgResolve(null);
+            };
+            overlayImg.src = overlay.image_url;
+          });
+        }
+
+        resolve(canvas.toDataURL("image/png"));
+      };
+      baseImg.src = sourceImage.image_url;
+    });
   };
 
   if (!isOpen) return null;
