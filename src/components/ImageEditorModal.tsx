@@ -716,6 +716,20 @@ export function ImageEditorModal({
                     draggable={false}
                   />
 
+                  {/* Coordinate label - shows when selected */}
+                  {selectedOverlayId === overlay.id && (
+                    <div
+                      className="absolute px-2 py-1 text-xs font-mono text-white bg-black/70 rounded pointer-events-none"
+                      style={{
+                        top: -28,
+                        left: 0,
+                        zIndex: 1000,
+                      }}
+                    >
+                      x: {Math.round(overlay.x)}, y: {Math.round(overlay.y)}
+                    </div>
+                  )}
+
                   {/* Resize handles - only show for selected overlay */}
                   {selectedOverlayId === overlay.id && (
                     <>
