@@ -8,15 +8,11 @@ import {
   Inbox,
   Archive,
   Search,
-  Filter,
   Star,
-  MoreHorizontal,
   User,
   Users,
   Building,
-  CheckCircle2,
   Circle,
-  Clock,
   Bell,
 } from "lucide-react";
 import { api } from "src/lib/appClient";
@@ -154,27 +150,6 @@ export default function MessagesPage() {
                     Stay connected with your network
                   </p>
                 </div>
-              </div>
-              <div className="flex items-center gap-6 ml-20">
-                <Link
-                  href="/messages/requests"
-                  className="flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
-                >
-                  <Clock className="w-4 h-4" />
-                  Requests
-                  {unreadCount > 0 && (
-                    <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full ml-1">
-                      {unreadCount}
-                    </span>
-                  )}
-                </Link>
-                <Link
-                  href="/affiliates"
-                  className="flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
-                >
-                  <Users className="w-4 h-4" />
-                  Directory
-                </Link>
               </div>
             </div>
             <Link
