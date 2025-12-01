@@ -19,6 +19,7 @@ type MenuItem = {
   href: string;
   label: string;
   icon: string;
+  children?: MenuItem[];
 };
 
 type UserInfo = {
@@ -41,6 +42,7 @@ export default function Layout({ children }: LayoutProps) {
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(true);
   const [rightSidebarOpen, setRightSidebarOpen] = useState(true);
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+  const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({});
 
   // Check if current page is an auth page (login, register)
   const isAuthPage = pathname === "/login" || pathname === "/register";
@@ -53,6 +55,20 @@ export default function Layout({ children }: LayoutProps) {
 
   // Get help content based on current pathname
   const helpContent = getHelpContent(pathname);
+
+  // Auto-expand Messages menu when on messages-related pages
+  useEffect(() => {
+    const isMessagesPage = pathname.startsWith("/messages") ||
+                           pathname.startsWith("/message-requests") ||
+                           pathname === "/affiliates";
+
+    if (isMessagesPage) {
+      setExpandedMenus(prev => ({
+        ...prev,
+        "/messages": true
+      }));
+    }
+  }, [pathname]);
 
   // Fetch user info on mount (only if token exists)
   useEffect(() => {
@@ -135,6 +151,18 @@ export default function Layout({ children }: LayoutProps) {
         { href: "/admin/email-templates", label: "Email Templates", icon: "📝" },
         { href: "/admin/campaigns", label: "Campaigns", icon: "📢" },
         { href: "/products", label: "Product Library", icon: "📦" },
+        {
+          href: "/messages",
+          label: "Messages",
+          icon: "💬",
+          children: [
+            { href: "/messages/inbox", label: "Inbox", icon: "📥" },
+            { href: "/messages/sent", label: "Sent", icon: "📤" },
+            { href: "/messages/compose", label: "Compose", icon: "✏️" },
+            { href: "/message-requests", label: "Requests", icon: "🤝" },
+            { href: "/affiliates", label: "Directory", icon: "👥" },
+          ],
+        },
         { href: "/admin/tools", label: "Admin Tools", icon: "🔧" },
         { href: "/admin/images", label: "Image Management", icon: "🖼️" },
         { href: "/admin/config", label: "Configuration", icon: "🎛️" },
@@ -144,7 +172,6 @@ export default function Layout({ children }: LayoutProps) {
         { href: "/admin/analytics", label: "Analytics", icon: "📊" },
         { href: "/admin/compliance", label: "Compliance", icon: "🛡️" },
         { href: "/admin/api-keys", label: "API Keys", icon: "🔑" },
-        { href: "/admin/messages", label: "Messenger", icon: "📨" },
       ];
     }
 
@@ -152,7 +179,18 @@ export default function Layout({ children }: LayoutProps) {
     if (userInfo?.role === "creator") {
       return [
         { href: "/dashboard", label: "Dashboard", icon: "🏠" },
-        { href: "/messages", label: "Messages", icon: "💬" },
+        {
+          href: "/messages",
+          label: "Messages",
+          icon: "💬",
+          children: [
+            { href: "/messages/inbox", label: "Inbox", icon: "📥" },
+            { href: "/messages/sent", label: "Sent", icon: "📤" },
+            { href: "/messages/compose", label: "Compose", icon: "✏️" },
+            { href: "/message-requests", label: "Requests", icon: "🤝" },
+            { href: "/affiliates", label: "Directory", icon: "👥" },
+          ],
+        },
         { href: "/products", label: "Product Library", icon: "📦" },
         { href: "/intelligence", label: "Intelligence", icon: "🧠" },
         { href: "/content", label: "Content", icon: "✍️" },
@@ -167,7 +205,18 @@ export default function Layout({ children }: LayoutProps) {
     // Affiliate/Business menu (default for regular users)
     return [
       { href: "/dashboard", label: "Dashboard", icon: "🏠" },
-        { href: "/messages", label: "Messages", icon: "💬" },
+      {
+        href: "/messages",
+        label: "Messages",
+        icon: "💬",
+        children: [
+          { href: "/messages/inbox", label: "Inbox", icon: "📥" },
+          { href: "/messages/sent", label: "Sent", icon: "📤" },
+          { href: "/messages/compose", label: "Compose", icon: "✏️" },
+          { href: "/message-requests", label: "Requests", icon: "🤝" },
+          { href: "/affiliates", label: "Directory", icon: "👥" },
+        ],
+      },
       { href: "/campaigns", label: "Campaigns", icon: "📢" },
       { href: "/products", label: "Product Library", icon: "📦" },
       { href: "/library", label: "Content Library", icon: "📚" },
@@ -417,41 +466,126 @@ export default function Layout({ children }: LayoutProps) {
             <nav className="p-2 space-y-1">
               {menuItems.map((item) => {
                 const isActive = pathname === item.href;
+                const isExpanded = expandedMenus[item.href] || false;
+                const hasChildren = item.children && item.children.length > 0;
+
                 return (
-                  <Link
-                    key={item.href}
-                    href={item.href as any}
-                    className={`flex items-center ${
-                      leftSidebarOpen ? "space-x-3 px-4" : "justify-center px-2"
-                    } py-3 rounded-lg transition-all duration-200 group relative border-l-4 ${
-                      isActive
-                        ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-semibold border-blue-600 dark:border-blue-400"
-                        : "border-transparent hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-transparent dark:hover:from-blue-900/20 dark:hover:to-transparent hover:border-blue-400 dark:hover:border-blue-500 text-[var(--text-primary)] hover:text-blue-600 dark:hover:text-blue-400 hover:scale-[1.02]"
-                    }`}
-                    title={!leftSidebarOpen ? item.label : undefined}
-                  >
-                    <span
-                      className={`text-xl transition-transform duration-200 ${
-                        !isActive && "group-hover:scale-110"
-                      }`}
-                    >
-                      {item.icon}
-                    </span>
-                    {leftSidebarOpen && (
-                      <span className="transition-all duration-200">
-                        {item.label}
-                      </span>
+                  <div key={item.href}>
+                    {hasChildren ? (
+                      <button
+                        onClick={() => setExpandedMenus(prev => ({
+                          ...prev,
+                          [item.href]: !prev[item.href]
+                        }))}
+                        className={`flex items-center w-full ${
+                          leftSidebarOpen ? "space-x-3 px-4" : "justify-center px-2"
+                        } py-3 rounded-lg transition-all duration-200 group relative border-l-4 ${
+                          isActive
+                            ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-semibold border-blue-600 dark:border-blue-400"
+                            : "border-transparent hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-transparent dark:hover:from-blue-900/20 dark:hover:to-transparent hover:border-blue-400 dark:hover:border-blue-500 text-[var(--text-primary)] hover:text-blue-600 dark:hover:text-blue-400 hover:scale-[1.02]"
+                        }`}
+                        title={!leftSidebarOpen ? item.label : undefined}
+                      >
+                        <span
+                          className={`text-xl transition-transform duration-200 ${
+                            !isActive && "group-hover:scale-110"
+                          }`}
+                        >
+                          {item.icon}
+                        </span>
+                        {leftSidebarOpen && (
+                          <div className="flex-1 flex items-center justify-between">
+                            <span className="transition-all duration-200">
+                              {item.label}
+                            </span>
+                            <svg
+                              className={`w-4 h-4 transition-transform duration-200 ${
+                                isExpanded ? "rotate-180" : ""
+                              }`}
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M19 9l-7 7-7-7"
+                              />
+                            </svg>
+                          </div>
+                        )}
+
+                        {/* Tooltip for collapsed state */}
+                        {!leftSidebarOpen && (
+                          <div className="absolute left-full ml-2 px-3 py-2 bg-gray-900 dark:bg-gray-800 border border-gray-700 rounded-lg shadow-xl text-sm text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none z-50 group-hover:translate-x-1">
+                            {item.label}
+                            {/* Tooltip arrow */}
+                            <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-gray-900 dark:border-r-gray-800"></div>
+                          </div>
+                        )}
+                      </button>
+                    ) : (
+                      <Link
+                        href={item.href as any}
+                        className={`flex items-center ${
+                          leftSidebarOpen ? "space-x-3 px-4" : "justify-center px-2"
+                        } py-3 rounded-lg transition-all duration-200 group relative border-l-4 ${
+                          isActive
+                            ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-semibold border-blue-600 dark:border-blue-400"
+                            : "border-transparent hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-transparent dark:hover:from-blue-900/20 dark:hover:to-transparent hover:border-blue-400 dark:hover:border-blue-500 text-[var(--text-primary)] hover:text-blue-600 dark:hover:text-blue-400 hover:scale-[1.02]"
+                        }`}
+                        title={!leftSidebarOpen ? item.label : undefined}
+                      >
+                        <span
+                          className={`text-xl transition-transform duration-200 ${
+                            !isActive && "group-hover:scale-110"
+                          }`}
+                        >
+                          {item.icon}
+                        </span>
+                        {leftSidebarOpen && (
+                          <span className="transition-all duration-200">
+                            {item.label}
+                          </span>
+                        )}
+
+                        {/* Tooltip for collapsed state */}
+                        {!leftSidebarOpen && (
+                          <div className="absolute left-full ml-2 px-3 py-2 bg-gray-900 dark:bg-gray-800 border border-gray-700 rounded-lg shadow-xl text-sm text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none z-50 group-hover:translate-x-1">
+                            {item.label}
+                            {/* Tooltip arrow */}
+                            <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-gray-900 dark:border-r-gray-800"></div>
+                          </div>
+                        )}
+                      </Link>
                     )}
 
-                    {/* Tooltip for collapsed state */}
-                    {!leftSidebarOpen && (
-                      <div className="absolute left-full ml-2 px-3 py-2 bg-gray-900 dark:bg-gray-800 border border-gray-700 rounded-lg shadow-xl text-sm text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none z-50 group-hover:translate-x-1">
-                        {item.label}
-                        {/* Tooltip arrow */}
-                        <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-gray-900 dark:border-r-gray-800"></div>
+                    {/* Render children if expanded and sidebar is open */}
+                    {hasChildren && leftSidebarOpen && isExpanded && (
+                      <div className="ml-4 mt-1 space-y-1">
+                        {item.children?.map((child) => {
+                          const isChildActive = pathname === child.href;
+                          return (
+                            <Link
+                              key={child.href}
+                              href={child.href as any}
+                              className={`flex items-center space-x-3 px-4 py-2 rounded-lg transition-all duration-200 group relative border-l-4 ${
+                                isChildActive
+                                  ? "bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 font-semibold border-blue-600 dark:border-blue-400"
+                                  : "border-transparent hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-300 dark:hover:border-blue-600 text-[var(--text-secondary)] hover:text-blue-600 dark:hover:text-blue-400"
+                              }`}
+                            >
+                              <span className="text-lg">{child.icon}</span>
+                              <span className="text-sm transition-all duration-200">
+                                {child.label}
+                              </span>
+                            </Link>
+                          );
+                        })}
                       </div>
                     )}
-                  </Link>
+                  </div>
                 );
               })}
             </nav>
