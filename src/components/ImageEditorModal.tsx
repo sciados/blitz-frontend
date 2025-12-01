@@ -16,6 +16,8 @@ interface OverlayData {
   rotation: number;
   opacity: number;
   z_index: number;
+  naturalWidth?: number;
+  naturalHeight?: number;
 }
 
 interface ImageEditorModalProps {
@@ -122,10 +124,16 @@ export function ImageEditorModal({
         rotation: data.rotation,
         opacity: data.opacity,
         z_index: data.z_index,
+        naturalWidth: 0,
+        naturalHeight: 0,
       };
 
       setOverlays([...overlays, newOverlay]);
       setSelectedOverlayId(newOverlay.id);
+
+      // Load and store dimensions
+      updateOverlayDimensions(newOverlay.id, data.image_url);
+
       toast.success("Image added successfully!");
     } catch (error) {
       console.error("Failed to add image:", error);
@@ -137,6 +145,32 @@ export function ImageEditorModal({
     setOverlays(
       overlays.map((o) => (o.id === updatedOverlay.id ? updatedOverlay : o))
     );
+  };
+
+  // Load image dimensions
+  const loadImageDimensions = (url: string): Promise<{width: number, height: number}> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        resolve({ width: img.naturalWidth, height: img.naturalHeight });
+      };
+      img.onerror = reject;
+      img.src = url;
+    });
+  };
+
+  // Update overlay with dimensions
+  const updateOverlayDimensions = async (overlayId: string, imageUrl: string) => {
+    try {
+      const dimensions = await loadImageDimensions(imageUrl);
+      setOverlays(overlays.map(o =>
+        o.id === overlayId
+          ? { ...o, naturalWidth: dimensions.width, naturalHeight: dimensions.height }
+          : o
+      ));
+    } catch (error) {
+      console.error('Failed to load image dimensions:', error);
+    }
   };
 
   const handleDeleteOverlay = (id: string) => {
@@ -268,19 +302,33 @@ export function ImageEditorModal({
       return;
     }
 
+    // Check if all overlays have dimensions loaded
+    const missingDims = overlays.filter(o => !o.naturalWidth || !o.naturalHeight);
+    if (missingDims.length > 0) {
+      toast.error("Still loading image dimensions, please wait a moment...");
+      return;
+    }
+
     setIsProcessing(true);
 
     try {
       // Prepare overlay data for backend
-      const imageOverlays = overlays.map((overlay) => ({
-        image_url: overlay.image_url,
-        x: overlay.x,
-        y: overlay.y,
-        scale: overlay.scale,
-        rotation: overlay.rotation,
-        opacity: overlay.opacity,
-        z_index: overlay.z_index,
-      }));
+      // Convert from CENTER coordinates (used in UI) to TOP-LEFT coordinates (expected by backend)
+      const imageOverlays = overlays.map((overlay) => {
+        // Convert CENTER to TOP-LEFT using natural dimensions
+        const x = overlay.x - (overlay.naturalWidth! * overlay.scale / 2);
+        const y = overlay.y - (overlay.naturalHeight! * overlay.scale / 2);
+
+        return {
+          image_url: overlay.image_url,
+          x: x,
+          y: y,
+          scale: overlay.scale,
+          rotation: overlay.rotation,
+          opacity: overlay.opacity,
+          z_index: overlay.z_index,
+        };
+      });
 
       // Send to backend for composition
       const { data } = await api.post("/api/content/images/image-overlay", {
@@ -721,12 +769,18 @@ export function ImageEditorModal({
                     <div
                       className="absolute px-2 py-1 text-xs font-mono text-white bg-black/70 rounded pointer-events-none"
                       style={{
-                        top: -28,
+                        top: -50,
                         left: 0,
                         zIndex: 1000,
+                        whiteSpace: 'nowrap',
                       }}
                     >
-                      x: {Math.round(overlay.x)}, y: {Math.round(overlay.y)}
+                      <div>Center: {Math.round(overlay.x)}, {Math.round(overlay.y)}</div>
+                      {overlay.naturalWidth && overlay.naturalHeight && (
+                        <div>
+                          Top-Left: {Math.round(overlay.x - overlay.naturalWidth * overlay.scale / 2)}, {Math.round(overlay.y - overlay.naturalHeight * overlay.scale / 2)}
+                        </div>
+                      )}
                     </div>
                   )}
 
