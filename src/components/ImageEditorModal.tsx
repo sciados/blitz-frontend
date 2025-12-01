@@ -302,33 +302,20 @@ export function ImageEditorModal({
       return;
     }
 
-    // Check if all overlays have dimensions loaded
-    const missingDims = overlays.filter(o => !o.naturalWidth || !o.naturalHeight);
-    if (missingDims.length > 0) {
-      toast.error("Still loading image dimensions, please wait a moment...");
-      return;
-    }
-
     setIsProcessing(true);
 
     try {
       // Prepare overlay data for backend
-      // Convert from CENTER coordinates (used in UI) to TOP-LEFT coordinates (expected by backend)
-      const imageOverlays = overlays.map((overlay) => {
-        // Convert CENTER to TOP-LEFT using natural dimensions
-        const x = overlay.x - (overlay.naturalWidth! * overlay.scale / 2);
-        const y = overlay.y - (overlay.naturalHeight! * overlay.scale / 2);
-
-        return {
-          image_url: overlay.image_url,
-          x: x,
-          y: y,
-          scale: overlay.scale,
-          rotation: overlay.rotation,
-          opacity: overlay.opacity,
-          z_index: overlay.z_index,
-        };
-      });
+      // Send CENTER coordinates directly - backend will convert to TOP-LEFT using scaled dimensions
+      const imageOverlays = overlays.map((overlay) => ({
+        image_url: overlay.image_url,
+        x: overlay.x,
+        y: overlay.y,
+        scale: overlay.scale,
+        rotation: overlay.rotation,
+        opacity: overlay.opacity,
+        z_index: overlay.z_index,
+      }));
 
       // Send to backend for composition
       const { data } = await api.post("/api/content/images/image-overlay", {
@@ -705,7 +692,6 @@ export function ImageEditorModal({
               className="relative bg-gray-100 dark:bg-gray-800 rounded-lg overflow-auto"
               style={{
                 minHeight: "calc(90vh - 220px)",
-                paddingLeft: "2px",
               }}
             >
               <img
@@ -769,18 +755,13 @@ export function ImageEditorModal({
                     <div
                       className="absolute px-2 py-1 text-xs font-mono text-white bg-black/70 rounded pointer-events-none"
                       style={{
-                        top: -50,
+                        top: -28,
                         left: 0,
                         zIndex: 1000,
                         whiteSpace: 'nowrap',
                       }}
                     >
-                      <div>Center: {Math.round(overlay.x)}, {Math.round(overlay.y)}</div>
-                      {overlay.naturalWidth && overlay.naturalHeight && (
-                        <div>
-                          Top-Left: {Math.round(overlay.x - overlay.naturalWidth * overlay.scale / 2)}, {Math.round(overlay.y - overlay.naturalHeight * overlay.scale / 2)}
-                        </div>
-                      )}
+                      x: {Math.round(overlay.x)}, y: {Math.round(overlay.y)}
                     </div>
                   )}
 
