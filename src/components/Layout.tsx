@@ -2,6 +2,7 @@
 "use client";
 import { useState, useEffect, ReactNode } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { clearToken, getRoleFromToken, getUserFromToken } from "src/lib/auth";
 import { api } from "src/lib/appClient";
 import { useTheme } from "src/contexts/ThemeContext";
@@ -37,6 +38,7 @@ export default function Layout({ children }: LayoutProps) {
   const { theme } = useTheme();
   const role = getRoleFromToken();
   const isAdmin = role === "admin";
+  const queryClient = useQueryClient(); // Initialize query client for cache management
 
   const [profileOpen, setProfileOpen] = useState(false);
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(true);
@@ -147,7 +149,13 @@ export default function Layout({ children }: LayoutProps) {
   }, [userInfo]);
 
   const handleLogout = () => {
+    // Clear React Query cache to prevent cache contamination between users
+    queryClient.clear();
+
+    // Clear auth token
     clearToken();
+
+    // Navigate to login
     router.push("/login");
   };
 
