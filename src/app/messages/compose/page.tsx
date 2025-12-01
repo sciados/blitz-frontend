@@ -224,36 +224,48 @@ export default function ComposeMessagePage() {
 
   const sendMutation = useMutation({
     mutationFn: async () => {
-      const response = await api.post("/api/messages", {
-        recipient_ids: recipientIds,
-        subject: formData.subject,
-        content: formData.content,
-        message_type: mapMessageTypeToBackend(
-          formData.message_type,
-          formData.is_broadcast,
-          currentUser?.user_type || "Other",
-          recipientTypes
-        ),
-        is_broadcast: formData.is_broadcast,
-        broadcast_group: formData.is_broadcast ? formData.broadcast_group : null,
-      });
-      return response.data;
-    },
-    onSuccess: () => {
-      toast.success("Message sent successfully!");
-      // Invalidate queries with error handling
+      console.log("Starting message send...");
       try {
-        queryClient.invalidateQueries({ queryKey: ["messages"] });
+        const response = await api.post("/api/messages", {
+          recipient_ids: recipientIds,
+          subject: formData.subject,
+          content: formData.content,
+          message_type: mapMessageTypeToBackend(
+            formData.message_type,
+            formData.is_broadcast,
+            currentUser?.user_type || "Other",
+            recipientTypes
+          ),
+          is_broadcast: formData.is_broadcast,
+          broadcast_group: formData.is_broadcast ? formData.broadcast_group : null,
+        });
+        console.log("Message send successful:", response.data);
+        return response.data;
       } catch (err) {
-        console.error("Query invalidation error:", err);
+        console.error("Message send FAILED:", err);
+        throw err;
       }
-      // Navigate immediately - no setTimeout needed
-      router.push("/messages");
+    },
+    onSuccess: (data) => {
+      console.log("onSuccess called with data:", data);
+      toast.success("Message sent successfully!");
+
+      // IMMEDIATE NAVIGATION - bypass all React state
+      console.log("Executing window.location.assign...");
+      window.location.assign("/messages");
     },
     onError: (error: any) => {
-      console.error("Message send error:", error);
+      console.error("=== onError triggered ===");
+      console.error("Full error object:", error);
+      console.error("Error response:", error.response);
+      console.error("Error response data:", error.response?.data);
       const errorMessage = error.response?.data?.detail || error.message || "Failed to send message";
       toast.error(errorMessage);
+    },
+    onSettled: (data, error) => {
+      console.log("=== onSettled ===");
+      console.log("Data:", data);
+      console.log("Error:", error);
     },
   });
 
