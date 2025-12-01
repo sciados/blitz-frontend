@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Reply, Send } from "lucide-react";
@@ -105,10 +105,12 @@ export default function MessageDetailPage() {
     return type.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
   };
 
-  // Mark as read when component loads
-  if (message && markAsReadMutation.isPending === false) {
-    handleMarkAsRead();
-  }
+  // Mark as read when component loads - use useEffect to avoid infinite loop
+  useEffect(() => {
+    if (message && !markAsReadMutation.isPending) {
+      handleMarkAsRead();
+    }
+  }, [message]); // Only run when message changes, not on every render
 
   if (isLoading) {
     return (
