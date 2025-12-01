@@ -32,6 +32,108 @@ const MESSAGE_TYPES: { value: MessageType; label: string }[] = [
   { value: "reminder", label: "Reminder" },
 ];
 
+// Define which message types each user type should see
+const getAvailableMessageTypes = (userType: string): { value: MessageType; label: string }[] => {
+  const typeConfig: Record<string, MessageType[]> = {
+    Creator: [
+      "general",
+      "announcement",
+      "update",
+      "support",
+      "collaboration",
+    ],
+    Affiliate: [
+      "general",
+      "product_inquiry",
+      "support",
+      "collaboration",
+      "affiliate",
+    ],
+    Business: [
+      "general",
+      "collaboration",
+      "support",
+      "announcement",
+      "update",
+      "reminder",
+    ],
+    Admin: [
+      "announcement",
+      "general",
+      "update",
+      "support",
+    ],
+    Other: [
+      "general",
+      "support",
+      "collaboration",
+    ],
+  };
+
+  const allowedTypes = typeConfig[userType] || typeConfig["Other"];
+  return MESSAGE_TYPES.filter(type => allowedTypes.includes(type.value));
+};
+
+// Map frontend message types to backend enum values based on sender/recipient types
+const mapMessageTypeToBackend = (
+  frontendType: MessageType,
+  isBroadcast: boolean,
+  currentUserType: string,
+  recipientTypes: string[]
+): string => {
+  if (isBroadcast) {
+    return "ADMIN_BROADCAST";
+  }
+
+  // If sending to Creator/Dev (typically from Affiliate)
+  if (recipientTypes.includes("Creator")) {
+    const devMessageTypes: Record<MessageType, string> = {
+      general: "USER_TO_USER",
+      affiliate: "AFFILIATE_REQUEST_DEV",
+      product_inquiry: "AFFILIATE_REQUEST_DEV",
+      collaboration: "USER_TO_USER", // Could add DEV_TO_DEV if needed
+      support: "USER_TO_USER",
+      announcement: "USER_TO_USER",
+      update: "USER_TO_USER",
+      reminder: "USER_TO_USER",
+    };
+    return devMessageTypes[frontendType] || "USER_TO_USER";
+  }
+
+  // If sending to Affiliate (typically from Creator/Dev)
+  if (recipientTypes.includes("Affiliate")) {
+    const devToAffiliateTypes: Record<MessageType, string> = {
+      general: "DEV_TO_AFFILIATES",
+      affiliate: "DEV_TO_AFFILIATES",
+      product_inquiry: "DEV_TO_AFFILIATES",
+      collaboration: "USER_TO_USER",
+      support: "DEV_TO_AFFILIATES",
+      announcement: "DEV_TO_AFFILIATES",
+      update: "DEV_TO_AFFILIATES",
+      reminder: "DEV_TO_AFFILIATES",
+    };
+    return devToAffiliateTypes[frontendType] || "USER_TO_USER";
+  }
+
+  // If sending to other Affiliates
+  if (recipientTypes.includes("Affiliate") && currentUserType === "Affiliate") {
+    const affiliateTypes: Record<MessageType, string> = {
+      general: "AFFILIATE_REQUEST_AFFILIATE",
+      affiliate: "AFFILIATE_REQUEST_AFFILIATE",
+      product_inquiry: "AFFILIATE_REQUEST_AFFILIATE",
+      collaboration: "AFFILIATE_REQUEST_AFFILIATE",
+      support: "AFFILIATE_REQUEST_AFFILIATE",
+      announcement: "AFFILIATE_REQUEST_AFFILIATE",
+      update: "AFFILIATE_REQUEST_AFFILIATE",
+      reminder: "AFFILIATE_REQUEST_AFFILIATE",
+    };
+    return affiliateTypes[frontendType] || "USER_TO_USER";
+  }
+
+  // Default fallback
+  return "USER_TO_USER";
+};
+
 export default function ComposeMessagePage() {
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -75,9 +177,27 @@ export default function ComposeMessagePage() {
     },
   });
 
+  // Get current user info from recipients data
+  const currentUser = recipientsData?.current_user;
+
   // Flatten all recipients into a single array
   const allRecipients: Recipient[] = recipientsData ?
     Object.values(recipientsData.connections || {}).flat() as Recipient[] : [];
+
+  // Update default message type based on user type
+  useEffect(() => {
+    if (currentUser && formData.message_type) {
+      const availableTypes = getAvailableMessageTypes(currentUser.user_type || "Other");
+      const currentTypeIsValid = availableTypes.some(type => type.value === formData.message_type);
+
+      if (!currentTypeIsValid && availableTypes.length > 0) {
+        setFormData(prev => ({
+          ...prev,
+          message_type: availableTypes[0].value,
+        }));
+      }
+    }
+  }, [currentUser, formData.message_type]);
 
   // Update pre-selected recipient when recipients data loads
   useEffect(() => {
@@ -99,13 +219,21 @@ export default function ComposeMessagePage() {
   // Get recipient IDs for the form
   const recipientIds = selectedRecipients.map(r => r.user_id);
 
+  // Get unique recipient types
+  const recipientTypes = [...new Set(selectedRecipients.map(r => r.user_type))];
+
   const sendMutation = useMutation({
     mutationFn: async () => {
       const response = await api.post("/api/messages", {
         recipient_ids: recipientIds,
         subject: formData.subject,
         content: formData.content,
-        message_type: formData.message_type,
+        message_type: mapMessageTypeToBackend(
+          formData.message_type,
+          formData.is_broadcast,
+          currentUser?.user_type || "Other",
+          recipientTypes
+        ),
         is_broadcast: formData.is_broadcast,
         broadcast_group: formData.is_broadcast ? formData.broadcast_group : null,
       });
@@ -205,7 +333,7 @@ export default function ComposeMessagePage() {
                   color: "var(--text-primary)",
                 }}
               >
-                {MESSAGE_TYPES.map((type) => (
+                {getAvailableMessageTypes(currentUser?.user_type || "Other").map((type) => (
                   <option key={type.value} value={type.value}>
                     {type.label}
                   </option>

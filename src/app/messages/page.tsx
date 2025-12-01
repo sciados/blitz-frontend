@@ -161,7 +161,7 @@ export default function MessagesPage() {
                   className="flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
                 >
                   <Clock className="w-4 h-4" />
-                  Message Requests
+                  Requests
                   {unreadCount > 0 && (
                     <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full ml-1">
                       {unreadCount}
