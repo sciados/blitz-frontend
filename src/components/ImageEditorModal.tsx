@@ -17,6 +17,8 @@ interface OverlayData {
   rotation: number;
   opacity: number;
   z_index: number;
+  naturalWidth?: number;
+  naturalHeight?: number;
 }
 
 interface ImageEditorModalProps {
@@ -123,6 +125,8 @@ export function ImageEditorModal({
         rotation: data.rotation,
         opacity: data.opacity,
         z_index: data.z_index,
+        naturalWidth: 200,
+        naturalHeight: 200,
       };
 
       setOverlays([...overlays, newOverlay]);
@@ -194,17 +198,40 @@ export function ImageEditorModal({
       });
     } else if (isResizing && selectedOverlayId && resizeHandle) {
       const overlay = overlays.find((o) => o.id === selectedOverlayId);
-      if (!overlay) return;
+      if (!overlay || !canvasRef.current) return;
 
-      const deltaX = e.clientX - resizeStart.x;
-      const deltaY = e.clientY - resizeStart.y;
+      const canvasRect = canvasRef.current.getBoundingClientRect();
+      const mouseX = e.clientX - canvasRect.left;
+      const mouseY = e.clientY - canvasRect.top;
 
+      // Calculate overlay center (same as in handleResizeMouseDown)
+      const overlayCenterX = overlay.x;
+      const overlayCenterY = overlay.y;
+
+      // Calculate current distance from center
+      const currentDistanceX = mouseX - overlayCenterX;
+      const currentDistanceY = mouseY - overlayCenterY;
+
+      // Calculate how much the distance from center has changed
+      const deltaDistanceX = currentDistanceX - resizeStart.x;
+      const deltaDistanceY = currentDistanceY - resizeStart.y;
+
+      // Calculate new scale based on change in distance from center
+      // This is more stable than using absolute mouse position
       let newScale = resizeStart.scale;
       if (resizeHandle.includes("se") || resizeHandle.includes("ne")) {
-        newScale = Math.max(0.1, Math.min(resizeStart.scale + deltaX / 100, 3));
+        // Moving away from center increases scale
+        newScale = Math.max(
+          0.1,
+          Math.min(resizeStart.scale + deltaDistanceX / 50, 3)
+        );
       }
       if (resizeHandle.includes("sw") || resizeHandle.includes("nw")) {
-        newScale = Math.max(0.1, Math.min(resizeStart.scale - deltaX / 100, 3));
+        // Moving away from center in opposite direction decreases scale
+        newScale = Math.max(
+          0.1,
+          Math.min(resizeStart.scale - deltaDistanceX / 50, 3)
+        );
       }
 
       handleOverlayUpdate({
@@ -250,15 +277,30 @@ export function ImageEditorModal({
 
     const canvasRect = canvasRef.current.getBoundingClientRect();
 
-    // Calculate mouse position relative to the canvas (same as TextEditorModal)
+    // Calculate mouse position relative to the canvas
     const mouseX = e.clientX - canvasRect.left;
     const mouseY = e.clientY - canvasRect.top;
+
+    // Calculate overlay center position (accounting for transformOrigin: center)
+    const overlayWidth = (overlay.naturalWidth && overlay.naturalWidth > 0) ? overlay.naturalWidth : 200;
+    const overlayHeight = (overlay.naturalHeight && overlay.naturalHeight > 0) ? overlay.naturalHeight : 200;
+    const scaledWidth = overlayWidth * overlay.scale;
+    const scaledHeight = overlayHeight * overlay.scale;
+
+    // The overlay is positioned at overlay.x/y with transformOrigin: center
+    // So the actual center is at overlay.x, overlay.y
+    const overlayCenterX = overlay.x;
+    const overlayCenterY = overlay.y;
+
+    // Calculate distance from center when resize starts
+    const distanceFromCenterX = mouseX - overlayCenterX;
+    const distanceFromCenterY = mouseY - overlayCenterY;
 
     setIsResizing(true);
     setResizeHandle(handle);
     setResizeStart({
-      x: mouseX,
-      y: mouseY,
+      x: distanceFromCenterX,
+      y: distanceFromCenterY,
       scale: overlay.scale,
     });
   };
@@ -273,15 +315,24 @@ export function ImageEditorModal({
 
     try {
       // Prepare overlay data for backend
-      const imageOverlays = overlays.map((overlay) => ({
-        image_url: overlay.image_url,
-        x: overlay.x,
-        y: overlay.y,
-        scale: overlay.scale,
-        rotation: overlay.rotation,
-        opacity: overlay.opacity,
-        z_index: overlay.z_index,
-      }));
+      // Convert TOP-LEFT (with transformOrigin center) to CENTER coordinates
+      const imageOverlays = overlays.map((overlay) => {
+        const overlayWidth = (overlay.naturalWidth && overlay.naturalWidth > 0) ? overlay.naturalWidth : 200;
+        const overlayHeight = (overlay.naturalHeight && overlay.naturalHeight > 0) ? overlay.naturalHeight : 200;
+        const scaledWidth = overlayWidth * overlay.scale;
+        const scaledHeight = overlayHeight * overlay.scale;
+
+        return {
+          image_url: overlay.image_url,
+          // Convert TOP-LEFT to CENTER: add half the scaled dimensions
+          x: overlay.x + (scaledWidth / 2),
+          y: overlay.y + (scaledHeight / 2),
+          scale: overlay.scale,
+          rotation: overlay.rotation,
+          opacity: overlay.opacity,
+          z_index: overlay.z_index,
+        };
+      });
 
       // Send to backend for composition
       const { data } = await api.post("/api/content/images/image-overlay", {
@@ -719,6 +770,14 @@ export function ImageEditorModal({
                       userSelect: "none",
                     }}
                     draggable={false}
+                    onLoad={(e) => {
+                      const img = e.currentTarget;
+                      handleOverlayUpdate({
+                        ...overlay,
+                        naturalWidth: img.naturalWidth,
+                        naturalHeight: img.naturalHeight,
+                      });
+                    }}
                   />
 
                   {/* Resize handles - only show for selected overlay */}
