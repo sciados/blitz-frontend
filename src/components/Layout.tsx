@@ -134,9 +134,12 @@ export default function Layout({ children }: LayoutProps) {
         }>;
 
         console.log("[Layout] Fetched pending requests:", pendingRequests.length);
+        console.log("[Layout] Pending requests data:", pendingRequests);
+        console.log("[Layout] Current lastRequestCount:", lastRequestCount.current);
 
         // Only show notification if count increased (new requests)
         if (pendingRequests.length > 0 && pendingRequests.length > lastRequestCount.current) {
+          alert(`[Layout] Found ${pendingRequests.length} pending requests (was ${lastRequestCount.current}), showing notification!`);
           // Show notification
           const notification = new CustomEvent(
             "showMessageRequestNotification",
