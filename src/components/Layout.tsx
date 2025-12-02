@@ -1,4 +1,6 @@
 // src/components/Layout.tsx
+// from old copy
+
 "use client";
 import { useState, useEffect, ReactNode } from "react";
 import { useRouter, usePathname } from "next/navigation";
