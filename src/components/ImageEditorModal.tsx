@@ -84,7 +84,6 @@ export function ImageEditorModal({
       }
     } catch (error) {
       console.error("Failed to fetch campaign images:", error);
-      toast.error("Failed to load campaign images");
     } finally {
       setLoadingImages(false);
     }
@@ -124,8 +123,8 @@ export function ImageEditorModal({
         rotation: data.rotation,
         opacity: data.opacity,
         z_index: data.z_index,
-        naturalWidth: 200,  // Default reasonable size until actual dimensions load
-        naturalHeight: 200,
+        naturalWidth: 0,
+        naturalHeight: 0,
       };
 
       setOverlays([...overlays, newOverlay]);
@@ -135,7 +134,6 @@ export function ImageEditorModal({
       updateOverlayDimensions(newOverlay.id, data.image_url);
     } catch (error) {
       console.error("Failed to add image:", error);
-      toast.error("Failed to add image");
     }
   };
 
@@ -146,7 +144,9 @@ export function ImageEditorModal({
   };
 
   // Load image dimensions
-  const loadImageDimensions = (url: string): Promise<{width: number, height: number}> => {
+  const loadImageDimensions = (
+    url: string
+  ): Promise<{ width: number; height: number }> => {
     return new Promise((resolve, reject) => {
       const img = new Image();
       img.onload = () => {
@@ -158,16 +158,25 @@ export function ImageEditorModal({
   };
 
   // Update overlay with dimensions
-  const updateOverlayDimensions = async (overlayId: string, imageUrl: string) => {
+  const updateOverlayDimensions = async (
+    overlayId: string,
+    imageUrl: string
+  ) => {
     try {
       const dimensions = await loadImageDimensions(imageUrl);
-      setOverlays(overlays.map(o =>
-        o.id === overlayId
-          ? { ...o, naturalWidth: dimensions.width, naturalHeight: dimensions.height }
-          : o
-      ));
+      setOverlays(
+        overlays.map((o) =>
+          o.id === overlayId
+            ? {
+                ...o,
+                naturalWidth: dimensions.width,
+                naturalHeight: dimensions.height,
+              }
+            : o
+        )
+      );
     } catch (error) {
-      console.error('Failed to load image dimensions:', error);
+      console.error("Failed to load image dimensions:", error);
     }
   };
 
@@ -296,7 +305,6 @@ export function ImageEditorModal({
 
   const handleSave = async () => {
     if (overlays.length === 0) {
-      toast.error("No images to save");
       return;
     }
 
@@ -328,12 +336,10 @@ export function ImageEditorModal({
         prompt: sourceImage.prompt,
       });
 
-      toast.success("Image with overlay saved successfully!");
       onSave(data);
       onClose();
     } catch (error) {
       console.error("Failed to save image:", error);
-      toast.error("Failed to save image");
     } finally {
       setIsProcessing(false);
     }
@@ -375,7 +381,11 @@ export function ImageEditorModal({
               ctx.globalAlpha = overlay.opacity;
 
               // Draw centered
-              ctx.drawImage(overlayImg, -overlayImg.width / 2, -overlayImg.height / 2);
+              ctx.drawImage(
+                overlayImg,
+                -overlayImg.width / 2,
+                -overlayImg.height / 2
+              );
 
               ctx.restore();
               imgResolve(null);
@@ -667,7 +677,6 @@ export function ImageEditorModal({
                       const file = e.target.files?.[0];
                       if (file) {
                         // TODO: Implement file upload to server/R2
-                        toast.info("File upload not yet implemented");
                       }
                     }}
                   />
@@ -715,28 +724,14 @@ export function ImageEditorModal({
               />
 
               {/* Overlay Images */}
-              {overlays.map((overlay) => {
-                // Calculate TOP-LEFT position from CENTER coordinates
-                // Use natural dimensions if available and > 0, otherwise use defaults
-                const overlayWidth = (overlay.naturalWidth && overlay.naturalWidth > 0) ? overlay.naturalWidth : 200;
-                const overlayHeight = (overlay.naturalHeight && overlay.naturalHeight > 0) ? overlay.naturalHeight : 200;
-                const scaledWidth = overlayWidth * overlay.scale;
-                const scaledHeight = overlayHeight * overlay.scale;
-
-                // Convert CENTER (overlay.x, overlay.y) to TOP-LEFT
-                const leftPos = overlay.x - (scaledWidth / 2);
-                const topPos = overlay.y - (scaledHeight / 2);
-
-                return (
+              {overlays.map((overlay) => (
                 <div
                   key={overlay.id}
                   className="absolute"
                   style={{
-                    left: leftPos,
-                    top: topPos,
-                    width: scaledWidth,
-                    height: scaledHeight,
-                    transform: `rotate(${overlay.rotation}deg)`,
+                    left: overlay.x,
+                    top: overlay.y,
+                    transform: `scale(${overlay.scale}) rotate(${overlay.rotation}deg)`,
                     transformOrigin: "center center",
                     zIndex: overlay.z_index,
                     cursor:
@@ -749,7 +744,7 @@ export function ImageEditorModal({
                   <img
                     src={overlay.image_url}
                     alt="Overlay"
-                    className={`block w-full h-full object-contain ${
+                    className={`block ${
                       selectedOverlayId === overlay.id
                         ? "ring-2 ring-blue-500"
                         : ""
@@ -770,7 +765,7 @@ export function ImageEditorModal({
                         top: -28,
                         left: 0,
                         zIndex: 1000,
-                        whiteSpace: 'nowrap',
+                        whiteSpace: "nowrap",
                       }}
                     >
                       x: {Math.round(overlay.x)}, y: {Math.round(overlay.y)}
@@ -819,8 +814,7 @@ export function ImageEditorModal({
                     </>
                   )}
                 </div>
-                );
-              })}
+              ))}
             </div>
 
             <p
