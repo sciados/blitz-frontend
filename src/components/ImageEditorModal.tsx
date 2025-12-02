@@ -41,6 +41,7 @@ export function ImageEditorModal({
     null
   );
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isTrimming, setIsTrimming] = useState(false);
   const [imageWidth, setImageWidth] = useState<number>(0);
   const [imageHeight, setImageHeight] = useState<number>(0);
   const [modalWidth, setModalWidth] = useState<number>(800);
@@ -151,6 +152,37 @@ export function ImageEditorModal({
       setSelectedOverlayId(updatedOverlays[0].id);
     } else if (updatedOverlays.length === 0) {
       setSelectedOverlayId(null);
+    }
+  };
+
+  // Trim transparent pixels from selected overlay
+  const handleTrimTransparency = async () => {
+    if (!selectedOverlay) return;
+
+    setIsTrimming(true);
+    try {
+      const { data } = await api.post("/api/content/images/trim-transparency", {
+        image_url: selectedOverlay.image_url,
+        padding: 5,
+        campaign_id: campaignId,
+      });
+
+      // Update the overlay with the new trimmed image URL and dimensions
+      handleOverlayUpdate({
+        ...selectedOverlay,
+        image_url: data.image_url,
+        naturalWidth: data.trimmed_width,
+        naturalHeight: data.trimmed_height,
+      });
+
+      toast.success(
+        `Trimmed from ${data.original_width}x${data.original_height} to ${data.trimmed_width}x${data.trimmed_height}`
+      );
+    } catch (error) {
+      console.error("Failed to trim image:", error);
+      toast.error("Failed to trim transparent pixels");
+    } finally {
+      setIsTrimming(false);
     }
   };
 
@@ -604,6 +636,10 @@ export function ImageEditorModal({
                 const minY = scaledHeight / 2;
                 const maxY = imageHeight - (scaledHeight / 2);
 
+                // Convert CENTER to TOP-LEFT for display
+                const displayX = Math.round(selectedOverlay.x - (scaledWidth / 2));
+                const displayY = Math.round(selectedOverlay.y - (scaledHeight / 2));
+
                 return (
                   <>
                     <div>
@@ -611,7 +647,7 @@ export function ImageEditorModal({
                         className="block text-sm font-medium mb-1"
                         style={{ color: "var(--text-secondary)" }}
                       >
-                        Position X: {Math.round(selectedOverlay.x)}px
+                        Position X: {displayX}px
                       </label>
                       <input
                         type="range"
@@ -633,7 +669,7 @@ export function ImageEditorModal({
                         className="block text-sm font-medium mb-1"
                         style={{ color: "var(--text-secondary)" }}
                       >
-                        Position Y: {Math.round(selectedOverlay.y)}px
+                        Position Y: {displayY}px
                       </label>
                       <input
                         type="range"
@@ -716,6 +752,45 @@ export function ImageEditorModal({
                       }
                       className="w-full"
                     />
+                    </div>
+
+                    {/* Trim Transparency Button */}
+                    <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
+                      <button
+                        onClick={handleTrimTransparency}
+                        disabled={isTrimming}
+                        className="w-full px-3 py-2 bg-orange-600 hover:bg-orange-700 disabled:bg-gray-400 text-white text-sm rounded-lg transition flex items-center justify-center space-x-2"
+                      >
+                        {isTrimming ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                            <span>Trimming...</span>
+                          </>
+                        ) : (
+                          <>
+                            <svg
+                              className="w-4 h-4"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879M12 12L9.121 9.121m0 5.758a3 3 0 10-4.243-4.243 3 3 0 004.243 4.243z"
+                              />
+                            </svg>
+                            <span>Trim Transparency</span>
+                          </>
+                        )}
+                      </button>
+                      <p
+                        className="text-xs mt-1 text-center"
+                        style={{ color: "var(--text-secondary)" }}
+                      >
+                        Remove excess transparent pixels
+                      </p>
                     </div>
                   </>
                 );
