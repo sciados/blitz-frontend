@@ -487,11 +487,11 @@ export function UnifiedEditorModal({
                     {campaignImages.map((img, idx) => (
                       <img
                         key={idx}
-                        src={img.url || img}
+                        src={img.r2_url || img.url || img}
                         alt=""
                         className="w-full h-16 object-cover rounded cursor-pointer hover:ring-2 hover:ring-blue-500"
                         onClick={() => {
-                          addImageLayer(img.url || img);
+                          addImageLayer(img.r2_url || img.url || img);
                           setShowCampaignImages(false);
                         }}
                       />
@@ -547,7 +547,7 @@ export function UnifiedEditorModal({
                     <p className="text-xs truncate" style={{ color: "var(--text-secondary)" }}>
                       {layer.type === "text"
                         ? (layer as TextLayerData).text
-                        : (layer as ImageLayerData).image_url.split("/").pop()}
+                        : ((layer as ImageLayerData).image_url || "Image").split("/").pop()}
                     </p>
                   </div>
                 ))}
