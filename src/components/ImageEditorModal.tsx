@@ -189,23 +189,10 @@ export function ImageEditorModal({
       const mouseX = e.clientX - imageRect.left;
       const mouseY = e.clientY - imageRect.top;
 
-      // Calculate overlay's scaled dimensions
-      const overlayWidth = (overlay.naturalWidth && overlay.naturalWidth > 0) ? overlay.naturalWidth : 200;
-      const overlayHeight = (overlay.naturalHeight && overlay.naturalHeight > 0) ? overlay.naturalHeight : 200;
-      const scaledWidth = overlayWidth * overlay.scale;
-      const scaledHeight = overlayHeight * overlay.scale;
-
-      // Calculate new position (dragging CENTER position)
-      // Bounds: constrain CENTER so entire scaled image stays within background
-      // If center is at scaledHeight/2, TOP-LEFT is at 0
-      // If center is at imageHeight - scaledHeight/2, BOTTOM-RIGHT is at imageHeight
-      const minX = scaledWidth / 2;
-      const maxX = imageWidth - (scaledWidth / 2);
-      const minY = scaledHeight / 2;
-      const maxY = imageHeight - (scaledHeight / 2);
-
-      const newX = Math.max(minX, Math.min(mouseX - dragStart.x, maxX));
-      const newY = Math.max(minY, Math.min(mouseY - dragStart.y, maxY));
+      // Simple bounds: CENTER can be positioned anywhere within background image
+      // TODO: Add scaling bounds later - for now keep it simple
+      const newX = Math.max(0, Math.min(mouseX - dragStart.x, imageWidth));
+      const newY = Math.max(0, Math.min(mouseY - dragStart.y, imageHeight));
 
       handleOverlayUpdate({
         ...overlay,
@@ -548,16 +535,6 @@ export function ImageEditorModal({
 
               {/* Transform Controls */}
               {selectedOverlay && (() => {
-                // Calculate bounds based on scaled dimensions to keep entire image visible
-                const overlayWidth = (selectedOverlay.naturalWidth && selectedOverlay.naturalWidth > 0) ? selectedOverlay.naturalWidth : 200;
-                const overlayHeight = (selectedOverlay.naturalHeight && selectedOverlay.naturalHeight > 0) ? selectedOverlay.naturalHeight : 200;
-                const scaledWidth = overlayWidth * selectedOverlay.scale;
-                const scaledHeight = overlayHeight * selectedOverlay.scale;
-                const minX = scaledWidth / 2;
-                const maxX = imageWidth - (scaledWidth / 2);
-                const minY = scaledHeight / 2;
-                const maxY = imageHeight - (scaledHeight / 2);
-
                 return (
                   <>
                     <div>
@@ -569,8 +546,8 @@ export function ImageEditorModal({
                       </label>
                       <input
                         type="range"
-                        min={minX}
-                        max={maxX}
+                        min="0"
+                        max={imageWidth}
                         value={selectedOverlay.x}
                         onChange={(e) =>
                           handleOverlayUpdate({
@@ -591,8 +568,8 @@ export function ImageEditorModal({
                       </label>
                       <input
                         type="range"
-                        min={minY}
-                        max={maxY}
+                        min="0"
+                        max={imageHeight}
                         value={selectedOverlay.y}
                         onChange={(e) =>
                           handleOverlayUpdate({
