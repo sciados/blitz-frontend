@@ -889,7 +889,6 @@ export function UnifiedEditorModal({
                           ? `${textLayer.stroke_color} 0 0 ${textLayer.stroke_width}px, ${textLayer.stroke_color} 0 0 ${textLayer.stroke_width}px`
                           : "none",
                         zIndex: layer.z_index,
-                        position: "relative", // Needed for absolute positioning of overlay
                       }}
                       onMouseDown={(e) => handleMouseDown(e, layer.id)}
                     >
