@@ -315,15 +315,21 @@ export function ImageEditorModal({
 
     try {
       // Prepare overlay data for backend
-      // Use TOP-LEFT coordinates consistently throughout
+      // Convert CENTER coordinates to TOP-LEFT
       const imageOverlays = overlays.map((overlay) => {
-        // overlay.x/y are TOP-LEFT coordinates (from CSS left/top)
-        // Backend's PIL.paste() also expects TOP-LEFT
-        // No conversion needed - send directly!
+        const overlayWidth = (overlay.naturalWidth && overlay.naturalWidth > 0) ? overlay.naturalWidth : 200;
+        const overlayHeight = (overlay.naturalHeight && overlay.naturalHeight > 0) ? overlay.naturalHeight : 200;
+        const scaledWidth = overlayWidth * overlay.scale;
+        const scaledHeight = overlayHeight * overlay.scale;
+
+        // overlay.x/y are TOP-LEFT (from CSS left/top)
+        // But they represent where the CENTER appears visually
+        // Convert to true TOP-LEFT for backend (PIL.paste expects TOP-LEFT)
+        // Formula: topLeft = center - (scaledDimensions / 2)
         return {
           image_url: overlay.image_url,
-          x: overlay.x,
-          y: overlay.y,
+          x: overlay.x - (scaledWidth / 2),
+          y: overlay.y - (scaledHeight / 2),
           scale: overlay.scale,
           rotation: overlay.rotation,
           opacity: overlay.opacity,
