@@ -341,7 +341,13 @@ export function UnifiedEditorModal({
           stroke_width: l.stroke_width,
           opacity: l.opacity,
           z_index: l.z_index,
+          bold: l.bold,
+          italic: l.italic,
+          strikethrough: l.strikethrough,
         }));
+
+      // Debug: Log text styles being sent
+      console.log("🎨 Sending text layers with styles:", textLayers);
 
       const imageLayers = layers
         .filter((l): l is ImageLayerData => l.type === "image")
