@@ -4,7 +4,10 @@ import { ImageEditor } from "./ImageEditor";
 import { LayerPanel } from "./LayerPanel";
 import { TransformControls } from "./TransformControls";
 import { ProductImageUpload } from "./ProductImageUpload";
-import { downloadComposedImage, OverlayData } from "src/lib/editor/imageCompositor";
+import {
+  downloadComposedImage,
+  OverlayData,
+} from "src/lib/editor/imageCompositor";
 import { toast } from "sonner";
 
 interface CompleteImageEditorProps {
@@ -21,7 +24,8 @@ export function CompleteImageEditor({
   const [showTransformControls, setShowTransformControls] = useState(false);
   const [composing, setComposing] = useState(false);
 
-  const selectedOverlayData = overlays.find((o) => o.id === selectedOverlay) || null;
+  const selectedOverlayData =
+    overlays.find((o) => o.id === selectedOverlay) || null;
 
   const handleOverlayAdded = (overlay: OverlayData) => {
     setOverlays([...overlays, overlay]);
@@ -62,13 +66,11 @@ export function CompleteImageEditor({
       }
     } catch (error) {
       console.error("Failed to add image:", error);
-      toast.error("Failed to add image");
     }
   };
 
   const handleExport = async () => {
     if (overlays.length === 0) {
-      toast.error("No images to export");
       return;
     }
 
@@ -80,10 +82,8 @@ export function CompleteImageEditor({
         `campaign-${campaignId}-composed.png`,
         { quality: 0.92, format: "image/png" }
       );
-      toast.success("Image exported successfully!");
     } catch (error) {
       console.error("Failed to export image:", error);
-      toast.error("Failed to export image");
     } finally {
       setComposing(false);
     }
@@ -181,8 +181,8 @@ export function CompleteImageEditor({
               Add Product Images
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-              Upload transparent PNG images of your products to add them to the campaign
-              image.
+              Upload transparent PNG images of your products to add them to the
+              campaign image.
             </p>
             <ProductImageUpload
               campaignId={campaignId}
