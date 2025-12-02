@@ -50,9 +50,6 @@ export function ImageEditorModal({
   const [loadingImages, setLoadingImages] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-  const [isResizing, setIsResizing] = useState(false);
-  const [resizeHandle, setResizeHandle] = useState<string | null>(null);
-  const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, scale: 1 });
   const canvasRef = useRef<HTMLDivElement>(null);
   const imageContainerRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
@@ -250,67 +247,16 @@ export function ImageEditorModal({
         x: constrainedX,
         y: constrainedY,
       });
-    } else if (isResizing && selectedOverlayId && resizeHandle) {
-      const overlay = overlays.find((o) => o.id === selectedOverlayId);
-      if (!overlay || !imageContainerRef.current) return;
-
-      const containerRect = imageContainerRef.current.getBoundingClientRect();
-      const mouseX = e.clientX - containerRect.left;
-      const mouseY = e.clientY - containerRect.top;
-
-      // overlay.x/y is TOP-LEFT, calculate center
-      const overlayWidth =
-        overlay.naturalWidth && overlay.naturalWidth > 0
-          ? overlay.naturalWidth
-          : 200;
-      const overlayHeight =
-        overlay.naturalHeight && overlay.naturalHeight > 0
-          ? overlay.naturalHeight
-          : 200;
-      const scaledWidth = overlayWidth * overlay.scale;
-      const scaledHeight = overlayHeight * overlay.scale;
-      const overlayCenterX = overlay.x + scaledWidth / 2;
-      const overlayCenterY = overlay.y + scaledHeight / 2;
-
-      // Calculate current distance from center
-      const currentDistanceX = mouseX - overlayCenterX;
-      const currentDistanceY = mouseY - overlayCenterY;
-
-      // Calculate how much the distance from center has changed
-      const deltaDistanceX = currentDistanceX - resizeStart.x;
-      const deltaDistanceY = currentDistanceY - resizeStart.y;
-
-      // Calculate new scale based on change in distance from center
-      let newScale = resizeStart.scale;
-      if (resizeHandle.includes("se") || resizeHandle.includes("ne")) {
-        newScale = Math.max(
-          0.1,
-          Math.min(resizeStart.scale + deltaDistanceX / 50, 3)
-        );
-      }
-      if (resizeHandle.includes("sw") || resizeHandle.includes("nw")) {
-        newScale = Math.max(
-          0.1,
-          Math.min(resizeStart.scale - deltaDistanceX / 50, 3)
-        );
-      }
-
-      handleOverlayUpdate({
-        ...overlay,
-        scale: newScale,
-      });
     }
   };
 
   const handleMouseUp = () => {
     setIsDragging(false);
-    setIsResizing(false);
-    setResizeHandle(null);
   };
 
-  // Attach global mouse events when dragging/resizing
+  // Attach global mouse events when dragging
   useEffect(() => {
-    if (isDragging || isResizing) {
+    if (isDragging) {
       document.addEventListener("mousemove", handleMouseMove);
       document.addEventListener("mouseup", handleMouseUp);
       return () => {
@@ -320,56 +266,12 @@ export function ImageEditorModal({
     }
   }, [
     isDragging,
-    isResizing,
     dragStart,
-    resizeStart,
     selectedOverlayId,
     overlays,
     imageWidth,
     imageHeight,
   ]);
-
-  const handleResizeMouseDown = (e: React.MouseEvent, handle: string) => {
-    e.stopPropagation();
-    if (!selectedOverlayId) return;
-
-    const overlay = overlays.find((o) => o.id === selectedOverlayId);
-    if (!overlay || !imageContainerRef.current) return;
-
-    const containerRect = imageContainerRef.current.getBoundingClientRect();
-
-    // Calculate mouse position relative to the image container
-    const mouseX = e.clientX - containerRect.left;
-    const mouseY = e.clientY - containerRect.top;
-
-    // overlay.x/y is TOP-LEFT, calculate center for resize
-    const overlayWidth =
-      overlay.naturalWidth && overlay.naturalWidth > 0
-        ? overlay.naturalWidth
-        : 200;
-    const overlayHeight =
-      overlay.naturalHeight && overlay.naturalHeight > 0
-        ? overlay.naturalHeight
-        : 200;
-    const scaledWidth = overlayWidth * overlay.scale;
-    const scaledHeight = overlayHeight * overlay.scale;
-
-    // Center is at TOP-LEFT + half dimensions
-    const overlayCenterX = overlay.x + scaledWidth / 2;
-    const overlayCenterY = overlay.y + scaledHeight / 2;
-
-    // Calculate distance from center when resize starts
-    const distanceFromCenterX = mouseX - overlayCenterX;
-    const distanceFromCenterY = mouseY - overlayCenterY;
-
-    setIsResizing(true);
-    setResizeHandle(handle);
-    setResizeStart({
-      x: distanceFromCenterX,
-      y: distanceFromCenterY,
-      scale: overlay.scale,
-    });
-  };
 
   const handleSave = async () => {
     if (overlays.length === 0) {
@@ -623,21 +525,37 @@ export function ImageEditorModal({
                           className="block text-sm font-medium mb-1"
                           style={{ color: "var(--text-secondary)" }}
                         >
-                          Position X: {Math.round(selectedOverlay.x)}px
+                          Position X
                         </label>
-                        <input
-                          type="range"
-                          min={minX}
-                          max={maxX}
-                          value={selectedOverlay.x}
-                          onChange={(e) =>
-                            handleOverlayUpdate({
-                              ...selectedOverlay,
-                              x: parseInt(e.target.value),
-                            })
-                          }
-                          className="w-full"
-                        />
+                        <div className="flex items-center space-x-2">
+                          <input
+                            type="range"
+                            min={minX}
+                            max={maxX}
+                            value={selectedOverlay.x}
+                            onChange={(e) =>
+                              handleOverlayUpdate({
+                                ...selectedOverlay,
+                                x: parseInt(e.target.value),
+                              })
+                            }
+                            className="flex-1"
+                          />
+                          <input
+                            type="number"
+                            min={minX}
+                            max={maxX}
+                            value={Math.round(selectedOverlay.x)}
+                            onChange={(e) =>
+                              handleOverlayUpdate({
+                                ...selectedOverlay,
+                                x: Math.max(minX, Math.min(maxX, parseInt(e.target.value) || 0)),
+                              })
+                            }
+                            className="w-16 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800"
+                            style={{ color: "var(--text-primary)" }}
+                          />
+                        </div>
                       </div>
 
                       <div>
@@ -645,21 +563,37 @@ export function ImageEditorModal({
                           className="block text-sm font-medium mb-1"
                           style={{ color: "var(--text-secondary)" }}
                         >
-                          Position Y: {Math.round(selectedOverlay.y)}px
+                          Position Y
                         </label>
-                        <input
-                          type="range"
-                          min={minY}
-                          max={maxY}
-                          value={selectedOverlay.y}
-                          onChange={(e) =>
-                            handleOverlayUpdate({
-                              ...selectedOverlay,
-                              y: parseInt(e.target.value),
-                            })
-                          }
-                          className="w-full"
-                        />
+                        <div className="flex items-center space-x-2">
+                          <input
+                            type="range"
+                            min={minY}
+                            max={maxY}
+                            value={selectedOverlay.y}
+                            onChange={(e) =>
+                              handleOverlayUpdate({
+                                ...selectedOverlay,
+                                y: parseInt(e.target.value),
+                              })
+                            }
+                            className="flex-1"
+                          />
+                          <input
+                            type="number"
+                            min={minY}
+                            max={maxY}
+                            value={Math.round(selectedOverlay.y)}
+                            onChange={(e) =>
+                              handleOverlayUpdate({
+                                ...selectedOverlay,
+                                y: Math.max(minY, Math.min(maxY, parseInt(e.target.value) || 0)),
+                              })
+                            }
+                            className="w-16 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800"
+                            style={{ color: "var(--text-primary)" }}
+                          />
+                        </div>
                       </div>
 
                       <div>
@@ -667,22 +601,39 @@ export function ImageEditorModal({
                           className="block text-sm font-medium mb-1"
                           style={{ color: "var(--text-secondary)" }}
                         >
-                          Scale: {selectedOverlay.scale.toFixed(2)}x
+                          Scale
                         </label>
-                        <input
-                          type="range"
-                          min="0.1"
-                          max="3"
-                          step="0.1"
-                          value={selectedOverlay.scale}
-                          onChange={(e) =>
-                            handleOverlayUpdate({
-                              ...selectedOverlay,
-                              scale: parseFloat(e.target.value),
-                            })
-                          }
-                          className="w-full"
-                        />
+                        <div className="flex items-center space-x-2">
+                          <input
+                            type="range"
+                            min="0.1"
+                            max="3"
+                            step="0.1"
+                            value={selectedOverlay.scale}
+                            onChange={(e) =>
+                              handleOverlayUpdate({
+                                ...selectedOverlay,
+                                scale: parseFloat(e.target.value),
+                              })
+                            }
+                            className="flex-1"
+                          />
+                          <input
+                            type="number"
+                            min="0.1"
+                            max="3"
+                            step="0.1"
+                            value={selectedOverlay.scale.toFixed(2)}
+                            onChange={(e) =>
+                              handleOverlayUpdate({
+                                ...selectedOverlay,
+                                scale: Math.max(0.1, Math.min(3, parseFloat(e.target.value) || 1)),
+                              })
+                            }
+                            className="w-16 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800"
+                            style={{ color: "var(--text-primary)" }}
+                          />
+                        </div>
                       </div>
 
                       <div>
@@ -690,21 +641,37 @@ export function ImageEditorModal({
                           className="block text-sm font-medium mb-1"
                           style={{ color: "var(--text-secondary)" }}
                         >
-                          Rotation: {selectedOverlay.rotation}°
+                          Rotation
                         </label>
-                        <input
-                          type="range"
-                          min="-180"
-                          max="180"
-                          value={selectedOverlay.rotation}
-                          onChange={(e) =>
-                            handleOverlayUpdate({
-                              ...selectedOverlay,
-                              rotation: parseInt(e.target.value),
-                            })
-                          }
-                          className="w-full"
-                        />
+                        <div className="flex items-center space-x-2">
+                          <input
+                            type="range"
+                            min="-180"
+                            max="180"
+                            value={selectedOverlay.rotation}
+                            onChange={(e) =>
+                              handleOverlayUpdate({
+                                ...selectedOverlay,
+                                rotation: parseInt(e.target.value),
+                              })
+                            }
+                            className="flex-1"
+                          />
+                          <input
+                            type="number"
+                            min="-180"
+                            max="180"
+                            value={selectedOverlay.rotation}
+                            onChange={(e) =>
+                              handleOverlayUpdate({
+                                ...selectedOverlay,
+                                rotation: Math.max(-180, Math.min(180, parseInt(e.target.value) || 0)),
+                              })
+                            }
+                            className="w-16 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800"
+                            style={{ color: "var(--text-primary)" }}
+                          />
+                        </div>
                       </div>
 
                       <div>
@@ -916,48 +883,6 @@ export function ImageEditorModal({
                           });
                         }}
                       />
-
-                      {/* Resize handles - only show for selected overlay */}
-                      {selectedOverlayId === overlay.id && (
-                        <>
-                          {/* Top-left handle */}
-                          <div
-                            className="absolute w-3 h-3 bg-blue-600 border-2 border-white rounded-sm cursor-nw-resize"
-                            style={{
-                              left: -8,
-                              top: -8,
-                            }}
-                            onMouseDown={(e) => handleResizeMouseDown(e, "nw")}
-                          />
-                          {/* Top-right handle */}
-                          <div
-                            className="absolute w-3 h-3 bg-blue-600 border-2 border-white rounded-sm cursor-ne-resize"
-                            style={{
-                              right: -8,
-                              top: -8,
-                            }}
-                            onMouseDown={(e) => handleResizeMouseDown(e, "ne")}
-                          />
-                          {/* Bottom-left handle */}
-                          <div
-                            className="absolute w-3 h-3 bg-blue-600 border-2 border-white rounded-sm cursor-sw-resize"
-                            style={{
-                              left: -8,
-                              bottom: -8,
-                            }}
-                            onMouseDown={(e) => handleResizeMouseDown(e, "sw")}
-                          />
-                          {/* Bottom-right handle */}
-                          <div
-                            className="absolute w-3 h-3 bg-blue-600 border-2 border-white rounded-sm cursor-se-resize"
-                            style={{
-                              right: -8,
-                              bottom: -8,
-                            }}
-                            onMouseDown={(e) => handleResizeMouseDown(e, "se")}
-                          />
-                        </>
-                      )}
                     </div>
                   );
                 })}
@@ -968,8 +893,7 @@ export function ImageEditorModal({
               className="text-xs mt-2 text-center"
               style={{ color: "var(--text-secondary)" }}
             >
-              💡 Drag images to move them. Use the blue corner handles to
-              resize. Use sliders for precise control.
+              Drag images to position. Use sliders for precise control.
             </p>
           </div>
         </div>
