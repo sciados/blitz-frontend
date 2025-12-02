@@ -189,8 +189,21 @@ export function ImageEditorModal({
       const mouseX = e.clientX - imageRect.left;
       const mouseY = e.clientY - imageRect.top;
 
-      const newX = Math.max(0, Math.min(mouseX - dragStart.x, imageWidth));
-      const newY = Math.max(0, Math.min(mouseY - dragStart.y, imageHeight));
+      // Calculate overlay's scaled dimensions
+      const overlayWidth = (overlay.naturalWidth && overlay.naturalWidth > 0) ? overlay.naturalWidth : 200;
+      const overlayHeight = (overlay.naturalHeight && overlay.naturalHeight > 0) ? overlay.naturalHeight : 200;
+      const scaledWidth = overlayWidth * overlay.scale;
+      const scaledHeight = overlayHeight * overlay.scale;
+
+      // Calculate new position (dragging CENTER position)
+      // Center must stay within image bounds so image doesn't go off-screen
+      const minX = scaledWidth / 2;
+      const maxX = imageWidth - (scaledWidth / 2);
+      const minY = scaledHeight / 2;
+      const maxY = imageHeight - (scaledHeight / 2);
+
+      const newX = Math.max(minX, Math.min(mouseX - dragStart.x, maxX));
+      const newY = Math.max(minY, Math.min(mouseY - dragStart.y, maxY));
 
       handleOverlayUpdate({
         ...overlay,
@@ -532,111 +545,122 @@ export function ImageEditorModal({
               )}
 
               {/* Transform Controls */}
-              {selectedOverlay && (
-                <>
-                  <div>
-                    <label
-                      className="block text-sm font-medium mb-1"
-                      style={{ color: "var(--text-secondary)" }}
-                    >
-                      Position X: {Math.round(selectedOverlay.x)}px
-                    </label>
-                    <input
-                      type="range"
-                      min="0"
-                      max={imageWidth}
-                      value={selectedOverlay.x}
-                      onChange={(e) =>
-                        handleOverlayUpdate({
-                          ...selectedOverlay,
-                          x: parseInt(e.target.value),
-                        })
-                      }
-                      className="w-full"
-                    />
-                  </div>
+              {selectedOverlay && (() => {
+                // Calculate bounds based on scaled overlay dimensions
+                const overlayWidth = (selectedOverlay.naturalWidth && selectedOverlay.naturalWidth > 0) ? selectedOverlay.naturalWidth : 200;
+                const overlayHeight = (selectedOverlay.naturalHeight && selectedOverlay.naturalHeight > 0) ? selectedOverlay.naturalHeight : 200;
+                const scaledWidth = overlayWidth * selectedOverlay.scale;
+                const scaledHeight = overlayHeight * selectedOverlay.scale;
+                const minX = scaledWidth / 2;
+                const maxX = imageWidth - (scaledWidth / 2);
+                const minY = scaledHeight / 2;
+                const maxY = imageHeight - (scaledHeight / 2);
 
-                  <div>
-                    <label
-                      className="block text-sm font-medium mb-1"
-                      style={{ color: "var(--text-secondary)" }}
-                    >
-                      Position Y: {Math.round(selectedOverlay.y)}px
-                    </label>
-                    <input
-                      type="range"
-                      min="0"
-                      max={imageHeight}
-                      value={selectedOverlay.y}
-                      onChange={(e) =>
-                        handleOverlayUpdate({
-                          ...selectedOverlay,
-                          y: parseInt(e.target.value),
-                        })
-                      }
-                      className="w-full"
-                    />
-                  </div>
+                return (
+                  <>
+                    <div>
+                      <label
+                        className="block text-sm font-medium mb-1"
+                        style={{ color: "var(--text-secondary)" }}
+                      >
+                        Position X: {Math.round(selectedOverlay.x)}px
+                      </label>
+                      <input
+                        type="range"
+                        min={minX}
+                        max={maxX}
+                        value={selectedOverlay.x}
+                        onChange={(e) =>
+                          handleOverlayUpdate({
+                            ...selectedOverlay,
+                            x: parseInt(e.target.value),
+                          })
+                        }
+                        className="w-full"
+                      />
+                    </div>
 
-                  <div>
-                    <label
-                      className="block text-sm font-medium mb-1"
-                      style={{ color: "var(--text-secondary)" }}
-                    >
-                      Scale: {selectedOverlay.scale.toFixed(2)}x
-                    </label>
-                    <input
-                      type="range"
-                      min="0.1"
-                      max="3"
-                      step="0.1"
-                      value={selectedOverlay.scale}
-                      onChange={(e) =>
-                        handleOverlayUpdate({
-                          ...selectedOverlay,
-                          scale: parseFloat(e.target.value),
-                        })
-                      }
-                      className="w-full"
-                    />
-                  </div>
+                    <div>
+                      <label
+                        className="block text-sm font-medium mb-1"
+                        style={{ color: "var(--text-secondary)" }}
+                      >
+                        Position Y: {Math.round(selectedOverlay.y)}px
+                      </label>
+                      <input
+                        type="range"
+                        min={minY}
+                        max={maxY}
+                        value={selectedOverlay.y}
+                        onChange={(e) =>
+                          handleOverlayUpdate({
+                            ...selectedOverlay,
+                            y: parseInt(e.target.value),
+                          })
+                        }
+                        className="w-full"
+                      />
+                    </div>
 
-                  <div>
-                    <label
-                      className="block text-sm font-medium mb-1"
-                      style={{ color: "var(--text-secondary)" }}
-                    >
-                      Rotation: {selectedOverlay.rotation}°
-                    </label>
-                    <input
-                      type="range"
-                      min="-180"
-                      max="180"
-                      value={selectedOverlay.rotation}
-                      onChange={(e) =>
-                        handleOverlayUpdate({
-                          ...selectedOverlay,
-                          rotation: parseInt(e.target.value),
-                        })
-                      }
-                      className="w-full"
-                    />
-                  </div>
+                    <div>
+                      <label
+                        className="block text-sm font-medium mb-1"
+                        style={{ color: "var(--text-secondary)" }}
+                      >
+                        Scale: {selectedOverlay.scale.toFixed(2)}x
+                      </label>
+                      <input
+                        type="range"
+                        min="0.1"
+                        max="3"
+                        step="0.1"
+                        value={selectedOverlay.scale}
+                        onChange={(e) =>
+                          handleOverlayUpdate({
+                            ...selectedOverlay,
+                            scale: parseFloat(e.target.value),
+                          })
+                        }
+                        className="w-full"
+                      />
+                    </div>
 
-                  <div>
-                    <label
-                      className="block text-sm font-medium mb-1"
-                      style={{ color: "var(--text-secondary)" }}
-                    >
-                      Opacity: {Math.round(selectedOverlay.opacity * 100)}%
-                    </label>
-                    <input
-                      type="range"
-                      min="0"
-                      max="1"
-                      step="0.1"
-                      value={selectedOverlay.opacity}
-                      onChange={(e) =>
+                    <div>
+                      <label
+                        className="block text-sm font-medium mb-1"
+                        style={{ color: "var(--text-secondary)" }}
+                      >
+                        Rotation: {selectedOverlay.rotation}°
+                      </label>
+                      <input
+                        type="range"
+                        min="-180"
+                        max="180"
+                        value={selectedOverlay.rotation}
+                        onChange={(e) =>
+                          handleOverlayUpdate({
+                            ...selectedOverlay,
+                            rotation: parseInt(e.target.value),
+                          })
+                        }
+                        className="w-full"
+                      />
+                    </div>
+
+                    <div>
+                      <label
+                        className="block text-sm font-medium mb-1"
+                        style={{ color: "var(--text-secondary)" }}
+                      >
+                        Opacity: {Math.round(selectedOverlay.opacity * 100)}%
+                      </label>
+                      <input
+                        type="range"
+                        min="0"
+                        max="1"
+                        step="0.1"
+                        value={selectedOverlay.opacity}
+                        onChange={(e) =>
                         handleOverlayUpdate({
                           ...selectedOverlay,
                           opacity: parseFloat(e.target.value),
@@ -644,9 +668,10 @@ export function ImageEditorModal({
                       }
                       className="w-full"
                     />
-                  </div>
-                </>
-              )}
+                    </div>
+                  </>
+                );
+              })()}
 
               {/* Browse Campaign Images Button */}
               <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
