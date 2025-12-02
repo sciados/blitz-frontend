@@ -224,7 +224,7 @@ export function ProductDetailsPanel({
         toast.success(
           `Compliance check complete! Score: ${response.data.score}/100`
         );
-      } else if (response.data.status === "needs_review") {
+      } else if (response.data.status === "warning") {
         toast.warning(
           `Compliance needs review. Score: ${response.data.score}/100`
         );
@@ -1060,16 +1060,16 @@ export function ProductDetailsPanel({
                     className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold border ${
                       complianceResult.status === "compliant"
                         ? "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 border-green-200 dark:border-green-800"
-                        : complianceResult.status === "needs_review"
+                        : complianceResult.status === "warning"
                         ? "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800"
                         : "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 border-red-200 dark:border-red-800"
                     }`}
                   >
                     {complianceResult.status === "compliant" && "✓ Compliant"}
-                    {complianceResult.status === "needs_review" &&
-                      "⚠ Needs Review"}
-                    {complianceResult.status === "non_compliant" &&
-                      "✗ Non-Compliant"}
+                    {complianceResult.status === "warning" &&
+                      "⚠ Warning"}
+                    {complianceResult.status === "violation" &&
+                      "✗ Violation"}
                   </div>
                 </div>
 

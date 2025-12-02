@@ -61,7 +61,7 @@ export type ComplianceResult = {
     product_id?: number;
     product_name?: string | null;
     product_category?: string | null;
-    status: "compliant" | "needs_review" | "non_compliant";
+    status: "compliant" | "warning" | "violation";
     score: number;
     issues: ComplianceIssue[];
     warnings?: string[];

@@ -88,20 +88,26 @@ export default function AnalyticsPage() {
   const isProductDeveloper = currentUser?.role === "creator";
 
   // Product Developer Analytics
-  const { data: devAnalytics, isLoading: devAnalyticsLoading } = useQuery<ProductDeveloperAnalytics>({
-    queryKey: ["developerAnalytics"],
-    queryFn: async () => (await api.get("/api/products/analytics/developer")).data,
-    enabled: isProductDeveloper,
-  });
+  const { data: devAnalytics, isLoading: devAnalyticsLoading } =
+    useQuery<ProductDeveloperAnalytics>({
+      queryKey: ["developerAnalytics"],
+      queryFn: async () =>
+        (await api.get("/api/products/analytics/developer")).data,
+      enabled: isProductDeveloper,
+    });
 
   // Affiliate Marketer Analytics
-  const { data: campaigns = [], isLoading: campaignsLoading } = useQuery<CampaignWithStats[]>({
+  const { data: campaigns = [], isLoading: campaignsLoading } = useQuery<
+    CampaignWithStats[]
+  >({
     queryKey: ["campaigns"],
     queryFn: async () => (await api.get("/api/campaigns")).data,
     enabled: !isProductDeveloper,
   });
 
-  const { data: links = [], isLoading: linksLoading } = useQuery<ShortenedLink[]>({
+  const { data: links = [], isLoading: linksLoading } = useQuery<
+    ShortenedLink[]
+  >({
     queryKey: ["links"],
     queryFn: async () => (await api.get("/api/links")).data,
     enabled: !isProductDeveloper,
@@ -113,10 +119,15 @@ export default function AnalyticsPage() {
     active_campaigns: campaigns.filter((c) => c.status === "active").length,
     total_clicks: links.reduce((sum, link) => sum + link.total_clicks, 0),
     unique_clicks: links.reduce((sum, link) => sum + link.unique_clicks, 0),
-    campaigns_with_links: campaigns.filter((c) => c.affiliate_link_short_code).length,
+    campaigns_with_links: campaigns.filter((c) => c.affiliate_link_short_code)
+      .length,
     avg_click_through_rate:
       links.length > 0
-        ? links.reduce((sum, link) => sum + (link.unique_clicks / Math.max(link.total_clicks, 1)), 0) / links.length
+        ? links.reduce(
+            (sum, link) =>
+              sum + link.unique_clicks / Math.max(link.total_clicks, 1),
+            0
+          ) / links.length
         : 0,
   };
 
@@ -124,7 +135,9 @@ export default function AnalyticsPage() {
   const campaignsWithClicks = campaigns
     .filter((c) => c.affiliate_link_short_code)
     .map((campaign) => {
-      const link = links.find((l) => l.short_code === campaign.affiliate_link_short_code);
+      const link = links.find(
+        (l) => l.short_code === campaign.affiliate_link_short_code
+      );
       return {
         ...campaign,
         short_link_clicks: link?.total_clicks || 0,
@@ -135,13 +148,33 @@ export default function AnalyticsPage() {
 
   // Campaign status distribution
   const statusData = [
-    { name: "Active", value: campaigns.filter((c) => c.status === "active").length, color: COLORS.success },
-    { name: "Draft", value: campaigns.filter((c) => c.status === "draft").length, color: COLORS.warning },
-    { name: "Paused", value: campaigns.filter((c) => c.status === "paused").length, color: COLORS.danger },
-    { name: "Completed", value: campaigns.filter((c) => c.status === "completed").length, color: COLORS.primary },
+    {
+      name: "Active",
+      value: campaigns.filter((c) => c.status === "active").length,
+      color: COLORS.success,
+    },
+    {
+      name: "Draft",
+      value: campaigns.filter((c) => c.status === "draft").length,
+      color: COLORS.warning,
+    },
+    {
+      name: "Paused",
+      value: campaigns.filter((c) => c.status === "paused").length,
+      color: COLORS.danger,
+    },
+    {
+      name: "Completed",
+      value: campaigns.filter((c) => c.status === "completed").length,
+      color: COLORS.primary,
+    },
   ].filter((item) => item.value > 0);
 
-  const isLoading = userLoading || (isProductDeveloper ? devAnalyticsLoading : (campaignsLoading || linksLoading));
+  const isLoading =
+    userLoading ||
+    (isProductDeveloper
+      ? devAnalyticsLoading
+      : campaignsLoading || linksLoading);
 
   if (isLoading) {
     return (
@@ -151,7 +184,10 @@ export default function AnalyticsPage() {
             <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-6"></div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
               {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="h-32 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                <div
+                  key={i}
+                  className="h-32 bg-gray-200 dark:bg-gray-700 rounded"
+                ></div>
               ))}
             </div>
           </div>
@@ -180,17 +216,30 @@ export default function AnalyticsPage() {
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Total Products</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Total Products
+                  </p>
                   <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">
                     {devAnalytics.summary.total_products}
                   </p>
                   <p className="text-sm text-green-600 dark:text-green-400 mt-1">
-                    {devAnalytics.summary.visible_to_affiliates} visible to affiliates
+                    {devAnalytics.summary.visible_to_affiliates} visible to
+                    affiliates
                   </p>
                 </div>
                 <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-                  <svg className="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                  <svg
+                    className="w-6 h-6 text-blue-600 dark:text-blue-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                    />
                   </svg>
                 </div>
               </div>
@@ -199,7 +248,9 @@ export default function AnalyticsPage() {
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Total Usage</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Total Usage
+                  </p>
                   <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">
                     {devAnalytics.summary.total_usage}
                   </p>
@@ -208,8 +259,18 @@ export default function AnalyticsPage() {
                   </p>
                 </div>
                 <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
-                  <svg className="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                  <svg
+                    className="w-6 h-6 text-purple-600 dark:text-purple-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+                    />
                   </svg>
                 </div>
               </div>
@@ -218,7 +279,9 @@ export default function AnalyticsPage() {
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Avg Usage/Product</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Avg Usage/Product
+                  </p>
                   <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">
                     {devAnalytics.summary.avg_usage_per_product.toFixed(1)}
                   </p>
@@ -227,8 +290,18 @@ export default function AnalyticsPage() {
                   </p>
                 </div>
                 <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
-                  <svg className="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  <svg
+                    className="w-6 h-6 text-green-600 dark:text-green-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                    />
                   </svg>
                 </div>
               </div>
@@ -237,7 +310,9 @@ export default function AnalyticsPage() {
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Compliant Products</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Compliant Products
+                  </p>
                   <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">
                     {devAnalytics.compliance.compliant}
                   </p>
@@ -246,8 +321,18 @@ export default function AnalyticsPage() {
                   </p>
                 </div>
                 <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center">
-                  <svg className="w-6 h-6 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  <svg
+                    className="w-6 h-6 text-orange-600 dark:text-orange-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                    />
                   </svg>
                 </div>
               </div>
@@ -265,11 +350,27 @@ export default function AnalyticsPage() {
                 <PieChart>
                   <Pie
                     data={[
-                      { name: "Compliant", value: devAnalytics.compliance.compliant, color: COLORS.success },
-                      { name: "Needs Review", value: devAnalytics.compliance.needs_review, color: COLORS.warning },
-                      { name: "Non-Compliant", value: devAnalytics.compliance.non_compliant, color: COLORS.danger },
-                      { name: "Not Checked", value: devAnalytics.compliance.not_checked, color: "#6b7280" },
-                    ].filter(item => item.value > 0)}
+                      {
+                        name: "Compliant",
+                        value: devAnalytics.compliance.compliant,
+                        color: COLORS.success,
+                      },
+                      {
+                        name: "Needs Review",
+                        value: devAnalytics.compliance.needs_review,
+                        color: COLORS.warning,
+                      },
+                      {
+                        name: "Non-Compliant",
+                        value: devAnalytics.compliance.non_compliant,
+                        color: COLORS.danger,
+                      },
+                      {
+                        name: "Not Checked",
+                        value: devAnalytics.compliance.not_checked,
+                        color: "#6b7280",
+                      },
+                    ].filter((item) => item.value > 0)}
                     cx="50%"
                     cy="50%"
                     labelLine={false}
@@ -279,13 +380,31 @@ export default function AnalyticsPage() {
                     dataKey="value"
                   >
                     {[
-                      { name: "Compliant", value: devAnalytics.compliance.compliant, color: COLORS.success },
-                      { name: "Needs Review", value: devAnalytics.compliance.needs_review, color: COLORS.warning },
-                      { name: "Non-Compliant", value: devAnalytics.compliance.non_compliant, color: COLORS.danger },
-                      { name: "Not Checked", value: devAnalytics.compliance.not_checked, color: "#6b7280" },
-                    ].filter(item => item.value > 0).map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
+                      {
+                        name: "Compliant",
+                        value: devAnalytics.compliance.compliant,
+                        color: COLORS.success,
+                      },
+                      {
+                        name: "Needs Review",
+                        value: devAnalytics.compliance.needs_review,
+                        color: COLORS.warning,
+                      },
+                      {
+                        name: "Non-Compliant",
+                        value: devAnalytics.compliance.non_compliant,
+                        color: COLORS.danger,
+                      },
+                      {
+                        name: "Not Checked",
+                        value: devAnalytics.compliance.not_checked,
+                        color: "#6b7280",
+                      },
+                    ]
+                      .filter((item) => item.value > 0)
+                      .map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
                   </Pie>
                   <Tooltip />
                 </PieChart>
@@ -318,7 +437,11 @@ export default function AnalyticsPage() {
                       }}
                       labelStyle={{ color: "#f3f4f6" }}
                     />
-                    <Bar dataKey="times_used" fill={COLORS.primary} name="Times Used" />
+                    <Bar
+                      dataKey="times_used"
+                      fill={COLORS.primary}
+                      name="Times Used"
+                    />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -350,7 +473,10 @@ export default function AnalyticsPage() {
                   </thead>
                   <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                     {devAnalytics.needs_attention.map((product) => (
-                      <tr key={product.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                      <tr
+                        key={product.id}
+                        className="hover:bg-gray-50 dark:hover:bg-gray-700"
+                      >
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm font-medium text-gray-900 dark:text-white">
                             {product.product_name}
@@ -430,7 +556,9 @@ export default function AnalyticsPage() {
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Total Campaigns</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Total Campaigns
+                </p>
                 <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">
                   {summary.total_campaigns}
                 </p>
@@ -439,8 +567,18 @@ export default function AnalyticsPage() {
                 </p>
               </div>
               <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-                <svg className="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                <svg
+                  className="w-6 h-6 text-blue-600 dark:text-blue-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
                 </svg>
               </div>
             </div>
@@ -449,7 +587,9 @@ export default function AnalyticsPage() {
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Total Clicks</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Total Clicks
+                </p>
                 <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">
                   {summary.total_clicks.toLocaleString()}
                 </p>
@@ -458,8 +598,18 @@ export default function AnalyticsPage() {
                 </p>
               </div>
               <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
-                <svg className="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
+                <svg
+                  className="w-6 h-6 text-purple-600 dark:text-purple-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"
+                  />
                 </svg>
               </div>
             </div>
@@ -468,19 +618,34 @@ export default function AnalyticsPage() {
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Unique Visitors</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Unique Visitors
+                </p>
                 <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">
                   {summary.unique_clicks.toLocaleString()}
                 </p>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                   {summary.total_clicks > 0
-                    ? `${((summary.unique_clicks / summary.total_clicks) * 100).toFixed(1)}% unique`
+                    ? `${(
+                        (summary.unique_clicks / summary.total_clicks) *
+                        100
+                      ).toFixed(1)}% unique`
                     : "0% unique"}
                 </p>
               </div>
               <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
-                <svg className="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                <svg
+                  className="w-6 h-6 text-green-600 dark:text-green-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                  />
                 </svg>
               </div>
             </div>
@@ -489,7 +654,9 @@ export default function AnalyticsPage() {
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Tracked Links</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Tracked Links
+                </p>
                 <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">
                   {summary.campaigns_with_links}
                 </p>
@@ -498,8 +665,18 @@ export default function AnalyticsPage() {
                 </p>
               </div>
               <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center">
-                <svg className="w-6 h-6 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                <svg
+                  className="w-6 h-6 text-orange-600 dark:text-orange-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+                  />
                 </svg>
               </div>
             </div>
@@ -562,8 +739,16 @@ export default function AnalyticsPage() {
                     }}
                     labelStyle={{ color: "#f3f4f6" }}
                   />
-                  <Bar dataKey="short_link_clicks" fill={COLORS.primary} name="Total Clicks" />
-                  <Bar dataKey="short_link_unique_clicks" fill={COLORS.success} name="Unique Clicks" />
+                  <Bar
+                    dataKey="short_link_clicks"
+                    fill={COLORS.primary}
+                    name="Total Clicks"
+                  />
+                  <Bar
+                    dataKey="short_link_unique_clicks"
+                    fill={COLORS.success}
+                    name="Unique Clicks"
+                  />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -605,12 +790,18 @@ export default function AnalyticsPage() {
                 <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                   {campaignsWithClicks.map((campaign) => {
                     const uniqueRate =
-                      campaign.short_link_clicks && campaign.short_link_clicks > 0
-                        ? ((campaign.short_link_unique_clicks || 0) / campaign.short_link_clicks) * 100
+                      campaign.short_link_clicks &&
+                      campaign.short_link_clicks > 0
+                        ? ((campaign.short_link_unique_clicks || 0) /
+                            campaign.short_link_clicks) *
+                          100
                         : 0;
 
                     return (
-                      <tr key={campaign.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                      <tr
+                        key={campaign.id}
+                        className="hover:bg-gray-50 dark:hover:bg-gray-700"
+                      >
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm font-medium text-gray-900 dark:text-white">
                             {campaign.name}
@@ -638,7 +829,8 @@ export default function AnalyticsPage() {
                           {campaign.short_link_clicks?.toLocaleString() || 0}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900 dark:text-white">
-                          {campaign.short_link_unique_clicks?.toLocaleString() || 0}
+                          {campaign.short_link_unique_clicks?.toLocaleString() ||
+                            0}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900 dark:text-white">
                           {uniqueRate.toFixed(1)}%
@@ -680,7 +872,8 @@ export default function AnalyticsPage() {
               No Analytics Data Yet
             </h3>
             <p className="text-gray-600 dark:text-gray-400 mb-4">
-              Add affiliate links to your campaigns to start tracking marketing performance
+              Add affiliate links to your campaigns to start tracking marketing
+              performance
             </p>
             <Link
               href="/campaigns"

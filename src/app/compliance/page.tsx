@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { api } from "src/lib/appClient";
 import { toast } from "sonner";
 
-type ComplianceStatus = "compliant" | "needs_review" | "non_compliant" | null;
+type ComplianceStatus = "compliant" | "warning" | "violation" | null;
 
 type Issue = {
   severity: "critical" | "high" | "medium";
@@ -103,7 +103,7 @@ export default function CompliancePage() {
   function getStatusColor(status: ComplianceStatus) {
     if (status === "compliant")
       return "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 border-green-200 dark:border-green-800";
-    if (status === "needs_review")
+    if (status === "warning")
       return "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800";
     return "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 border-red-200 dark:border-red-800";
   }
@@ -355,8 +355,8 @@ export default function CompliancePage() {
                         )}`}
                       >
                         {result.status === "compliant" && "✓ Compliant"}
-                        {result.status === "needs_review" && "⚠ Needs Review"}
-                        {result.status === "non_compliant" && "✗ Non-Compliant"}
+                        {result.status === "warning" && "⚠ Warning"}
+                        {result.status === "violation" && "✗ Violation"}
                       </div>
                     </div>
 
