@@ -1154,7 +1154,7 @@ export function UnifiedEditorModal({
                             height: Math.max(1, textLayer.font_size / 15),
                             pointerEvents: "none",
                             transformOrigin: "left bottom",
-                            transform: "rotate(-10deg)",
+                            transform: "rotate(-7deg)",
                           }}
                         >
                           <div
