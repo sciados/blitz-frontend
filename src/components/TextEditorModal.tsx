@@ -104,6 +104,14 @@ export function TextEditorModal({
     }
   }, [imageWidth, imageHeight]);
 
+  // Initialize image dimensions from metadata immediately when modal opens
+  useEffect(() => {
+    if (isOpen && sourceImage.metadata?.width && sourceImage.metadata?.height) {
+      setImageWidth(sourceImage.metadata.width);
+      setImageHeight(sourceImage.metadata.height);
+    }
+  }, [isOpen, sourceImage.metadata?.width, sourceImage.metadata?.height]);
+
   // Fetch available fonts when modal opens
   useEffect(() => {
     if (isOpen) {
@@ -159,8 +167,6 @@ export function TextEditorModal({
         },
       ]);
       setActiveLayerId("1");
-      setImageWidth(0); // Reset for new image
-      setImageHeight(0); // Reset for new image
     }
   }, [isOpen, sourceImage.id, fonts]);
 

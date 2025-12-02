@@ -56,6 +56,14 @@ export function ImageEditorModal({
 
   const selectedOverlay = overlays.find((o) => o.id === selectedOverlayId);
 
+  // Initialize image dimensions from metadata when modal opens
+  useEffect(() => {
+    if (isOpen && sourceImage.metadata?.width && sourceImage.metadata?.height) {
+      setImageWidth(sourceImage.metadata.width);
+      setImageHeight(sourceImage.metadata.height);
+    }
+  }, [isOpen, sourceImage.metadata?.width, sourceImage.metadata?.height]);
+
   // Calculate modal width when image dimensions change
   useEffect(() => {
     if (imageWidth > 0 && imageHeight > 0) {
@@ -456,7 +464,7 @@ export function ImageEditorModal({
                     Image Layers
                   </h3>
                   <div className="space-y-2">
-                    {overlays.map((overlay) => (
+                    {overlays.map((overlay, index) => (
                       <div
                         key={overlay.id}
                         className={`p-2 rounded border cursor-pointer transition ${
@@ -471,7 +479,7 @@ export function ImageEditorModal({
                             className="text-sm font-medium"
                             style={{ color: "var(--text-primary)" }}
                           >
-                            Layer {overlay.id}
+                            Layer {index + 1}
                           </span>
                           <button
                             onClick={(e) => {
