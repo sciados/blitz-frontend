@@ -893,6 +893,31 @@ export function UnifiedEditorModal({
                       onMouseDown={(e) => handleMouseDown(e, layer.id)}
                     >
                       {textLayer.text}
+                      {textLayer.strikethrough && (
+                        <div
+                          className="absolute"
+                          style={{
+                            left: 0,
+                            top: 0,
+                            width: "100%",
+                            height: "100%",
+                            pointerEvents: "none",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: "140%",
+                              height: Math.max(1, textLayer.font_size / 20),
+                              backgroundColor: textLayer.color,
+                              transform: "rotate(-45deg)",
+                              transformOrigin: "center",
+                            }}
+                          />
+                        </div>
+                      )}
                     </div>
                   );
                 } else {
