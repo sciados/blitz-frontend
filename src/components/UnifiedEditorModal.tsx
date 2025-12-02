@@ -876,6 +876,9 @@ export function UnifiedEditorModal({
                         color: textLayer.color,
                         opacity: textLayer.opacity,
                         whiteSpace: "nowrap",
+                        fontWeight: textLayer.bold ? "bold" : "normal",
+                        fontStyle: textLayer.italic ? "italic" : "normal",
+                        textDecoration: textLayer.strikethrough ? "line-through" : "none",
                         textShadow: textLayer.stroke_width > 0
                           ? `${textLayer.stroke_color} 0 0 ${textLayer.stroke_width}px, ${textLayer.stroke_color} 0 0 ${textLayer.stroke_width}px`
                           : "none",
