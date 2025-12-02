@@ -270,7 +270,9 @@ export default function Layout({ children }: LayoutProps) {
       {!isAuthPage && <TokenRefresh />}
 
       {/* Message request notification banner */}
-      <MessageRequestNotification />
+      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100 }}>
+        <MessageRequestNotification />
+      </div>
 
       <div className="min-h-screen flex flex-col bg-[var(--bg-secondary)]">
         {/* Header */}

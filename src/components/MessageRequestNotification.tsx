@@ -124,33 +124,6 @@ export function MessageRequestNotification() {
           </div>
         </div>
       </div>
-
-      {/* Optional: Inline preview of requests (compact view) */}
-      <div className="bg-blue-50 dark:bg-blue-900/20 border-b border-blue-200 dark:border-blue-800">
-        <div className="max-w-7xl mx-auto px-4 py-3">
-          <div className="flex flex-wrap gap-2">
-            {requests.slice(0, 3).map((request) => (
-              <div
-                key={request.id}
-                className="bg-white dark:bg-gray-800 rounded-lg px-3 py-2 shadow-sm border border-blue-200 dark:border-blue-700 flex items-center gap-2"
-              >
-                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
-                  {request.subject}
-                </span>
-              </div>
-            ))}
-            {requests.length > 3 && (
-              <div className="bg-white dark:bg-gray-800 rounded-lg px-3 py-2 shadow-sm border border-blue-200 dark:border-blue-700 flex items-center gap-2">
-                <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
-                <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
-                  +{requests.length - 3} more
-                </span>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
     </>
   );
 }
