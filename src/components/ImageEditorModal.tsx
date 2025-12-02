@@ -194,6 +194,17 @@ export function ImageEditorModal({
       const newX = Math.max(0, Math.min(mouseX - dragStart.x, imageWidth));
       const newY = Math.max(0, Math.min(mouseY - dragStart.y, imageHeight));
 
+      console.log("DEBUG DRAG:", {
+        mouseX,
+        mouseY,
+        dragStartX: dragStart.x,
+        dragStartY: dragStart.y,
+        newX,
+        newY,
+        imageWidth,
+        imageHeight,
+      });
+
       handleOverlayUpdate({
         ...overlay,
         x: newX,
@@ -318,21 +329,31 @@ export function ImageEditorModal({
 
     try {
       // Prepare overlay data for backend
-      // Convert CENTER coordinates to TOP-LEFT
+      // overlay.x/y stores CENTER position (due to transformOrigin: center)
+      // Backend expects TOP-LEFT for PIL.paste()
       const imageOverlays = overlays.map((overlay) => {
         const overlayWidth = (overlay.naturalWidth && overlay.naturalWidth > 0) ? overlay.naturalWidth : 200;
         const overlayHeight = (overlay.naturalHeight && overlay.naturalHeight > 0) ? overlay.naturalHeight : 200;
         const scaledWidth = overlayWidth * overlay.scale;
         const scaledHeight = overlayHeight * overlay.scale;
 
-        // overlay.x/y are TOP-LEFT (from CSS left/top)
-        // But they represent where the CENTER appears visually
-        // Convert to true TOP-LEFT for backend (PIL.paste expects TOP-LEFT)
-        // Formula: topLeft = center - (scaledDimensions / 2)
+        // Convert CENTER to TOP-LEFT: topLeft = center - (scaledDimensions / 2)
+        const saveX = overlay.x - (scaledWidth / 2);
+        const saveY = overlay.y - (scaledHeight / 2);
+
+        console.log("DEBUG SAVE:", {
+          centerX: overlay.x,
+          centerY: overlay.y,
+          scaledWidth,
+          scaledHeight,
+          saveX,
+          saveY,
+        });
+
         return {
           image_url: overlay.image_url,
-          x: overlay.x - (scaledWidth / 2),
-          y: overlay.y - (scaledHeight / 2),
+          x: saveX,
+          y: saveY,
           scale: overlay.scale,
           rotation: overlay.rotation,
           opacity: overlay.opacity,
@@ -752,10 +773,11 @@ export function ImageEditorModal({
                   key={overlay.id}
                   className="absolute"
                   style={{
+                    // overlay.x/y = TOP-LEFT position (center of the image appears at overlay.x, overlay.y)
                     left: overlay.x,
                     top: overlay.y,
                     transform: `scale(${overlay.scale}) rotate(${overlay.rotation}deg)`,
-                    transformOrigin: "center center",
+                    transformOrigin: "center center",  // Visual center at overlay.x/y
                     zIndex: overlay.z_index,
                     cursor:
                       isDragging && selectedOverlayId === overlay.id
