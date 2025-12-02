@@ -19,46 +19,64 @@ export function MessageRequestNotification() {
   const [requests, setRequests] = useState<MessageRequest[]>([]);
   const [showBanner, setShowBanner] = useState(false);
   const [dismissedCount, setDismissedCount] = useState(0);
+  const [hasNewRequests, setHasNewRequests] = useState(false);
+  const [hasNewMessages, setHasNewMessages] = useState(false);
 
   useEffect(() => {
     const handleShowNotification = (event: CustomEvent) => {
-      const { requests: pendingRequests } = event.detail;
+      const { requests: pendingRequests, hasNewRequests: newReq, hasNewMessages: newMsg } = event.detail;
 
-      // Only show if we have more requests than we've dismissed
-      if (pendingRequests.length > dismissedCount) {
-        setRequests(pendingRequests);
+      // Only show if we have new data
+      if (newReq || newMsg) {
+        setRequests(pendingRequests || []);
+        setHasNewRequests(newReq || false);
+        setHasNewMessages(newMsg || false);
         setShowBanner(true);
 
-        // Also show a toast notification
-        if (pendingRequests.length === 1) {
-          toast.info("You have a new connection request", {
-            description: `From: ${pendingRequests[0].subject}`,
+        // Show appropriate toast notification
+        if (newReq && newMsg) {
+          toast.info("You have new messages", {
+            description: "Connection requests and messages",
             action: {
               label: "View",
               onClick: () => {
                 window.location.href = "/messages";
               },
             },
-            duration: 10000, // Show for 10 seconds
+            duration: 10000,
           });
-        } else {
-          toast.info(`You have ${pendingRequests.length} new connection requests`, {
-            description: "Click to view and respond",
+        } else if (newReq) {
+          toast.info("You have a new connection request", {
+            description: pendingRequests.length === 1 ? `From: ${pendingRequests[0].subject}` : `${pendingRequests.length} new requests`,
             action: {
-              label: "View All",
+              label: "View",
               onClick: () => {
                 window.location.href = "/messages";
               },
             },
-            duration: 10000, // Show for 10 seconds
+            duration: 10000,
+          });
+        } else if (newMsg) {
+          toast.info("You have new messages", {
+            description: "Check your inbox",
+            action: {
+              label: "View",
+              onClick: () => {
+                window.location.href = "/messages";
+              },
+            },
+            duration: 10000,
           });
         }
       }
     };
 
+    // Listen for both old and new event names for backwards compatibility
+    window.addEventListener("showMessageNotification", handleShowNotification as EventListener);
     window.addEventListener("showMessageRequestNotification", handleShowNotification as EventListener);
 
     return () => {
+      window.removeEventListener("showMessageNotification", handleShowNotification as EventListener);
       window.removeEventListener("showMessageRequestNotification", handleShowNotification as EventListener);
     };
   }, [dismissedCount]);
@@ -98,14 +116,20 @@ export function MessageRequestNotification() {
             </div>
             <div className="flex-1 min-w-0">
               <p className="font-semibold text-sm md:text-base truncate">
-                {requests.length === 1
+                {hasNewRequests && hasNewMessages
+                  ? "You have new messages and connection requests"
+                  : hasNewMessages
+                  ? "You have new messages"
+                  : requests.length === 1
                   ? "You have a new connection request"
                   : `You have ${requests.length} new connection requests`}
               </p>
               <div className="flex items-center gap-2 mt-1">
                 <Clock className="w-3 h-3 flex-shrink-0" />
                 <p className="text-xs opacity-90 truncate">
-                  {formatTimeAgo(requests[0].created_at)}
+                  {hasNewMessages && requests.length === 0
+                    ? "Just now"
+                    : formatTimeAgo(requests[0]?.created_at || new Date().toISOString())}
                 </p>
               </div>
             </div>

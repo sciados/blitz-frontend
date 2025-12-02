@@ -114,18 +114,20 @@ export default function Layout({ children }: LayoutProps) {
     };
   }, [role]);
 
-  // Check for pending message requests when user logs in
+  // Check for pending message requests and new messages when user logs in
   useEffect(() => {
     if (!userInfo) return; // Wait until we have user info
 
     const lastRequestCount = { current: 0 };
+    const lastMessageCount = { current: 0 };
 
-    const fetchPendingRequests = async () => {
+    const fetchPendingData = async () => {
       try {
-        const res = await api.get(
+        // Check for pending message requests
+        const requestsRes = await api.get(
           "/api/message-requests/received?status=pending"
         );
-        const pendingRequests = res.data as Array<{
+        const pendingRequests = requestsRes.data as Array<{
           id: number;
           sender_id: number;
           message_type: string;
@@ -133,31 +135,43 @@ export default function Layout({ children }: LayoutProps) {
           created_at: string;
         }>;
 
-        // Only show notification if count increased (new requests)
-        if (pendingRequests.length > 0 && pendingRequests.length > lastRequestCount.current) {
-          // Show notification
+        // Check for new/unread messages in inbox
+        const messagesRes = await api.get("/api/messages?status=unread");
+        const newMessages = messagesRes.data;
+
+        // Show notification if there are new requests OR new messages
+        if ((pendingRequests.length > 0 && pendingRequests.length > lastRequestCount.current) ||
+            (newMessages.length > 0 && newMessages.length > lastMessageCount.current)) {
+
+          // Show notification with combined data
           const notification = new CustomEvent(
-            "showMessageRequestNotification",
+            "showMessageNotification",
             {
-              detail: { requests: pendingRequests },
+              detail: {
+                requests: pendingRequests,
+                messages: newMessages,
+                hasNewRequests: pendingRequests.length > lastRequestCount.current,
+                hasNewMessages: newMessages.length > lastMessageCount.current
+              },
             }
           );
           window.dispatchEvent(notification);
         }
 
-        // Store the count for next check
+        // Store the counts for next check
         lastRequestCount.current = pendingRequests.length;
+        lastMessageCount.current = newMessages.length;
       } catch (err) {
         // Silent fail - not critical
-        console.error("Failed to fetch pending requests:", err);
+        console.error("Failed to fetch pending data:", err);
       }
     };
 
     // Check immediately on userInfo load
-    fetchPendingRequests();
+    fetchPendingData();
 
-    // Set up polling every 30 seconds to check for new requests
-    const interval = setInterval(fetchPendingRequests, 30000);
+    // Set up polling every 30 seconds to check for new requests and messages
+    const interval = setInterval(fetchPendingData, 30000);
 
     return () => {
       clearInterval(interval);
