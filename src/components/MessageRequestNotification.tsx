@@ -36,7 +36,7 @@ export function MessageRequestNotification() {
             action: {
               label: "View",
               onClick: () => {
-                window.location.href = "/messages/requests";
+                window.location.href = "/messages";
               },
             },
             duration: 10000, // Show for 10 seconds
@@ -47,7 +47,7 @@ export function MessageRequestNotification() {
             action: {
               label: "View All",
               onClick: () => {
-                window.location.href = "/messages/requests";
+                window.location.href = "/messages";
               },
             },
             duration: 10000, // Show for 10 seconds
@@ -63,9 +63,9 @@ export function MessageRequestNotification() {
     };
   }, [dismissedCount]);
 
-  // Hide banner when user visits the message requests page
+  // Hide banner when user visits the messages page
   useEffect(() => {
-    if (pathname === "/messages/requests") {
+    if (pathname === "/messages") {
       setShowBanner(false);
       setDismissedCount(requests.length);
     }
@@ -112,7 +112,7 @@ export function MessageRequestNotification() {
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
             <Link
-              href="/messages/requests"
+              href="/messages"
               className="bg-white text-blue-600 px-4 py-2 rounded-lg font-semibold text-sm hover:bg-gray-100 transition-colors flex items-center gap-2"
             >
               <Mail className="w-4 h-4" />
