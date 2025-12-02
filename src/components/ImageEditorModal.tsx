@@ -196,7 +196,9 @@ export function ImageEditorModal({
       const scaledHeight = overlayHeight * overlay.scale;
 
       // Calculate new position (dragging CENTER position)
-      // Center must stay within image bounds so image doesn't go off-screen
+      // Bounds: constrain CENTER so entire scaled image stays within background
+      // If center is at scaledHeight/2, TOP-LEFT is at 0
+      // If center is at imageHeight - scaledHeight/2, BOTTOM-RIGHT is at imageHeight
       const minX = scaledWidth / 2;
       const maxX = imageWidth - (scaledWidth / 2);
       const minY = scaledHeight / 2;
@@ -546,7 +548,7 @@ export function ImageEditorModal({
 
               {/* Transform Controls */}
               {selectedOverlay && (() => {
-                // Calculate bounds based on scaled overlay dimensions
+                // Calculate bounds based on scaled dimensions to keep entire image visible
                 const overlayWidth = (selectedOverlay.naturalWidth && selectedOverlay.naturalWidth > 0) ? selectedOverlay.naturalWidth : 200;
                 const overlayHeight = (selectedOverlay.naturalHeight && selectedOverlay.naturalHeight > 0) ? selectedOverlay.naturalHeight : 200;
                 const scaledWidth = overlayWidth * selectedOverlay.scale;
