@@ -159,18 +159,19 @@ export function ImageEditorModal({
     e.stopPropagation();
     setSelectedOverlayId(overlayId);
     const overlay = overlays.find((o) => o.id === overlayId);
-    if (!overlay) return;
+    if (!overlay || !imageRef.current) return;
 
     if (!canvasRef.current) return;
 
     const canvasRect = canvasRef.current.getBoundingClientRect();
+    const imageRect = imageRef.current.getBoundingClientRect();
 
-    // Calculate mouse position relative to the canvas (same as TextEditorModal)
-    const mouseX = e.clientX - canvasRect.left;
-    const mouseY = e.clientY - canvasRect.top;
+    // Calculate mouse position relative to the BACKGROUND IMAGE (not canvas)
+    const mouseX = e.clientX - imageRect.left;
+    const mouseY = e.clientY - imageRect.top;
 
     setIsDragging(true);
-    // Store the initial mouse position and layer position (same as TextEditorModal)
+    // Store the initial mouse position and layer position relative to image
     setDragStart({
       x: mouseX - overlay.x,
       y: mouseY - overlay.y,
@@ -180,13 +181,13 @@ export function ImageEditorModal({
   const handleMouseMove = (e: MouseEvent) => {
     if (isDragging && selectedOverlayId) {
       const overlay = overlays.find((o) => o.id === selectedOverlayId);
-      if (!overlay || !canvasRef.current) return;
+      if (!overlay || !imageRef.current) return;
 
-      const canvasRect = canvasRef.current.getBoundingClientRect();
+      const imageRect = imageRef.current.getBoundingClientRect();
 
-      // Calculate mouse position relative to the canvas (same as TextEditorModal)
-      const mouseX = e.clientX - canvasRect.left;
-      const mouseY = e.clientY - canvasRect.top;
+      // Calculate mouse position relative to the BACKGROUND IMAGE (not canvas)
+      const mouseX = e.clientX - imageRect.left;
+      const mouseY = e.clientY - imageRect.top;
 
       const newX = Math.max(0, Math.min(mouseX - dragStart.x, imageWidth));
       const newY = Math.max(0, Math.min(mouseY - dragStart.y, imageHeight));
@@ -198,11 +199,11 @@ export function ImageEditorModal({
       });
     } else if (isResizing && selectedOverlayId && resizeHandle) {
       const overlay = overlays.find((o) => o.id === selectedOverlayId);
-      if (!overlay || !canvasRef.current) return;
+      if (!overlay || !imageRef.current) return;
 
-      const canvasRect = canvasRef.current.getBoundingClientRect();
-      const mouseX = e.clientX - canvasRect.left;
-      const mouseY = e.clientY - canvasRect.top;
+      const imageRect = imageRef.current.getBoundingClientRect();
+      const mouseX = e.clientX - imageRect.left;
+      const mouseY = e.clientY - imageRect.top;
 
       // Calculate overlay center (same as in handleResizeMouseDown)
       const overlayCenterX = overlay.x;
@@ -273,13 +274,13 @@ export function ImageEditorModal({
     if (!selectedOverlayId) return;
 
     const overlay = overlays.find((o) => o.id === selectedOverlayId);
-    if (!overlay || !canvasRef.current) return;
+    if (!overlay || !imageRef.current) return;
 
-    const canvasRect = canvasRef.current.getBoundingClientRect();
+    const imageRect = imageRef.current.getBoundingClientRect();
 
-    // Calculate mouse position relative to the canvas
-    const mouseX = e.clientX - canvasRect.left;
-    const mouseY = e.clientY - canvasRect.top;
+    // Calculate mouse position relative to the BACKGROUND IMAGE (not canvas)
+    const mouseX = e.clientX - imageRect.left;
+    const mouseY = e.clientY - imageRect.top;
 
     // Calculate overlay center position (accounting for transformOrigin: center)
     const overlayWidth = (overlay.naturalWidth && overlay.naturalWidth > 0) ? overlay.naturalWidth : 200;
