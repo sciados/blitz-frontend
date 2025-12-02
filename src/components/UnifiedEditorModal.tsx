@@ -58,8 +58,16 @@ interface UnifiedEditorModalProps {
 }
 
 const PRESET_COLORS = [
-  "#FFFFFF", "#000000", "#FF0000", "#00FF00", "#0000FF",
-  "#FFFF00", "#FF00FF", "#00FFFF", "#FFA500", "#800080",
+  "#FFFFFF",
+  "#000000",
+  "#FF0000",
+  "#00FF00",
+  "#0000FF",
+  "#FFFF00",
+  "#FF00FF",
+  "#00FFFF",
+  "#FFA500",
+  "#800080",
 ];
 
 export function UnifiedEditorModal({
@@ -89,7 +97,8 @@ export function UnifiedEditorModal({
   const imageRef = useRef<HTMLImageElement>(null);
 
   const selectedLayer = layers.find((l) => l.id === selectedLayerId);
-  const nextZIndex = layers.length > 0 ? Math.max(...layers.map(l => l.z_index)) + 1 : 1;
+  const nextZIndex =
+    layers.length > 0 ? Math.max(...layers.map((l) => l.z_index)) + 1 : 1;
 
   // Initialize image dimensions from metadata
   useEffect(() => {
@@ -105,7 +114,8 @@ export function UnifiedEditorModal({
       const sidebarWidth = 320;
       const paddingAndGaps = 64;
       const optimalWidth = imageWidth + sidebarWidth + paddingAndGaps;
-      const maxViewportWidth = typeof window !== "undefined" ? window.innerWidth * 0.95 : optimalWidth;
+      const maxViewportWidth =
+        typeof window !== "undefined" ? window.innerWidth * 0.95 : optimalWidth;
       setModalWidth(Math.min(optimalWidth, maxViewportWidth));
     }
   }, [imageWidth, imageHeight]);
@@ -114,7 +124,8 @@ export function UnifiedEditorModal({
   useEffect(() => {
     if (isOpen) {
       setFontsLoading(true);
-      api.get("/api/content/images/fonts")
+      api
+        .get("/api/content/images/fonts")
         .then(({ data }) => {
           setFonts(data);
         })
@@ -181,11 +192,15 @@ export function UnifiedEditorModal({
   };
 
   const updateLayer = (id: string, updates: Partial<UnifiedLayer>) => {
-    setLayers(layers.map(l => l.id === id ? { ...l, ...updates } as UnifiedLayer : l));
+    setLayers(
+      layers.map((l) =>
+        l.id === id ? ({ ...l, ...updates } as UnifiedLayer) : l
+      )
+    );
   };
 
   const deleteLayer = (id: string) => {
-    setLayers(layers.filter(l => l.id !== id));
+    setLayers(layers.filter((l) => l.id !== id));
     if (selectedLayerId === id) {
       setSelectedLayerId(null);
     }
@@ -193,29 +208,41 @@ export function UnifiedEditorModal({
   };
 
   const moveLayerUp = (id: string) => {
-    const layer = layers.find(l => l.id === id);
+    const layer = layers.find((l) => l.id === id);
     if (!layer) return;
-    const higherLayers = layers.filter(l => l.z_index > layer.z_index);
+    const higherLayers = layers.filter((l) => l.z_index > layer.z_index);
     if (higherLayers.length === 0) return;
-    const nextHigher = higherLayers.reduce((min, l) => l.z_index < min.z_index ? l : min);
-    setLayers(layers.map(l => {
-      if (l.id === id) return { ...l, z_index: nextHigher.z_index } as UnifiedLayer;
-      if (l.id === nextHigher.id) return { ...l, z_index: layer.z_index } as UnifiedLayer;
-      return l;
-    }));
+    const nextHigher = higherLayers.reduce((min, l) =>
+      l.z_index < min.z_index ? l : min
+    );
+    setLayers(
+      layers.map((l) => {
+        if (l.id === id)
+          return { ...l, z_index: nextHigher.z_index } as UnifiedLayer;
+        if (l.id === nextHigher.id)
+          return { ...l, z_index: layer.z_index } as UnifiedLayer;
+        return l;
+      })
+    );
   };
 
   const moveLayerDown = (id: string) => {
-    const layer = layers.find(l => l.id === id);
+    const layer = layers.find((l) => l.id === id);
     if (!layer) return;
-    const lowerLayers = layers.filter(l => l.z_index < layer.z_index);
+    const lowerLayers = layers.filter((l) => l.z_index < layer.z_index);
     if (lowerLayers.length === 0) return;
-    const nextLower = lowerLayers.reduce((max, l) => l.z_index > max.z_index ? l : max);
-    setLayers(layers.map(l => {
-      if (l.id === id) return { ...l, z_index: nextLower.z_index } as UnifiedLayer;
-      if (l.id === nextLower.id) return { ...l, z_index: layer.z_index } as UnifiedLayer;
-      return l;
-    }));
+    const nextLower = lowerLayers.reduce((max, l) =>
+      l.z_index > max.z_index ? l : max
+    );
+    setLayers(
+      layers.map((l) => {
+        if (l.id === id)
+          return { ...l, z_index: nextLower.z_index } as UnifiedLayer;
+        if (l.id === nextLower.id)
+          return { ...l, z_index: layer.z_index } as UnifiedLayer;
+        return l;
+      })
+    );
   };
 
   // Drag handling for layers
@@ -224,7 +251,7 @@ export function UnifiedEditorModal({
     e.stopPropagation();
     if (!imageContainerRef.current) return;
 
-    const layer = layers.find(l => l.id === layerId);
+    const layer = layers.find((l) => l.id === layerId);
     if (!layer) return;
 
     setSelectedLayerId(layerId);
@@ -240,7 +267,7 @@ export function UnifiedEditorModal({
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!isDragging || !selectedLayerId || !imageContainerRef.current) return;
 
-    const layer = layers.find(l => l.id === selectedLayerId);
+    const layer = layers.find((l) => l.id === selectedLayerId);
     if (!layer) return;
 
     const containerRect = imageContainerRef.current.getBoundingClientRect();
@@ -248,7 +275,8 @@ export function UnifiedEditorModal({
     let newY = e.clientY - containerRect.top - dragStart.y;
 
     // Calculate bounds based on layer type
-    let layerWidth = 0, layerHeight = 0;
+    let layerWidth = 0,
+      layerHeight = 0;
     if (layer.type === "image") {
       const imgLayer = layer as ImageLayerData;
       layerWidth = (imgLayer.naturalWidth || 200) * imgLayer.scale;
@@ -293,7 +321,9 @@ export function UnifiedEditorModal({
         naturalHeight: data.trimmed_height,
       });
 
-      toast.success(`Trimmed from ${data.original_width}x${data.original_height} to ${data.trimmed_width}x${data.trimmed_height}`);
+      toast.success(
+        `Trimmed from ${data.original_width}x${data.original_height} to ${data.trimmed_width}x${data.trimmed_height}`
+      );
     } catch (error) {
       console.error("Trim failed:", error);
       toast.error("Failed to trim image");
@@ -330,7 +360,7 @@ export function UnifiedEditorModal({
     try {
       const textLayers = layers
         .filter((l): l is TextLayerData => l.type === "text")
-        .map(l => ({
+        .map((l) => ({
           text: l.text,
           x: l.x,
           y: l.y,
@@ -351,7 +381,7 @@ export function UnifiedEditorModal({
 
       const imageLayers = layers
         .filter((l): l is ImageLayerData => l.type === "image")
-        .map(l => ({
+        .map((l) => ({
           image_url: l.image_url,
           x: l.x,
           y: l.y,
@@ -424,7 +454,10 @@ export function UnifiedEditorModal({
           className="flex items-center justify-between px-6 py-4 border-b"
           style={{ borderColor: "var(--card-border)" }}
         >
-          <h2 className="text-xl font-semibold" style={{ color: "var(--text-primary)" }}>
+          <h2
+            className="text-xl font-semibold"
+            style={{ color: "var(--text-primary)" }}
+          >
             Image Editor
           </h2>
           <div className="flex items-center space-x-3">
@@ -446,8 +479,18 @@ export function UnifiedEditorModal({
               onClick={onClose}
               className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
           </div>
@@ -459,11 +502,19 @@ export function UnifiedEditorModal({
           <div className="w-80 bg-gray-50 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto p-4">
             {/* Image Dimensions */}
             <div className="mb-4 p-3 bg-white dark:bg-gray-900 rounded border border-gray-200 dark:border-gray-700">
-              <div className="text-xs font-medium mb-1" style={{ color: "var(--text-secondary)" }}>
+              <div
+                className="text-xs font-medium mb-1"
+                style={{ color: "var(--text-secondary)" }}
+              >
                 📐 Image Dimensions
               </div>
-              <div className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>
-                {imageWidth > 0 && imageHeight > 0 ? `${imageWidth} × ${imageHeight}px` : "Loading..."}
+              <div
+                className="text-lg font-bold"
+                style={{ color: "var(--text-primary)" }}
+              >
+                {imageWidth > 0 && imageHeight > 0
+                  ? `${imageWidth} × ${imageHeight}px`
+                  : "Loading..."}
               </div>
             </div>
 
@@ -477,7 +528,12 @@ export function UnifiedEditorModal({
               </button>
               <label className="flex-1 px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition text-sm font-medium cursor-pointer text-center">
                 + Add Image
-                <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                />
               </label>
             </div>
 
@@ -522,7 +578,10 @@ export function UnifiedEditorModal({
 
             {/* Layers List */}
             <div className="mb-4">
-              <h3 className="font-medium mb-2" style={{ color: "var(--text-primary)" }}>
+              <h3
+                className="font-medium mb-2"
+                style={{ color: "var(--text-primary)" }}
+              >
                 Layers ({layers.length})
               </h3>
               <div className="space-y-2">
@@ -537,36 +596,53 @@ export function UnifiedEditorModal({
                     onClick={() => setSelectedLayerId(layer.id)}
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>
+                      <span
+                        className="text-sm font-medium"
+                        style={{ color: "var(--text-primary)" }}
+                      >
                         {layer.type === "text" ? "📝" : "🖼️"} Layer {index + 1}
                       </span>
                       <div className="flex items-center space-x-1">
                         <button
-                          onClick={(e) => { e.stopPropagation(); moveLayerUp(layer.id); }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            moveLayerUp(layer.id);
+                          }}
                           className="text-xs px-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded"
                           title="Move up"
                         >
                           ↑
                         </button>
                         <button
-                          onClick={(e) => { e.stopPropagation(); moveLayerDown(layer.id); }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            moveLayerDown(layer.id);
+                          }}
                           className="text-xs px-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded"
                           title="Move down"
                         >
                           ↓
                         </button>
                         <button
-                          onClick={(e) => { e.stopPropagation(); deleteLayer(layer.id); }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deleteLayer(layer.id);
+                          }}
                           className="text-red-600 hover:text-red-700 text-xs"
                         >
                           ✕
                         </button>
                       </div>
                     </div>
-                    <p className="text-xs truncate" style={{ color: "var(--text-secondary)" }}>
+                    <p
+                      className="text-xs truncate"
+                      style={{ color: "var(--text-secondary)" }}
+                    >
                       {layer.type === "text"
                         ? (layer as TextLayerData).text
-                        : ((layer as ImageLayerData).image_url || "Image").split("/").pop()}
+                        : ((layer as ImageLayerData).image_url || "Image")
+                            .split("/")
+                            .pop()}
                     </p>
                   </div>
                 ))}
@@ -576,37 +652,67 @@ export function UnifiedEditorModal({
             {/* Layer Controls */}
             {selectedLayer && (
               <div className="space-y-4 border-t border-gray-200 dark:border-gray-700 pt-4">
-                <h3 className="font-medium" style={{ color: "var(--text-primary)" }}>
+                <h3
+                  className="font-medium"
+                  style={{ color: "var(--text-primary)" }}
+                >
                   {selectedLayer.type === "text" ? "Text" : "Image"} Properties
                 </h3>
 
                 {/* Common: Position */}
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="text-xs" style={{ color: "var(--text-secondary)" }}>X Position</label>
+                    <label
+                      className="text-xs"
+                      style={{ color: "var(--text-secondary)" }}
+                    >
+                      X Position
+                    </label>
                     <input
                       type="number"
                       value={Math.round(selectedLayer.x)}
-                      onChange={(e) => updateLayer(selectedLayer.id, { x: parseInt(e.target.value) || 0 })}
+                      onChange={(e) =>
+                        updateLayer(selectedLayer.id, {
+                          x: parseInt(e.target.value) || 0,
+                        })
+                      }
                       className="w-full px-2 py-1 text-sm border rounded"
-                      style={{ borderColor: "var(--card-border)", background: "var(--card-bg)" }}
+                      style={{
+                        borderColor: "var(--card-border)",
+                        background: "var(--card-bg)",
+                      }}
                     />
                   </div>
                   <div>
-                    <label className="text-xs" style={{ color: "var(--text-secondary)" }}>Y Position</label>
+                    <label
+                      className="text-xs"
+                      style={{ color: "var(--text-secondary)" }}
+                    >
+                      Y Position
+                    </label>
                     <input
                       type="number"
                       value={Math.round(selectedLayer.y)}
-                      onChange={(e) => updateLayer(selectedLayer.id, { y: parseInt(e.target.value) || 0 })}
+                      onChange={(e) =>
+                        updateLayer(selectedLayer.id, {
+                          y: parseInt(e.target.value) || 0,
+                        })
+                      }
                       className="w-full px-2 py-1 text-sm border rounded"
-                      style={{ borderColor: "var(--card-border)", background: "var(--card-bg)" }}
+                      style={{
+                        borderColor: "var(--card-border)",
+                        background: "var(--card-bg)",
+                      }}
                     />
                   </div>
                 </div>
 
                 {/* Common: Opacity */}
                 <div>
-                  <label className="text-xs" style={{ color: "var(--text-secondary)" }}>
+                  <label
+                    className="text-xs"
+                    style={{ color: "var(--text-secondary)" }}
+                  >
                     Opacity: {Math.round(selectedLayer.opacity * 100)}%
                   </label>
                   <input
@@ -614,7 +720,11 @@ export function UnifiedEditorModal({
                     min="0"
                     max="100"
                     value={selectedLayer.opacity * 100}
-                    onChange={(e) => updateLayer(selectedLayer.id, { opacity: parseInt(e.target.value) / 100 })}
+                    onChange={(e) =>
+                      updateLayer(selectedLayer.id, {
+                        opacity: parseInt(e.target.value) / 100,
+                      })
+                    }
                     className="w-full"
                   />
                 </div>
@@ -623,33 +733,63 @@ export function UnifiedEditorModal({
                 {selectedLayer.type === "text" && (
                   <>
                     <div>
-                      <label className="text-xs" style={{ color: "var(--text-secondary)" }}>Text</label>
+                      <label
+                        className="text-xs"
+                        style={{ color: "var(--text-secondary)" }}
+                      >
+                        Text
+                      </label>
                       <textarea
                         value={(selectedLayer as TextLayerData).text}
-                        onChange={(e) => updateLayer(selectedLayer.id, { text: e.target.value })}
+                        onChange={(e) =>
+                          updateLayer(selectedLayer.id, {
+                            text: e.target.value,
+                          })
+                        }
                         className="w-full px-2 py-1 text-sm border rounded"
-                        style={{ borderColor: "var(--card-border)", background: "var(--card-bg)" }}
+                        style={{
+                          borderColor: "var(--card-border)",
+                          background: "var(--card-bg)",
+                        }}
                         rows={2}
                       />
                     </div>
 
                     <div>
-                      <label className="text-xs" style={{ color: "var(--text-secondary)" }}>Font</label>
+                      <label
+                        className="text-xs"
+                        style={{ color: "var(--text-secondary)" }}
+                      >
+                        Font
+                      </label>
                       <select
                         value={(selectedLayer as TextLayerData).font_family}
-                        onChange={(e) => updateLayer(selectedLayer.id, { font_family: e.target.value })}
+                        onChange={(e) =>
+                          updateLayer(selectedLayer.id, {
+                            font_family: e.target.value,
+                          })
+                        }
                         className="w-full px-2 py-1 text-sm border rounded"
-                        style={{ borderColor: "var(--card-border)", background: "var(--card-bg)" }}
+                        style={{
+                          borderColor: "var(--card-border)",
+                          background: "var(--card-bg)",
+                        }}
                       >
                         {fonts.map((font) => (
-                          <option key={font.value} value={font.value}>{font.label}</option>
+                          <option key={font.value} value={font.value}>
+                            {font.label}
+                          </option>
                         ))}
                       </select>
                     </div>
 
                     <div>
-                      <label className="text-xs" style={{ color: "var(--text-secondary)" }}>
-                        Font Size: {(selectedLayer as TextLayerData).font_size}px
+                      <label
+                        className="text-xs"
+                        style={{ color: "var(--text-secondary)" }}
+                      >
+                        Font Size: {(selectedLayer as TextLayerData).font_size}
+                        px
                       </label>
                       <div className="flex items-center gap-2">
                         <input
@@ -657,7 +797,11 @@ export function UnifiedEditorModal({
                           min="12"
                           max="200"
                           value={(selectedLayer as TextLayerData).font_size}
-                          onChange={(e) => updateLayer(selectedLayer.id, { font_size: parseInt(e.target.value) })}
+                          onChange={(e) =>
+                            updateLayer(selectedLayer.id, {
+                              font_size: parseInt(e.target.value),
+                            })
+                          }
                           className="flex-1"
                         />
                         <input
@@ -665,47 +809,85 @@ export function UnifiedEditorModal({
                           min="12"
                           max="200"
                           value={(selectedLayer as TextLayerData).font_size}
-                          onChange={(e) => updateLayer(selectedLayer.id, { font_size: parseInt(e.target.value) || 48 })}
+                          onChange={(e) =>
+                            updateLayer(selectedLayer.id, {
+                              font_size: parseInt(e.target.value) || 48,
+                            })
+                          }
                           className="w-16 px-2 py-1 text-sm border rounded"
-                          style={{ borderColor: "var(--card-border)", background: "var(--card-bg)" }}
+                          style={{
+                            borderColor: "var(--card-border)",
+                            background: "var(--card-bg)",
+                          }}
                         />
                       </div>
                     </div>
 
                     {/* Text Style Buttons */}
                     <div>
-                      <label className="text-xs" style={{ color: "var(--text-secondary)" }}>Text Style</label>
+                      <label
+                        className="text-xs"
+                        style={{ color: "var(--text-secondary)" }}
+                      >
+                        Text Style
+                      </label>
                       <div className="flex gap-2 mt-1">
                         <button
-                          onClick={() => updateLayer(selectedLayer.id, { bold: !(selectedLayer as TextLayerData).bold })}
+                          onClick={() =>
+                            updateLayer(selectedLayer.id, {
+                              bold: !(selectedLayer as TextLayerData).bold,
+                            })
+                          }
                           className={`flex-1 px-3 py-2 text-sm font-bold border rounded transition ${
                             (selectedLayer as TextLayerData).bold
                               ? "bg-blue-600 text-white border-blue-600"
                               : "bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600"
                           }`}
-                          style={{ color: (selectedLayer as TextLayerData).bold ? "white" : "var(--text-primary)" }}
+                          style={{
+                            color: (selectedLayer as TextLayerData).bold
+                              ? "white"
+                              : "var(--text-primary)",
+                          }}
                         >
                           B
                         </button>
                         <button
-                          onClick={() => updateLayer(selectedLayer.id, { italic: !(selectedLayer as TextLayerData).italic })}
+                          onClick={() =>
+                            updateLayer(selectedLayer.id, {
+                              italic: !(selectedLayer as TextLayerData).italic,
+                            })
+                          }
                           className={`flex-1 px-3 py-2 text-sm italic border rounded transition ${
                             (selectedLayer as TextLayerData).italic
                               ? "bg-blue-600 text-white border-blue-600"
                               : "bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600"
                           }`}
-                          style={{ color: (selectedLayer as TextLayerData).italic ? "white" : "var(--text-primary)" }}
+                          style={{
+                            color: (selectedLayer as TextLayerData).italic
+                              ? "white"
+                              : "var(--text-primary)",
+                          }}
                         >
                           I
                         </button>
                         <button
-                          onClick={() => updateLayer(selectedLayer.id, { strikethrough: !(selectedLayer as TextLayerData).strikethrough })}
+                          onClick={() =>
+                            updateLayer(selectedLayer.id, {
+                              strikethrough: !(selectedLayer as TextLayerData)
+                                .strikethrough,
+                            })
+                          }
                           className={`flex-1 px-3 py-2 text-sm line-through border rounded transition ${
                             (selectedLayer as TextLayerData).strikethrough
                               ? "bg-blue-600 text-white border-blue-600"
                               : "bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600"
                           }`}
-                          style={{ color: (selectedLayer as TextLayerData).strikethrough ? "white" : "var(--text-primary)" }}
+                          style={{
+                            color: (selectedLayer as TextLayerData)
+                              .strikethrough
+                              ? "white"
+                              : "var(--text-primary)",
+                          }}
                         >
                           S
                         </button>
@@ -713,14 +895,23 @@ export function UnifiedEditorModal({
                     </div>
 
                     <div>
-                      <label className="text-xs" style={{ color: "var(--text-secondary)" }}>Text Color</label>
+                      <label
+                        className="text-xs"
+                        style={{ color: "var(--text-secondary)" }}
+                      >
+                        Text Color
+                      </label>
                       <div className="flex flex-wrap gap-1 mb-2">
                         {PRESET_COLORS.map((color) => (
                           <button
                             key={color}
-                            onClick={() => updateLayer(selectedLayer.id, { color })}
+                            onClick={() =>
+                              updateLayer(selectedLayer.id, { color })
+                            }
                             className={`w-6 h-6 rounded border-2 ${
-                              (selectedLayer as TextLayerData).color === color ? "border-blue-500" : "border-gray-300"
+                              (selectedLayer as TextLayerData).color === color
+                                ? "border-blue-500"
+                                : "border-gray-300"
                             }`}
                             style={{ backgroundColor: color }}
                           />
@@ -729,32 +920,53 @@ export function UnifiedEditorModal({
                       <input
                         type="color"
                         value={(selectedLayer as TextLayerData).color}
-                        onChange={(e) => updateLayer(selectedLayer.id, { color: e.target.value })}
+                        onChange={(e) =>
+                          updateLayer(selectedLayer.id, {
+                            color: e.target.value,
+                          })
+                        }
                         className="w-full h-8"
                       />
                     </div>
 
                     <div>
-                      <label className="text-xs" style={{ color: "var(--text-secondary)" }}>
-                        Stroke Width: {(selectedLayer as TextLayerData).stroke_width}px
+                      <label
+                        className="text-xs"
+                        style={{ color: "var(--text-secondary)" }}
+                      >
+                        Stroke Width:{" "}
+                        {(selectedLayer as TextLayerData).stroke_width}px
                       </label>
                       <input
                         type="range"
                         min="0"
                         max="10"
                         value={(selectedLayer as TextLayerData).stroke_width}
-                        onChange={(e) => updateLayer(selectedLayer.id, { stroke_width: parseInt(e.target.value) })}
+                        onChange={(e) =>
+                          updateLayer(selectedLayer.id, {
+                            stroke_width: parseInt(e.target.value),
+                          })
+                        }
                         className="w-full"
                       />
                     </div>
 
                     {(selectedLayer as TextLayerData).stroke_width > 0 && (
                       <div>
-                        <label className="text-xs" style={{ color: "var(--text-secondary)" }}>Stroke Color</label>
+                        <label
+                          className="text-xs"
+                          style={{ color: "var(--text-secondary)" }}
+                        >
+                          Stroke Color
+                        </label>
                         <input
                           type="color"
                           value={(selectedLayer as TextLayerData).stroke_color}
-                          onChange={(e) => updateLayer(selectedLayer.id, { stroke_color: e.target.value })}
+                          onChange={(e) =>
+                            updateLayer(selectedLayer.id, {
+                              stroke_color: e.target.value,
+                            })
+                          }
                           className="w-full h-8"
                         />
                       </div>
@@ -766,8 +978,15 @@ export function UnifiedEditorModal({
                 {selectedLayer.type === "image" && (
                   <>
                     <div>
-                      <label className="text-xs" style={{ color: "var(--text-secondary)" }}>
-                        Scale: {Math.round((selectedLayer as ImageLayerData).scale * 100)}%
+                      <label
+                        className="text-xs"
+                        style={{ color: "var(--text-secondary)" }}
+                      >
+                        Scale:{" "}
+                        {Math.round(
+                          (selectedLayer as ImageLayerData).scale * 100
+                        )}
+                        %
                       </label>
                       <div className="flex items-center gap-2">
                         <input
@@ -775,23 +994,39 @@ export function UnifiedEditorModal({
                           min="10"
                           max="200"
                           value={(selectedLayer as ImageLayerData).scale * 100}
-                          onChange={(e) => updateLayer(selectedLayer.id, { scale: parseInt(e.target.value) / 100 })}
+                          onChange={(e) =>
+                            updateLayer(selectedLayer.id, {
+                              scale: parseInt(e.target.value) / 100,
+                            })
+                          }
                           className="flex-1"
                         />
                         <input
                           type="number"
                           min="10"
                           max="200"
-                          value={Math.round((selectedLayer as ImageLayerData).scale * 100)}
-                          onChange={(e) => updateLayer(selectedLayer.id, { scale: (parseInt(e.target.value) || 100) / 100 })}
+                          value={Math.round(
+                            (selectedLayer as ImageLayerData).scale * 100
+                          )}
+                          onChange={(e) =>
+                            updateLayer(selectedLayer.id, {
+                              scale: (parseInt(e.target.value) || 100) / 100,
+                            })
+                          }
                           className="w-16 px-2 py-1 text-sm border rounded"
-                          style={{ borderColor: "var(--card-border)", background: "var(--card-bg)" }}
+                          style={{
+                            borderColor: "var(--card-border)",
+                            background: "var(--card-bg)",
+                          }}
                         />
                       </div>
                     </div>
 
                     <div>
-                      <label className="text-xs" style={{ color: "var(--text-secondary)" }}>
+                      <label
+                        className="text-xs"
+                        style={{ color: "var(--text-secondary)" }}
+                      >
                         Rotation: {(selectedLayer as ImageLayerData).rotation}°
                       </label>
                       <div className="flex items-center gap-2">
@@ -800,7 +1035,11 @@ export function UnifiedEditorModal({
                           min="-180"
                           max="180"
                           value={(selectedLayer as ImageLayerData).rotation}
-                          onChange={(e) => updateLayer(selectedLayer.id, { rotation: parseInt(e.target.value) })}
+                          onChange={(e) =>
+                            updateLayer(selectedLayer.id, {
+                              rotation: parseInt(e.target.value),
+                            })
+                          }
                           className="flex-1"
                         />
                         <input
@@ -808,9 +1047,16 @@ export function UnifiedEditorModal({
                           min="-180"
                           max="180"
                           value={(selectedLayer as ImageLayerData).rotation}
-                          onChange={(e) => updateLayer(selectedLayer.id, { rotation: parseInt(e.target.value) || 0 })}
+                          onChange={(e) =>
+                            updateLayer(selectedLayer.id, {
+                              rotation: parseInt(e.target.value) || 0,
+                            })
+                          }
                           className="w-16 px-2 py-1 text-sm border rounded"
-                          style={{ borderColor: "var(--card-border)", background: "var(--card-bg)" }}
+                          style={{
+                            borderColor: "var(--card-border)",
+                            background: "var(--card-bg)",
+                          }}
                         />
                       </div>
                     </div>
@@ -873,7 +1119,11 @@ export function UnifiedEditorModal({
                   return (
                     <div
                       key={layer.id}
-                      className={`absolute cursor-move ${selectedLayerId === layer.id ? "ring-2 ring-blue-500" : ""}`}
+                      className={`absolute cursor-move ${
+                        selectedLayerId === layer.id
+                          ? "ring-2 ring-blue-500"
+                          : ""
+                      }`}
                       style={{
                         left: textLayer.x,
                         top: textLayer.y,
@@ -885,9 +1135,10 @@ export function UnifiedEditorModal({
                         fontWeight: textLayer.bold ? "bold" : "normal",
                         fontStyle: textLayer.italic ? "italic" : "normal",
                         textDecoration: "none", // Remove default strikethrough, using custom diagonal
-                        textShadow: textLayer.stroke_width > 0
-                          ? `${textLayer.stroke_color} 0 0 ${textLayer.stroke_width}px, ${textLayer.stroke_color} 0 0 ${textLayer.stroke_width}px`
-                          : "none",
+                        textShadow:
+                          textLayer.stroke_width > 0
+                            ? `${textLayer.stroke_color} 0 0 ${textLayer.stroke_width}px, ${textLayer.stroke_color} 0 0 ${textLayer.stroke_width}px`
+                            : "none",
                         zIndex: layer.z_index,
                       }}
                       onMouseDown={(e) => handleMouseDown(e, layer.id)}
@@ -899,7 +1150,7 @@ export function UnifiedEditorModal({
                           style={{
                             left: "-5px",
                             bottom: "-2px",
-                            width: "140%",
+                            width: "100%",
                             height: Math.max(1, textLayer.font_size / 15),
                             pointerEvents: "none",
                             transformOrigin: "left bottom",
@@ -919,12 +1170,18 @@ export function UnifiedEditorModal({
                   );
                 } else {
                   const imgLayer = layer as ImageLayerData;
-                  const scaledWidth = (imgLayer.naturalWidth || 200) * imgLayer.scale;
-                  const scaledHeight = (imgLayer.naturalHeight || 200) * imgLayer.scale;
+                  const scaledWidth =
+                    (imgLayer.naturalWidth || 200) * imgLayer.scale;
+                  const scaledHeight =
+                    (imgLayer.naturalHeight || 200) * imgLayer.scale;
                   return (
                     <div
                       key={layer.id}
-                      className={`absolute cursor-move ${selectedLayerId === layer.id ? "ring-2 ring-blue-500" : ""}`}
+                      className={`absolute cursor-move ${
+                        selectedLayerId === layer.id
+                          ? "ring-2 ring-blue-500"
+                          : ""
+                      }`}
                       style={{
                         left: imgLayer.x,
                         top: imgLayer.y,
@@ -944,7 +1201,10 @@ export function UnifiedEditorModal({
                         draggable={false}
                         onLoad={(e) => {
                           const img = e.currentTarget;
-                          if (!imgLayer.naturalWidth || imgLayer.naturalWidth === 200) {
+                          if (
+                            !imgLayer.naturalWidth ||
+                            imgLayer.naturalWidth === 200
+                          ) {
                             updateLayer(layer.id, {
                               naturalWidth: img.naturalWidth,
                               naturalHeight: img.naturalHeight,
