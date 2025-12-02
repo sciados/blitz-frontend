@@ -189,20 +189,37 @@ export function ImageEditorModal({
       const mouseX = e.clientX - imageRect.left;
       const mouseY = e.clientY - imageRect.top;
 
-      // Simple bounds: CENTER can be positioned anywhere within background image
-      // TODO: Add scaling bounds later - for now keep it simple
-      const newX = Math.max(0, Math.min(mouseX - dragStart.x, imageWidth));
-      const newY = Math.max(0, Math.min(mouseY - dragStart.y, imageHeight));
+      // overlay.x/y stores CENTER position (not TOP-LEFT)
+      // When dragging, we're moving the CENTER
+      // But we need to constrain the TOP-LEFT to stay on screen
+      // TOP-LEFT = CENTER - (width/2, height/2)
+      // So: CENTER = TOP-LEFT + (width/2, height/2)
+      const overlayWidth = (overlay.naturalWidth && overlay.naturalWidth > 0) ? overlay.naturalWidth : 200;
+      const overlayHeight = (overlay.naturalHeight && overlay.naturalHeight > 0) ? overlay.naturalHeight : 200;
+
+      // Calculate what TOP-LEFT would be for the new position
+      const newCenterX = mouseX - dragStart.x;
+      const newCenterY = mouseY - dragStart.y;
+      const newTopLeftX = newCenterX - (overlayWidth * overlay.scale / 2);
+      const newTopLeftY = newCenterY - (overlayHeight * overlay.scale / 2);
+
+      // If TOP-LEFT would go off-screen, clamp CENTER to keep it in bounds
+      const constrainedTopLeftX = Math.max(0, Math.min(newTopLeftX, imageWidth - overlayWidth * overlay.scale));
+      const constrainedTopLeftY = Math.max(0, Math.min(newTopLeftY, imageHeight - overlayHeight * overlay.scale));
+
+      // Convert back to CENTER
+      const newX = constrainedTopLeftX + (overlayWidth * overlay.scale / 2);
+      const newY = constrainedTopLeftY + (overlayHeight * overlay.scale / 2);
 
       console.log("DEBUG DRAG:", {
         mouseX,
         mouseY,
-        dragStartX: dragStart.x,
-        dragStartY: dragStart.y,
+        newTopLeftX,
+        newTopLeftY,
         newX,
         newY,
-        imageWidth,
-        imageHeight,
+        overlayWidth: overlayWidth * overlay.scale,
+        overlayHeight: overlayHeight * overlay.scale,
       });
 
       handleOverlayUpdate({
@@ -556,6 +573,18 @@ export function ImageEditorModal({
 
               {/* Transform Controls */}
               {selectedOverlay && (() => {
+                // Calculate bounds to keep TOP-LEFT on screen
+                const overlayWidth = (selectedOverlay.naturalWidth && selectedOverlay.naturalWidth > 0) ? selectedOverlay.naturalWidth : 200;
+                const overlayHeight = (selectedOverlay.naturalHeight && selectedOverlay.naturalHeight > 0) ? selectedOverlay.naturalHeight : 200;
+                const scaledWidth = overlayWidth * selectedOverlay.scale;
+                const scaledHeight = overlayHeight * selectedOverlay.scale;
+
+                // CENTER position range (to keep TOP-LEFT on screen)
+                const minX = scaledWidth / 2;
+                const maxX = imageWidth - (scaledWidth / 2);
+                const minY = scaledHeight / 2;
+                const maxY = imageHeight - (scaledHeight / 2);
+
                 return (
                   <>
                     <div>
@@ -567,8 +596,8 @@ export function ImageEditorModal({
                       </label>
                       <input
                         type="range"
-                        min="0"
-                        max={imageWidth}
+                        min={minX}
+                        max={maxX}
                         value={selectedOverlay.x}
                         onChange={(e) =>
                           handleOverlayUpdate({
@@ -589,8 +618,8 @@ export function ImageEditorModal({
                       </label>
                       <input
                         type="range"
-                        min="0"
-                        max={imageHeight}
+                        min={minY}
+                        max={maxY}
                         value={selectedOverlay.y}
                         onChange={(e) =>
                           handleOverlayUpdate({
