@@ -897,13 +897,13 @@ export function UnifiedEditorModal({
                         <div
                           className="absolute"
                           style={{
-                            left: 0,
-                            bottom: 0,
-                            width: "300%",
-                            height: Math.max(1, textLayer.font_size / 20),
+                            left: "10%",
+                            bottom: "5%",
+                            width: "80%",
+                            height: Math.max(1, textLayer.font_size / 15),
                             pointerEvents: "none",
                             transformOrigin: "left bottom",
-                            transform: "rotate(-45deg)",
+                            transform: "rotate(-25deg)",
                           }}
                         >
                           <div
