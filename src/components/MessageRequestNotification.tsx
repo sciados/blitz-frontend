@@ -18,38 +18,41 @@ export function MessageRequestNotification() {
   const pathname = usePathname();
   const [requests, setRequests] = useState<MessageRequest[]>([]);
   const [showBanner, setShowBanner] = useState(false);
-  const [hasShownNotification, setHasShownNotification] = useState(false);
+  const [dismissedCount, setDismissedCount] = useState(0);
 
   useEffect(() => {
     const handleShowNotification = (event: CustomEvent) => {
       const { requests: pendingRequests } = event.detail;
-      setRequests(pendingRequests);
-      setShowBanner(true);
-      setHasShownNotification(true);
 
-      // Also show a toast notification
-      if (pendingRequests.length === 1) {
-        toast.info("You have a new connection request", {
-          description: `From: ${pendingRequests[0].subject}`,
-          action: {
-            label: "View",
-            onClick: () => {
-              window.location.href = "/messages/requests";
+      // Only show if we have more requests than we've dismissed
+      if (pendingRequests.length > dismissedCount) {
+        setRequests(pendingRequests);
+        setShowBanner(true);
+
+        // Also show a toast notification
+        if (pendingRequests.length === 1) {
+          toast.info("You have a new connection request", {
+            description: `From: ${pendingRequests[0].subject}`,
+            action: {
+              label: "View",
+              onClick: () => {
+                window.location.href = "/messages/requests";
+              },
             },
-          },
-          duration: 10000, // Show for 10 seconds
-        });
-      } else {
-        toast.info(`You have ${pendingRequests.length} new connection requests`, {
-          description: "Click to view and respond",
-          action: {
-            label: "View All",
-            onClick: () => {
-              window.location.href = "/messages/requests";
+            duration: 10000, // Show for 10 seconds
+          });
+        } else {
+          toast.info(`You have ${pendingRequests.length} new connection requests`, {
+            description: "Click to view and respond",
+            action: {
+              label: "View All",
+              onClick: () => {
+                window.location.href = "/messages/requests";
+              },
             },
-          },
-          duration: 10000, // Show for 10 seconds
-        });
+            duration: 10000, // Show for 10 seconds
+          });
+        }
       }
     };
 
@@ -58,17 +61,18 @@ export function MessageRequestNotification() {
     return () => {
       window.removeEventListener("showMessageRequestNotification", handleShowNotification as EventListener);
     };
-  }, []);
+  }, [dismissedCount]);
 
   // Hide banner when user visits the message requests page
   useEffect(() => {
     if (pathname === "/messages/requests") {
       setShowBanner(false);
+      setDismissedCount(requests.length);
     }
-  }, [pathname]);
+  }, [pathname, requests.length]);
 
-  // Don't show on first load if already checked
-  if (!showBanner || requests.length === 0) {
+  // Don't show if we have no requests or banner is dismissed
+  if (requests.length === 0 || (!showBanner && requests.length <= dismissedCount)) {
     return null;
   }
 

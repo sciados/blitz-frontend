@@ -118,6 +118,8 @@ export default function Layout({ children }: LayoutProps) {
   useEffect(() => {
     if (!userInfo) return; // Wait until we have user info
 
+    const lastRequestCount = { current: 0 };
+
     const fetchPendingRequests = async () => {
       try {
         const res = await api.get(
@@ -131,7 +133,10 @@ export default function Layout({ children }: LayoutProps) {
           created_at: string;
         }>;
 
-        if (pendingRequests.length > 0) {
+        console.log("[Layout] Fetched pending requests:", pendingRequests.length);
+
+        // Only show notification if count increased (new requests)
+        if (pendingRequests.length > 0 && pendingRequests.length > lastRequestCount.current) {
           // Show notification
           const notification = new CustomEvent(
             "showMessageRequestNotification",
@@ -139,15 +144,27 @@ export default function Layout({ children }: LayoutProps) {
               detail: { requests: pendingRequests },
             }
           );
+          console.log("[Layout] Dispatching notification event for", pendingRequests.length, "requests");
           window.dispatchEvent(notification);
         }
+
+        // Store the count for next check
+        lastRequestCount.current = pendingRequests.length;
       } catch (err) {
         // Silent fail - not critical
         console.error("Failed to fetch pending requests:", err);
       }
     };
 
+    // Check immediately on userInfo load
     fetchPendingRequests();
+
+    // Set up polling every 30 seconds to check for new requests
+    const interval = setInterval(fetchPendingRequests, 30000);
+
+    return () => {
+      clearInterval(interval);
+    };
   }, [userInfo]);
 
   const handleLogout = () => {
