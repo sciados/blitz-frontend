@@ -10,6 +10,7 @@ import { ContentRefinementModal } from "src/components/ContentRefinementModal";
 import { ContentVariationsModal } from "src/components/ContentVariationsModal";
 import { ContentViewModal } from "src/components/ContentViewModal";
 import { UnifiedEditorModal } from "src/components/UnifiedEditorModal";
+import { ConfirmationModal } from "src/components/ConfirmationModal";
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -67,6 +68,12 @@ export default function ContentLibraryPage() {
 
   // Unified editor state for library images
   const [showUnifiedEditor, setShowUnifiedEditor] = useState(false);
+
+  // Confirmation modal state
+  const [showDeleteContentConfirm, setShowDeleteContentConfirm] = useState(false);
+  const [showDeleteImageConfirm, setShowDeleteImageConfirm] = useState(false);
+  const [contentToDelete, setContentToDelete] = useState<number | null>(null);
+  const [imageToDelete, setImageToDelete] = useState<number | null>(null);
 
   // Fetch all content for the user
   const { refetch: refetchContent, isLoading } = useQuery({
@@ -174,14 +181,21 @@ export default function ContentLibraryPage() {
   };
 
   const handleDeleteContent = async (contentId: number) => {
-    if (!confirm("Are you sure you want to delete this content?")) return;
+    setContentToDelete(contentId);
+    setShowDeleteContentConfirm(true);
+  };
+
+  const confirmDeleteContent = async () => {
+    if (!contentToDelete) return;
 
     try {
-      await api.delete(`/api/content/${contentId}`);
+      await api.delete(`/api/content/${contentToDelete}`);
       toast.success("Content deleted successfully");
       refetchContent();
+      setContentToDelete(null);
     } catch (err: any) {
       toast.error(err.response?.data?.detail || "Failed to delete content");
+      setContentToDelete(null);
     }
   };
 
@@ -238,10 +252,15 @@ export default function ContentLibraryPage() {
   };
 
   async function handleDeleteImage(imageId: number) {
-    if (!confirm("Are you sure you want to delete this image?")) return;
+    setImageToDelete(imageId);
+    setShowDeleteImageConfirm(true);
+  };
+
+  async function confirmDeleteImage() {
+    if (!imageToDelete) return;
 
     try {
-      await api.delete(`/api/content/images/${imageId}`);
+      await api.delete(`/api/content/images/${imageToDelete}`);
       toast.success("Image deleted successfully");
       refetchImages();
       setIsLibraryModalOpen(false);
@@ -946,6 +965,34 @@ export default function ContentLibraryPage() {
           }}
         />
       )}
+
+      {/* Delete Content Confirmation */}
+      <ConfirmationModal
+        isOpen={showDeleteContentConfirm}
+        onClose={() => {
+          setShowDeleteContentConfirm(false);
+          setContentToDelete(null);
+        }}
+        onConfirm={confirmDeleteContent}
+        title="Delete Content"
+        message="Are you sure you want to delete this content? This action cannot be undone."
+        type="danger"
+        confirmText="Delete"
+      />
+
+      {/* Delete Image Confirmation */}
+      <ConfirmationModal
+        isOpen={showDeleteImageConfirm}
+        onClose={() => {
+          setShowDeleteImageConfirm(false);
+          setImageToDelete(null);
+        }}
+        onConfirm={confirmDeleteImage}
+        title="Delete Image"
+        message="Are you sure you want to delete this image? This action cannot be undone."
+        type="danger"
+        confirmText="Delete"
+      />
     </AuthGate>
   );
 }

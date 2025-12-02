@@ -884,11 +884,12 @@ export function UnifiedEditorModal({
                         whiteSpace: "nowrap",
                         fontWeight: textLayer.bold ? "bold" : "normal",
                         fontStyle: textLayer.italic ? "italic" : "normal",
-                        textDecoration: textLayer.strikethrough ? "line-through" : "none",
+                        textDecoration: "none", // Remove default strikethrough, using custom diagonal
                         textShadow: textLayer.stroke_width > 0
                           ? `${textLayer.stroke_color} 0 0 ${textLayer.stroke_width}px, ${textLayer.stroke_color} 0 0 ${textLayer.stroke_width}px`
                           : "none",
                         zIndex: layer.z_index,
+                        position: "relative", // Needed for absolute positioning of overlay
                       }}
                       onMouseDown={(e) => handleMouseDown(e, layer.id)}
                     >
@@ -898,22 +899,19 @@ export function UnifiedEditorModal({
                           className="absolute"
                           style={{
                             left: 0,
-                            top: 0,
-                            width: "100%",
-                            height: "100%",
+                            bottom: 0,
+                            width: "300%",
+                            height: Math.max(1, textLayer.font_size / 20),
                             pointerEvents: "none",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
+                            transformOrigin: "left bottom",
+                            transform: "rotate(-45deg)",
                           }}
                         >
                           <div
                             style={{
-                              width: "140%",
-                              height: Math.max(1, textLayer.font_size / 20),
+                              width: "100%",
+                              height: "100%",
                               backgroundColor: textLayer.color,
-                              transform: "rotate(-45deg)",
-                              transformOrigin: "center",
                             }}
                           />
                         </div>

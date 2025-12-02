@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { api } from "src/lib/appClient";
 import { GeneratedImage } from "src/lib/types";
 import { UnifiedEditorModal } from "./UnifiedEditorModal";
+import { ConfirmationModal } from "./ConfirmationModal";
 
 interface ImagePreviewModalProps {
   isOpen: boolean;
@@ -22,6 +23,8 @@ export function ImagePreviewModal({
   onSavePremium,
 }: ImagePreviewModalProps) {
   const [showEditor, setShowEditor] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showProtectConfirm, setShowProtectConfirm] = useState(false);
 
   if (!isOpen) return null;
 
@@ -47,6 +50,14 @@ export function ImagePreviewModal({
     onSavePremium(image);
     toast.success("Premium image saved to library!");
     onClose();
+  };
+
+  const handleDeleteLayers = () => {
+    setShowDeleteConfirm(true);
+  };
+
+  const handleProtectSeed = () => {
+    setShowProtectConfirm(true);
   };
 
   return (
@@ -155,17 +166,9 @@ export function ImagePreviewModal({
                       const hasLayers = premiumImage.metadata?.has_layers || false;
 
                       if (hasLayers) {
-                        // Delete layered copies
-                        if (confirm("Delete all layers from this image?")) {
-                          // TODO: Call API to remove layers
-                          toast.success("Layers deleted!");
-                        }
+                        handleDeleteLayers();
                       } else {
-                        // Protect original seed
-                        if (confirm("Protect this original seed image? It cannot be modified.")) {
-                          // TODO: Call API to protect the seed
-                          toast.success("Seed image protected!");
-                        }
+                        handleProtectSeed();
                       }
                     }}
                     className={`px-4 py-2 rounded-lg transition font-medium flex items-center space-x-2 ${
@@ -249,6 +252,36 @@ export function ImagePreviewModal({
           setShowEditor(false);
           onSavePremium(image);
         }}
+      />
+
+      {/* Delete Layers Confirmation */}
+      <ConfirmationModal
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={() => {
+          // TODO: Call API to remove layers
+          toast.success("Layers deleted!");
+          setShowDeleteConfirm(false);
+        }}
+        title="Delete All Layers"
+        message="Are you sure you want to delete all layers from this image? This action cannot be undone."
+        type="danger"
+        confirmText="Delete"
+      />
+
+      {/* Protect Seed Confirmation */}
+      <ConfirmationModal
+        isOpen={showProtectConfirm}
+        onClose={() => setShowProtectConfirm(false)}
+        onConfirm={() => {
+          // TODO: Call API to protect the seed
+          toast.success("Seed image protected!");
+          setShowProtectConfirm(false);
+        }}
+        title="Protect Original Seed"
+        message="Protect this original seed image? It cannot be modified."
+        type="warning"
+        confirmText="Protect"
       />
     </div>
   );
