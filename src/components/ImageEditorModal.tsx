@@ -315,14 +315,20 @@ export function ImageEditorModal({
 
     try {
       // Prepare overlay data for backend
-      // Note: overlay.x/y use transformOrigin: center, so they ARE CENTER coordinates
+      // Convert TOP-LEFT to CENTER coordinates
       const imageOverlays = overlays.map((overlay) => {
+        const overlayWidth = (overlay.naturalWidth && overlay.naturalWidth > 0) ? overlay.naturalWidth : 200;
+        const overlayHeight = (overlay.naturalHeight && overlay.naturalHeight > 0) ? overlay.naturalHeight : 200;
+        const scaledWidth = overlayWidth * overlay.scale;
+        const scaledHeight = overlayHeight * overlay.scale;
+
+        // CSS left/top position (overlay.x/y) is TOP-LEFT of the overlay
+        // Backend expects CENTER coordinates
+        // Formula: centerX = left + scaledWidth/2
         return {
           image_url: overlay.image_url,
-          // overlay.x and overlay.y are already CENTER coordinates
-          // (due to transformOrigin: center in CSS)
-          x: overlay.x,
-          y: overlay.y,
+          x: overlay.x + (scaledWidth / 2),
+          y: overlay.y + (scaledHeight / 2),
           scale: overlay.scale,
           rotation: overlay.rotation,
           opacity: overlay.opacity,
