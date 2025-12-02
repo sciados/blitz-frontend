@@ -1,3 +1,6 @@
+// src/components/editor/CompleteImageEditor.tsx
+// copied from Vercel - 8vHptHjZJ
+
 "use client";
 import { useState } from "react";
 import { ImageEditor } from "./ImageEditor";
@@ -31,6 +34,7 @@ export function CompleteImageEditor({
     setOverlays([...overlays, overlay]);
     setSelectedOverlay(overlay.id);
     setShowTransformControls(true);
+    toast.success("Image added successfully!");
   };
 
   const handleOverlayUpdate = (updatedOverlay: OverlayData) => {
@@ -66,11 +70,13 @@ export function CompleteImageEditor({
       }
     } catch (error) {
       console.error("Failed to add image:", error);
+      toast.error("Failed to add image");
     }
   };
 
   const handleExport = async () => {
     if (overlays.length === 0) {
+      toast.error("No images to export");
       return;
     }
 
@@ -82,8 +88,10 @@ export function CompleteImageEditor({
         `campaign-${campaignId}-composed.png`,
         { quality: 0.92, format: "image/png" }
       );
+      toast.success("Image exported successfully!");
     } catch (error) {
       console.error("Failed to export image:", error);
+      toast.error("Failed to export image");
     } finally {
       setComposing(false);
     }

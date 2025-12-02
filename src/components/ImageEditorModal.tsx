@@ -1,4 +1,5 @@
 // src/components/ImageEditorModal.tsx
+// copied from Vercel - 8vHptHjZJ
 
 "use client";
 
@@ -16,8 +17,6 @@ interface OverlayData {
   rotation: number;
   opacity: number;
   z_index: number;
-  naturalWidth?: number;
-  naturalHeight?: number;
 }
 
 interface ImageEditorModalProps {
@@ -84,6 +83,7 @@ export function ImageEditorModal({
       }
     } catch (error) {
       console.error("Failed to fetch campaign images:", error);
+      toast.error("Failed to load campaign images");
     } finally {
       setLoadingImages(false);
     }
@@ -123,17 +123,14 @@ export function ImageEditorModal({
         rotation: data.rotation,
         opacity: data.opacity,
         z_index: data.z_index,
-        naturalWidth: 0,
-        naturalHeight: 0,
       };
 
       setOverlays([...overlays, newOverlay]);
       setSelectedOverlayId(newOverlay.id);
-
-      // Load and store dimensions
-      updateOverlayDimensions(newOverlay.id, data.image_url);
+      toast.success("Image added successfully!");
     } catch (error) {
       console.error("Failed to add image:", error);
+      toast.error("Failed to add image");
     }
   };
 
@@ -141,43 +138,6 @@ export function ImageEditorModal({
     setOverlays(
       overlays.map((o) => (o.id === updatedOverlay.id ? updatedOverlay : o))
     );
-  };
-
-  // Load image dimensions
-  const loadImageDimensions = (
-    url: string
-  ): Promise<{ width: number; height: number }> => {
-    return new Promise((resolve, reject) => {
-      const img = new Image();
-      img.onload = () => {
-        resolve({ width: img.naturalWidth, height: img.naturalHeight });
-      };
-      img.onerror = reject;
-      img.src = url;
-    });
-  };
-
-  // Update overlay with dimensions
-  const updateOverlayDimensions = async (
-    overlayId: string,
-    imageUrl: string
-  ) => {
-    try {
-      const dimensions = await loadImageDimensions(imageUrl);
-      setOverlays(
-        overlays.map((o) =>
-          o.id === overlayId
-            ? {
-                ...o,
-                naturalWidth: dimensions.width,
-                naturalHeight: dimensions.height,
-              }
-            : o
-        )
-      );
-    } catch (error) {
-      console.error("Failed to load image dimensions:", error);
-    }
   };
 
   const handleDeleteOverlay = (id: string) => {
@@ -305,6 +265,7 @@ export function ImageEditorModal({
 
   const handleSave = async () => {
     if (overlays.length === 0) {
+      toast.error("No images to save");
       return;
     }
 
@@ -312,7 +273,6 @@ export function ImageEditorModal({
 
     try {
       // Prepare overlay data for backend
-      // Send CENTER coordinates directly - backend will convert to TOP-LEFT using scaled dimensions
       const imageOverlays = overlays.map((overlay) => ({
         image_url: overlay.image_url,
         x: overlay.x,
@@ -336,10 +296,12 @@ export function ImageEditorModal({
         prompt: sourceImage.prompt,
       });
 
+      toast.success("Image with overlay saved successfully!");
       onSave(data);
       onClose();
     } catch (error) {
       console.error("Failed to save image:", error);
+      toast.error("Failed to save image");
     } finally {
       setIsProcessing(false);
     }
@@ -677,6 +639,7 @@ export function ImageEditorModal({
                       const file = e.target.files?.[0];
                       if (file) {
                         // TODO: Implement file upload to server/R2
+                        toast.info("File upload not yet implemented");
                       }
                     }}
                   />
@@ -699,6 +662,7 @@ export function ImageEditorModal({
               className="relative bg-gray-100 dark:bg-gray-800 rounded-lg overflow-auto"
               style={{
                 minHeight: "calc(90vh - 220px)",
+                paddingLeft: "2px",
               }}
             >
               <img
@@ -756,21 +720,6 @@ export function ImageEditorModal({
                     }}
                     draggable={false}
                   />
-
-                  {/* Coordinate label - shows when selected */}
-                  {selectedOverlayId === overlay.id && (
-                    <div
-                      className="absolute px-2 py-1 text-xs font-mono text-white bg-black/70 rounded pointer-events-none"
-                      style={{
-                        top: -28,
-                        left: 0,
-                        zIndex: 1000,
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      x: {Math.round(overlay.x)}, y: {Math.round(overlay.y)}
-                    </div>
-                  )}
 
                   {/* Resize handles - only show for selected overlay */}
                   {selectedOverlayId === overlay.id && (
