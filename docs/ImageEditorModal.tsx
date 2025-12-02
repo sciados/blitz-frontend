@@ -1,5 +1,5 @@
 // src/components/ImageEditorModal.tsx
-// copied from Vercel - 8vHptHjZJ
+// copied 02/12/25 from Vercel - 8vHptHjZJ
 
 "use client";
 
@@ -17,8 +17,6 @@ interface OverlayData {
   rotation: number;
   opacity: number;
   z_index: number;
-  naturalWidth?: number;
-  naturalHeight?: number;
 }
 
 interface ImageEditorModalProps {
@@ -125,8 +123,6 @@ export function ImageEditorModal({
         rotation: data.rotation,
         opacity: data.opacity,
         z_index: data.z_index,
-        naturalWidth: 200,
-        naturalHeight: 200,
       };
 
       setOverlays([...overlays, newOverlay]);
@@ -159,87 +155,37 @@ export function ImageEditorModal({
     e.stopPropagation();
     setSelectedOverlayId(overlayId);
     const overlay = overlays.find((o) => o.id === overlayId);
-    if (!overlay || !imageRef.current || !canvasRef.current) return;
+    if (!overlay) return;
+
+    if (!canvasRef.current) return;
 
     const canvasRect = canvasRef.current.getBoundingClientRect();
-    const imageRect = imageRef.current.getBoundingClientRect();
 
-    // Calculate mouse position relative to CANVAS first
+    // Calculate mouse position relative to the canvas (same as TextEditorModal)
     const mouseX = e.clientX - canvasRect.left;
     const mouseY = e.clientY - canvasRect.top;
 
-    // Then adjust to be relative to IMAGE
-    const imageOffsetX = imageRect.left - canvasRect.left;
-    const imageOffsetY = imageRect.top - canvasRect.top;
-    const imageRelativeX = mouseX - imageOffsetX;
-    const imageRelativeY = mouseY - imageOffsetY;
-
     setIsDragging(true);
-    // Store the initial mouse position and layer position relative to image
+    // Store the initial mouse position and layer position (same as TextEditorModal)
     setDragStart({
-      x: imageRelativeX - overlay.x,
-      y: imageRelativeY - overlay.y,
+      x: mouseX - overlay.x,
+      y: mouseY - overlay.y,
     });
   };
 
   const handleMouseMove = (e: MouseEvent) => {
     if (isDragging && selectedOverlayId) {
       const overlay = overlays.find((o) => o.id === selectedOverlayId);
-      if (!overlay || !imageRef.current || !canvasRef.current) return;
+      if (!overlay || !canvasRef.current) return;
 
-      const imageRect = imageRef.current.getBoundingClientRect();
-
-      // Calculate mouse position relative to the CANVAS (not image)
-      // Overlays are positioned relative to canvas, not image
       const canvasRect = canvasRef.current.getBoundingClientRect();
+
+      // Calculate mouse position relative to the canvas (same as TextEditorModal)
       const mouseX = e.clientX - canvasRect.left;
       const mouseY = e.clientY - canvasRect.top;
 
-      // But we need coordinates relative to the IMAGE for proper positioning
-      // Calculate offset from image top-left within canvas
-      const imageOffsetX = imageRect.left - canvasRect.left;
-      const imageOffsetY = imageRect.top - canvasRect.top;
-      const imageRelativeX = mouseX - imageOffsetX;
-      const imageRelativeY = mouseY - imageOffsetY;
-
-      // overlay.x/y stores CENTER position (not TOP-LEFT)
-      // When dragging, we're moving the CENTER
-      // But we need to constrain the TOP-LEFT to stay on screen
-      // TOP-LEFT = CENTER - (width/2, height/2)
-      // So: CENTER = TOP-LEFT + (width/2, height/2)
-      const overlayWidth = (overlay.naturalWidth && overlay.naturalWidth > 0) ? overlay.naturalWidth : 200;
-      const overlayHeight = (overlay.naturalHeight && overlay.naturalHeight > 0) ? overlay.naturalHeight : 200;
-
-      // Calculate what TOP-LEFT would be for the new position
-      const newCenterX = imageRelativeX - dragStart.x;
-      const newCenterY = imageRelativeY - dragStart.y;
-      const newTopLeftX = newCenterX - (overlayWidth * overlay.scale / 2);
-      const newTopLeftY = newCenterY - (overlayHeight * overlay.scale / 2);
-
-      // If TOP-LEFT would go off-screen, clamp CENTER to keep it in bounds
-      const constrainedTopLeftX = Math.max(0, Math.min(newTopLeftX, imageWidth - overlayWidth * overlay.scale));
-      const constrainedTopLeftY = Math.max(0, Math.min(newTopLeftY, imageHeight - overlayHeight * overlay.scale));
-
-      // Convert back to CENTER
-      const newX = constrainedTopLeftX + (overlayWidth * overlay.scale / 2);
-      const newY = constrainedTopLeftY + (overlayHeight * overlay.scale / 2);
-
-      console.log("DEBUG DRAG:", {
-        mouseX,
-        mouseY,
-        imageOffsetX,
-        imageOffsetY,
-        imageRelativeX,
-        imageRelativeY,
-        newCenterX,
-        newCenterY,
-        newTopLeftX,
-        newTopLeftY,
-        newX,
-        newY,
-        overlayWidth: overlayWidth * overlay.scale,
-        overlayHeight: overlayHeight * overlay.scale,
-      });
+      const newX = Math.max(0, Math.min(mouseX - dragStart.x, imageWidth));
+      const newY = Math.max(0, Math.min(mouseY - dragStart.y, imageHeight));
 
       handleOverlayUpdate({
         ...overlay,
@@ -248,40 +194,17 @@ export function ImageEditorModal({
       });
     } else if (isResizing && selectedOverlayId && resizeHandle) {
       const overlay = overlays.find((o) => o.id === selectedOverlayId);
-      if (!overlay || !imageRef.current) return;
+      if (!overlay) return;
 
-      const imageRect = imageRef.current.getBoundingClientRect();
-      const mouseX = e.clientX - imageRect.left;
-      const mouseY = e.clientY - imageRect.top;
+      const deltaX = e.clientX - resizeStart.x;
+      const deltaY = e.clientY - resizeStart.y;
 
-      // Calculate overlay center (same as in handleResizeMouseDown)
-      const overlayCenterX = overlay.x;
-      const overlayCenterY = overlay.y;
-
-      // Calculate current distance from center
-      const currentDistanceX = mouseX - overlayCenterX;
-      const currentDistanceY = mouseY - overlayCenterY;
-
-      // Calculate how much the distance from center has changed
-      const deltaDistanceX = currentDistanceX - resizeStart.x;
-      const deltaDistanceY = currentDistanceY - resizeStart.y;
-
-      // Calculate new scale based on change in distance from center
-      // This is more stable than using absolute mouse position
       let newScale = resizeStart.scale;
       if (resizeHandle.includes("se") || resizeHandle.includes("ne")) {
-        // Moving away from center increases scale
-        newScale = Math.max(
-          0.1,
-          Math.min(resizeStart.scale + deltaDistanceX / 50, 3)
-        );
+        newScale = Math.max(0.1, Math.min(resizeStart.scale + deltaX / 100, 3));
       }
       if (resizeHandle.includes("sw") || resizeHandle.includes("nw")) {
-        // Moving away from center in opposite direction decreases scale
-        newScale = Math.max(
-          0.1,
-          Math.min(resizeStart.scale - deltaDistanceX / 50, 3)
-        );
+        newScale = Math.max(0.1, Math.min(resizeStart.scale - deltaX / 100, 3));
       }
 
       handleOverlayUpdate({
@@ -323,34 +246,19 @@ export function ImageEditorModal({
     if (!selectedOverlayId) return;
 
     const overlay = overlays.find((o) => o.id === selectedOverlayId);
-    if (!overlay || !imageRef.current) return;
+    if (!overlay || !canvasRef.current) return;
 
-    const imageRect = imageRef.current.getBoundingClientRect();
+    const canvasRect = canvasRef.current.getBoundingClientRect();
 
-    // Calculate mouse position relative to the BACKGROUND IMAGE (not canvas)
-    const mouseX = e.clientX - imageRect.left;
-    const mouseY = e.clientY - imageRect.top;
-
-    // Calculate overlay center position (accounting for transformOrigin: center)
-    const overlayWidth = (overlay.naturalWidth && overlay.naturalWidth > 0) ? overlay.naturalWidth : 200;
-    const overlayHeight = (overlay.naturalHeight && overlay.naturalHeight > 0) ? overlay.naturalHeight : 200;
-    const scaledWidth = overlayWidth * overlay.scale;
-    const scaledHeight = overlayHeight * overlay.scale;
-
-    // The overlay is positioned at overlay.x/y with transformOrigin: center
-    // So the actual center is at overlay.x, overlay.y
-    const overlayCenterX = overlay.x;
-    const overlayCenterY = overlay.y;
-
-    // Calculate distance from center when resize starts
-    const distanceFromCenterX = mouseX - overlayCenterX;
-    const distanceFromCenterY = mouseY - overlayCenterY;
+    // Calculate mouse position relative to the canvas (same as TextEditorModal)
+    const mouseX = e.clientX - canvasRect.left;
+    const mouseY = e.clientY - canvasRect.top;
 
     setIsResizing(true);
     setResizeHandle(handle);
     setResizeStart({
-      x: distanceFromCenterX,
-      y: distanceFromCenterY,
+      x: mouseX,
+      y: mouseY,
       scale: overlay.scale,
     });
   };
@@ -365,37 +273,15 @@ export function ImageEditorModal({
 
     try {
       // Prepare overlay data for backend
-      // overlay.x/y stores CENTER position (due to transformOrigin: center)
-      // Backend expects TOP-LEFT for PIL.paste()
-      const imageOverlays = overlays.map((overlay) => {
-        const overlayWidth = (overlay.naturalWidth && overlay.naturalWidth > 0) ? overlay.naturalWidth : 200;
-        const overlayHeight = (overlay.naturalHeight && overlay.naturalHeight > 0) ? overlay.naturalHeight : 200;
-        const scaledWidth = overlayWidth * overlay.scale;
-        const scaledHeight = overlayHeight * overlay.scale;
-
-        // Convert CENTER to TOP-LEFT: topLeft = center - (scaledDimensions / 2)
-        const saveX = overlay.x - (scaledWidth / 2);
-        const saveY = overlay.y - (scaledHeight / 2);
-
-        console.log("DEBUG SAVE:", {
-          centerX: overlay.x,
-          centerY: overlay.y,
-          scaledWidth,
-          scaledHeight,
-          saveX,
-          saveY,
-        });
-
-        return {
-          image_url: overlay.image_url,
-          x: saveX,
-          y: saveY,
-          scale: overlay.scale,
-          rotation: overlay.rotation,
-          opacity: overlay.opacity,
-          z_index: overlay.z_index,
-        };
-      });
+      const imageOverlays = overlays.map((overlay) => ({
+        image_url: overlay.image_url,
+        x: overlay.x,
+        y: overlay.y,
+        scale: overlay.scale,
+        rotation: overlay.rotation,
+        opacity: overlay.opacity,
+        z_index: overlay.z_index,
+      }));
 
       // Send to backend for composition
       const { data } = await api.post("/api/content/images/image-overlay", {
@@ -591,124 +477,111 @@ export function ImageEditorModal({
               )}
 
               {/* Transform Controls */}
-              {selectedOverlay && (() => {
-                // Calculate bounds to keep TOP-LEFT on screen
-                const overlayWidth = (selectedOverlay.naturalWidth && selectedOverlay.naturalWidth > 0) ? selectedOverlay.naturalWidth : 200;
-                const overlayHeight = (selectedOverlay.naturalHeight && selectedOverlay.naturalHeight > 0) ? selectedOverlay.naturalHeight : 200;
-                const scaledWidth = overlayWidth * selectedOverlay.scale;
-                const scaledHeight = overlayHeight * selectedOverlay.scale;
+              {selectedOverlay && (
+                <>
+                  <div>
+                    <label
+                      className="block text-sm font-medium mb-1"
+                      style={{ color: "var(--text-secondary)" }}
+                    >
+                      Position X: {Math.round(selectedOverlay.x)}px
+                    </label>
+                    <input
+                      type="range"
+                      min="0"
+                      max={imageWidth}
+                      value={selectedOverlay.x}
+                      onChange={(e) =>
+                        handleOverlayUpdate({
+                          ...selectedOverlay,
+                          x: parseInt(e.target.value),
+                        })
+                      }
+                      className="w-full"
+                    />
+                  </div>
 
-                // CENTER position range (to keep TOP-LEFT on screen)
-                const minX = scaledWidth / 2;
-                const maxX = imageWidth - (scaledWidth / 2);
-                const minY = scaledHeight / 2;
-                const maxY = imageHeight - (scaledHeight / 2);
+                  <div>
+                    <label
+                      className="block text-sm font-medium mb-1"
+                      style={{ color: "var(--text-secondary)" }}
+                    >
+                      Position Y: {Math.round(selectedOverlay.y)}px
+                    </label>
+                    <input
+                      type="range"
+                      min="0"
+                      max={imageHeight}
+                      value={selectedOverlay.y}
+                      onChange={(e) =>
+                        handleOverlayUpdate({
+                          ...selectedOverlay,
+                          y: parseInt(e.target.value),
+                        })
+                      }
+                      className="w-full"
+                    />
+                  </div>
 
-                return (
-                  <>
-                    <div>
-                      <label
-                        className="block text-sm font-medium mb-1"
-                        style={{ color: "var(--text-secondary)" }}
-                      >
-                        Position X: {Math.round(selectedOverlay.x)}px
-                      </label>
-                      <input
-                        type="range"
-                        min={minX}
-                        max={maxX}
-                        value={selectedOverlay.x}
-                        onChange={(e) =>
-                          handleOverlayUpdate({
-                            ...selectedOverlay,
-                            x: parseInt(e.target.value),
-                          })
-                        }
-                        className="w-full"
-                      />
-                    </div>
+                  <div>
+                    <label
+                      className="block text-sm font-medium mb-1"
+                      style={{ color: "var(--text-secondary)" }}
+                    >
+                      Scale: {selectedOverlay.scale.toFixed(2)}x
+                    </label>
+                    <input
+                      type="range"
+                      min="0.1"
+                      max="3"
+                      step="0.1"
+                      value={selectedOverlay.scale}
+                      onChange={(e) =>
+                        handleOverlayUpdate({
+                          ...selectedOverlay,
+                          scale: parseFloat(e.target.value),
+                        })
+                      }
+                      className="w-full"
+                    />
+                  </div>
 
-                    <div>
-                      <label
-                        className="block text-sm font-medium mb-1"
-                        style={{ color: "var(--text-secondary)" }}
-                      >
-                        Position Y: {Math.round(selectedOverlay.y)}px
-                      </label>
-                      <input
-                        type="range"
-                        min={minY}
-                        max={maxY}
-                        value={selectedOverlay.y}
-                        onChange={(e) =>
-                          handleOverlayUpdate({
-                            ...selectedOverlay,
-                            y: parseInt(e.target.value),
-                          })
-                        }
-                        className="w-full"
-                      />
-                    </div>
+                  <div>
+                    <label
+                      className="block text-sm font-medium mb-1"
+                      style={{ color: "var(--text-secondary)" }}
+                    >
+                      Rotation: {selectedOverlay.rotation}°
+                    </label>
+                    <input
+                      type="range"
+                      min="-180"
+                      max="180"
+                      value={selectedOverlay.rotation}
+                      onChange={(e) =>
+                        handleOverlayUpdate({
+                          ...selectedOverlay,
+                          rotation: parseInt(e.target.value),
+                        })
+                      }
+                      className="w-full"
+                    />
+                  </div>
 
-                    <div>
-                      <label
-                        className="block text-sm font-medium mb-1"
-                        style={{ color: "var(--text-secondary)" }}
-                      >
-                        Scale: {selectedOverlay.scale.toFixed(2)}x
-                      </label>
-                      <input
-                        type="range"
-                        min="0.1"
-                        max="3"
-                        step="0.1"
-                        value={selectedOverlay.scale}
-                        onChange={(e) =>
-                          handleOverlayUpdate({
-                            ...selectedOverlay,
-                            scale: parseFloat(e.target.value),
-                          })
-                        }
-                        className="w-full"
-                      />
-                    </div>
-
-                    <div>
-                      <label
-                        className="block text-sm font-medium mb-1"
-                        style={{ color: "var(--text-secondary)" }}
-                      >
-                        Rotation: {selectedOverlay.rotation}°
-                      </label>
-                      <input
-                        type="range"
-                        min="-180"
-                        max="180"
-                        value={selectedOverlay.rotation}
-                        onChange={(e) =>
-                          handleOverlayUpdate({
-                            ...selectedOverlay,
-                            rotation: parseInt(e.target.value),
-                          })
-                        }
-                        className="w-full"
-                      />
-                    </div>
-
-                    <div>
-                      <label
-                        className="block text-sm font-medium mb-1"
-                        style={{ color: "var(--text-secondary)" }}
-                      >
-                        Opacity: {Math.round(selectedOverlay.opacity * 100)}%
-                      </label>
-                      <input
-                        type="range"
-                        min="0"
-                        max="1"
-                        step="0.1"
-                        value={selectedOverlay.opacity}
-                        onChange={(e) =>
+                  <div>
+                    <label
+                      className="block text-sm font-medium mb-1"
+                      style={{ color: "var(--text-secondary)" }}
+                    >
+                      Opacity: {Math.round(selectedOverlay.opacity * 100)}%
+                    </label>
+                    <input
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.1"
+                      value={selectedOverlay.opacity}
+                      onChange={(e) =>
                         handleOverlayUpdate({
                           ...selectedOverlay,
                           opacity: parseFloat(e.target.value),
@@ -716,10 +589,9 @@ export function ImageEditorModal({
                       }
                       className="w-full"
                     />
-                    </div>
-                  </>
-                );
-              })()}
+                  </div>
+                </>
+              )}
 
               {/* Browse Campaign Images Button */}
               <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
@@ -816,25 +688,13 @@ export function ImageEditorModal({
               />
 
               {/* Overlay Images */}
-              {overlays.map((overlay) => {
-                // overlay.x/y stores CENTER position
-                // CSS left/top positions the TOP-LEFT corner
-                // So we need to offset by half the dimensions to center properly
-                const overlayWidth = (overlay.naturalWidth && overlay.naturalWidth > 0) ? overlay.naturalWidth : 200;
-                const overlayHeight = (overlay.naturalHeight && overlay.naturalHeight > 0) ? overlay.naturalHeight : 200;
-
-                // left/top = center - (dimensions / 2) to position center at overlay.x/y
-                const renderLeft = overlay.x - (overlayWidth / 2);
-                const renderTop = overlay.y - (overlayHeight / 2);
-
-                return (
+              {overlays.map((overlay) => (
                 <div
                   key={overlay.id}
                   className="absolute"
                   style={{
-                    // Position TOP-LEFT so that CENTER appears at overlay.x/y
-                    left: renderLeft,
-                    top: renderTop,
+                    left: overlay.x,
+                    top: overlay.y,
                     transform: `scale(${overlay.scale}) rotate(${overlay.rotation}deg)`,
                     transformOrigin: "center center",
                     zIndex: overlay.z_index,
@@ -859,14 +719,6 @@ export function ImageEditorModal({
                       userSelect: "none",
                     }}
                     draggable={false}
-                    onLoad={(e) => {
-                      const img = e.currentTarget;
-                      handleOverlayUpdate({
-                        ...overlay,
-                        naturalWidth: img.naturalWidth,
-                        naturalHeight: img.naturalHeight,
-                      });
-                    }}
                   />
 
                   {/* Resize handles - only show for selected overlay */}
@@ -911,8 +763,7 @@ export function ImageEditorModal({
                     </>
                   )}
                 </div>
-                );
-              })}
+              ))}
             </div>
 
             <p
