@@ -210,6 +210,27 @@ export function ImagePreviewModal({
                     </svg>
                     <span>Edit Image</span>
                   </button>
+
+                  <button
+                    onClick={onClose}
+                    className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition flex items-center space-x-2"
+                    style={{ color: "var(--text-primary)" }}
+                  >
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                    <span>Cancel</span>
+                  </button>
                 </div>
               </div>
             </div>

@@ -23,6 +23,9 @@ interface TextLayerData {
   stroke_width: number;
   opacity: number;
   z_index: number;
+  bold: boolean;
+  italic: boolean;
+  strikethrough: boolean;
 }
 
 interface ImageLayerData {
@@ -149,6 +152,9 @@ export function UnifiedEditorModal({
       stroke_width: 2,
       opacity: 1.0,
       z_index: nextZIndex,
+      bold: false,
+      italic: false,
+      strikethrough: false,
     };
     setLayers([...layers, newLayer]);
     setSelectedLayerId(newLayer.id);
@@ -425,6 +431,13 @@ export function UnifiedEditorModal({
             </button>
             <button
               onClick={onClose}
+              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition font-medium"
+              style={{ color: "var(--text-primary)" }}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={onClose}
               className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -650,6 +663,46 @@ export function UnifiedEditorModal({
                           className="w-16 px-2 py-1 text-sm border rounded"
                           style={{ borderColor: "var(--card-border)", background: "var(--card-bg)" }}
                         />
+                      </div>
+                    </div>
+
+                    {/* Text Style Buttons */}
+                    <div>
+                      <label className="text-xs" style={{ color: "var(--text-secondary)" }}>Text Style</label>
+                      <div className="flex gap-2 mt-1">
+                        <button
+                          onClick={() => updateLayer(selectedLayer.id, { bold: !(selectedLayer as TextLayerData).bold })}
+                          className={`flex-1 px-3 py-2 text-sm font-bold border rounded transition ${
+                            (selectedLayer as TextLayerData).bold
+                              ? "bg-blue-600 text-white border-blue-600"
+                              : "bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600"
+                          }`}
+                          style={{ color: (selectedLayer as TextLayerData).bold ? "white" : "var(--text-primary)" }}
+                        >
+                          B
+                        </button>
+                        <button
+                          onClick={() => updateLayer(selectedLayer.id, { italic: !(selectedLayer as TextLayerData).italic })}
+                          className={`flex-1 px-3 py-2 text-sm italic border rounded transition ${
+                            (selectedLayer as TextLayerData).italic
+                              ? "bg-blue-600 text-white border-blue-600"
+                              : "bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600"
+                          }`}
+                          style={{ color: (selectedLayer as TextLayerData).italic ? "white" : "var(--text-primary)" }}
+                        >
+                          I
+                        </button>
+                        <button
+                          onClick={() => updateLayer(selectedLayer.id, { strikethrough: !(selectedLayer as TextLayerData).strikethrough })}
+                          className={`flex-1 px-3 py-2 text-sm line-through border rounded transition ${
+                            (selectedLayer as TextLayerData).strikethrough
+                              ? "bg-blue-600 text-white border-blue-600"
+                              : "bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600"
+                          }`}
+                          style={{ color: (selectedLayer as TextLayerData).strikethrough ? "white" : "var(--text-primary)" }}
+                        >
+                          S
+                        </button>
                       </div>
                     </div>
 
