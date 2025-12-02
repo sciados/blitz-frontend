@@ -164,7 +164,7 @@ export function ImageEditorModal({
     try {
       const { data } = await api.post("/api/content/images/trim-transparency", {
         image_url: selectedOverlay.image_url,
-        padding: 5,
+        padding: 2,
         campaign_id: campaignId,
       });
 
@@ -220,8 +220,14 @@ export function ImageEditorModal({
       const mouseY = e.clientY - containerRect.top;
 
       // overlay.x/y stores TOP-LEFT position
-      const overlayWidth = (overlay.naturalWidth && overlay.naturalWidth > 0) ? overlay.naturalWidth : 200;
-      const overlayHeight = (overlay.naturalHeight && overlay.naturalHeight > 0) ? overlay.naturalHeight : 200;
+      const overlayWidth =
+        overlay.naturalWidth && overlay.naturalWidth > 0
+          ? overlay.naturalWidth
+          : 200;
+      const overlayHeight =
+        overlay.naturalHeight && overlay.naturalHeight > 0
+          ? overlay.naturalHeight
+          : 200;
       const scaledWidth = overlayWidth * overlay.scale;
       const scaledHeight = overlayHeight * overlay.scale;
 
@@ -230,8 +236,14 @@ export function ImageEditorModal({
       const newTopLeftY = mouseY - dragStart.y;
 
       // Constrain TOP-LEFT to keep overlay within image bounds
-      const constrainedX = Math.max(0, Math.min(newTopLeftX, imageWidth - scaledWidth));
-      const constrainedY = Math.max(0, Math.min(newTopLeftY, imageHeight - scaledHeight));
+      const constrainedX = Math.max(
+        0,
+        Math.min(newTopLeftX, imageWidth - scaledWidth)
+      );
+      const constrainedY = Math.max(
+        0,
+        Math.min(newTopLeftY, imageHeight - scaledHeight)
+      );
 
       handleOverlayUpdate({
         ...overlay,
@@ -247,8 +259,14 @@ export function ImageEditorModal({
       const mouseY = e.clientY - containerRect.top;
 
       // overlay.x/y is TOP-LEFT, calculate center
-      const overlayWidth = (overlay.naturalWidth && overlay.naturalWidth > 0) ? overlay.naturalWidth : 200;
-      const overlayHeight = (overlay.naturalHeight && overlay.naturalHeight > 0) ? overlay.naturalHeight : 200;
+      const overlayWidth =
+        overlay.naturalWidth && overlay.naturalWidth > 0
+          ? overlay.naturalWidth
+          : 200;
+      const overlayHeight =
+        overlay.naturalHeight && overlay.naturalHeight > 0
+          ? overlay.naturalHeight
+          : 200;
       const scaledWidth = overlayWidth * overlay.scale;
       const scaledHeight = overlayHeight * overlay.scale;
       const overlayCenterX = overlay.x + scaledWidth / 2;
@@ -325,8 +343,14 @@ export function ImageEditorModal({
     const mouseY = e.clientY - containerRect.top;
 
     // overlay.x/y is TOP-LEFT, calculate center for resize
-    const overlayWidth = (overlay.naturalWidth && overlay.naturalWidth > 0) ? overlay.naturalWidth : 200;
-    const overlayHeight = (overlay.naturalHeight && overlay.naturalHeight > 0) ? overlay.naturalHeight : 200;
+    const overlayWidth =
+      overlay.naturalWidth && overlay.naturalWidth > 0
+        ? overlay.naturalWidth
+        : 200;
+    const overlayHeight =
+      overlay.naturalHeight && overlay.naturalHeight > 0
+        ? overlay.naturalHeight
+        : 200;
     const scaledWidth = overlayWidth * overlay.scale;
     const scaledHeight = overlayHeight * overlay.scale;
 
@@ -570,174 +594,183 @@ export function ImageEditorModal({
               )}
 
               {/* Transform Controls */}
-              {selectedOverlay && (() => {
-                // Calculate bounds - overlay.x/y is TOP-LEFT position
-                const overlayWidth = (selectedOverlay.naturalWidth && selectedOverlay.naturalWidth > 0) ? selectedOverlay.naturalWidth : 200;
-                const overlayHeight = (selectedOverlay.naturalHeight && selectedOverlay.naturalHeight > 0) ? selectedOverlay.naturalHeight : 200;
-                const scaledWidth = overlayWidth * selectedOverlay.scale;
-                const scaledHeight = overlayHeight * selectedOverlay.scale;
+              {selectedOverlay &&
+                (() => {
+                  // Calculate bounds - overlay.x/y is TOP-LEFT position
+                  const overlayWidth =
+                    selectedOverlay.naturalWidth &&
+                    selectedOverlay.naturalWidth > 0
+                      ? selectedOverlay.naturalWidth
+                      : 200;
+                  const overlayHeight =
+                    selectedOverlay.naturalHeight &&
+                    selectedOverlay.naturalHeight > 0
+                      ? selectedOverlay.naturalHeight
+                      : 200;
+                  const scaledWidth = overlayWidth * selectedOverlay.scale;
+                  const scaledHeight = overlayHeight * selectedOverlay.scale;
 
-                // TOP-LEFT position bounds
-                const minX = 0;
-                const maxX = Math.max(0, imageWidth - scaledWidth);
-                const minY = 0;
-                const maxY = Math.max(0, imageHeight - scaledHeight);
+                  // TOP-LEFT position bounds
+                  const minX = 0;
+                  const maxX = Math.max(0, imageWidth - scaledWidth);
+                  const minY = 0;
+                  const maxY = Math.max(0, imageHeight - scaledHeight);
 
-                return (
-                  <>
-                    <div>
-                      <label
-                        className="block text-sm font-medium mb-1"
-                        style={{ color: "var(--text-secondary)" }}
-                      >
-                        Position X: {Math.round(selectedOverlay.x)}px
-                      </label>
-                      <input
-                        type="range"
-                        min={minX}
-                        max={maxX}
-                        value={selectedOverlay.x}
-                        onChange={(e) =>
-                          handleOverlayUpdate({
-                            ...selectedOverlay,
-                            x: parseInt(e.target.value),
-                          })
-                        }
-                        className="w-full"
-                      />
-                    </div>
+                  return (
+                    <>
+                      <div>
+                        <label
+                          className="block text-sm font-medium mb-1"
+                          style={{ color: "var(--text-secondary)" }}
+                        >
+                          Position X: {Math.round(selectedOverlay.x)}px
+                        </label>
+                        <input
+                          type="range"
+                          min={minX}
+                          max={maxX}
+                          value={selectedOverlay.x}
+                          onChange={(e) =>
+                            handleOverlayUpdate({
+                              ...selectedOverlay,
+                              x: parseInt(e.target.value),
+                            })
+                          }
+                          className="w-full"
+                        />
+                      </div>
 
-                    <div>
-                      <label
-                        className="block text-sm font-medium mb-1"
-                        style={{ color: "var(--text-secondary)" }}
-                      >
-                        Position Y: {Math.round(selectedOverlay.y)}px
-                      </label>
-                      <input
-                        type="range"
-                        min={minY}
-                        max={maxY}
-                        value={selectedOverlay.y}
-                        onChange={(e) =>
-                          handleOverlayUpdate({
-                            ...selectedOverlay,
-                            y: parseInt(e.target.value),
-                          })
-                        }
-                        className="w-full"
-                      />
-                    </div>
+                      <div>
+                        <label
+                          className="block text-sm font-medium mb-1"
+                          style={{ color: "var(--text-secondary)" }}
+                        >
+                          Position Y: {Math.round(selectedOverlay.y)}px
+                        </label>
+                        <input
+                          type="range"
+                          min={minY}
+                          max={maxY}
+                          value={selectedOverlay.y}
+                          onChange={(e) =>
+                            handleOverlayUpdate({
+                              ...selectedOverlay,
+                              y: parseInt(e.target.value),
+                            })
+                          }
+                          className="w-full"
+                        />
+                      </div>
 
-                    <div>
-                      <label
-                        className="block text-sm font-medium mb-1"
-                        style={{ color: "var(--text-secondary)" }}
-                      >
-                        Scale: {selectedOverlay.scale.toFixed(2)}x
-                      </label>
-                      <input
-                        type="range"
-                        min="0.1"
-                        max="3"
-                        step="0.1"
-                        value={selectedOverlay.scale}
-                        onChange={(e) =>
-                          handleOverlayUpdate({
-                            ...selectedOverlay,
-                            scale: parseFloat(e.target.value),
-                          })
-                        }
-                        className="w-full"
-                      />
-                    </div>
+                      <div>
+                        <label
+                          className="block text-sm font-medium mb-1"
+                          style={{ color: "var(--text-secondary)" }}
+                        >
+                          Scale: {selectedOverlay.scale.toFixed(2)}x
+                        </label>
+                        <input
+                          type="range"
+                          min="0.1"
+                          max="3"
+                          step="0.1"
+                          value={selectedOverlay.scale}
+                          onChange={(e) =>
+                            handleOverlayUpdate({
+                              ...selectedOverlay,
+                              scale: parseFloat(e.target.value),
+                            })
+                          }
+                          className="w-full"
+                        />
+                      </div>
 
-                    <div>
-                      <label
-                        className="block text-sm font-medium mb-1"
-                        style={{ color: "var(--text-secondary)" }}
-                      >
-                        Rotation: {selectedOverlay.rotation}°
-                      </label>
-                      <input
-                        type="range"
-                        min="-180"
-                        max="180"
-                        value={selectedOverlay.rotation}
-                        onChange={(e) =>
-                          handleOverlayUpdate({
-                            ...selectedOverlay,
-                            rotation: parseInt(e.target.value),
-                          })
-                        }
-                        className="w-full"
-                      />
-                    </div>
+                      <div>
+                        <label
+                          className="block text-sm font-medium mb-1"
+                          style={{ color: "var(--text-secondary)" }}
+                        >
+                          Rotation: {selectedOverlay.rotation}°
+                        </label>
+                        <input
+                          type="range"
+                          min="-180"
+                          max="180"
+                          value={selectedOverlay.rotation}
+                          onChange={(e) =>
+                            handleOverlayUpdate({
+                              ...selectedOverlay,
+                              rotation: parseInt(e.target.value),
+                            })
+                          }
+                          className="w-full"
+                        />
+                      </div>
 
-                    <div>
-                      <label
-                        className="block text-sm font-medium mb-1"
-                        style={{ color: "var(--text-secondary)" }}
-                      >
-                        Opacity: {Math.round(selectedOverlay.opacity * 100)}%
-                      </label>
-                      <input
-                        type="range"
-                        min="0"
-                        max="1"
-                        step="0.1"
-                        value={selectedOverlay.opacity}
-                        onChange={(e) =>
-                        handleOverlayUpdate({
-                          ...selectedOverlay,
-                          opacity: parseFloat(e.target.value),
-                        })
-                      }
-                      className="w-full"
-                    />
-                    </div>
+                      <div>
+                        <label
+                          className="block text-sm font-medium mb-1"
+                          style={{ color: "var(--text-secondary)" }}
+                        >
+                          Opacity: {Math.round(selectedOverlay.opacity * 100)}%
+                        </label>
+                        <input
+                          type="range"
+                          min="0"
+                          max="1"
+                          step="0.1"
+                          value={selectedOverlay.opacity}
+                          onChange={(e) =>
+                            handleOverlayUpdate({
+                              ...selectedOverlay,
+                              opacity: parseFloat(e.target.value),
+                            })
+                          }
+                          className="w-full"
+                        />
+                      </div>
 
-                    {/* Trim Transparency Button */}
-                    <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
-                      <button
-                        onClick={handleTrimTransparency}
-                        disabled={isTrimming}
-                        className="w-full px-3 py-2 bg-orange-600 hover:bg-orange-700 disabled:bg-gray-400 text-white text-sm rounded-lg transition flex items-center justify-center space-x-2"
-                      >
-                        {isTrimming ? (
-                          <>
-                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                            <span>Trimming...</span>
-                          </>
-                        ) : (
-                          <>
-                            <svg
-                              className="w-4 h-4"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879M12 12L9.121 9.121m0 5.758a3 3 0 10-4.243-4.243 3 3 0 004.243 4.243z"
-                              />
-                            </svg>
-                            <span>Trim Transparency</span>
-                          </>
-                        )}
-                      </button>
-                      <p
-                        className="text-xs mt-1 text-center"
-                        style={{ color: "var(--text-secondary)" }}
-                      >
-                        Remove excess transparent pixels
-                      </p>
-                    </div>
-                  </>
-                );
-              })()}
+                      {/* Trim Transparency Button */}
+                      <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
+                        <button
+                          onClick={handleTrimTransparency}
+                          disabled={isTrimming}
+                          className="w-full px-3 py-2 bg-orange-600 hover:bg-orange-700 disabled:bg-gray-400 text-white text-sm rounded-lg transition flex items-center justify-center space-x-2"
+                        >
+                          {isTrimming ? (
+                            <>
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                              <span>Trimming...</span>
+                            </>
+                          ) : (
+                            <>
+                              <svg
+                                className="w-4 h-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879M12 12L9.121 9.121m0 5.758a3 3 0 10-4.243-4.243 3 3 0 004.243 4.243z"
+                                />
+                              </svg>
+                              <span>Trim Transparency</span>
+                            </>
+                          )}
+                        </button>
+                        <p
+                          className="text-xs mt-1 text-center"
+                          style={{ color: "var(--text-secondary)" }}
+                        >
+                          Remove excess transparent pixels
+                        </p>
+                      </div>
+                    </>
+                  );
+                })()}
 
               {/* Browse Campaign Images Button */}
               <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
@@ -815,8 +848,8 @@ export function ImageEditorModal({
                 ref={imageContainerRef}
                 className="relative inline-block"
                 style={{
-                  width: imageWidth > 0 ? imageWidth : 'auto',
-                  height: imageHeight > 0 ? imageHeight : 'auto',
+                  width: imageWidth > 0 ? imageWidth : "auto",
+                  height: imageHeight > 0 ? imageHeight : "auto",
                 }}
               >
                 <img
@@ -860,74 +893,74 @@ export function ImageEditorModal({
                       }}
                       onMouseDown={(e) => handleMouseDown(e, overlay.id)}
                     >
-                  <img
-                    src={overlay.image_url}
-                    alt="Overlay"
-                    className={`block ${
-                      selectedOverlayId === overlay.id
-                        ? "ring-2 ring-blue-500"
-                        : ""
-                    }`}
-                    style={{
-                      opacity: overlay.opacity,
-                      pointerEvents: "none",
-                      userSelect: "none",
-                    }}
-                    draggable={false}
-                    onLoad={(e) => {
-                      const img = e.currentTarget;
-                      handleOverlayUpdate({
-                        ...overlay,
-                        naturalWidth: img.naturalWidth,
-                        naturalHeight: img.naturalHeight,
-                      });
-                    }}
-                  />
+                      <img
+                        src={overlay.image_url}
+                        alt="Overlay"
+                        className={`block ${
+                          selectedOverlayId === overlay.id
+                            ? "ring-2 ring-blue-500"
+                            : ""
+                        }`}
+                        style={{
+                          opacity: overlay.opacity,
+                          pointerEvents: "none",
+                          userSelect: "none",
+                        }}
+                        draggable={false}
+                        onLoad={(e) => {
+                          const img = e.currentTarget;
+                          handleOverlayUpdate({
+                            ...overlay,
+                            naturalWidth: img.naturalWidth,
+                            naturalHeight: img.naturalHeight,
+                          });
+                        }}
+                      />
 
-                  {/* Resize handles - only show for selected overlay */}
-                  {selectedOverlayId === overlay.id && (
-                    <>
-                      {/* Top-left handle */}
-                      <div
-                        className="absolute w-3 h-3 bg-blue-600 border-2 border-white rounded-sm cursor-nw-resize"
-                        style={{
-                          left: -8,
-                          top: -8,
-                        }}
-                        onMouseDown={(e) => handleResizeMouseDown(e, "nw")}
-                      />
-                      {/* Top-right handle */}
-                      <div
-                        className="absolute w-3 h-3 bg-blue-600 border-2 border-white rounded-sm cursor-ne-resize"
-                        style={{
-                          right: -8,
-                          top: -8,
-                        }}
-                        onMouseDown={(e) => handleResizeMouseDown(e, "ne")}
-                      />
-                      {/* Bottom-left handle */}
-                      <div
-                        className="absolute w-3 h-3 bg-blue-600 border-2 border-white rounded-sm cursor-sw-resize"
-                        style={{
-                          left: -8,
-                          bottom: -8,
-                        }}
-                        onMouseDown={(e) => handleResizeMouseDown(e, "sw")}
-                      />
-                      {/* Bottom-right handle */}
-                      <div
-                        className="absolute w-3 h-3 bg-blue-600 border-2 border-white rounded-sm cursor-se-resize"
-                        style={{
-                          right: -8,
-                          bottom: -8,
-                        }}
-                        onMouseDown={(e) => handleResizeMouseDown(e, "se")}
-                      />
-                    </>
-                  )}
-                </div>
-                );
-              })}
+                      {/* Resize handles - only show for selected overlay */}
+                      {selectedOverlayId === overlay.id && (
+                        <>
+                          {/* Top-left handle */}
+                          <div
+                            className="absolute w-3 h-3 bg-blue-600 border-2 border-white rounded-sm cursor-nw-resize"
+                            style={{
+                              left: -8,
+                              top: -8,
+                            }}
+                            onMouseDown={(e) => handleResizeMouseDown(e, "nw")}
+                          />
+                          {/* Top-right handle */}
+                          <div
+                            className="absolute w-3 h-3 bg-blue-600 border-2 border-white rounded-sm cursor-ne-resize"
+                            style={{
+                              right: -8,
+                              top: -8,
+                            }}
+                            onMouseDown={(e) => handleResizeMouseDown(e, "ne")}
+                          />
+                          {/* Bottom-left handle */}
+                          <div
+                            className="absolute w-3 h-3 bg-blue-600 border-2 border-white rounded-sm cursor-sw-resize"
+                            style={{
+                              left: -8,
+                              bottom: -8,
+                            }}
+                            onMouseDown={(e) => handleResizeMouseDown(e, "sw")}
+                          />
+                          {/* Bottom-right handle */}
+                          <div
+                            className="absolute w-3 h-3 bg-blue-600 border-2 border-white rounded-sm cursor-se-resize"
+                            style={{
+                              right: -8,
+                              bottom: -8,
+                            }}
+                            onMouseDown={(e) => handleResizeMouseDown(e, "se")}
+                          />
+                        </>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
