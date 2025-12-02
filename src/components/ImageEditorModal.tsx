@@ -54,6 +54,7 @@ export function ImageEditorModal({
   const [resizeHandle, setResizeHandle] = useState<string | null>(null);
   const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, scale: 1 });
   const canvasRef = useRef<HTMLDivElement>(null);
+  const imageContainerRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
 
   const selectedOverlay = overlays.find((o) => o.id === selectedOverlayId);
@@ -191,16 +192,13 @@ export function ImageEditorModal({
     e.stopPropagation();
     setSelectedOverlayId(overlayId);
     const overlay = overlays.find((o) => o.id === overlayId);
-    if (!overlay || !imageRef.current || !canvasRef.current) return;
+    if (!overlay || !imageContainerRef.current) return;
 
-    const canvasRect = canvasRef.current.getBoundingClientRect();
-    const imageRect = imageRef.current.getBoundingClientRect();
+    const containerRect = imageContainerRef.current.getBoundingClientRect();
 
-    // Calculate mouse position relative to IMAGE
-    const imageOffsetX = imageRect.left - canvasRect.left;
-    const imageOffsetY = imageRect.top - canvasRect.top;
-    const mouseX = e.clientX - canvasRect.left - imageOffsetX;
-    const mouseY = e.clientY - canvasRect.top - imageOffsetY;
+    // Calculate mouse position relative to image container
+    const mouseX = e.clientX - containerRect.left;
+    const mouseY = e.clientY - containerRect.top;
 
     setIsDragging(true);
     // Store offset from mouse to overlay TOP-LEFT
@@ -213,16 +211,13 @@ export function ImageEditorModal({
   const handleMouseMove = (e: MouseEvent) => {
     if (isDragging && selectedOverlayId) {
       const overlay = overlays.find((o) => o.id === selectedOverlayId);
-      if (!overlay || !imageRef.current || !canvasRef.current) return;
+      if (!overlay || !imageContainerRef.current) return;
 
-      const canvasRect = canvasRef.current.getBoundingClientRect();
-      const imageRect = imageRef.current.getBoundingClientRect();
+      const containerRect = imageContainerRef.current.getBoundingClientRect();
 
-      // Calculate mouse position relative to IMAGE
-      const imageOffsetX = imageRect.left - canvasRect.left;
-      const imageOffsetY = imageRect.top - canvasRect.top;
-      const mouseX = e.clientX - canvasRect.left - imageOffsetX;
-      const mouseY = e.clientY - canvasRect.top - imageOffsetY;
+      // Calculate mouse position relative to image container
+      const mouseX = e.clientX - containerRect.left;
+      const mouseY = e.clientY - containerRect.top;
 
       // overlay.x/y stores TOP-LEFT position
       const overlayWidth = (overlay.naturalWidth && overlay.naturalWidth > 0) ? overlay.naturalWidth : 200;
@@ -245,15 +240,19 @@ export function ImageEditorModal({
       });
     } else if (isResizing && selectedOverlayId && resizeHandle) {
       const overlay = overlays.find((o) => o.id === selectedOverlayId);
-      if (!overlay || !imageRef.current) return;
+      if (!overlay || !imageContainerRef.current) return;
 
-      const imageRect = imageRef.current.getBoundingClientRect();
-      const mouseX = e.clientX - imageRect.left;
-      const mouseY = e.clientY - imageRect.top;
+      const containerRect = imageContainerRef.current.getBoundingClientRect();
+      const mouseX = e.clientX - containerRect.left;
+      const mouseY = e.clientY - containerRect.top;
 
-      // Calculate overlay center (same as in handleResizeMouseDown)
-      const overlayCenterX = overlay.x;
-      const overlayCenterY = overlay.y;
+      // overlay.x/y is TOP-LEFT, calculate center
+      const overlayWidth = (overlay.naturalWidth && overlay.naturalWidth > 0) ? overlay.naturalWidth : 200;
+      const overlayHeight = (overlay.naturalHeight && overlay.naturalHeight > 0) ? overlay.naturalHeight : 200;
+      const scaledWidth = overlayWidth * overlay.scale;
+      const scaledHeight = overlayHeight * overlay.scale;
+      const overlayCenterX = overlay.x + scaledWidth / 2;
+      const overlayCenterY = overlay.y + scaledHeight / 2;
 
       // Calculate current distance from center
       const currentDistanceX = mouseX - overlayCenterX;
@@ -264,17 +263,14 @@ export function ImageEditorModal({
       const deltaDistanceY = currentDistanceY - resizeStart.y;
 
       // Calculate new scale based on change in distance from center
-      // This is more stable than using absolute mouse position
       let newScale = resizeStart.scale;
       if (resizeHandle.includes("se") || resizeHandle.includes("ne")) {
-        // Moving away from center increases scale
         newScale = Math.max(
           0.1,
           Math.min(resizeStart.scale + deltaDistanceX / 50, 3)
         );
       }
       if (resizeHandle.includes("sw") || resizeHandle.includes("nw")) {
-        // Moving away from center in opposite direction decreases scale
         newScale = Math.max(
           0.1,
           Math.min(resizeStart.scale - deltaDistanceX / 50, 3)
@@ -320,24 +316,23 @@ export function ImageEditorModal({
     if (!selectedOverlayId) return;
 
     const overlay = overlays.find((o) => o.id === selectedOverlayId);
-    if (!overlay || !imageRef.current) return;
+    if (!overlay || !imageContainerRef.current) return;
 
-    const imageRect = imageRef.current.getBoundingClientRect();
+    const containerRect = imageContainerRef.current.getBoundingClientRect();
 
-    // Calculate mouse position relative to the BACKGROUND IMAGE (not canvas)
-    const mouseX = e.clientX - imageRect.left;
-    const mouseY = e.clientY - imageRect.top;
+    // Calculate mouse position relative to the image container
+    const mouseX = e.clientX - containerRect.left;
+    const mouseY = e.clientY - containerRect.top;
 
-    // Calculate overlay center position (accounting for transformOrigin: center)
+    // overlay.x/y is TOP-LEFT, calculate center for resize
     const overlayWidth = (overlay.naturalWidth && overlay.naturalWidth > 0) ? overlay.naturalWidth : 200;
     const overlayHeight = (overlay.naturalHeight && overlay.naturalHeight > 0) ? overlay.naturalHeight : 200;
     const scaledWidth = overlayWidth * overlay.scale;
     const scaledHeight = overlayHeight * overlay.scale;
 
-    // The overlay is positioned at overlay.x/y with transformOrigin: center
-    // So the actual center is at overlay.x, overlay.y
-    const overlayCenterX = overlay.x;
-    const overlayCenterY = overlay.y;
+    // Center is at TOP-LEFT + half dimensions
+    const overlayCenterX = overlay.x + scaledWidth / 2;
+    const overlayCenterY = overlay.y + scaledHeight / 2;
 
     // Calculate distance from center when resize starts
     const distanceFromCenterX = mouseX - overlayCenterX;
@@ -810,58 +805,61 @@ export function ImageEditorModal({
           <div className="flex-1 overflow-auto p-4">
             <div
               ref={canvasRef}
-              className="relative bg-gray-100 dark:bg-gray-800 rounded-lg overflow-auto"
+              className="bg-gray-100 dark:bg-gray-800 rounded-lg overflow-auto"
               style={{
                 minHeight: "calc(90vh - 220px)",
-                paddingLeft: "2px",
               }}
             >
-              <img
-                ref={imageRef}
-                src={sourceImage.image_url}
-                alt="Source"
-                className="select-none pointer-events-none"
-                draggable={false}
+              {/* Container that matches image size exactly - overlays position relative to this */}
+              <div
+                ref={imageContainerRef}
+                className="relative inline-block"
                 style={{
-                  userSelect: "none",
-                  pointerEvents: "none",
-                  display: "block",
-                  width: "auto",
-                  height: "auto",
-                  maxWidth: "none",
-                  maxHeight: "none",
+                  width: imageWidth > 0 ? imageWidth : 'auto',
+                  height: imageHeight > 0 ? imageHeight : 'auto',
                 }}
-                onLoad={(e) => {
-                  const img = e.currentTarget;
-                  setImageWidth(img.naturalWidth);
-                  setImageHeight(img.naturalHeight);
-                }}
-              />
-
-              {/* Overlay Images */}
-              {overlays.map((overlay) => {
-                // overlay.x/y stores TOP-LEFT position
-                // CSS transform with transformOrigin: "0 0" scales from top-left
-                // This makes positioning straightforward: overlay appears at (x, y)
-
-                return (
-                <div
-                  key={overlay.id}
-                  className="absolute"
+              >
+                <img
+                  ref={imageRef}
+                  src={sourceImage.image_url}
+                  alt="Source"
+                  className="select-none pointer-events-none block"
+                  draggable={false}
                   style={{
-                    // Position at TOP-LEFT coordinates
-                    left: overlay.x,
-                    top: overlay.y,
-                    transform: `scale(${overlay.scale}) rotate(${overlay.rotation}deg)`,
-                    transformOrigin: "0 0",  // Scale from top-left corner
-                    zIndex: overlay.z_index,
-                    cursor:
-                      isDragging && selectedOverlayId === overlay.id
-                        ? "grabbing"
-                        : "grab",
+                    userSelect: "none",
+                    pointerEvents: "none",
+                    display: "block",
+                    width: "auto",
+                    height: "auto",
+                    maxWidth: "none",
+                    maxHeight: "none",
                   }}
-                  onMouseDown={(e) => handleMouseDown(e, overlay.id)}
-                >
+                  onLoad={(e) => {
+                    const img = e.currentTarget;
+                    setImageWidth(img.naturalWidth);
+                    setImageHeight(img.naturalHeight);
+                  }}
+                />
+
+                {/* Overlay Images - positioned relative to image container */}
+                {overlays.map((overlay) => {
+                  return (
+                    <div
+                      key={overlay.id}
+                      className="absolute"
+                      style={{
+                        left: overlay.x,
+                        top: overlay.y,
+                        transform: `scale(${overlay.scale}) rotate(${overlay.rotation}deg)`,
+                        transformOrigin: "0 0",
+                        zIndex: overlay.z_index,
+                        cursor:
+                          isDragging && selectedOverlayId === overlay.id
+                            ? "grabbing"
+                            : "grab",
+                      }}
+                      onMouseDown={(e) => handleMouseDown(e, overlay.id)}
+                    >
                   <img
                     src={overlay.image_url}
                     alt="Overlay"
@@ -930,6 +928,7 @@ export function ImageEditorModal({
                 </div>
                 );
               })}
+              </div>
             </div>
 
             <p
