@@ -1150,10 +1150,10 @@ export function UnifiedEditorModal({
                           style={{
                             left: "-5px",
                             bottom: "-2px",
-                            width: "100%",
+                            width: "110%",
                             height: Math.max(1, textLayer.font_size / 15),
                             pointerEvents: "none",
-                            transformOrigin: "left bottom-10",
+                            transformOrigin: "left bottom+10",
                             transform: "rotate(-10deg)",
                           }}
                         >
