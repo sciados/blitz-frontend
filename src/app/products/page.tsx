@@ -193,7 +193,7 @@ export default function ProductLibraryPage() {
                   }}
                 >
                   <option value="recent">Newest First</option>
-                  <option value="launch_date">Launch Date (Newest)</option>
+                  <option value="launch_date">Launch Date (Soonest)</option>
                   <option value="popular">Most Popular</option>
                   <option value="alphabetical">A-Z</option>
                 </select>

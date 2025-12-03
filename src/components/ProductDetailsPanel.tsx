@@ -59,6 +59,19 @@ export function ProductDetailsPanel({
     }
   }, [productId]);
 
+  // Update countdown every minute
+  useEffect(() => {
+    if (!product?.launch_date) return;
+
+    const interval = setInterval(() => {
+      // Force re-render by updating a state variable
+      // This will recalculate the countdown
+      setProduct({ ...product });
+    }, 60000); // Update every minute
+
+    return () => clearInterval(interval);
+  }, [product?.launch_date]);
+
   const fetchProductDetails = async () => {
     try {
       setLoading(true);
@@ -301,8 +314,64 @@ export function ProductDetailsPanel({
   // Show publish toggle for Admins or Product Owners
   const canTogglePublish = isAdmin || isProductOwner;
 
+  // Calculate countdown to launch date
+  const getCountdownInfo = () => {
+    if (!product.launch_date) return null;
+
+    const launchDate = new Date(product.launch_date);
+    const now = new Date();
+    const diff = launchDate.getTime() - now.getTime();
+
+    if (diff <= 0) {
+      return {
+        status: "launched",
+        text: `Launched on ${launchDate.toLocaleDateString("en-US", {
+          month: "long",
+          day: "numeric",
+          year: "numeric",
+        })}`
+      };
+    }
+
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+    return {
+      status: "upcoming",
+      text: `Launches in ${days} Days, ${hours} Hours, ${minutes} Minutes`,
+      days,
+      hours,
+      minutes
+    };
+  };
+
+  const countdownInfo = getCountdownInfo();
+
   return (
     <div className="h-full flex flex-col animate-slide-in">
+      {/* Countdown Banner - Show if launch date exists */}
+      {countdownInfo && (
+        <div
+          className={`mb-6 p-4 rounded-lg border-2 ${
+            countdownInfo.status === "upcoming"
+              ? "bg-gradient-to-r from-orange-500 to-red-600 border-orange-600 animate-pulse"
+              : "bg-gradient-to-r from-green-600 to-teal-600 border-green-600"
+          }`}
+        >
+          <div className="text-center">
+            <div className="text-white text-2xl font-bold mb-1">
+              {countdownInfo.text}
+            </div>
+            {countdownInfo.status === "upcoming" && (
+              <div className="text-orange-100 text-sm">
+                Don't miss out - prepare your campaigns now!
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-4">
