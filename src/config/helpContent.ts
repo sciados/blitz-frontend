@@ -624,6 +624,346 @@ export const helpContent: Record<string, HelpContent> = {
       "This is advanced feature - regular users may not need it",
     ],
   },
+
+  // Messages Inbox
+  "/messages": {
+    title: "Messages Inbox",
+    description: "View and manage all your received messages. Respond to message requests, read messages from connections, and communicate with other users.",
+    steps: [
+      {
+        number: 1,
+        title: "View Your Inbox",
+        description: "All received messages appear in your inbox. Unread messages show with a blue dot and bold text.",
+      },
+      {
+        number: 2,
+        title: "Read a Message",
+        description: "Click on any message to open and read it. Mark messages as read by clicking the envelope icon.",
+      },
+      {
+        number: 3,
+        title: "Reply to Messages",
+        description: "Use the Reply button to respond to messages. You can only reply to users you've accepted a message request from.",
+      },
+      {
+        number: 4,
+        title: "Manage Message Requests",
+        description: "Click 'Requests' tab to approve or reject connection requests from other users.",
+      },
+      {
+        number: 5,
+        title: "Send New Messages",
+        description: "Click 'Compose' to send a new message or connection request to another user.",
+      },
+    ],
+    tips: [
+      "You can only send messages to users who have accepted your message request",
+      "Message requests must be approved before you can message someone",
+      "Use the Search bar to find specific messages",
+      "Archive messages you no longer need to keep your inbox clean",
+      "Only accepted connections can exchange messages",
+    ],
+  },
+
+  // Message Detail
+  "/messages/[id]": {
+    title: "Message Detail",
+    description: "View the full conversation thread and reply to messages.",
+    steps: [
+      {
+        number: 1,
+        title: "Read the Message",
+        description: "View the complete message content, sender information, and timestamp.",
+      },
+      {
+        number: 2,
+        title: "Reply",
+        description: "Type your reply in the text box at the bottom and click Send.",
+      },
+      {
+        number: 3,
+        title: "Mark as Read/Unread",
+        description: "Use the envelope icon to toggle between read and unread status.",
+      },
+      {
+        number: 4,
+        title: "Archive Message",
+        description: "Click the archive button to move this message to your archived messages folder.",
+      },
+    ],
+    tips: [
+      "Replies are sent instantly to the other person",
+      "Archived messages can be found in your archived folder",
+      "You can only message users who have accepted your message requests",
+      "Message history is preserved for your reference",
+    ],
+  },
+
+  // Compose Message
+  "/messages/compose": {
+    title: "Compose New Message",
+    description: "Send a new message or connection request to another user.",
+    steps: [
+      {
+        number: 1,
+        title: "Search for Recipient",
+        description: "Type the name or email of the user you want to message in the search box.",
+      },
+      {
+        number: 2,
+        title: "Select User",
+        description: "Choose the user from the search results that appears.",
+      },
+      {
+        number: 3,
+        title: "Enter Subject",
+        description: "Provide a clear, descriptive subject line for your message.",
+      },
+      {
+        number: 4,
+        title: "Write Your Message",
+        description: "Compose your message explaining who you are and why you want to connect.",
+      },
+      {
+        number: 5,
+        title: "Send Request",
+        description: "Click Send to submit your message request. The recipient will need to approve before you can exchange messages.",
+      },
+    ],
+    tips: [
+      "Be professional and clear about why you want to connect",
+      "Mention any mutual interests or campaigns",
+      "Users must approve your request before you can message them",
+      "Use descriptive subject lines to improve response rates",
+      "Keep initial messages concise and friendly",
+    ],
+  },
+
+  // Message Requests
+  "/messages/requests": {
+    title: "Message Requests",
+    description: "Review, approve, or reject incoming connection requests from other users.",
+    steps: [
+      {
+        number: 1,
+        title: "View Incoming Requests",
+        description: "All pending message requests appear in this list with the sender's name and message.",
+      },
+      {
+        number: 2,
+        title: "Review Sender Profile",
+        description: "Click on a request to view the sender's profile and understand their background.",
+      },
+      {
+        number: 3,
+        title: "Approve Request",
+        description: "Click 'Approve' to accept the connection. You can now exchange messages with this user.",
+      },
+      {
+        number: 4,
+        title: "Reject Request",
+        description: "Click 'Reject' to decline the connection request politely.",
+      },
+      {
+        number: 5,
+        title: "Block User",
+        description: "Click 'Block' to reject the request and prevent future messages from this user.",
+      },
+    ],
+    tips: [
+      "Review the sender's profile and message carefully before approving",
+      "Only approve requests from users you want to connect with",
+      "Blocking a user prevents them from sending future requests",
+      "You can change your mind later by finding their connection and removing it",
+      "Be respectful when rejecting requests",
+    ],
+  },
+
+  // Affiliates Browse
+  "/affiliates": {
+    title: "Browse Affiliates",
+    description: "Discover and connect with other affiliates and product developers. Find partners for collaboration and networking.",
+    steps: [
+      {
+        number: 1,
+        title: "Browse Profiles",
+        description: "Scroll through the list of affiliate and creator profiles to find potential partners.",
+      },
+      {
+        number: 2,
+        title: "View Profile Details",
+        description: "Click on any profile to view their specialty, experience, reputation score, and mutual connections.",
+      },
+      {
+        number: 3,
+        title: "Check Mutual Products",
+        description: "See which products you both promote - this indicates potential collaboration opportunities.",
+      },
+      {
+        number: 4,
+        title: "Send Message Request",
+        description: "Click 'Connect' to send a message request to start a conversation.",
+      },
+      {
+        number: 5,
+        title: "Filter Results",
+        description: "Use search and filters to find affiliates by specialty, experience, or user type.",
+      },
+    ],
+    tips: [
+      "Look for affiliates with high reputation scores for reliable partners",
+      "Mutual products indicate shared interests and collaboration potential",
+      "Product Developers can find affiliates with campaigns for their products",
+      "Use filters to narrow down to relevant specialties",
+      "Professional networking leads to better collaborations",
+    ],
+  },
+
+  // Landing Page (Home)
+  "/": {
+    title: "Welcome to Blitz",
+    description: "Your all-in-one affiliate marketing platform. Choose your path to get started.",
+    steps: [
+      {
+        number: 1,
+        title: "Choose Your Path",
+        description: "Select whether you're a Product Developer (selling your products) or an Affiliate Marketer (promoting products).",
+      },
+      {
+        number: 2,
+        title: "Explore Features",
+        description: "Learn about the key features available for your user type including campaigns, content generation, and analytics.",
+      },
+      {
+        number: 3,
+        title: "Sign Up",
+        description: "Create your account to start using the platform and access all features.",
+      },
+      {
+        number: 4,
+        title: "Get Started",
+        description: "After registration, follow the guided setup to create your first campaign or add your products.",
+      },
+    ],
+    tips: [
+      "Product Developers: Add your products to the library for affiliates to discover",
+      "Affiliate Marketers: Browse the Product Library and create campaigns",
+      "Both user types can use content generation and analytics",
+      "Check the feature comparison to understand what each plan includes",
+    ],
+  },
+
+  // Affiliate Landing Page
+  "/affiliate": {
+    title: "For Affiliate Marketers",
+    description: "Everything you need to build successful affiliate campaigns, generate content, and track performance.",
+    steps: [
+      {
+        number: 1,
+        title: "Create Campaigns",
+        description: "Set up campaigns for products you want to promote with affiliate links and tracking.",
+      },
+      {
+        number: 2,
+        title: "Generate Content",
+        description: "Use AI to create articles, emails, social posts, videos, and images for your campaigns.",
+      },
+      {
+        number: 3,
+        title: "Track Performance",
+        description: "Monitor clicks, conversions, and ROI with comprehensive analytics.",
+      },
+      {
+        number: 4,
+        title: "Stay Compliant",
+        description: "Automatically check content for FTC compliance and affiliate network requirements.",
+      },
+      {
+        number: 5,
+        title: "Build Network",
+        description: "Connect with other affiliates and product developers through the messaging system.",
+      },
+    ],
+    tips: [
+      "Browse the Product Library to find high-converting products to promote",
+      "Generate multiple content variations to test what works best",
+      "Use analytics to identify your top-performing content and campaigns",
+      "Connect with product developers for exclusive offers and partnerships",
+    ],
+  },
+
+  // Product Developer Landing Page
+  "/product-developers": {
+    title: "For Product Developers",
+    description: "Add your products to our marketplace and track how affiliates are promoting them.",
+    steps: [
+      {
+        number: 1,
+        title: "Add Products",
+        description: "Submit your product details to the Product Library for affiliates to discover.",
+      },
+      {
+        number: 2,
+        title: "Compile Intelligence",
+        description: "Automatically analyze your sales page to extract features, benefits, and marketing insights.",
+      },
+      {
+        number: 3,
+        title: "Track Affiliates",
+        description: "Monitor which affiliates are promoting your products and driving traffic.",
+      },
+      {
+        number: 4,
+        title: "Manage Affiliates",
+        description: "View the affiliate leaderboard and track performance metrics.",
+      },
+      {
+        number: 5,
+        title: "Communicate",
+        description: "Connect with top-performing affiliates through the messaging system.",
+      },
+    ],
+    tips: [
+      "Detailed product information helps affiliates promote more effectively",
+      "High commission rates attract more affiliates to your products",
+      "Monitor the affiliate leaderboard to identify your best partners",
+      "Reach out to top affiliates with exclusive offers and incentives",
+    ],
+  },
+
+  // Business Landing Page
+  "/business": {
+    title: "For Businesses",
+    description: "Enterprise solutions for businesses looking to scale their affiliate marketing program.",
+    steps: [
+      {
+        number: 1,
+        title: "Enterprise Features",
+        description: "Access advanced features designed for businesses with large affiliate networks.",
+      },
+      {
+        number: 2,
+        title: "White Label Options",
+        description: "Customize the platform with your branding and domain.",
+      },
+      {
+        number: 3,
+        title: "API Access",
+        description: "Integrate with your existing systems using our comprehensive API.",
+      },
+      {
+        number: 4,
+        title: "Dedicated Support",
+        description: "Get priority support and training from our team.",
+      },
+    ],
+    tips: [
+      "Enterprise plans include custom integrations and dedicated account management",
+      "White label options let you offer the platform under your brand",
+      "API access enables deep integration with your existing tools",
+      "Contact our sales team for custom pricing and feature requirements",
+    ],
+  },
 };
 
 // Helper function to get help content by pathname
@@ -636,6 +976,10 @@ export function getHelpContent(pathname: string): HelpContent | undefined {
   // Try pattern matching for dynamic routes
   if (pathname.startsWith("/campaigns/") && pathname !== "/campaigns") {
     return helpContent["/campaigns/[id]"];
+  }
+
+  if (pathname.startsWith("/messages/") && pathname !== "/messages" && !pathname.startsWith("/messages/requests")) {
+    return helpContent["/messages/[id]"];
   }
 
   // Add more pattern matches as needed for other dynamic routes
