@@ -412,7 +412,7 @@ export const helpContent: Record<string, HelpContent> = {
   // Product Developer Analytics
   "/product-analytics": {
     title: "Product Developer Analytics",
-    description: "Track how affiliates are promoting your products and monitor affiliate performance across your product line.",
+    description: "Track how affiliates are promoting your products and monitor affiliate performance across your product line. See traffic, clicks, conversions, and revenue by affiliate.",
     steps: [
       {
         number: 1,
@@ -422,7 +422,7 @@ export const helpContent: Record<string, HelpContent> = {
       {
         number: 2,
         title: "Analyze Product Metrics",
-        description: "See which products are getting the most promotion and generating the most clicks.",
+        description: "See which products are getting the most promotion and generating the most clicks and conversions.",
       },
       {
         number: 3,
@@ -434,13 +434,26 @@ export const helpContent: Record<string, HelpContent> = {
         title: "Track Click-Through Rates",
         description: "Monitor total clicks vs unique visitors to understand traffic quality from each affiliate.",
       },
+      {
+        number: 5,
+        title: "View Conversion Data",
+        description: "See which affiliates are actually driving sales, not just clicks. Check the Conversions page for detailed revenue breakdown.",
+      },
+      {
+        number: 6,
+        title: "Identify Top Performers",
+        description: "Find your best-performing affiliates and consider offering them exclusive deals or higher commission rates.",
+      },
     ],
     tips: [
       "Top affiliates deserve special attention - consider reaching out to them with exclusive offers",
       "Monitor unique click rates to identify high-quality traffic sources",
-      "Products with many campaigns but low clicks might need better marketing materials",
+      "Products with many campaigns but low clicks might need better marketing materials or higher commissions",
       "Use the affiliate leaderboard to create performance-based incentive programs",
       "Track which products attract the most affiliates to inform future product development",
+      "Compare conversion rates across affiliates to identify best practices",
+      "Review the Conversions page regularly for detailed revenue and commission tracking",
+      "Consider adjusting commission rates for underperforming products to attract more affiliates",
     ],
   },
 
@@ -504,6 +517,16 @@ export const helpContent: Record<string, HelpContent> = {
         title: "Add Your Products (Developers)",
         description: "Product Developers can add their own products by clicking 'Add Product' and filling in product details, pricing, and commission structure.",
       },
+      {
+        number: 5,
+        title: "View Tracking Code (Developers)",
+        description: "In your product details panel, scroll to 'Conversion Tracking Code' to get JavaScript snippets for tracking affiliate sales.",
+      },
+      {
+        number: 6,
+        title: "Monitor Product Performance",
+        description: "Product Developers can track conversions, revenue, and affiliate performance for each of their products.",
+      },
     ],
     tips: [
       "Use the search bar to find products by name or category",
@@ -512,6 +535,8 @@ export const helpContent: Record<string, HelpContent> = {
       "Look for products with high commission rates and proven conversion rates",
       "Product Developers: detailed product information helps affiliates promote more effectively",
       "Creating a campaign from the Product Library auto-fills product details",
+      "Add conversion tracking code to your sales pages to attribute sales to affiliates",
+      "Check the Conversions page regularly to monitor affiliate performance",
     ],
   },
 
@@ -537,21 +562,91 @@ export const helpContent: Record<string, HelpContent> = {
       },
       {
         number: 4,
-        title: "Set Recurring Commission",
-        description: "Check 'Recurring Commission' if the affiliate program offers recurring payments. This helps affiliates filter for passive income opportunities.",
+        title: "Set Commission Structure",
+        description: "Choose between one-time or recurring commissions. Set the commission rate as a percentage (e.g., 50%) or fixed amount (e.g., $37/sale).",
       },
       {
         number: 5,
+        title: "Configure Affiliate Link",
+        description: "Provide the affiliate signup URL where affiliates can get their unique tracking links for this product.",
+      },
+      {
+        number: 6,
         title: "Submit and Wait",
         description: "Click Submit. The system will automatically compile intelligence in the background (30-60 seconds). You'll receive a notification when it's complete.",
+      },
+      {
+        number: 7,
+        title: "Add Conversion Tracking",
+        description: "After your product is created, go to Product Details → Conversion Tracking Code and add the tracking script to your sales pages.",
       },
     ],
     tips: [
       "Product is private by default - you can publish it later when ready",
-      "Compile intelligence automatically extracts features, benefits, and pain points",
-      "Detailed product information leads to better affiliate promotion",
-      "Use the Product Details panel to edit or publish your product after creation",
+      "Compile intelligence automatically extracts features, benefits, pain points, and marketing angles",
+      "Higher commission rates attract more affiliates - consider 30-50% for competitive products",
+      "Use the Product Details panel to edit details or publish your product after creation",
       "You can unpublish products to hide them from affiliates until ready",
+      "Recurring commission products are highly sought after by affiliate marketers",
+      "Add conversion tracking immediately after publishing so you don't miss any affiliate sales",
+    ],
+  },
+
+  // Tracking Code Guide
+  "/tracking-code": {
+    title: "Conversion Tracking Setup",
+    description: "Add tracking code to your sales pages to automatically attribute sales to affiliates. This ensures affiliates get credit for their referrals and you can track performance.",
+    steps: [
+      {
+        number: 1,
+        title: "Get Your Tracking Code",
+        description: "Go to Product Library → Your Product → Scroll to 'Conversion Tracking Code' section. You'll find three code snippets to copy.",
+      },
+      {
+        number: 2,
+        title: "Add Script to ALL Pages (Step 1)",
+        description: "Copy the 'Step 1' script and add it to the <head> section or before </body> on ALL pages of your website (sales page, upsells, thank you pages).",
+      },
+      {
+        number: 3,
+        title: "Add Conversion Code to Order Page (Step 2)",
+        description: "Copy the 'Step 2' conversion script and add it ONLY to your order confirmation/thank you page (where customers see 'Order Successful').",
+      },
+      {
+        number: 4,
+        title: "Replace Placeholder Values",
+        description: "In the conversion script, replace YOUR_ORDER_ID with your actual order ID and 0.00 with the actual order amount (e.g., 97.00).",
+      },
+      {
+        number: 5,
+        title: "Track Upsells & Downsells",
+        description: "If you have upsells or downsells, copy the 'Tracking Upsells & Downsells' example and add it to each upsell/downsell order page.",
+      },
+      {
+        number: 6,
+        title: "Link Upsells to Main Order",
+        description: "For upsells, set parentOrderId to your main order ID so all purchases in the funnel are attributed to the same affiliate.",
+      },
+      {
+        number: 7,
+        title: "Test the Tracking",
+        description: "Test by visiting your site with an affiliate link (?aff=123), then completing a purchase. Check the Conversions page to verify the sale is tracked.",
+      },
+      {
+        number: 8,
+        title: "Monitor Conversions",
+        description: "Visit the Conversions page regularly to see affiliate sales, revenue breakdown, and commission payments.",
+      },
+    ],
+    tips: [
+      "The tracking script must be on ALL pages for affiliate cookie attribution to work",
+      "The conversion script should ONLY be on order confirmation pages",
+      "Session-based tracking gives affiliates credit for the entire customer journey (main + upsells + downsells)",
+      "The cookie lasts 60 days, so affiliates get credit for purchases up to 2 months later",
+      "Blitz automatically calculates revenue split: affiliate commission + 5% Blitz fee + your net amount",
+      "Use dynamic values (PHP variables) instead of hardcoded amounts for accurate tracking",
+      "Test thoroughly before going live - missing tracking means lost affiliate commissions",
+      "The tracking is invisible to customers and doesn't affect page load speed",
     ],
   },
 
@@ -895,39 +990,54 @@ export const helpContent: Record<string, HelpContent> = {
   // Product Developer Landing Page
   "/product-developers": {
     title: "For Product Developers",
-    description: "Add your products to our marketplace and track how affiliates are promoting them.",
+    description: "Add your products to our marketplace and track how affiliates are promoting them. Build your affiliate network and earn revenue from affiliate-driven sales.",
     steps: [
       {
         number: 1,
         title: "Add Products",
-        description: "Submit your product details to the Product Library for affiliates to discover.",
+        description: "Submit your product details to the Product Library for affiliates to discover. Provide complete information including URL, pricing, and commission structure.",
       },
       {
         number: 2,
         title: "Compile Intelligence",
-        description: "Automatically analyze your sales page to extract features, benefits, and marketing insights.",
+        description: "Automatically analyze your sales page to extract features, benefits, pain points, and marketing insights that help affiliates create better content.",
       },
       {
         number: 3,
-        title: "Track Affiliates",
-        description: "Monitor which affiliates are promoting your products and driving traffic.",
+        title: "Set Up Conversion Tracking",
+        description: "Add the JavaScript tracking code to your sales pages to automatically attribute sales to affiliates and track conversions. See 'Conversion Tracking Setup' in help.",
       },
       {
         number: 4,
-        title: "Manage Affiliates",
-        description: "View the affiliate leaderboard and track performance metrics.",
+        title: "Monitor Performance",
+        description: "Check Product Analytics and Conversions pages to see which affiliates are driving traffic and sales.",
       },
       {
         number: 5,
-        title: "Communicate",
-        description: "Connect with top-performing affiliates through the messaging system.",
+        title: "Manage Your Affiliates",
+        description: "View the affiliate leaderboard to identify your best-performing partners and track their performance metrics.",
+      },
+      {
+        number: 6,
+        title: "Communicate & Incentivize",
+        description: "Connect with top-performing affiliates through the messaging system and offer exclusive deals or higher commission rates.",
+      },
+      {
+        number: 7,
+        title: "Optimize Commission Rates",
+        description: "Adjust commission rates based on affiliate performance to attract more high-quality promoters.",
       },
     ],
     tips: [
-      "Detailed product information helps affiliates promote more effectively",
-      "High commission rates attract more affiliates to your products",
+      "Detailed product information and high-quality intelligence helps affiliates promote more effectively",
+      "Competitive commission rates (30-50%) attract more affiliates to your products",
       "Monitor the affiliate leaderboard to identify your best partners",
-      "Reach out to top affiliates with exclusive offers and incentives",
+      "Reach out to top affiliates with exclusive offers, higher rates, or bonus incentives",
+      "Add conversion tracking immediately after publishing to avoid missed sales attribution",
+      "Recurring commission products are especially attractive to affiliate marketers",
+      "Use the Conversions page to track revenue, affiliate commissions, and your net earnings",
+      "Regularly review analytics to identify which products and affiliates perform best",
+      "Session-based tracking ensures affiliates get credit for the entire customer journey (main + upsells + downsells)",
     ],
   },
 
