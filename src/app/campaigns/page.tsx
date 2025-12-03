@@ -339,7 +339,7 @@ export default function CampaignsPage() {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
             {filteredAndSortedCampaigns.map((campaign) => (
               <div
                 key={campaign.id}
@@ -347,7 +347,7 @@ export default function CampaignsPage() {
                 onClick={() => router.push(`/campaigns/${campaign.id}`)}
               >
                 {/* Campaign Thumbnail */}
-                <div className="relative h-40 rounded-t-lg overflow-hidden bg-gray-100 dark:bg-gray-700">
+                <div className="relative h-28 rounded-t-lg overflow-hidden bg-gray-100 dark:bg-gray-700">
                   {campaign.thumbnail_image_url ? (
                     <img
                       src={campaign.thumbnail_image_url}
@@ -394,65 +394,29 @@ export default function CampaignsPage() {
                 </div>
 
                 {/* Campaign Content */}
-                <div className="p-4 flex-1 flex flex-col">
-                  <h3 className="text-lg font-semibold mb-2 line-clamp-1" style={{ color: 'var(--text-primary)' }}>
+                <div className="p-3 flex-1 flex flex-col">
+                  <h3 className="text-sm font-semibold mb-1 line-clamp-2" style={{ color: 'var(--text-primary)' }}>
                     {campaign.name}
                   </h3>
 
-                  <div className="space-y-2 text-sm flex-1" style={{ color: 'var(--text-secondary)' }}>
+                  <div className="space-y-1 text-xs flex-1" style={{ color: 'var(--text-secondary)' }}>
                     {/* Affiliate Network */}
-                    <div className="flex items-center space-x-2">
-                      <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="flex items-center space-x-1">
+                      <svg className="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                       </svg>
                       <span className="truncate">{campaign.affiliate_network || 'No network'}</span>
                     </div>
-
-                    {/* Product Type */}
-                    {campaign.product_type && (
-                      <div className="flex items-center space-x-2">
-                        <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                        </svg>
-                        <span className="truncate">{campaign.product_type}</span>
-                      </div>
-                    )}
-
-                    {/* Keywords */}
-                    {campaign.keywords && campaign.keywords.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mt-2">
-                        {campaign.keywords.slice(0, 2).map((keyword, idx) => (
-                          <span
-                            key={idx}
-                            className="px-2 py-0.5 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs rounded"
-                          >
-                            {keyword}
-                          </span>
-                        ))}
-                        {campaign.keywords.length > 2 && (
-                          <span className="text-xs text-gray-500">+{campaign.keywords.length - 2}</span>
-                        )}
-                      </div>
-                    )}
                   </div>
 
                   {/* Footer */}
-                  <div className="flex items-center justify-between mt-4 pt-3 border-t" style={{ borderColor: 'var(--border-primary)' }}>
+                  <div className="flex items-center justify-between mt-2 pt-2 border-t" style={{ borderColor: 'var(--border-primary)' }}>
                     <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>
                       {new Date(campaign.created_at).toLocaleDateString()}
                     </span>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        router.push(`/campaigns/${campaign.id}`);
-                      }}
-                      className="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center space-x-1"
-                    >
-                      <span>Open</span>
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </button>
+                    <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
                   </div>
                 </div>
               </div>
