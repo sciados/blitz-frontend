@@ -259,7 +259,46 @@ export default function Layout({ children }: LayoutProps) {
       ];
     }
 
-    // Affiliate/Business menu (default for regular users)
+    // Business Owner menu (promoting their own business)
+    if (userInfo?.role === "business") {
+      return [
+        { href: "/dashboard", label: "Dashboard", icon: "🏠" },
+        { href: "/campaigns", label: "Business Campaigns", icon: "📢" },
+        {
+          href: "/content",
+          label: "Content",
+          icon: "✍️",
+          children: [
+            { href: "/content", label: "Generate Content", icon: "⚡" },
+            { href: "/library", label: "Content Library", icon: "📚" },
+          ],
+        },
+        { href: "/intelligence", label: "Intelligence", icon: "🧠" },
+        { href: "/analytics", label: "Analytics", icon: "📈" },
+        { href: "/affiliates", label: "Affiliate Directory", icon: "👥" },
+        {
+          href: "/messages",
+          label: "Messages",
+          icon: "💬",
+          children: [
+            { href: "/messages", label: "Inbox & Sent", icon: "💬" },
+            { href: "/messages/compose", label: "Compose", icon: "✏️" },
+            { href: "/messages/requests", label: "Requests", icon: "🤝" },
+          ],
+        },
+        {
+          href: "/more",
+          label: "More",
+          icon: "📂",
+          children: [
+            { href: "/compliance", label: "Compliance", icon: "✅" },
+            { href: "/settings", label: "Settings", icon: "⚙️" },
+          ],
+        },
+      ];
+    }
+
+    // Affiliate Marketer menu (promoting others' products)
     return [
       { href: "/dashboard", label: "Dashboard", icon: "🏠" },
       { href: "/products", label: "Product Library", icon: "📦" },
@@ -276,14 +315,21 @@ export default function Layout({ children }: LayoutProps) {
       { href: "/intelligence", label: "Intelligence", icon: "🧠" },
       { href: "/analytics", label: "Analytics", icon: "📈" },
       {
+        href: "/messages",
+        label: "Messages",
+        icon: "💬",
+        children: [
+          { href: "/messages", label: "Inbox & Sent", icon: "💬" },
+          { href: "/messages/compose", label: "Compose", icon: "✏️" },
+          { href: "/messages/requests", label: "Requests", icon: "🤝" },
+        ],
+      },
+      {
         href: "/more",
         label: "More",
         icon: "📂",
         children: [
           { href: "/affiliates", label: "Affiliate Directory", icon: "👥" },
-          { href: "/messages", label: "Messages", icon: "💬" },
-          { href: "/messages/compose", label: "Compose", icon: "✏️" },
-          { href: "/messages/requests", label: "Requests", icon: "🤝" },
           { href: "/compliance", label: "Compliance", icon: "✅" },
           { href: "/settings", label: "Settings", icon: "⚙️" },
         ],
