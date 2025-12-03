@@ -12,6 +12,14 @@ interface ConversionStats {
   total_affiliate_paid: number;
   total_blitz_fee: number;
   total_developer_net: number;
+  main_conversions?: number;
+  upsell_conversions?: number;
+  downsell_conversions?: number;
+  bump_conversions?: number;
+  main_revenue?: number;
+  upsell_revenue?: number;
+  downsell_revenue?: number;
+  bump_revenue?: number;
 }
 
 interface Product {

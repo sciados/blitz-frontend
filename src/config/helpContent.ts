@@ -967,7 +967,7 @@ export const helpContent: Record<string, HelpContent> = {
 
   "/conversions": {
     title: "Conversion Tracking",
-    description: "Track affiliate sales and commissions for your products. See revenue breakdown and monitor affiliate performance.",
+    description: "Track affiliate sales and commissions for your products. See revenue breakdown and monitor affiliate performance including upsells and downsells.",
     steps: [
       {
         number: 1,
@@ -977,7 +977,7 @@ export const helpContent: Record<string, HelpContent> = {
       {
         number: 2,
         title: "View Statistics",
-        description: "See total conversions, revenue, affiliate commissions, and your net earnings.",
+        description: "See total conversions, revenue, affiliate commissions, and your net earnings from main sales and upsells/downsells.",
       },
       {
         number: 3,
@@ -987,12 +987,13 @@ export const helpContent: Record<string, HelpContent> = {
       {
         number: 4,
         title: "Add Tracking Code",
-        description: "If no conversions appear, make sure you've added the tracking code to your website.",
+        description: "If no conversions appear, make sure you've added the tracking code to your website. Use the advanced examples for upsells/downsells.",
       },
     ],
     tips: [
       "Add the tracking script to ALL pages of your website",
       "Add the conversion script only to your order confirmation page",
+      "Session-based tracking gives affiliates credit for the entire funnel (main + upsells + downsells + bumps)",
       "Blitz takes a 5% platform fee on each sale",
       "Affiliates are automatically credited based on cookie attribution (60 days)",
       "View tracking code in Product Library → Your Product → Conversion Tracking Code",

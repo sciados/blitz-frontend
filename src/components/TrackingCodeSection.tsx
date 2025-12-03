@@ -34,6 +34,59 @@ export function TrackingCodeSection({ productId }: TrackingCodeSectionProps) {
   });
 </script>`;
 
+  const upsellExample = `<!-- Tracking Upsells/Downsells (same session) -->
+<!-- Main Order -->
+<script>
+  blitz('conversion', {
+    orderId: 'ORDER_123_MAIN',
+    amount: 97.00,
+    type: 'main'  // Primary product
+  });
+</script>
+
+<!-- Upsell (on separate page/confirm) -->
+<script>
+  blitz('conversion', {
+    orderId: 'ORDER_123_UPSELL',
+    amount: 47.00,
+    type: 'upsell',  // Upsell product
+    parentOrderId: 'ORDER_123_MAIN'  // Link to main order
+  });
+</script>
+
+<!-- Downsell (if upsell rejected) -->
+<script>
+  blitz('conversion', {
+    orderId: 'ORDER_123_DOWNSELL',
+    amount: 27.00,
+    type: 'downsell',  // Downsell product
+    parentOrderId: 'ORDER_123_MAIN'  // Link to main order
+  });
+</script>`;
+
+  const multiProductExample = `<!-- Multi-Product Order -->
+<script>
+  blitz('conversion', {
+    orderId: 'ORDER_456',
+    amount: 147.00,  // Total amount
+    type: 'main',
+    products: [
+      {
+        sku: 'MAIN-PROD',
+        name: 'Main Product',
+        price: 97.00,
+        quantity: 1
+      },
+      {
+        sku: 'BONUS1',
+        name: 'Bonus Item',
+        price: 50.00,
+        quantity: 1
+      }
+    ]
+  });
+</script>`;
+
   const copyToClipboard = async (text: string, section: string) => {
     try {
       await navigator.clipboard.writeText(text);
@@ -183,6 +236,100 @@ export function TrackingCodeSection({ productId }: TrackingCodeSectionProps) {
         </pre>
       </details>
 
+      {/* Upsell Example */}
+      <details className="mb-4">
+        <summary
+          className="text-sm font-medium cursor-pointer"
+          style={{ color: "var(--text-primary)" }}
+        >
+          Tracking Upsells & Downsells (Advanced)
+        </summary>
+        <div className="mt-2">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs" style={{ color: "var(--text-secondary)" }}>
+              Session-based tracking - affiliate gets credit for entire funnel
+            </span>
+            <button
+              onClick={() => copyToClipboard(upsellExample, "upsell")}
+              className="text-xs px-2 py-1 rounded bg-blue-600 hover:bg-blue-700 text-white transition flex items-center space-x-1"
+            >
+              {copiedSection === "upsell" ? (
+                <>
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span>Copied!</span>
+                </>
+              ) : (
+                <>
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                  <span>Copy</span>
+                </>
+              )}
+            </button>
+          </div>
+          <pre
+            className="p-3 rounded-lg text-xs overflow-x-auto"
+            style={{
+              backgroundColor: "var(--bg-secondary)",
+              color: "var(--text-secondary)",
+              border: "1px solid var(--border-color)"
+            }}
+          >
+            {upsellExample}
+          </pre>
+        </div>
+      </details>
+
+      {/* Multi-Product Example */}
+      <details className="mb-4">
+        <summary
+          className="text-sm font-medium cursor-pointer"
+          style={{ color: "var(--text-primary)" }}
+        >
+          Multi-Product Orders (Advanced)
+        </summary>
+        <div className="mt-2">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs" style={{ color: "var(--text-secondary)" }}>
+              Track multiple products in a single order
+            </span>
+            <button
+              onClick={() => copyToClipboard(multiProductExample, "multiProduct")}
+              className="text-xs px-2 py-1 rounded bg-blue-600 hover:bg-blue-700 text-white transition flex items-center space-x-1"
+            >
+              {copiedSection === "multiProduct" ? (
+                <>
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span>Copied!</span>
+                </>
+              ) : (
+                <>
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                  <span>Copy</span>
+                </>
+              )}
+            </button>
+          </div>
+          <pre
+            className="p-3 rounded-lg text-xs overflow-x-auto"
+            style={{
+              backgroundColor: "var(--bg-secondary)",
+              color: "var(--text-secondary)",
+              border: "1px solid var(--border-color)"
+            }}
+          >
+            {multiProductExample}
+          </pre>
+        </div>
+      </details>
+
       {/* Info Box */}
       <div
         className="p-3 rounded-lg text-xs"
@@ -200,9 +347,10 @@ export function TrackingCodeSection({ productId }: TrackingCodeSectionProps) {
             <strong>How it works:</strong>
             <ul className="mt-1 space-y-1 list-disc list-inside">
               <li>Affiliates share links with <code className="px-1 py-0.5 rounded bg-gray-200 dark:bg-gray-700">?aff=123</code> parameter</li>
-              <li>The tracking script saves their affiliate ID in a cookie (60 days)</li>
-              <li>When a sale occurs, the conversion script credits the affiliate</li>
-              <li>Blitz takes a 5% platform fee, affiliates get their commission, you get the rest</li>
+              <li>The tracking script saves their affiliate ID in a session cookie (60 days)</li>
+              <li>Session-based tracking - affiliate gets credit for ALL purchases in the customer journey</li>
+              <li>Track main sales, upsells, downsells, and order bumps all in one session</li>
+              <li>Revenue split: Blitz takes 5%, affiliates get their commission %, you get the rest</li>
             </ul>
           </div>
         </div>
