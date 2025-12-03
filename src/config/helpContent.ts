@@ -121,12 +121,12 @@ export const helpContent: Record<string, HelpContent> = {
   // Dashboard - Generic (fallback)
   "/dashboard": {
     title: "Dashboard Overview",
-    description: "Your personalized dashboard with quick access to relevant features based on your account type.",
+    description: "Your personalized dashboard with quick access to relevant features.",
     steps: [
       {
         number: 1,
         title: "Explore Your Features",
-        description: "Click any card to navigate to that feature. Only features relevant to your account type are shown.",
+        description: "Click any card to navigate to that feature.",
       },
       {
         number: 2,
@@ -136,7 +136,7 @@ export const helpContent: Record<string, HelpContent> = {
       {
         number: 3,
         title: "View Analytics",
-        description: "Track your performance with comprehensive analytics tailored to your user type.",
+        description: "Track your performance with comprehensive analytics.",
       },
       {
         number: 4,
@@ -1202,7 +1202,7 @@ export const helpContent: Record<string, HelpContent> = {
 };
 
 // Helper function to get help content by pathname
-export function getHelpContent(pathname: string, userRole?: string): HelpContent | undefined {
+export function getHelpContent(pathname: string, userRole?: string | null): HelpContent | undefined {
   // For dashboard, return user-type specific help
   if (pathname === "/dashboard" && userRole) {
     const dashboardKey = `/dashboard/${userRole.toLowerCase()}`;

@@ -61,7 +61,7 @@ export default function Layout({ children }: LayoutProps) {
     pathname.startsWith("/business");
 
   // Get help content based on current pathname and user role
-  const helpContent = getHelpContent(pathname, role || undefined);
+  const helpContent = getHelpContent(pathname, role);
 
   // Auto-expand menus when on related pages
   useEffect(() => {
