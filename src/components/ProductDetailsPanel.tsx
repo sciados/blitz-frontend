@@ -137,6 +137,86 @@ export function ProductDetailsPanel({
     }
   };
 
+  // Helper function to convert YouTube URLs to embed format
+  const convertToYouTubeEmbed = (url: string): string | null => {
+    if (!url) return null;
+
+    // Handle youtu.be format
+    const youtuBeMatch = url.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/);
+    if (youtuBeMatch) {
+      return `https://www.youtube.com/embed/${youtuBeMatch[1]}`;
+    }
+
+    // Handle youtube.com/watch format
+    const watchMatch = url.match(/youtube\.com\/watch\?v=([a-zA-Z0-9_-]{11})/);
+    if (watchMatch) {
+      return `https://www.youtube.com/embed/${watchMatch[1]}`;
+    }
+
+    // Handle youtube.com/embed format (return as-is if already in embed format)
+    const embedMatch = url.match(/youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/);
+    if (embedMatch) {
+      return url;
+    }
+
+    // If it's a YouTube URL but not recognized format, try to extract video ID
+    const videoIdMatch = url.match(/([a-zA-Z0-9_-]{11})/);
+    if (videoIdMatch && (url.includes('youtube') || url.includes('youtu.be'))) {
+      return `https://www.youtube.com/embed/${videoIdMatch[1]}`;
+    }
+
+    return null;
+  };
+
+  // Handle file upload
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'video/mp4', 'video/webm', 'video/ogg'];
+    if (!validTypes.includes(file.type)) {
+      toast.error('Please select a valid image or video file');
+      return;
+    }
+
+    // Validate file size (max 50MB)
+    const maxSize = 50 * 1024 * 1024;
+    if (file.size > maxSize) {
+      toast.error('File size must be less than 50MB');
+      return;
+    }
+
+    try {
+      toast.info('Uploading file...');
+
+      // Create form data
+      const formData = new FormData();
+      formData.append('file', file);
+
+      // Upload to backend (you'll need to implement this endpoint)
+      const response = await api.post('/api/upload/hero-media', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      // Update the hero_media_url with the uploaded file URL
+      setEditedProduct({
+        ...editedProduct,
+        hero_media_url: response.data.url,
+      });
+
+      toast.success('File uploaded successfully!');
+    } catch (err: any) {
+      console.error('File upload failed:', err);
+      toast.error(err.response?.data?.detail || 'Failed to upload file');
+    } finally {
+      // Clear the input value so the same file can be selected again
+      e.target.value = '';
+    }
+  };
+
   const handleCreateCampaign = () => {
     if (product) {
       // Navigate to campaigns page with this product pre-selected
@@ -1145,22 +1225,117 @@ export function ProductDetailsPanel({
               </div>
               {isEditMode ? (
                 <>
-                  <input
-                    type="url"
-                    value={editedProduct.hero_media_url || ""}
-                    onChange={(e) =>
-                      setEditedProduct({
-                        ...editedProduct,
-                        hero_media_url: e.target.value,
-                      })
-                    }
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border-color)] bg-[var(--bg-primary)]"
-                    style={{ color: "var(--text-primary)" }}
-                    placeholder="https://example.com/hero-image.jpg or https://example.com/hero-video.mp4"
-                  />
-                  <p className="mt-2 text-xs" style={{ color: "var(--text-secondary)" }}>
-                    Custom hero image or video to display. If empty, the scraped product image will be used.
-                  </p>
+                  <div className="space-y-3">
+                    {/* URL Input */}
+                    <div>
+                      <input
+                        type="url"
+                        value={editedProduct.hero_media_url || ""}
+                        onChange={(e) => {
+                          const url = e.target.value;
+                          // Auto-convert YouTube URLs to embed format
+                          const embedUrl = convertToYouTubeEmbed(url);
+                          setEditedProduct({
+                            ...editedProduct,
+                            hero_media_url: embedUrl || url,
+                          });
+                        }}
+                        className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border-color)] bg-[var(--bg-primary)]"
+                        style={{ color: "var(--text-primary)" }}
+                        placeholder="https://example.com/hero-image.jpg or https://youtube.com/watch?v=..."
+                      />
+                      <p className="mt-1 text-xs" style={{ color: "var(--text-secondary)" }}>
+                        Enter a direct URL, upload a file, or paste a YouTube link
+                      </p>
+                    </div>
+
+                    {/* File Upload & YouTube Buttons */}
+                    <div className="flex gap-2">
+                      {/* File Upload Button */}
+                      <label className="flex-1 cursor-pointer">
+                        <input
+                          type="file"
+                          accept="image/*,video/*"
+                          onChange={handleFileUpload}
+                          className="hidden"
+                        />
+                        <div className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition text-sm font-medium text-center flex items-center justify-center space-x-2">
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                            />
+                          </svg>
+                          <span>Upload File</span>
+                        </div>
+                      </label>
+
+                      {/* YouTube Button */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const url = prompt("Paste YouTube URL:");
+                          if (url) {
+                            const embedUrl = convertToYouTubeEmbed(url);
+                            if (embedUrl) {
+                              setEditedProduct({
+                                ...editedProduct,
+                                hero_media_url: embedUrl,
+                              });
+                              toast.success("YouTube video added!");
+                            } else {
+                              toast.error("Invalid YouTube URL");
+                            }
+                          }
+                        }}
+                        className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition text-sm font-medium flex items-center justify-center space-x-2"
+                      >
+                        <svg
+                          className="w-4 h-4"
+                          fill="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                        </svg>
+                        <span>YouTube</span>
+                      </button>
+                    </div>
+
+                    {/* Media Type Indicator */}
+                    {editedProduct.hero_media_url && (
+                      <div className="text-xs flex items-center space-x-2" style={{ color: "var(--text-secondary)" }}>
+                        {editedProduct.hero_media_url.includes("youtube.com") || editedProduct.hero_media_url.includes("youtu.be") ? (
+                          <>
+                            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                            </svg>
+                            <span>YouTube Video</span>
+                          </>
+                        ) : editedProduct.hero_media_url.match(/\.(mp4|webm|ogg|mov)$/i) ? (
+                          <>
+                            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                            </svg>
+                            <span>Video File</span>
+                          </>
+                        ) : (
+                          <>
+                            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                            <span>Image File</span>
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </>
               ) : product.hero_media_url ? (
                 <div className="space-y-2">
@@ -1172,9 +1347,30 @@ export function ProductDetailsPanel({
                   >
                     {product.hero_media_url}
                   </a>
-                  <p className="text-xs italic" style={{ color: "var(--text-secondary)" }}>
-                    Custom hero media (overrides scraped image)
-                  </p>
+                  <div className="flex items-center space-x-4 text-xs" style={{ color: "var(--text-secondary)" }}>
+                    {product.hero_media_url.includes("youtube.com") || product.hero_media_url.includes("youtu.be") ? (
+                      <span className="flex items-center space-x-1">
+                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                        </svg>
+                        <span>YouTube Video</span>
+                      </span>
+                    ) : product.hero_media_url.match(/\.(mp4|webm|ogg|mov)$/i) ? (
+                      <span className="flex items-center space-x-1">
+                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                        </svg>
+                        <span>Video</span>
+                      </span>
+                    ) : (
+                      <span className="flex items-center space-x-1">
+                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        </svg>
+                        <span>Image</span>
+                      </span>
+                    )}
+                  </div>
                 </div>
               ) : (
                 <p className="text-xs italic" style={{ color: "var(--text-secondary)" }}>
