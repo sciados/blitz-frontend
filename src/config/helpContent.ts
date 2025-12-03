@@ -964,6 +964,40 @@ export const helpContent: Record<string, HelpContent> = {
       "Contact our sales team for custom pricing and feature requirements",
     ],
   },
+
+  "/conversions": {
+    title: "Conversion Tracking",
+    description: "Track affiliate sales and commissions for your products. See revenue breakdown and monitor affiliate performance.",
+    steps: [
+      {
+        number: 1,
+        title: "Select Your Product",
+        description: "Choose a product from the dropdown to view its conversion statistics.",
+      },
+      {
+        number: 2,
+        title: "View Statistics",
+        description: "See total conversions, revenue, affiliate commissions, and your net earnings.",
+      },
+      {
+        number: 3,
+        title: "Revenue Breakdown",
+        description: "Understand how revenue is split between affiliates, Blitz platform fee, and your net earnings.",
+      },
+      {
+        number: 4,
+        title: "Add Tracking Code",
+        description: "If no conversions appear, make sure you've added the tracking code to your website.",
+      },
+    ],
+    tips: [
+      "Add the tracking script to ALL pages of your website",
+      "Add the conversion script only to your order confirmation page",
+      "Blitz takes a 5% platform fee on each sale",
+      "Affiliates are automatically credited based on cookie attribution (60 days)",
+      "View tracking code in Product Library → Your Product → Conversion Tracking Code",
+    ],
+  },
 };
 
 // Helper function to get help content by pathname

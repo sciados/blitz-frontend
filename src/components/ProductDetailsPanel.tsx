@@ -6,6 +6,7 @@ import { ProductDetails, ComplianceResult } from "src/lib/types";
 import { useRouter } from "next/navigation";
 import { getRoleFromToken } from "src/lib/auth";
 import { toast } from "sonner";
+import { TrackingCodeSection } from "./TrackingCodeSection";
 
 interface ProductDetailsPanelProps {
   productId: number;
@@ -1325,6 +1326,11 @@ export function ProductDetailsPanel({
                 {product.product_url}
               </a>
             </div>
+
+            {/* Conversion Tracking Code - Only for Product Owners */}
+            {isProductOwner && (
+              <TrackingCodeSection productId={product.id} />
+            )}
 
             {/* Metadata */}
             <div
