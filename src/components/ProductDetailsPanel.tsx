@@ -72,6 +72,23 @@ export function ProductDetailsPanel({
     return () => clearInterval(interval);
   }, [product?.launch_date]);
 
+  // Auto-hide countdown banner after 15 seconds
+  const [showCountdown, setShowCountdown] = useState(true);
+
+  useEffect(() => {
+    if (!product?.launch_date) return;
+
+    // Check if countdown info exists (within 30 days)
+    const countdownInfo = getCountdownInfo();
+    if (!countdownInfo) return;
+
+    const timer = setTimeout(() => {
+      setShowCountdown(false);
+    }, 15000); // 15 seconds
+
+    return () => clearTimeout(timer);
+  }, [product?.launch_date]);
+
   const fetchProductDetails = async () => {
     try {
       setLoading(true);
@@ -337,6 +354,11 @@ export function ProductDetailsPanel({
     const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
 
+    // Only show countdown if launch is within 30 days
+    if (days > 30) {
+      return null;
+    }
+
     return {
       status: "upcoming",
       text: `Launches in ${days} Days, ${hours} Hours, ${minutes} Minutes`,
@@ -350,16 +372,29 @@ export function ProductDetailsPanel({
 
   return (
     <div className="h-full flex flex-col animate-slide-in">
-      {/* Countdown Banner - Show if launch date exists */}
-      {countdownInfo && (
+      {/* Countdown Banner - Show if launch date exists, within 30 days, and auto-hide hasn't been triggered */}
+      {countdownInfo && showCountdown && (
         <div
-          className={`mb-6 p-4 rounded-lg border-2 ${
+          className={`mb-6 p-4 rounded-lg border-2 relative ${
             countdownInfo.status === "upcoming"
               ? "bg-gradient-to-r from-orange-500 to-red-600 border-orange-600 animate-pulse"
               : "bg-gradient-to-r from-green-600 to-teal-600 border-green-600"
           }`}
         >
-          <div className="text-center">
+          <button
+            onClick={() => setShowCountdown(false)}
+            className="absolute top-2 right-2 text-white hover:text-gray-200 transition-colors"
+            aria-label="Dismiss countdown"
+          >
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path
+                fillRule="evenodd"
+                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </button>
+          <div className="text-center pr-8">
             <div className="text-white text-2xl font-bold mb-1">
               {countdownInfo.text}
             </div>
