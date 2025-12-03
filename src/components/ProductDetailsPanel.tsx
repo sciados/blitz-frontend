@@ -150,6 +150,7 @@ export function ProductDetailsPanel({
         affiliate_link_url: product.affiliate_link_url || "",
         product_description: product.product_description || "",
         is_recurring: product.is_recurring || false,
+        launch_date: product.launch_date || "",
       });
       setIsEditMode(true);
     }
@@ -950,6 +951,52 @@ export function ProductDetailsPanel({
               </div>
             )}
 
+            {/* Launch Date - Edit Mode */}
+            {isEditMode && (
+              <div className="card rounded-lg p-6">
+                <div
+                  className="text-sm font-medium mb-2 flex items-center"
+                  style={{ color: "var(--text-primary)" }}
+                >
+                  <svg
+                    className="w-4 h-4 mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    />
+                  </svg>
+                  Launch Date
+                </div>
+                <input
+                  type="date"
+                  value={
+                    editedProduct.launch_date
+                      ? new Date(editedProduct.launch_date)
+                          .toISOString()
+                          .split("T")[0]
+                      : ""
+                  }
+                  onChange={(e) =>
+                    setEditedProduct({
+                      ...editedProduct,
+                      launch_date: e.target.value,
+                    })
+                  }
+                  className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border-color)] bg-[var(--bg-primary)]"
+                  style={{ color: "var(--text-primary)" }}
+                />
+                <p className="mt-2 text-xs" style={{ color: "var(--text-secondary)" }}>
+                  Affiliates will see when this product is launching or was launched
+                </p>
+              </div>
+            )}
+
             {/* Product URL */}
             <div className="card rounded-lg p-6">
               <div
@@ -980,6 +1027,42 @@ export function ProductDetailsPanel({
                 {product.product_url}
               </a>
             </div>
+
+            {/* Launch Date */}
+            {product.launch_date && (
+              <div className="card rounded-lg p-6">
+                <div
+                  className="text-sm font-medium mb-2 flex items-center"
+                  style={{ color: "var(--text-primary)" }}
+                >
+                  <svg
+                    className="w-4 h-4 mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    />
+                  </svg>
+                  Launch Date
+                </div>
+                <div
+                  className="text-sm font-medium"
+                  style={{ color: "var(--text-primary)" }}
+                >
+                  {new Date(product.launch_date).toLocaleDateString("en-US", {
+                    weekday: "long",
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* Metadata */}
             <div

@@ -14,6 +14,7 @@ const productSchema = z.object({
   commission_rate: z.string().min(1, "Please enter a commission rate"),
   product_description: z.string().optional(),
   is_recurring: z.boolean().optional(),
+  launch_date: z.string().optional(),
 });
 
 type ProductFormData = z.infer<typeof productSchema>;
@@ -29,6 +30,7 @@ export default function AddProductPage() {
     commission_rate: "",
     product_description: "",
     is_recurring: false,
+    launch_date: "",
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -130,6 +132,7 @@ export default function AddProductPage() {
         commission_rate: "",
         product_description: "",
         is_recurring: false,
+        launch_date: "",
       });
 
       // Redirect to product library after 2 seconds
@@ -332,6 +335,35 @@ export default function AddProductPage() {
             >
               Recurring commission (monthly/subscription-based)
             </label>
+          </div>
+
+          {/* Launch Date */}
+          <div>
+            <label
+              htmlFor="launch_date"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+            >
+              Launch Date{" "}
+              <span className="text-gray-400">(Optional)</span>
+            </label>
+            <input
+              type="date"
+              id="launch_date"
+              name="launch_date"
+              value={formData.launch_date}
+              onChange={handleChange}
+              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${
+                errors.launch_date ? "border-red-500" : "border-gray-300"
+              }`}
+            />
+            {errors.launch_date && (
+              <p className="mt-1 text-sm text-red-600">
+                {errors.launch_date}
+              </p>
+            )}
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              Affiliates will see when this product is launching or was launched
+            </p>
           </div>
 
           {/* Product Description */}

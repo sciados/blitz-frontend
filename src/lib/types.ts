@@ -81,6 +81,7 @@ export type ProductLibraryItem = {
     times_used: number;
     compiled_at: string;
     last_accessed_at: string | null;
+    launch_date: string | null;
     // Product Developer info
     created_by_name: string | null;
     created_by_email: string | null;
@@ -104,6 +105,7 @@ export type ProductDetails = {
     times_used: number;
     compiled_at: string;
     last_accessed_at: string | null;
+    launch_date: string | null;
     compilation_version: string;
     // Product Developer info
     created_by_name: string | null;
