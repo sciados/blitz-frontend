@@ -37,6 +37,7 @@ export default function DashboardPage() {
   }
 
   const isProductCreator = userInfo?.role === "creator";
+  const isBusinessOwner = userInfo?.role === "business";
 
   return (
     <AuthGate requiredRole="user">
@@ -49,6 +50,8 @@ export default function DashboardPage() {
           <p className="text-[var(--text-secondary)] mt-2">
             {isProductCreator
               ? "Manage your products and track affiliate performance."
+              : isBusinessOwner
+              ? "Promote your business and grow your affiliate network."
               : "Manage your campaigns and content."}
           </p>
         </div>
@@ -56,6 +59,8 @@ export default function DashboardPage() {
         {/* Conditional Dashboard Cards */}
         {isProductCreator ? (
           <ProductCreatorDashboard />
+        ) : isBusinessOwner ? (
+          <BusinessOwnerDashboard />
         ) : (
           <AffiliateMarketerDashboard />
         )}
@@ -435,6 +440,416 @@ function ProductCreatorDashboard() {
                 </div>
               </>
             )}
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ============================================================================
+// BUSINESS OWNER DASHBOARD
+// ============================================================================
+
+function BusinessOwnerDashboard() {
+  // Fetch business owner stats
+  const { data: stats } = useQuery({
+    queryKey: ["businessOwnerStats"],
+    queryFn: async () => {
+      try {
+        const [campaignsRes, contentRes, analyticsRes] = await Promise.all([
+          api.get("/api/campaigns"),
+          api.get("/api/content").catch(() => ({ data: [] })),
+          api.get("/api/analytics/summary").catch(() => ({ data: null }))
+        ]);
+
+        const campaigns = campaignsRes.data || [];
+        const activeCampaigns = campaigns.filter((c: any) => c.status === "active").length;
+
+        return {
+          totalCampaigns: campaigns.length,
+          activeCampaigns: activeCampaigns,
+          contentPieces: contentRes.data?.length || 0,
+          totalClicks: analyticsRes.data?.total_clicks || 0,
+          recentCampaigns: campaigns.slice(0, 3)
+        };
+      } catch (error) {
+        return {
+          totalCampaigns: 0,
+          activeCampaigns: 0,
+          contentPieces: 0,
+          totalClicks: 0,
+          recentCampaigns: []
+        };
+      }
+    }
+  });
+
+  return (
+    <>
+      {/* Quick Stats Section */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="card p-4 border-l-4 border-blue-500">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-[var(--text-secondary)] mb-1">Business Campaigns</p>
+              <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
+                {stats?.totalCampaigns || 0}
+              </p>
+            </div>
+            <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+              <span className="text-2xl">📢</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="card p-4 border-l-4 border-green-500">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-[var(--text-secondary)] mb-1">Active Campaigns</p>
+              <p className="text-3xl font-bold text-green-600 dark:text-green-400">
+                {stats?.activeCampaigns || 0}
+              </p>
+            </div>
+            <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+              <span className="text-2xl">✓</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="card p-4 border-l-4 border-purple-500">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-[var(--text-secondary)] mb-1">Marketing Content</p>
+              <p className="text-3xl font-bold text-purple-600 dark:text-purple-400">
+                {stats?.contentPieces || 0}
+              </p>
+            </div>
+            <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
+              <span className="text-2xl">✍️</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="card p-4 border-l-4 border-orange-500">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-[var(--text-secondary)] mb-1">Total Clicks (7d)</p>
+              <p className="text-3xl font-bold text-orange-600 dark:text-orange-400">
+                {stats?.totalClicks || 0}
+              </p>
+            </div>
+            <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center">
+              <span className="text-2xl">👆</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {/* Business Campaigns */}
+        <Link
+          href="/campaigns"
+          className="group block p-6 rounded-lg transition-all duration-300 card hover:shadow-xl hover:-translate-y-1 hover:border-blue-400 dark:hover:border-blue-500 border-2 border-transparent "
+        >
+          <div className="flex items-center space-x-3 mb-2">
+            <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+              <span className="text-blue-600 dark:text-blue-400 text-xl">📢</span>
+            </div>
+            <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">
+              Business Campaigns
+            </h2>
+          </div>
+          <p className="text-sm text-[var(--text-secondary)]">
+            Promote your business and services to affiliates
+          </p>
+        </Link>
+
+        {/* Content Generation */}
+        <Link
+          href="/content"
+          className="group block p-6 rounded-lg transition-all duration-300 card hover:shadow-xl hover:-translate-y-1 hover:border-green-400 dark:hover:border-green-500 border-2 border-transparent "
+        >
+          <div className="flex items-center space-x-3 mb-2">
+            <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+              <span className="text-green-600 dark:text-green-400 text-xl">✍️</span>
+            </div>
+            <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors duration-300">
+              Content
+            </h2>
+          </div>
+          <p className="text-sm text-[var(--text-secondary)]">
+            Generate marketing content for your business
+          </p>
+        </Link>
+
+        {/* Intelligence */}
+        <Link
+          href="/intelligence"
+          className="group block p-6 rounded-lg transition-all duration-300 card hover:shadow-xl hover:-translate-y-1 hover:border-indigo-400 dark:hover:border-indigo-500 border-2 border-transparent "
+        >
+          <div className="flex items-center space-x-3 mb-2">
+            <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+              <span className="text-indigo-600 dark:text-indigo-400 text-xl">🧠</span>
+            </div>
+            <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-300">
+              Intelligence
+            </h2>
+          </div>
+          <p className="text-sm text-[var(--text-secondary)]">
+            Compile business intelligence and market insights
+          </p>
+        </Link>
+
+        {/* Analytics */}
+        <Link
+          href="/analytics"
+          className="group block p-6 rounded-lg transition-all duration-300 card hover:shadow-xl hover:-translate-y-1 hover:border-orange-400 dark:hover:border-orange-500 border-2 border-transparent "
+        >
+          <div className="flex items-center space-x-3 mb-2">
+            <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+              <span className="text-orange-600 dark:text-orange-400 text-xl">📈</span>
+            </div>
+            <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors duration-300">
+              Analytics
+            </h2>
+          </div>
+          <p className="text-sm text-[var(--text-secondary)]">
+            Track campaign performance and affiliate metrics
+          </p>
+        </Link>
+
+        {/* Networking */}
+        <Link
+          href="/affiliates"
+          className="group block p-6 rounded-lg transition-all duration-300 card hover:shadow-xl hover:-translate-y-1 hover:border-purple-400 dark:hover:border-purple-500 border-2 border-transparent "
+        >
+          <div className="flex items-center space-x-3 mb-2">
+            <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+              <span className="text-purple-600 dark:text-purple-400 text-xl">👥</span>
+            </div>
+            <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors duration-300">
+              Networking
+            </h2>
+          </div>
+          <p className="text-sm text-[var(--text-secondary)]">
+            Find and connect with quality affiliates
+          </p>
+        </Link>
+
+        {/* Messages */}
+        <Link
+          href="/messages"
+          className="group block p-6 rounded-lg transition-all duration-300 card hover:shadow-xl hover:-translate-y-1 hover:border-pink-400 dark:hover:border-pink-500 border-2 border-transparent "
+        >
+          <div className="flex items-center space-x-3 mb-2">
+            <div className="w-10 h-10 bg-pink-100 dark:bg-pink-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+              <span className="text-pink-600 dark:text-pink-400 text-xl">💬</span>
+            </div>
+            <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-pink-600 dark:group-hover:text-pink-400 transition-colors duration-300">
+              Messages
+            </h2>
+          </div>
+          <p className="text-sm text-[var(--text-secondary)]">
+            Communicate with your affiliate network
+          </p>
+        </Link>
+
+        {/* Compliance */}
+        <Link
+          href="/compliance"
+          className="group block p-6 rounded-lg transition-all duration-300 card hover:shadow-xl hover:-translate-y-1 hover:border-red-400 dark:hover:border-red-500 border-2 border-transparent "
+        >
+          <div className="flex items-center space-x-3 mb-2">
+            <div className="w-10 h-10 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+              <span className="text-red-600 dark:text-red-400 text-xl">✅</span>
+            </div>
+            <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors duration-300">
+              Compliance
+            </h2>
+          </div>
+          <p className="text-sm text-[var(--text-secondary)]">
+            Ensure content meets compliance guidelines
+          </p>
+        </Link>
+
+        {/* Settings */}
+        <Link
+          href="/settings"
+          className="group block p-6 rounded-lg transition-all duration-300 card hover:shadow-xl hover:-translate-y-1 hover:border-gray-400 dark:hover:border-gray-500 border-2 border-transparent "
+        >
+          <div className="flex items-center space-x-3 mb-2">
+            <div className="w-10 h-10 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+              <span className="text-gray-600 dark:text-gray-400 text-xl">⚙️</span>
+            </div>
+            <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors duration-300">
+              Settings
+            </h2>
+          </div>
+          <p className="text-sm text-[var(--text-secondary)]">
+            Manage your account and preferences
+          </p>
+        </Link>
+      </div>
+
+      {/* Quick Actions & Tips */}
+      <div className="border-t pt-6 space-y-6">
+        <div>
+          <h3 className="text-lg font-semibold mb-4 text-[var(--text-primary)]">
+            Quick Actions
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Link
+              href="/campaigns"
+              className="p-4 card hover:shadow-md transition-shadow border-2 border-transparent hover:border-blue-400 dark:hover:border-blue-500"
+            >
+              <div className="flex items-center space-x-3 mb-2">
+                <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                  <span className="text-xl">➕</span>
+                </div>
+                <h4 className="font-semibold text-[var(--text-primary)]">
+                  Create Campaign
+                </h4>
+              </div>
+              <p className="text-sm text-[var(--text-secondary)]">
+                Start a campaign for your business
+              </p>
+            </Link>
+
+            <Link
+              href="/content"
+              className="p-4 card hover:shadow-md transition-shadow border-2 border-transparent hover:border-green-400 dark:hover:border-green-500"
+            >
+              <div className="flex items-center space-x-3 mb-2">
+                <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+                  <span className="text-xl">✍️</span>
+                </div>
+                <h4 className="font-semibold text-[var(--text-primary)]">
+                  Generate Content
+                </h4>
+              </div>
+              <p className="text-sm text-[var(--text-secondary)]">
+                Create marketing materials for affiliates
+              </p>
+            </Link>
+
+            <Link
+              href="/affiliates"
+              className="p-4 card hover:shadow-md transition-shadow border-2 border-transparent hover:border-purple-400 dark:hover:border-purple-500"
+            >
+              <div className="flex items-center space-x-3 mb-2">
+                <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
+                  <span className="text-xl">🤝</span>
+                </div>
+                <h4 className="font-semibold text-[var(--text-primary)]">
+                  Find Affiliates
+                </h4>
+              </div>
+              <p className="text-sm text-[var(--text-secondary)]">
+                Connect with quality affiliates
+              </p>
+            </Link>
+          </div>
+        </div>
+
+        <div>
+          <h3 className="text-lg font-semibold mb-4 text-[var(--text-primary)]">
+            {stats?.totalCampaigns === 0 ? "Getting Started" : "Pro Tips"}
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {stats?.totalCampaigns === 0 ? (
+              <>
+                <div className="p-4 card border-l-4 border-blue-500">
+                  <h4 className="font-semibold text-[var(--text-primary)] mb-2">
+                    📢 Create Your First Campaign
+                  </h4>
+                  <p className="text-sm text-[var(--text-secondary)] mb-3">
+                    Start by creating a campaign for your business. Enter your business website URL to compile intelligence.
+                  </p>
+                  <Link
+                    href="/campaigns"
+                    className="text-sm text-blue-600 dark:text-blue-400 hover:underline font-medium"
+                  >
+                    Create Campaign →
+                  </Link>
+                </div>
+
+                <div className="p-4 card border-l-4 border-green-500">
+                  <h4 className="font-semibold text-[var(--text-primary)] mb-2">
+                    ✍️ Generate Marketing Content
+                  </h4>
+                  <p className="text-sm text-[var(--text-secondary)] mb-3">
+                    Create compelling marketing materials that your affiliates can use to promote your business.
+                  </p>
+                  <Link
+                    href="/content"
+                    className="text-sm text-green-600 dark:text-green-400 hover:underline font-medium"
+                  >
+                    Start Creating →
+                  </Link>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="p-4 card border-l-4 border-purple-500">
+                  <h4 className="font-semibold text-[var(--text-primary)] mb-2">
+                    👥 Build Your Affiliate Network
+                  </h4>
+                  <p className="text-sm text-[var(--text-secondary)] mb-3">
+                    Reach out to quality affiliates who can drive significant traffic to your business.
+                  </p>
+                  <Link
+                    href="/affiliates"
+                    className="text-sm text-purple-600 dark:text-purple-400 hover:underline font-medium"
+                  >
+                    Find Affiliates →
+                  </Link>
+                </div>
+
+                <div className="p-4 card border-l-4 border-orange-500">
+                  <h4 className="font-semibold text-[var(--text-primary)] mb-2">
+                    📊 Monitor Performance
+                  </h4>
+                  <p className="text-sm text-[var(--text-secondary)] mb-3">
+                    Track which campaigns and affiliates are driving the most traffic and conversions.
+                  </p>
+                  <Link
+                    href="/analytics"
+                    className="text-sm text-orange-600 dark:text-orange-400 hover:underline font-medium"
+                  >
+                    View Analytics →
+                  </Link>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+
+        <div>
+          <h3 className="text-lg font-semibold mb-4 text-[var(--text-primary)]">
+            Campaign Status Overview
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="p-4 card border-l-4 border-green-500">
+              <p className="text-sm text-[var(--text-secondary)] mb-1">Active Campaigns</p>
+              <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+                {stats?.activeCampaigns || 0}
+              </p>
+            </div>
+
+            <div className="p-4 card border-l-4 border-yellow-500">
+              <p className="text-sm text-[var(--text-secondary)] mb-1">Draft/Paused</p>
+              <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
+                {stats?.totalCampaigns ? stats.totalCampaigns - stats.activeCampaigns : 0}
+              </p>
+            </div>
+
+            <div className="p-4 card border-l-4 border-blue-500">
+              <p className="text-sm text-[var(--text-secondary)] mb-1">Total Campaigns</p>
+              <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                {stats?.totalCampaigns || 0}
+              </p>
+            </div>
           </div>
         </div>
       </div>
