@@ -211,7 +211,7 @@ export default function Layout({ children }: LayoutProps) {
             { href: "/messages", label: "Inbox & Sent", icon: "💬" },
             { href: "/messages/compose", label: "Compose", icon: "✏️" },
             { href: "/messages/requests", label: "Requests", icon: "🤝" },
-            { href: "/affiliates", label: "Directory", icon: "👥" },
+            { href: "/affiliates", label: "Networking", icon: "👥" },
           ],
         },
         { href: "/admin/tools", label: "Admin Tools", icon: "🔧" },
@@ -233,7 +233,7 @@ export default function Layout({ children }: LayoutProps) {
         { href: "/products", label: "Product Library", icon: "📦" },
         { href: "/product-analytics", label: "Product Analytics", icon: "📊" },
         { href: "/intelligence", label: "Intelligence", icon: "🧠" },
-        { href: "/affiliates", label: "Affiliate Directory", icon: "👥" },
+        { href: "/affiliates", label: "Networking", icon: "👥" },
         {
           href: "/messages",
           label: "Messages",
@@ -275,7 +275,7 @@ export default function Layout({ children }: LayoutProps) {
         },
         { href: "/intelligence", label: "Intelligence", icon: "🧠" },
         { href: "/analytics", label: "Analytics", icon: "📈" },
-        { href: "/affiliates", label: "Affiliate Directory", icon: "👥" },
+        { href: "/affiliates", label: "Networking", icon: "👥" },
         {
           href: "/messages",
           label: "Messages",
@@ -329,7 +329,7 @@ export default function Layout({ children }: LayoutProps) {
         label: "More",
         icon: "📂",
         children: [
-          { href: "/affiliates", label: "Affiliate Directory", icon: "👥" },
+          { href: "/affiliates", label: "Networking", icon: "👥" },
           { href: "/compliance", label: "Compliance", icon: "✅" },
           { href: "/settings", label: "Settings", icon: "⚙️" },
         ],
