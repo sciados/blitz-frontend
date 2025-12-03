@@ -63,13 +63,12 @@ export default function Layout({ children }: LayoutProps) {
   // Get help content based on current pathname
   const helpContent = getHelpContent(pathname);
 
-  // Auto-expand Messages menu when on messages-related pages
+  // Auto-expand menus when on related pages
   useEffect(() => {
     const isMessagesPage =
       pathname === "/messages" ||
       pathname === "/messages/compose" ||
-      pathname.startsWith("/messages/requests") ||
-      pathname === "/affiliates";
+      pathname.startsWith("/messages/requests");
 
     if (isMessagesPage) {
       setExpandedMenus((prev) => ({
@@ -231,6 +230,10 @@ export default function Layout({ children }: LayoutProps) {
     if (userInfo?.role === "creator") {
       return [
         { href: "/dashboard", label: "Dashboard", icon: "🏠" },
+        { href: "/products", label: "Product Library", icon: "📦" },
+        { href: "/product-analytics", label: "Product Analytics", icon: "📊" },
+        { href: "/intelligence", label: "Intelligence", icon: "🧠" },
+        { href: "/affiliates", label: "Affiliate Directory", icon: "👥" },
         {
           href: "/messages",
           label: "Messages",
@@ -239,17 +242,20 @@ export default function Layout({ children }: LayoutProps) {
             { href: "/messages", label: "Inbox & Sent", icon: "💬" },
             { href: "/messages/compose", label: "Compose", icon: "✏️" },
             { href: "/messages/requests", label: "Requests", icon: "🤝" },
-            { href: "/affiliates", label: "Directory", icon: "👥" },
           ],
         },
-        { href: "/products", label: "Product Library", icon: "📦" },
-        { href: "/intelligence", label: "Intelligence", icon: "🧠" },
-        { href: "/content", label: "Content", icon: "✍️" },
-        { href: "/campaigns", label: "Campaigns", icon: "📢" },
-        { href: "/compliance", label: "Compliance", icon: "✅" },
-        { href: "/product-analytics", label: "Product Analytics", icon: "📊" },
-        { href: "/analytics", label: "Analytics", icon: "📈" },
-        { href: "/settings", label: "Settings", icon: "⚙️" },
+        {
+          href: "/more",
+          label: "More",
+          icon: "📂",
+          children: [
+            { href: "/campaigns", label: "Campaigns", icon: "📢" },
+            { href: "/content", label: "Content", icon: "✍️" },
+            { href: "/compliance", label: "Compliance", icon: "✅" },
+            { href: "/analytics", label: "Analytics", icon: "📈" },
+            { href: "/settings", label: "Settings", icon: "⚙️" },
+          ],
+        },
       ];
     }
 
