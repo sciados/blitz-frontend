@@ -74,6 +74,7 @@ export type ProductLibraryItem = {
     product_name: string | null;
     product_category: string | null;
     thumbnail_image_url: string | null;
+    hero_media_url: string | null;
     affiliate_network: string | null;
     commission_rate: string | null;
     product_description: string | null;
@@ -97,6 +98,7 @@ export type ProductDetails = {
     product_category: string | null;
     product_description: string | null;
     thumbnail_image_url: string | null;
+    hero_media_url: string | null;
     affiliate_network: string | null;
     commission_rate: string | null;
     affiliate_link_url: string | null;

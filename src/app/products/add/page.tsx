@@ -15,6 +15,7 @@ const productSchema = z.object({
   product_description: z.string().optional(),
   is_recurring: z.boolean().optional(),
   launch_date: z.string().optional(),
+  hero_media_url: z.string().url("Please enter a valid URL").optional().or(z.literal("")),
 });
 
 type ProductFormData = z.infer<typeof productSchema>;
@@ -31,6 +32,7 @@ export default function AddProductPage() {
     product_description: "",
     is_recurring: false,
     launch_date: "",
+    hero_media_url: "",
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -133,6 +135,7 @@ export default function AddProductPage() {
         product_description: "",
         is_recurring: false,
         launch_date: "",
+        hero_media_url: "",
       });
 
       // Redirect to product library after 2 seconds
@@ -363,6 +366,36 @@ export default function AddProductPage() {
             )}
             <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
               Affiliates will see when this product is launching or was launched
+            </p>
+          </div>
+
+          {/* Hero Media URL */}
+          <div>
+            <label
+              htmlFor="hero_media_url"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+            >
+              Hero Media URL{" "}
+              <span className="text-gray-400">(Optional - Image or Video)</span>
+            </label>
+            <input
+              type="url"
+              id="hero_media_url"
+              name="hero_media_url"
+              value={formData.hero_media_url}
+              onChange={handleChange}
+              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${
+                errors.hero_media_url ? "border-red-500" : "border-gray-300"
+              }`}
+              placeholder="https://example.com/hero-video.mp4 or https://example.com/hero-image.jpg"
+            />
+            {errors.hero_media_url && (
+              <p className="mt-1 text-sm text-red-600">
+                {errors.hero_media_url}
+              </p>
+            )}
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              Custom hero image or video to display on the Product Details page. If not provided, the scraped product image will be used as default.
             </p>
           </div>
 

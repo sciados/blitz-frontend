@@ -181,6 +181,7 @@ export function ProductDetailsPanel({
         product_description: product.product_description || "",
         is_recurring: product.is_recurring || false,
         launch_date: product.launch_date || "",
+        hero_media_url: product.hero_media_url || "",
       });
       setIsEditMode(true);
     }
@@ -726,14 +727,34 @@ export function ProductDetailsPanel({
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Left Column - Product Overview */}
           <div className="space-y-6">
-            {/* Product Image */}
-            {product.thumbnail_image_url ? (
+            {/* Product Hero Media (Custom or Scraped) */}
+            {product.hero_media_url || product.thumbnail_image_url ? (
               <div className="card rounded-lg overflow-hidden">
-                <img
-                  src={product.thumbnail_image_url}
-                  alt={product.product_name || "Product"}
-                  className="w-full h-64 object-contain"
-                />
+                {product.hero_media_url ? (
+                  // Check if it's a video or image
+                  product.hero_media_url.match(/\.(mp4|webm|ogg|mov)$/i) ? (
+                    <video
+                      src={product.hero_media_url}
+                      controls
+                      className="w-full h-64 object-contain"
+                      poster={product.thumbnail_image_url || undefined}
+                    >
+                      Your browser does not support the video tag.
+                    </video>
+                  ) : (
+                    <img
+                      src={product.hero_media_url}
+                      alt={product.product_name || "Product"}
+                      className="w-full h-64 object-contain"
+                    />
+                  )
+                ) : product.thumbnail_image_url ? (
+                  <img
+                    src={product.thumbnail_image_url}
+                    alt={product.product_name || "Product"}
+                    className="w-full h-64 object-contain"
+                  />
+                ) : null}
               </div>
             ) : (
               <div className="card rounded-lg h-64 flex items-center justify-center">
@@ -1100,6 +1121,67 @@ export function ProductDetailsPanel({
                 </p>
               </div>
             )}
+
+            {/* Hero Media URL */}
+            <div className="card rounded-lg p-6">
+              <div
+                className="text-sm font-medium mb-2 flex items-center"
+                style={{ color: "var(--text-primary)" }}
+              >
+                <svg
+                  className="w-4 h-4 mr-2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+                  />
+                </svg>
+                Hero Media URL
+              </div>
+              {isEditMode ? (
+                <>
+                  <input
+                    type="url"
+                    value={editedProduct.hero_media_url || ""}
+                    onChange={(e) =>
+                      setEditedProduct({
+                        ...editedProduct,
+                        hero_media_url: e.target.value,
+                      })
+                    }
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--border-color)] bg-[var(--bg-primary)]"
+                    style={{ color: "var(--text-primary)" }}
+                    placeholder="https://example.com/hero-image.jpg or https://example.com/hero-video.mp4"
+                  />
+                  <p className="mt-2 text-xs" style={{ color: "var(--text-secondary)" }}>
+                    Custom hero image or video to display. If empty, the scraped product image will be used.
+                  </p>
+                </>
+              ) : product.hero_media_url ? (
+                <div className="space-y-2">
+                  <a
+                    href={product.hero_media_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 dark:text-blue-400 hover:underline break-all text-sm"
+                  >
+                    {product.hero_media_url}
+                  </a>
+                  <p className="text-xs italic" style={{ color: "var(--text-secondary)" }}>
+                    Custom hero media (overrides scraped image)
+                  </p>
+                </div>
+              ) : (
+                <p className="text-xs italic" style={{ color: "var(--text-secondary)" }}>
+                  No custom hero media set - using scraped product image
+                </p>
+              )}
+            </div>
 
             {/* Product URL */}
             <div className="card rounded-lg p-6">
