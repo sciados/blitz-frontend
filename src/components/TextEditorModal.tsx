@@ -117,7 +117,7 @@ export function TextEditorModal({
     if (isOpen) {
       setFontsLoading(true);
       api
-        .get("/api/content/images/fonts")
+        .get("/api/images/fonts")
         .then(({ data }) => {
           console.log("📝 Loaded fonts:", data);
           setFonts(data);
@@ -351,7 +351,7 @@ export function TextEditorModal({
       console.log("[SAVE] Payload prepared, sending to backend...");
 
       const { data } = await api.post(
-        "/api/content/images/text-overlay",
+        "/api/images/text-overlay",
         payload
       );
 

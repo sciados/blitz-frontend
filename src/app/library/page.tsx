@@ -102,7 +102,7 @@ export default function ContentLibraryPage() {
       const { data: campaigns } = await api.get("/api/campaigns");
       const allImagePromises = campaigns.map((campaign: Campaign) =>
         api
-          .get(`/api/content/images/campaign/${campaign.id}`)
+          .get(`/api/images/campaign/${campaign.id}`)
           .then((res) => res.data.images || [])
           .catch(() => [])
       );
@@ -260,7 +260,7 @@ export default function ContentLibraryPage() {
     if (!imageToDelete) return;
 
     try {
-      await api.delete(`/api/content/images/${imageToDelete}`);
+      await api.delete(`/api/images/${imageToDelete}`);
       toast.success("Image deleted successfully");
       refetchImages();
       setIsLibraryModalOpen(false);

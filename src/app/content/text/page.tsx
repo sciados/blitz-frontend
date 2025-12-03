@@ -183,12 +183,12 @@ export default function ContentPage() {
     queryFn: async () => {
       if (campaignId === null) {
         // Fetch all images across all campaigns
-        const { data } = await api.get(`/api/content/images`);
+        const { data } = await api.get(`/api/images`);
         setAllImages(data.images || []);
         return data.images || [];
       } else if (campaignId) {
         // Fetch images for specific campaign
-        const { data } = await api.get(`/api/content/images/campaign/${campaignId}`);
+        const { data } = await api.get(`/api/images/campaign/${campaignId}`);
         setAllImages(data.images || []);
         return data.images || [];
       }
@@ -283,7 +283,7 @@ export default function ContentPage() {
     if (!confirm("Are you sure you want to delete this image?")) return;
 
     try {
-      await api.delete(`/api/content/images/${imageId}`);
+      await api.delete(`/api/images/${imageId}`);
       toast.success("Image deleted successfully");
       refetchImages();
       setIsLibraryModalOpen(false);

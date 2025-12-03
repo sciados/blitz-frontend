@@ -166,7 +166,7 @@ export default function ImagesPage() {
         return [];
       }
       const { data } = await api.get(
-        `/api/content/images/campaign/${campaignId}`
+        `/api/images/campaign/${campaignId}`
       );
       setAllImages(data.images || []);
       return data.images || [];
@@ -199,7 +199,7 @@ export default function ImagesPage() {
       }
 
       // Call previews endpoint to get 4 unique drafts
-      const { data } = await api.post("/api/content/images/previews", payload);
+      const { data } = await api.post("/api/images/previews", payload);
 
       setDraftImages(data);
       toast.success(`Generated 4 draft previews using ${data[0]?.provider}`);
@@ -234,7 +234,7 @@ export default function ImagesPage() {
         payload.custom_prompt = customPrompt.trim();
       }
 
-      const { data } = await api.post("/api/content/images/previews", payload);
+      const { data } = await api.post("/api/images/previews", payload);
 
       setDraftImages(data);
       toast.success(`Generated 4 new drafts using ${data[0]?.provider}`);
@@ -271,7 +271,7 @@ export default function ImagesPage() {
 
   async function handleSaveDraft(image: GeneratedImage) {
     try {
-      const { data } = await api.post("/api/content/images/save-draft", {
+      const { data } = await api.post("/api/images/save-draft", {
         campaign_id: campaignId,
         image_url: image.image_url,
         image_type: image.image_type,
@@ -291,7 +291,7 @@ export default function ImagesPage() {
 
   async function handleUpgradeDraft(image: GeneratedImage) {
     try {
-      const { data } = await api.post("/api/content/images/upgrade", {
+      const { data } = await api.post("/api/images/upgrade", {
         campaign_id: campaignId,
         draft_image_url: image.image_url,
         image_type: image.image_type,  // Preserve the original image type
@@ -343,7 +343,7 @@ export default function ImagesPage() {
         aspect_ratio: image.aspect_ratio,
       };
 
-      const { data } = await api.post("/api/content/images/generate", payload);
+      const { data } = await api.post("/api/images/generate", payload);
 
       toast.success(`Image regenerated using ${data.provider}`);
       refetchImages();
@@ -358,7 +358,7 @@ export default function ImagesPage() {
     if (!confirm("Are you sure you want to delete this image?")) return;
 
     try {
-      await api.delete(`/api/content/images/${imageId}`);
+      await api.delete(`/api/images/${imageId}`);
       toast.success("Image deleted successfully");
 
       if (generatedImage?.id === imageId) {

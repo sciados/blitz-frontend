@@ -125,7 +125,7 @@ export function UnifiedEditorModal({
     if (isOpen) {
       setFontsLoading(true);
       api
-        .get("/api/content/images/fonts")
+        .get("/api/images/fonts")
         .then(({ data }) => {
           setFonts(data);
         })
@@ -309,7 +309,7 @@ export function UnifiedEditorModal({
 
     setIsTrimming(true);
     try {
-      const { data } = await api.post("/api/content/images/trim-transparency", {
+      const { data } = await api.post("/api/images/trim-transparency", {
         image_url: (selectedLayer as ImageLayerData).image_url,
         padding: 2,
         campaign_id: campaignId,
@@ -391,7 +391,7 @@ export function UnifiedEditorModal({
           z_index: l.z_index,
         }));
 
-      const { data } = await api.post("/api/content/images/composite", {
+      const { data } = await api.post("/api/images/composite", {
         image_url: sourceImage.image_url,
         text_layers: textLayers,
         image_layers: imageLayers,
@@ -425,7 +425,7 @@ export function UnifiedEditorModal({
     formData.append("campaign_id", campaignId.toString());
 
     try {
-      const { data } = await api.post("/api/content/images/upload", formData, {
+      const { data } = await api.post("/api/images/upload", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       addImageLayer(data.image_url);

@@ -460,7 +460,7 @@ function BusinessOwnerDashboard() {
         const [campaignsRes, textContentRes, imagesRes, analyticsRes] = await Promise.all([
           api.get("/api/campaigns"),
           api.get("/api/content").catch(() => ({ data: [] })),
-          api.get("/api/content/images").catch(() => ({ data: [] })),
+          api.get("/api/images").catch(() => ({ data: [] })),
           api.get("/api/analytics/summary").catch(() => ({ data: null }))
         ]);
 
@@ -894,7 +894,7 @@ function AffiliateMarketerDashboard() {
         const [campaignsRes, textContentRes, imagesRes, analyticsRes] = await Promise.all([
           api.get("/api/campaigns"),
           api.get("/api/content").catch(() => ({ data: [] })),
-          api.get("/api/content/images").catch(() => ({ data: [] })),
+          api.get("/api/images").catch(() => ({ data: [] })),
           api.get("/api/analytics/summary").catch(() => ({ data: null }))
         ]);
 

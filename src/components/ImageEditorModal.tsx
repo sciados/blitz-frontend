@@ -167,7 +167,7 @@ export function ImageEditorModal({
 
     setIsTrimming(true);
     try {
-      const { data } = await api.post("/api/content/images/trim-transparency", {
+      const { data } = await api.post("/api/images/trim-transparency", {
         image_url: selectedOverlay.image_url,
         padding: 2,
         campaign_id: campaignId,
@@ -311,7 +311,7 @@ export function ImageEditorModal({
       });
 
       // Send to backend for composition
-      const { data } = await api.post("/api/content/images/image-overlay", {
+      const { data } = await api.post("/api/images/image-overlay", {
         image_url: sourceImage.image_url,
         image_overlays: imageOverlays,
         campaign_id: campaignId,
