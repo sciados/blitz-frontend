@@ -17,7 +17,7 @@ export default function ProductLibraryPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedCreator, setSelectedCreator] = useState<number | null>(null);
-  const [sortBy, setSortBy] = useState<"recent" | "popular" | "alphabetical">("recent");
+  const [sortBy, setSortBy] = useState<"recent" | "popular" | "alphabetical" | "launch_date">("recent");
   const [recurringOnly, setRecurringOnly] = useState<boolean | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
@@ -193,6 +193,7 @@ export default function ProductLibraryPage() {
                   }}
                 >
                   <option value="recent">Newest First</option>
+                  <option value="launch_date">Launch Date (Newest)</option>
                   <option value="popular">Most Popular</option>
                   <option value="alphabetical">A-Z</option>
                 </select>

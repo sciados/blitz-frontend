@@ -278,10 +278,10 @@ export function ProductCard({
               </div>
             )}
 
-            {/* Launch Date */}
+            {/* Launch Date - Prominently Displayed */}
             {product.launch_date && (
               <div
-                className="flex items-center text-xs"
+                className="flex items-center text-xs font-medium"
                 style={{ color: "var(--text-secondary)" }}
               >
                 <svg
