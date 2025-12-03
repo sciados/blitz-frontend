@@ -1327,273 +1327,6 @@ export function ProductDetailsPanel({
               </a>
             </div>
 
-            {/* Conversion Tracking Section - Only for Product Owners */}
-            {isProductOwner && (
-              <div className="card rounded-lg p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h4
-                    className="text-xl font-semibold flex items-center"
-                    style={{ color: "var(--text-primary)" }}
-                  >
-                    <svg
-                      className="w-6 h-6 mr-2"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                      />
-                    </svg>
-                    Conversion Tracking Setup
-                  </h4>
-                  <span className="px-3 py-1 text-xs font-medium rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300">
-                    Essential for Affiliate Attribution
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {/* Left Column - Tracking Code Snippets */}
-                  <div>
-                    <TrackingCodeSection productId={product.id} />
-                  </div>
-
-                  {/* Right Column - Detailed Instructions */}
-                  <div className="space-y-6">
-                    {/* Why Use This Section */}
-                    <div
-                      className="p-4 rounded-lg border"
-                      style={{
-                        backgroundColor: "rgba(59, 130, 246, 0.05)",
-                        borderColor: "rgba(59, 130, 246, 0.2)",
-                      }}
-                    >
-                      <div className="flex items-start">
-                        <svg
-                          className="w-5 h-5 mr-3 mt-0.5 text-blue-600 dark:text-blue-400 flex-shrink-0"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                          />
-                        </svg>
-                        <div>
-                          <h5
-                            className="font-semibold mb-2"
-                            style={{ color: "var(--text-primary)" }}
-                          >
-                            Why You Need This
-                          </h5>
-                          <ul
-                            className="text-sm space-y-1"
-                            style={{ color: "var(--text-secondary)" }}
-                          >
-                            <li>• Track which affiliates drive actual sales</li>
-                            <li>• Automatically calculate affiliate commissions</li>
-                            <li>• Get credit for the entire sales funnel (main + upsells)</li>
-                            <li>• 60-day cookie attribution window</li>
-                            <li>• Session-based tracking for complete customer journey</li>
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* How to Implement - Step by Step */}
-                    <div>
-                      <h5
-                        className="font-semibold mb-3 flex items-center"
-                        style={{ color: "var(--text-primary)" }}
-                      >
-                        <svg
-                          className="w-5 h-5 mr-2"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                          />
-                        </svg>
-                        Implementation Steps
-                      </h5>
-                      <div className="space-y-3">
-                        <div className="flex items-start">
-                          <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-600 text-white text-xs font-bold mr-3 mt-0.5 flex-shrink-0">
-                            1
-                          </span>
-                          <div>
-                            <div
-                              className="text-sm font-medium"
-                              style={{ color: "var(--text-primary)" }}
-                            >
-                              Add Script to ALL Pages
-                            </div>
-                            <div
-                              className="text-xs mt-1"
-                              style={{ color: "var(--text-secondary)" }}
-                            >
-                              Copy Step 1 code to your website's &lt;head&gt; section or before &lt;/body&gt; on
-                              every page (sales page, upsells, thank you pages).
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="flex items-start">
-                          <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-600 text-white text-xs font-bold mr-3 mt-0.5 flex-shrink-0">
-                            2
-                          </span>
-                          <div>
-                            <div
-                              className="text-sm font-medium"
-                              style={{ color: "var(--text-primary)" }}
-                            >
-                              Add Conversion Code to Order Page
-                            </div>
-                            <div
-                              className="text-xs mt-1"
-                              style={{ color: "var(--text-secondary)" }}
-                            >
-                              Copy Step 2 code and add it ONLY to your order confirmation/thank you page.
-                              Replace YOUR_ORDER_ID and 0.00 with actual values.
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="flex items-start">
-                          <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-600 text-white text-xs font-bold mr-3 mt-0.5 flex-shrink-0">
-                            3
-                          </span>
-                          <div>
-                            <div
-                              className="text-sm font-medium"
-                              style={{ color: "var(--text-primary)" }}
-                            >
-                              Track Upsells & Downsells
-                            </div>
-                            <div
-                              className="text-xs mt-1"
-                              style={{ color: "var(--text-secondary)" }}
-                            >
-                              Use the "Tracking Upsells & Downsells" example for additional offers.
-                              Set parentOrderId to link upsells to the main order.
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="flex items-start">
-                          <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-600 text-white text-xs font-bold mr-3 mt-0.5 flex-shrink-0">
-                            4
-                          </span>
-                          <div>
-                            <div
-                              className="text-sm font-medium"
-                              style={{ color: "var(--text-primary)" }}
-                            >
-                              Test & Monitor
-                            </div>
-                            <div
-                              className="text-xs mt-1"
-                              style={{ color: "var(--text-secondary)" }}
-                            >
-                              Test by visiting your site with ?aff=123, then making a purchase.
-                              Check the Conversions page to verify tracking works.
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Important Notes */}
-                    <div
-                      className="p-4 rounded-lg border"
-                      style={{
-                        backgroundColor: "rgba(251, 191, 36, 0.05)",
-                        borderColor: "rgba(251, 191, 36, 0.2)",
-                      }}
-                    >
-                      <div className="flex items-start">
-                        <svg
-                          className="w-5 h-5 mr-3 mt-0.5 text-yellow-600 dark:text-yellow-400 flex-shrink-0"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                          />
-                        </svg>
-                        <div>
-                          <h5
-                            className="font-semibold mb-2"
-                            style={{ color: "var(--text-primary)" }}
-                          >
-                            Important Notes
-                          </h5>
-                          <ul
-                            className="text-sm space-y-1"
-                            style={{ color: "var(--text-secondary)" }}
-                          >
-                            <li>• The tracking script is invisible to customers</li>
-                            <li>• Session-based tracking = affiliates get credit for entire funnel</li>
-                            <li>• Cookie lasts 60 days for follow-up purchases</li>
-                            <li>• Revenue split: Affiliate % + 5% Blitz + Your Net</li>
-                            <li>• Missing tracking = lost affiliate commissions</li>
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Where to Find Help */}
-                    <div className="flex items-center justify-between p-3 rounded-lg" style={{ backgroundColor: "var(--bg-secondary)" }}>
-                      <div className="flex items-center">
-                        <svg
-                          className="w-5 h-5 mr-2"
-                          style={{ color: "var(--text-primary)" }}
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                          />
-                        </svg>
-                        <span
-                          className="text-sm font-medium"
-                          style={{ color: "var(--text-primary)" }}
-                        >
-                          Need more help?
-                        </span>
-                      </div>
-                      <a
-                        href="/tracking-code"
-                        target="_blank"
-                        className="text-xs px-3 py-1 rounded bg-blue-600 hover:bg-blue-700 text-white transition"
-                      >
-                        View Detailed Guide
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
             {/* Metadata */}
             <div
               className="card rounded-lg p-4 border-t text-xs space-y-1"
@@ -1638,6 +1371,275 @@ export function ProductDetailsPanel({
             </div>
           </div>
         </div>
+
+        {/* Conversion Tracking Section - Full Width, Only for Product Owners */}
+        {isProductOwner && (
+          <div className="mt-6">
+            <div className="card rounded-lg p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h4
+                  className="text-xl font-semibold flex items-center"
+                  style={{ color: "var(--text-primary)" }}
+                >
+                  <svg
+                    className="w-6 h-6 mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                    />
+                  </svg>
+                  Conversion Tracking Setup
+                </h4>
+                <span className="px-3 py-1 text-xs font-medium rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300">
+                  Essential for Affiliate Attribution
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Left Column - Tracking Code Snippets */}
+                <div>
+                  <TrackingCodeSection productId={product.id} />
+                </div>
+
+                {/* Right Column - Detailed Instructions */}
+                <div className="space-y-6">
+                  {/* Why Use This Section */}
+                  <div
+                    className="p-4 rounded-lg border"
+                    style={{
+                      backgroundColor: "rgba(59, 130, 246, 0.05)",
+                      borderColor: "rgba(59, 130, 246, 0.2)",
+                    }}
+                  >
+                    <div className="flex items-start">
+                      <svg
+                        className="w-5 h-5 mr-3 mt-0.5 text-blue-600 dark:text-blue-400 flex-shrink-0"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                      <div>
+                        <h5
+                          className="font-semibold mb-2"
+                          style={{ color: "var(--text-primary)" }}
+                        >
+                          Why You Need This
+                        </h5>
+                        <ul
+                          className="text-sm space-y-1"
+                          style={{ color: "var(--text-secondary)" }}
+                        >
+                          <li>• Track which affiliates drive actual sales</li>
+                          <li>• Automatically calculate affiliate commissions</li>
+                          <li>• Get credit for the entire sales funnel (main + upsells)</li>
+                          <li>• 60-day cookie attribution window</li>
+                          <li>• Session-based tracking for complete customer journey</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* How to Implement - Step by Step */}
+                  <div>
+                    <h5
+                      className="font-semibold mb-3 flex items-center"
+                      style={{ color: "var(--text-primary)" }}
+                    >
+                      <svg
+                        className="w-5 h-5 mr-2"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                        />
+                      </svg>
+                      Implementation Steps
+                    </h5>
+                    <div className="space-y-3">
+                      <div className="flex items-start">
+                        <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-600 text-white text-xs font-bold mr-3 mt-0.5 flex-shrink-0">
+                          1
+                        </span>
+                        <div>
+                          <div
+                            className="text-sm font-medium"
+                            style={{ color: "var(--text-primary)" }}
+                          >
+                            Add Script to ALL Pages
+                          </div>
+                          <div
+                            className="text-xs mt-1"
+                            style={{ color: "var(--text-secondary)" }}
+                          >
+                            Copy Step 1 code to your website's &lt;head&gt; section or before &lt;/body&gt; on
+                            every page (sales page, upsells, thank you pages).
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start">
+                        <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-600 text-white text-xs font-bold mr-3 mt-0.5 flex-shrink-0">
+                          2
+                        </span>
+                        <div>
+                          <div
+                            className="text-sm font-medium"
+                            style={{ color: "var(--text-primary)" }}
+                          >
+                            Add Conversion Code to Order Page
+                          </div>
+                          <div
+                            className="text-xs mt-1"
+                            style={{ color: "var(--text-secondary)" }}
+                          >
+                            Copy Step 2 code and add it ONLY to your order confirmation/thank you page.
+                            Replace YOUR_ORDER_ID and 0.00 with actual values.
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start">
+                        <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-600 text-white text-xs font-bold mr-3 mt-0.5 flex-shrink-0">
+                          3
+                        </span>
+                        <div>
+                          <div
+                            className="text-sm font-medium"
+                            style={{ color: "var(--text-primary)" }}
+                          >
+                            Track Upsells & Downsells
+                          </div>
+                          <div
+                            className="text-xs mt-1"
+                            style={{ color: "var(--text-secondary)" }}
+                          >
+                            Use the "Tracking Upsells & Downsells" example for additional offers.
+                            Set parentOrderId to link upsells to the main order.
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start">
+                        <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-600 text-white text-xs font-bold mr-3 mt-0.5 flex-shrink-0">
+                          4
+                        </span>
+                        <div>
+                          <div
+                            className="text-sm font-medium"
+                            style={{ color: "var(--text-primary)" }}
+                          >
+                            Test & Monitor
+                          </div>
+                          <div
+                            className="text-xs mt-1"
+                            style={{ color: "var(--text-secondary)" }}
+                          >
+                            Test by visiting your site with ?aff=123, then making a purchase.
+                            Check the Conversions page to verify tracking works.
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Important Notes */}
+                  <div
+                    className="p-4 rounded-lg border"
+                    style={{
+                      backgroundColor: "rgba(251, 191, 36, 0.05)",
+                      borderColor: "rgba(251, 191, 36, 0.2)",
+                    }}
+                  >
+                    <div className="flex items-start">
+                      <svg
+                        className="w-5 h-5 mr-3 mt-0.5 text-yellow-600 dark:text-yellow-400 flex-shrink-0"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                        />
+                      </svg>
+                      <div>
+                        <h5
+                          className="font-semibold mb-2"
+                          style={{ color: "var(--text-primary)" }}
+                        >
+                          Important Notes
+                        </h5>
+                        <ul
+                          className="text-sm space-y-1"
+                          style={{ color: "var(--text-secondary)" }}
+                        >
+                          <li>• The tracking script is invisible to customers</li>
+                          <li>• Session-based tracking = affiliates get credit for entire funnel</li>
+                          <li>• Cookie lasts 60 days for follow-up purchases</li>
+                          <li>• Revenue split: Affiliate % + 5% Blitz + Your Net</li>
+                          <li>• Missing tracking = lost affiliate commissions</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Where to Find Help */}
+                  <div className="flex items-center justify-between p-3 rounded-lg" style={{ backgroundColor: "var(--bg-secondary)" }}>
+                    <div className="flex items-center">
+                      <svg
+                        className="w-5 h-5 mr-2"
+                        style={{ color: "var(--text-primary)" }}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                      <span
+                        className="text-sm font-medium"
+                        style={{ color: "var(--text-primary)" }}
+                      >
+                        Need more help?
+                      </span>
+                    </div>
+                    <a
+                      href="/tracking-code"
+                      target="_blank"
+                      className="text-xs px-3 py-1 rounded bg-blue-600 hover:bg-blue-700 text-white transition"
+                    >
+                      View Detailed Guide
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
