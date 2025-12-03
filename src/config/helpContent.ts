@@ -27,38 +27,128 @@ export type HelpContent = {
 };
 
 export const helpContent: Record<string, HelpContent> = {
-  // Dashboard
-  "/dashboard": {
-    title: "Dashboard Overview",
-    description: "Your central hub with quick access to key features. Dashboard content varies based on your account type (Product Developer or Affiliate Marketer).",
+  // Dashboard - Product Developer
+  "/dashboard/product-developer": {
+    title: "Product Developer Dashboard",
+    description: "Your central hub for managing products and tracking affiliate performance. Focus on growing your affiliate network and maximizing product sales.",
     steps: [
       {
         number: 1,
-        title: "Product Developers",
-        description: "Access Product Library to add your products, and use Product Analytics to track how affiliates are promoting them.",
+        title: "Add Products",
+        description: "Click 'Add Product' to submit new products to the library. Provide sales page URL, commission structure, and product details.",
       },
       {
         number: 2,
-        title: "Affiliate Marketers",
-        description: "Create campaigns, browse the Product Library, generate content, and track your marketing performance.",
+        title: "Set Up Tracking",
+        description: "Add conversion tracking code to your sales pages so you can attribute sales to affiliates and track revenue.",
       },
       {
         number: 3,
-        title: "Quick Navigation",
-        description: "Click any card to navigate directly to that feature. The dashboard shows only the features relevant to your account type.",
+        title: "Publish Products",
+        description: "Go to Products → Edit → Set Status to 'Active' to make products visible to affiliates.",
       },
       {
         number: 4,
-        title: "Getting Started Guide",
-        description: "Check the 'Getting Started' section at the bottom for helpful tips and next steps.",
+        title: "Monitor Affiliate Activity",
+        description: "Check Product Analytics and Conversions to see which affiliates are promoting your products and track sales.",
+      },
+      {
+        number: 5,
+        title: "Connect with Affiliates",
+        description: "Browse the Affiliates page to find quality promoters and reach out with collaboration offers.",
       },
     ],
     tips: [
-      "Your dashboard is personalized based on whether you're a Product Developer or Affiliate Marketer",
-      "Product Developers see: Product Library, Product Analytics, Settings",
-      "Affiliate Marketers see: Campaigns, Content, Intelligence, Compliance, Analytics",
-      "All users can access the Product Library - it's the shared marketplace",
-      "Check your account type badge in the left sidebar (purple for Product Developers, blue for Affiliate Marketers)",
+      "Add launch dates to create urgency - affiliates see countdown timers!",
+      "Competitive commission rates (30-50%) attract more affiliates",
+      "Add conversion tracking IMMEDIATELY after publishing - don't miss sales attribution",
+      "Recurring commission products are highly sought after by affiliates",
+      "Use Product Analytics to identify your top-performing affiliates",
+      "Message top affiliates with exclusive offers or higher rates",
+      "Monitor the affiliate leaderboard to find your best partners",
+      "Check the Conversions page for detailed revenue breakdown",
+    ],
+  },
+
+  // Dashboard - Affiliate Marketer
+  "/dashboard/affiliate-marketer": {
+    title: "Affiliate Marketer Dashboard",
+    description: "Your central hub for building campaigns, generating content, and tracking performance. Focus on promoting products and driving conversions.",
+    steps: [
+      {
+        number: 1,
+        title: "Browse Products",
+        description: "Visit the Product Library to find products with good commission rates and compliance checks.",
+      },
+      {
+        number: 2,
+        title: "Create Campaigns",
+        description: "Click 'Create Campaign' for products you want to promote. Fill in your affiliate link and keywords.",
+      },
+      {
+        number: 3,
+        title: "Generate Intelligence",
+        description: "Compile intelligence for your campaigns to get product insights, target audience, and marketing hooks.",
+      },
+      {
+        number: 4,
+        title: "Create Content",
+        description: "Generate articles, emails, social posts, and images using your campaign's intelligence data.",
+      },
+      {
+        number: 5,
+        title: "Check Compliance",
+        description: "Verify all content meets FTC guidelines before publishing to avoid violations.",
+      },
+      {
+        number: 6,
+        title: "Track Performance",
+        description: "Monitor Analytics to see which campaigns and content are driving the most clicks and conversions.",
+      },
+    ],
+    tips: [
+      "Sort products by 'Launch Date (Soonest)' to find new opportunities",
+      "Look for products with high commission rates and recurring income",
+      "Generate multiple content variations and test what converts best",
+      "Always check compliance before publishing - use the 'Fix Compliance' button",
+      "Connect with product developers for exclusive deals",
+      "Focus on products with proven conversion rates",
+      "Use the Conversions page to track your earnings",
+      "Build relationships with quality product developers",
+    ],
+  },
+
+  // Dashboard - Generic (fallback)
+  "/dashboard": {
+    title: "Dashboard Overview",
+    description: "Your personalized dashboard with quick access to relevant features based on your account type.",
+    steps: [
+      {
+        number: 1,
+        title: "Explore Your Features",
+        description: "Click any card to navigate to that feature. Only features relevant to your account type are shown.",
+      },
+      {
+        number: 2,
+        title: "Quick Actions",
+        description: "Use the quick action buttons to add products, create campaigns, or generate content.",
+      },
+      {
+        number: 3,
+        title: "View Analytics",
+        description: "Track your performance with comprehensive analytics tailored to your user type.",
+      },
+      {
+        number: 4,
+        title: "Get Help",
+        description: "Use the contextual help in the right sidebar for guided assistance.",
+      },
+    ],
+    tips: [
+      "Your dashboard is customized for your account type",
+      "Product Developers see product management and affiliate tracking",
+      "Affiliate Marketers see campaign creation and content generation",
+      "Check your account type in the left sidebar",
     ],
   },
 
@@ -1112,7 +1202,15 @@ export const helpContent: Record<string, HelpContent> = {
 };
 
 // Helper function to get help content by pathname
-export function getHelpContent(pathname: string): HelpContent | undefined {
+export function getHelpContent(pathname: string, userRole?: string): HelpContent | undefined {
+  // For dashboard, return user-type specific help
+  if (pathname === "/dashboard" && userRole) {
+    const dashboardKey = `/dashboard/${userRole.toLowerCase()}`;
+    if (helpContent[dashboardKey]) {
+      return helpContent[dashboardKey];
+    }
+  }
+
   // Try exact match first
   if (helpContent[pathname]) {
     return helpContent[pathname];
