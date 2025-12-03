@@ -136,12 +136,13 @@ export default function Layout({ children }: LayoutProps) {
         }>;
 
         // Check for new/unread messages in inbox
-        const messagesRes = await api.get("/api/messages?status=unread");
-        const newMessages = messagesRes.data;
+        const messagesRes = await api.get("/api/messages/inbox");
+        const inboxData = messagesRes.data;
+        const unreadCount = inboxData.unread_count;
 
         // Show notification if there are new requests OR new messages
         if ((pendingRequests.length > 0 && pendingRequests.length > lastRequestCount.current) ||
-            (newMessages.length > 0 && newMessages.length > lastMessageCount.current)) {
+            (unreadCount > lastMessageCount.current)) {
 
           // Show notification with combined data
           const notification = new CustomEvent(
@@ -149,9 +150,9 @@ export default function Layout({ children }: LayoutProps) {
             {
               detail: {
                 requests: pendingRequests,
-                messages: newMessages,
+                unreadCount: unreadCount,
                 hasNewRequests: pendingRequests.length > lastRequestCount.current,
-                hasNewMessages: newMessages.length > lastMessageCount.current
+                hasNewMessages: unreadCount > lastMessageCount.current
               },
             }
           );
@@ -160,7 +161,7 @@ export default function Layout({ children }: LayoutProps) {
 
         // Store the counts for next check
         lastRequestCount.current = pendingRequests.length;
-        lastMessageCount.current = newMessages.length;
+        lastMessageCount.current = unreadCount;
       } catch (err) {
         // Silent fail - not critical
         console.error("Failed to fetch pending data:", err);

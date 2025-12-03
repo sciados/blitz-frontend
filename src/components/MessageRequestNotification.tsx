@@ -24,7 +24,7 @@ export function MessageRequestNotification() {
 
   useEffect(() => {
     const handleShowNotification = (event: CustomEvent) => {
-      const { requests: pendingRequests, hasNewRequests: newReq, hasNewMessages: newMsg } = event.detail;
+      const { requests: pendingRequests, unreadCount, hasNewRequests: newReq, hasNewMessages: newMsg } = event.detail;
 
       // Only show if we have new data
       if (newReq || newMsg) {
@@ -36,7 +36,7 @@ export function MessageRequestNotification() {
         // Show appropriate toast notification
         if (newReq && newMsg) {
           toast.info("You have new messages", {
-            description: "Connection requests and messages",
+            description: `Connection requests and ${unreadCount} unread messages`,
             action: {
               label: "View",
               onClick: () => {
@@ -58,7 +58,7 @@ export function MessageRequestNotification() {
           });
         } else if (newMsg) {
           toast.info("You have new messages", {
-            description: "Check your inbox",
+            description: `${unreadCount} unread message${unreadCount > 1 ? 's' : ''}`,
             action: {
               label: "View",
               onClick: () => {
