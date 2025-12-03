@@ -262,25 +262,33 @@ export default function Layout({ children }: LayoutProps) {
     // Affiliate/Business menu (default for regular users)
     return [
       { href: "/dashboard", label: "Dashboard", icon: "🏠" },
+      { href: "/products", label: "Product Library", icon: "📦" },
+      { href: "/campaigns", label: "Campaigns", icon: "📢" },
       {
-        href: "/messages",
-        label: "Messages",
-        icon: "💬",
+        href: "/content",
+        label: "Content",
+        icon: "✍️",
         children: [
-          { href: "/messages", label: "Inbox & Sent", icon: "💬" },
-          { href: "/messages/compose", label: "Compose", icon: "✏️" },
-          { href: "/messages/requests", label: "Requests", icon: "🤝" },
-          { href: "/affiliates", label: "Directory", icon: "👥" },
+          { href: "/content", label: "Text Content", icon: "📝" },
+          { href: "/content/images", label: "Image Content", icon: "🖼️" },
+          { href: "/library", label: "Content Library", icon: "📚" },
         ],
       },
-      { href: "/campaigns", label: "Campaigns", icon: "📢" },
-      { href: "/products", label: "Product Library", icon: "📦" },
-      { href: "/library", label: "Content Library", icon: "📚" },
-      { href: "/content", label: "Content Generation", icon: "✍️" },
       { href: "/intelligence", label: "Intelligence", icon: "🧠" },
-      { href: "/compliance", label: "Compliance", icon: "✓" },
       { href: "/analytics", label: "Analytics", icon: "📈" },
-      { href: "/settings", label: "Settings", icon: "⚙️" },
+      {
+        href: "/more",
+        label: "More",
+        icon: "📂",
+        children: [
+          { href: "/affiliates", label: "Affiliate Directory", icon: "👥" },
+          { href: "/messages", label: "Messages", icon: "💬" },
+          { href: "/messages/compose", label: "Compose", icon: "✏️" },
+          { href: "/messages/requests", label: "Requests", icon: "🤝" },
+          { href: "/compliance", label: "Compliance", icon: "✅" },
+          { href: "/settings", label: "Settings", icon: "⚙️" },
+        ],
+      },
     ];
   };
 
