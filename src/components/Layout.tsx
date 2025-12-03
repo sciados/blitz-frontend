@@ -269,8 +269,7 @@ export default function Layout({ children }: LayoutProps) {
         label: "Content",
         icon: "✍️",
         children: [
-          { href: "/content", label: "Text Content", icon: "📝" },
-          { href: "/content/images", label: "Image Content", icon: "🖼️" },
+          { href: "/content", label: "Generate Content", icon: "⚡" },
           { href: "/library", label: "Content Library", icon: "📚" },
         ],
       },
