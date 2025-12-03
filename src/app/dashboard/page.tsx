@@ -470,6 +470,22 @@ function BusinessOwnerDashboard() {
         const images = imagesRes.data || [];
         const totalContentPieces = textContent.length + images.length;
 
+        // Debug logging
+        console.log("🔍 DEBUG - Business Owner API Responses:", {
+          campaigns: {
+            count: campaigns.length,
+            data: campaignsRes.data
+          },
+          textContent: {
+            count: textContent.length,
+            data: textContentRes.data
+          },
+          images: {
+            count: images.length,
+            data: imagesRes.data
+          }
+        });
+
         return {
           totalCampaigns: campaigns.length,
           activeCampaigns: activeCampaigns,
@@ -887,6 +903,22 @@ function AffiliateMarketerDashboard() {
         const textContent = textContentRes.data || [];
         const images = imagesRes.data || [];
         const totalContentPieces = textContent.length + images.length;
+
+        // Debug logging
+        console.log("🔍 DEBUG - API Responses:", {
+          campaigns: {
+            count: campaigns.length,
+            data: campaignsRes.data
+          },
+          textContent: {
+            count: textContent.length,
+            data: textContentRes.data
+          },
+          images: {
+            count: images.length,
+            data: imagesRes.data
+          }
+        });
 
         return {
           totalCampaigns: campaigns.length,
