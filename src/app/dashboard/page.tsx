@@ -457,19 +457,25 @@ function BusinessOwnerDashboard() {
     queryKey: ["businessOwnerStats"],
     queryFn: async () => {
       try {
-        const [campaignsRes, contentRes, analyticsRes] = await Promise.all([
+        const [campaignsRes, textContentRes, imagesRes, analyticsRes] = await Promise.all([
           api.get("/api/campaigns"),
           api.get("/api/content").catch(() => ({ data: [] })),
+          api.get("/api/content/images").catch(() => ({ data: [] })),
           api.get("/api/analytics/summary").catch(() => ({ data: null }))
         ]);
 
         const campaigns = campaignsRes.data || [];
         const activeCampaigns = campaigns.filter((c: any) => c.status === "active").length;
+        const textContent = textContentRes.data || [];
+        const images = imagesRes.data || [];
+        const totalContentPieces = textContent.length + images.length;
 
         return {
           totalCampaigns: campaigns.length,
           activeCampaigns: activeCampaigns,
-          contentPieces: contentRes.data?.length || 0,
+          contentPieces: totalContentPieces,
+          textContentPieces: textContent.length,
+          imageContentPieces: images.length,
           totalClicks: analyticsRes.data?.total_clicks || 0,
           recentCampaigns: campaigns.slice(0, 3)
         };
@@ -478,6 +484,8 @@ function BusinessOwnerDashboard() {
           totalCampaigns: 0,
           activeCampaigns: 0,
           contentPieces: 0,
+          textContentPieces: 0,
+          imageContentPieces: 0,
           totalClicks: 0,
           recentCampaigns: []
         };
@@ -867,19 +875,25 @@ function AffiliateMarketerDashboard() {
     queryKey: ["affiliateMarketerStats"],
     queryFn: async () => {
       try {
-        const [campaignsRes, contentRes, analyticsRes] = await Promise.all([
+        const [campaignsRes, textContentRes, imagesRes, analyticsRes] = await Promise.all([
           api.get("/api/campaigns"),
           api.get("/api/content").catch(() => ({ data: [] })),
+          api.get("/api/content/images").catch(() => ({ data: [] })),
           api.get("/api/analytics/summary").catch(() => ({ data: null }))
         ]);
 
         const campaigns = campaignsRes.data || [];
         const activeCampaigns = campaigns.filter((c: any) => c.status === "active").length;
+        const textContent = textContentRes.data || [];
+        const images = imagesRes.data || [];
+        const totalContentPieces = textContent.length + images.length;
 
         return {
           totalCampaigns: campaigns.length,
           activeCampaigns: activeCampaigns,
-          contentPieces: contentRes.data?.length || 0,
+          contentPieces: totalContentPieces,
+          textContentPieces: textContent.length,
+          imageContentPieces: images.length,
           totalClicks: analyticsRes.data?.total_clicks || 0,
           recentCampaigns: campaigns.slice(0, 3)
         };
@@ -888,6 +902,8 @@ function AffiliateMarketerDashboard() {
           totalCampaigns: 0,
           activeCampaigns: 0,
           contentPieces: 0,
+          textContentPieces: 0,
+          imageContentPieces: 0,
           totalClicks: 0,
           recentCampaigns: []
         };
