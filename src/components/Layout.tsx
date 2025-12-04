@@ -400,10 +400,10 @@ export default function Layout({ children }: LayoutProps) {
             {userInfo?.affiliate_tier !== "pro" && userInfo?.role === "affiliate" && (
               <Link
                 href="/billing/subscribe"
-                className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400 hover:bg-orange-200 dark:hover:bg-orange-900/50 transition"
+                className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400 hover:bg-orange-200 dark:hover:bg-orange-900/50 transition"
               >
                 <svg
-                  className="w-3 h-3 mr-1"
+                  className="w-4 h-4 mr-2"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
