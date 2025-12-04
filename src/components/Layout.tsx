@@ -401,7 +401,7 @@ export default function Layout({ children }: LayoutProps) {
               userInfo?.role === "affiliate" && (
                 <Link
                   href="/billing/subscribe"
-                  className="inline-flex items-center px-4 py-2 pr-[25px] rounded-full text-sm font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400 hover:bg-orange-200 dark:hover:bg-orange-900/50 transition"
+                  className="inline-flex items-center px-4 py-2 pr-[40px] rounded-full text-sm font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400 hover:bg-orange-200 dark:hover:bg-orange-900/50 transition"
                 >
                   <svg
                     className="w-4 h-4 mr-2"
