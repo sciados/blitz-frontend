@@ -1055,7 +1055,7 @@ function AffiliateMarketerDashboard() {
               </span>
             ) : (
               <Link
-                href="/campaigns"
+                href="/billing/subscribe"
                 className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400 hover:bg-orange-200 dark:hover:bg-orange-900/50 transition"
               >
                 <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
