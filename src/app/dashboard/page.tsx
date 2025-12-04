@@ -533,14 +533,20 @@ function BusinessOwnerDashboard() {
       try {
         const [campaignsRes, textContentRes] = await Promise.all([
           api.get("/api/campaigns"),
-          api.get("/api/content").catch(() => ({ data: [] })),
+          api.get("/api/content").catch((err) => {
+            console.error("Failed to fetch text content:", err);
+            return { data: [] };
+          }),
         ]);
 
         const campaigns = campaignsRes.data || [];
+        console.log("Fetched campaigns:", campaigns.length, "campaigns");
         const activeCampaigns = campaigns.filter(
           (c: any) => c.status === "active"
         ).length;
         const textContent = textContentRes.data || [];
+        console.log("Fetched text content:", textContent.length, "items");
+        console.log("textContentRes:", textContentRes);
 
         // Fetch images for all campaigns (same pattern as Content Library)
         const allImagePromises = campaigns.map((campaign: any) =>
@@ -982,14 +988,20 @@ function AffiliateMarketerDashboard() {
       try {
         const [campaignsRes, textContentRes] = await Promise.all([
           api.get("/api/campaigns"),
-          api.get("/api/content").catch(() => ({ data: [] })),
+          api.get("/api/content").catch((err) => {
+            console.error("Failed to fetch text content:", err);
+            return { data: [] };
+          }),
         ]);
 
         const campaigns = campaignsRes.data || [];
+        console.log("Fetched campaigns:", campaigns.length, "campaigns");
         const activeCampaigns = campaigns.filter(
           (c: any) => c.status === "active"
         ).length;
         const textContent = textContentRes.data || [];
+        console.log("Fetched text content:", textContent.length, "items");
+        console.log("textContentRes:", textContentRes);
 
         // Fetch images for all campaigns (same pattern as Content Library)
         const allImagePromises = campaigns.map((campaign: any) =>
@@ -1031,9 +1043,13 @@ function AffiliateMarketerDashboard() {
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
               {userInfo?.affiliate_tier === "pro" ? (
-                <span className="text-blue-600 dark:text-blue-400 text-xl">⭐</span>
+                <span className="text-blue-600 dark:text-blue-400 text-xl">
+                  ⭐
+                </span>
               ) : (
-                <span className="text-blue-600 dark:text-blue-400 text-xl">👤</span>
+                <span className="text-blue-600 dark:text-blue-400 text-xl">
+                  👤
+                </span>
               )}
             </div>
             <div>
@@ -1041,15 +1057,25 @@ function AffiliateMarketerDashboard() {
                 Affiliate Tier
               </h3>
               <p className="text-sm text-blue-700 dark:text-blue-400">
-                {userInfo?.affiliate_tier === "pro" ? "Pro Affiliate" : "Standard Affiliate"}
+                {userInfo?.affiliate_tier === "pro"
+                  ? "Pro Affiliate"
+                  : "Standard Affiliate"}
               </p>
             </div>
           </div>
           <div>
             {userInfo?.affiliate_tier === "pro" ? (
               <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
-                <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                <svg
+                  className="w-3 h-3 mr-1"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                    clipRule="evenodd"
+                  />
                 </svg>
                 Active
               </span>
@@ -1058,8 +1084,18 @@ function AffiliateMarketerDashboard() {
                 href="/billing/subscribe"
                 className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400 hover:bg-orange-200 dark:hover:bg-orange-900/50 transition"
               >
-                <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                <svg
+                  className="w-3 h-3 mr-1"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13 10V3L4 14h7v7l9-11h-7z"
+                  />
                 </svg>
                 Upgrade to Pro
               </Link>
@@ -1140,7 +1176,7 @@ function AffiliateMarketerDashboard() {
           <h3 className="text-lg font-semibold mb-4 text-[var(--text-primary)]">
             Menu
           </h3>
-          <div className="border-t grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Product Library */}
             <Link
               href="/products"
