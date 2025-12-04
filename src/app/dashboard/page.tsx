@@ -534,7 +534,11 @@ function BusinessOwnerDashboard() {
         const [campaignsRes, textContentRes] = await Promise.all([
           api.get("/api/campaigns"),
           api.get("/api/content").catch((err) => {
-            console.error("Failed to fetch text content:", err.response?.status, err.response?.data || err.message);
+            console.error(
+              "Failed to fetch text content:",
+              err.response?.status,
+              err.response?.data || err.message
+            );
             return { data: [] };
           }),
         ]);
@@ -968,7 +972,7 @@ function BusinessOwnerDashboard() {
 }
 
 // ============================================================================
-// AFFILIATE MARKETER DASHBOARD
+// Marketer DASHBOARD
 // ============================================================================
 
 function AffiliateMarketerDashboard() {
@@ -978,7 +982,7 @@ function AffiliateMarketerDashboard() {
     queryFn: async () => (await api.get("/api/auth/me")).data,
   });
 
-  // Fetch affiliate marketer stats
+  // Fetch Marketer stats
   const { data: stats } = useQuery({
     queryKey: ["affiliateMarketerStats"],
     queryFn: async () => {
@@ -986,7 +990,11 @@ function AffiliateMarketerDashboard() {
         const [campaignsRes, textContentRes] = await Promise.all([
           api.get("/api/campaigns"),
           api.get("/api/content").catch((err) => {
-            console.error("Failed to fetch text content:", err.response?.status, err.response?.data || err.message);
+            console.error(
+              "Failed to fetch text content:",
+              err.response?.status,
+              err.response?.data || err.message
+            );
             return { data: [] };
           }),
         ]);

@@ -211,7 +211,7 @@ export default function Layout({ children }: LayoutProps) {
                   {userInfo.role === "creator"
                     ? "Product Developer"
                     : userInfo.role === "affiliate"
-                    ? "Affiliate Marketer"
+                    ? "Marketer"
                     : userInfo.role === "business"
                     ? "Business"
                     : userInfo.role === "admin"
@@ -306,7 +306,7 @@ export default function Layout({ children }: LayoutProps) {
                             {userInfo?.role === "creator"
                               ? "Product Developer"
                               : userInfo?.role === "affiliate"
-                              ? "Affiliate Marketer"
+                              ? "Marketer"
                               : userInfo?.role === "business"
                               ? "Business"
                               : userInfo?.role || "user"}
@@ -369,7 +369,7 @@ export default function Layout({ children }: LayoutProps) {
                         ? "🎯 Product Developer"
                         : userInfo.role === "business"
                         ? "💼 Business"
-                        : "🚀 Affiliate Marketer"}
+                        : "🚀 Marketer"}
                     </div>
                   </div>
                 </div>

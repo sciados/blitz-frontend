@@ -70,9 +70,9 @@ export const helpContent: Record<string, HelpContent> = {
     ],
   },
 
-  // Dashboard - Affiliate Marketer
+  // Dashboard - Marketer
   "/dashboard/affiliate-marketer": {
-    title: "Affiliate Marketer Dashboard",
+    title: "Marketer Dashboard",
     description: "Your central hub for building campaigns, generating content, and tracking performance. Focus on promoting products and driving conversions.",
     steps: [
       {
@@ -147,7 +147,7 @@ export const helpContent: Record<string, HelpContent> = {
     tips: [
       "Your dashboard is customized for your account type",
       "Product Developers see product management and affiliate tracking",
-      "Affiliate Marketers see campaign creation and content generation",
+      "Marketers see campaign creation and content generation",
       "Check your account type in the left sidebar",
     ],
   },
@@ -565,7 +565,7 @@ export const helpContent: Record<string, HelpContent> = {
       {
         number: 3,
         title: "View Your Statistics",
-        description: "Scroll down to see user-type-specific statistics. Product Developers see product and affiliate metrics, while Affiliate Marketers see campaign and content stats.",
+        description: "Scroll down to see user-type-specific statistics. Product Developers see product and affiliate metrics, while Marketers see campaign and content stats.",
       },
       {
         number: 4,
@@ -576,7 +576,7 @@ export const helpContent: Record<string, HelpContent> = {
     tips: [
       "Profile images appear in the header dropdown and throughout the platform",
       "Recommended image size is 400x400px for best results",
-      "Your account type (Product Developer or Affiliate Marketer) determines which statistics you see",
+      "Your account type (Product Developer or Marketer) determines which statistics you see",
       "Profile information is visible to other users when you collaborate on campaigns",
       "Keep your email up to date as it's used for important notifications",
     ],
@@ -585,7 +585,7 @@ export const helpContent: Record<string, HelpContent> = {
   // Products
   "/products": {
     title: "Product Library",
-    description: "Browse available products to promote, or add your own products for affiliates to discover. The Product Library is the central marketplace connecting Product Developers and Affiliate Marketers.",
+    description: "Browse available products to promote, or add your own products for affiliates to discover. The Product Library is the central marketplace connecting Product Developers and Marketers.",
     steps: [
       {
         number: 1,
@@ -677,7 +677,7 @@ export const helpContent: Record<string, HelpContent> = {
       "Higher commission rates attract more affiliates - consider 30-50% for competitive products",
       "Use the Product Details panel to edit details or publish your product after creation",
       "You can unpublish products to hide them from affiliates until ready",
-      "Recurring commission products are highly sought after by affiliate marketers",
+      "Recurring commission products are highly sought after by Marketers",
       "Add conversion tracking immediately after publishing so you don't miss any affiliate sales",
     ],
   },
@@ -1012,7 +1012,7 @@ export const helpContent: Record<string, HelpContent> = {
       {
         number: 1,
         title: "Choose Your Path",
-        description: "Select whether you're a Product Developer (selling your products) or an Affiliate Marketer (promoting products).",
+        description: "Select whether you're a Product Developer (selling your products) or an Marketer (promoting products).",
       },
       {
         number: 2,
@@ -1032,7 +1032,7 @@ export const helpContent: Record<string, HelpContent> = {
     ],
     tips: [
       "Product Developers: Add your products to the library for affiliates to discover",
-      "Affiliate Marketers: Browse the Product Library and create campaigns",
+      "Marketers: Browse the Product Library and create campaigns",
       "Both user types can use content generation and analytics",
       "Check the feature comparison to understand what each plan includes",
     ],
@@ -1040,7 +1040,7 @@ export const helpContent: Record<string, HelpContent> = {
 
   // Affiliate Landing Page
   "/affiliate": {
-    title: "For Affiliate Marketers",
+    title: "For Marketers",
     description: "Everything you need to build successful affiliate campaigns, generate content, and track performance.",
     steps: [
       {
@@ -1124,7 +1124,7 @@ export const helpContent: Record<string, HelpContent> = {
       "Monitor the affiliate leaderboard to identify your best partners",
       "Reach out to top affiliates with exclusive offers, higher rates, or bonus incentives",
       "Add conversion tracking immediately after publishing to avoid missed sales attribution",
-      "Recurring commission products are especially attractive to affiliate marketers",
+      "Recurring commission products are especially attractive to Marketers",
       "Use the Conversions page to track revenue, affiliate commissions, and your net earnings",
       "Regularly review analytics to identify which products and affiliates perform best",
       "Session-based tracking ensures affiliates get credit for the entire customer journey (main + upsells + downsells)",

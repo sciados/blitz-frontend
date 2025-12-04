@@ -16,7 +16,11 @@ const productSchema = z.object({
   product_description: z.string().optional(),
   is_recurring: z.boolean().optional(),
   launch_date: z.string().optional(),
-  hero_media_url: z.string().url("Please enter a valid URL").optional().or(z.literal("")),
+  hero_media_url: z
+    .string()
+    .url("Please enter a valid URL")
+    .optional()
+    .or(z.literal("")),
 });
 
 type ProductFormData = z.infer<typeof productSchema>;
@@ -178,7 +182,7 @@ export default function AddProductPage() {
 
     // If it's a YouTube URL but not recognized format, try to extract video ID
     const videoIdMatch = url.match(/([a-zA-Z0-9_-]{11})/);
-    if (videoIdMatch && (url.includes('youtube') || url.includes('youtu.be'))) {
+    if (videoIdMatch && (url.includes("youtube") || url.includes("youtu.be"))) {
       return `https://www.youtube.com/embed/${videoIdMatch[1]}`;
     }
 
@@ -191,30 +195,38 @@ export default function AddProductPage() {
     if (!file) return;
 
     // Validate file type
-    const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'video/mp4', 'video/webm', 'video/ogg'];
+    const validTypes = [
+      "image/jpeg",
+      "image/png",
+      "image/gif",
+      "image/webp",
+      "video/mp4",
+      "video/webm",
+      "video/ogg",
+    ];
     if (!validTypes.includes(file.type)) {
-      toast.error('Please select a valid image or video file');
+      toast.error("Please select a valid image or video file");
       return;
     }
 
     // Validate file size (max 50MB)
     const maxSize = 50 * 1024 * 1024;
     if (file.size > maxSize) {
-      toast.error('File size must be less than 50MB');
+      toast.error("File size must be less than 50MB");
       return;
     }
 
     try {
-      toast.info('Uploading file...');
+      toast.info("Uploading file...");
 
       // Create form data
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append("file", file);
 
       // Upload to backend
-      const response = await api.post('/api/upload/hero-media', formData, {
+      const response = await api.post("/api/upload/hero-media", formData, {
         headers: {
-          'Content-Type': 'multipart/form-data',
+          "Content-Type": "multipart/form-data",
         },
       });
 
@@ -224,13 +236,13 @@ export default function AddProductPage() {
         hero_media_url: response.data.url,
       }));
 
-      toast.success('File uploaded successfully!');
+      toast.success("File uploaded successfully!");
     } catch (err: any) {
-      console.error('File upload failed:', err);
-      toast.error(err.response?.data?.detail || 'Failed to upload file');
+      console.error("File upload failed:", err);
+      toast.error(err.response?.data?.detail || "Failed to upload file");
     } finally {
       // Clear the input value so the same file can be selected again
-      e.target.value = '';
+      e.target.value = "";
     }
   };
 
@@ -243,8 +255,7 @@ export default function AddProductPage() {
             Add Product to Library
           </h1>
           <p className="mt-2 text-gray-600 dark:text-gray-400">
-            Submit a product to the public library for affiliate marketers to
-            promote
+            Submit a product to the public library for Marketers to promote
           </p>
         </div>
 
@@ -427,8 +438,7 @@ export default function AddProductPage() {
               htmlFor="launch_date"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
             >
-              Launch Date{" "}
-              <span className="text-gray-400">(Optional)</span>
+              Launch Date <span className="text-gray-400">(Optional)</span>
             </label>
             <input
               type="date"
@@ -441,9 +451,7 @@ export default function AddProductPage() {
               }`}
             />
             {errors.launch_date && (
-              <p className="mt-1 text-sm text-red-600">
-                {errors.launch_date}
-              </p>
+              <p className="mt-1 text-sm text-red-600">{errors.launch_date}</p>
             )}
             <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
               Affiliates will see when this product is launching or was launched
@@ -457,7 +465,9 @@ export default function AddProductPage() {
               className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
             >
               Hero Media URL{" "}
-              <span className="text-gray-400">(Optional - Image, Video, or YouTube)</span>
+              <span className="text-gray-400">
+                (Optional - Image, Video, or YouTube)
+              </span>
             </label>
 
             {/* URL Input */}
@@ -539,7 +549,7 @@ export default function AddProductPage() {
                   fill="currentColor"
                   viewBox="0 0 24 24"
                 >
-                  <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                  <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
                 </svg>
                 <span>YouTube</span>
               </button>
@@ -551,7 +561,9 @@ export default function AddProductPage() {
               </p>
             )}
             <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-              Custom hero image or video to display on the Product Details page. If not provided, the scraped product image will be used as default.
+              Custom hero image or video to display on the Product Details page.
+              If not provided, the scraped product image will be used as
+              default.
             </p>
           </div>
 
@@ -583,7 +595,7 @@ export default function AddProductPage() {
               </p>
             )}
             <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-              This helps affiliate marketers understand the product better
+              This helps Marketers understand the product better
             </p>
           </div>
 

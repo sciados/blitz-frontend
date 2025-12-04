@@ -1,40 +1,40 @@
 "use client";
 
-import React, { useState } from 'react';
-import { Sparkles, ArrowRight, CheckCircle2, Zap } from 'lucide-react';
-import { EmailSignupForm } from 'src/components/EmailSignupForm';
+import React, { useState } from "react";
+import { Sparkles, ArrowRight, CheckCircle2, Zap } from "lucide-react";
+import { EmailSignupForm } from "src/components/EmailSignupForm";
 
 export default function Home() {
-  const [selectedAudience, setSelectedAudience] = useState('affiliate');
+  const [selectedAudience, setSelectedAudience] = useState("affiliate");
 
   const audiences = [
     {
-      id: 'product-dev',
-      emoji: '🎯',
-      title: 'Product Developer',
-      description: 'I want affiliates to promote my products'
+      id: "product-dev",
+      emoji: "🎯",
+      title: "Product Developer",
+      description: "I want affiliates to promote my products",
     },
     {
-      id: 'affiliate',
-      emoji: '💰',
-      title: 'Affiliate Marketer',
-      description: 'I want to earn promoting products'
+      id: "affiliate",
+      emoji: "💰",
+      title: "Marketer",
+      description: "I want to earn promoting products",
     },
     {
-      id: 'business',
-      emoji: '🚀',
-      title: 'Business Owner',
-      description: 'I need AI marketing automation'
-    }
+      id: "business",
+      emoji: "🚀",
+      title: "Business Owner",
+      description: "I need AI marketing automation",
+    },
   ];
 
   const features = [
-    { emoji: '🤖', text: 'AI-Powered Content Generation' },
-    { emoji: '📊', text: 'Real-Time Analytics & Tracking' },
-    { emoji: '🎨', text: 'Professional Image Creation' },
-    { emoji: '✅', text: 'Automatic FTC Compliance' },
-    { emoji: '⚡', text: 'Launch Campaigns in Minutes' },
-    { emoji: '🔗', text: 'Smart Link Tracking & Attribution' }
+    { emoji: "🤖", text: "AI-Powered Content Generation" },
+    { emoji: "📊", text: "Real-Time Analytics & Tracking" },
+    { emoji: "🎨", text: "Professional Image Creation" },
+    { emoji: "✅", text: "Automatic FTC Compliance" },
+    { emoji: "⚡", text: "Launch Campaigns in Minutes" },
+    { emoji: "🔗", text: "Smart Link Tracking & Attribution" },
   ];
 
   return (
@@ -66,7 +66,8 @@ export default function Home() {
           </p>
 
           <p className="text-xl md:text-2xl text-gray-300 max-w-3xl mx-auto mb-4">
-            The platform that connects Product Creators, Affiliate Marketers, and Business Owners through intelligent automation.
+            The platform that connects Product Creators, Marketers, and Business
+            Owners through intelligent automation.
           </p>
         </div>
 
@@ -76,15 +77,17 @@ export default function Home() {
             <div className="text-6xl mb-4">🎯</div>
             <h3 className="text-2xl font-bold mb-3">Product Developers</h3>
             <p className="text-gray-300">
-              Get your products promoted by a network of affiliates. AI handles intelligence gathering and performance tracking.
+              Get your products promoted by a network of affiliates. AI handles
+              intelligence gathering and performance tracking.
             </p>
           </div>
 
           <div className="bg-gradient-to-br from-green-900/20 to-green-800/20 rounded-2xl p-8 border border-green-700/30 text-center">
             <div className="text-6xl mb-4">💰</div>
-            <h3 className="text-2xl font-bold mb-3">Affiliate Marketers</h3>
+            <h3 className="text-2xl font-bold mb-3">Marketers</h3>
             <p className="text-gray-300">
-              Create professional campaigns in minutes. AI generates articles, emails, videos, social posts, and images.
+              Create professional campaigns in minutes. AI generates articles,
+              emails, videos, social posts, and images.
             </p>
           </div>
 
@@ -92,17 +95,23 @@ export default function Home() {
             <div className="text-6xl mb-4">🚀</div>
             <h3 className="text-2xl font-bold mb-3">Business Owners</h3>
             <p className="text-gray-300">
-              Your AI marketing team. Generate content, manage campaigns, and grow—without the agency price tag.
+              Your AI marketing team. Generate content, manage campaigns, and
+              grow—without the agency price tag.
             </p>
           </div>
         </div>
 
         {/* Features Grid */}
         <div className="mb-20">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">What's Inside</h2>
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
+            What's Inside
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-5xl mx-auto">
             {features.map((feature, index) => (
-              <div key={index} className="flex items-center gap-3 bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-4 border border-gray-700">
+              <div
+                key={index}
+                className="flex items-center gap-3 bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-4 border border-gray-700"
+              >
                 <span className="text-4xl">{feature.emoji}</span>
                 <span className="text-gray-200">{feature.text}</span>
               </div>
@@ -117,7 +126,8 @@ export default function Home() {
               Be First in Line
             </h2>
             <p className="text-center text-gray-300 mb-8">
-              Get early access and exclusive launch bonuses. No spam, just updates.
+              Get early access and exclusive launch bonuses. No spam, just
+              updates.
             </p>
 
             {/* Audience Selection */}
@@ -133,13 +143,17 @@ export default function Home() {
                     onClick={() => setSelectedAudience(audience.id)}
                     className={`p-4 rounded-xl border-2 transition-all duration-300 text-left ${
                       selectedAudience === audience.id
-                        ? 'border-purple-500 bg-purple-600/20 shadow-lg shadow-purple-500/20'
-                        : 'border-gray-700 bg-gray-800/50 hover:border-gray-600'
+                        ? "border-purple-500 bg-purple-600/20 shadow-lg shadow-purple-500/20"
+                        : "border-gray-700 bg-gray-800/50 hover:border-gray-600"
                     }`}
                   >
                     <div className="text-3xl mb-2">{audience.emoji}</div>
-                    <div className="font-bold text-sm mb-1">{audience.title}</div>
-                    <div className="text-xs text-gray-400">{audience.description}</div>
+                    <div className="font-bold text-sm mb-1">
+                      {audience.title}
+                    </div>
+                    <div className="text-xs text-gray-400">
+                      {audience.description}
+                    </div>
                   </button>
                 ))}
               </div>
@@ -147,7 +161,9 @@ export default function Home() {
 
             {/* Email Signup Form */}
             <EmailSignupForm
-              audienceType={selectedAudience as "business" | "affiliate" | "product-dev"}
+              audienceType={
+                selectedAudience as "business" | "affiliate" | "product-dev"
+              }
               source="home-page"
               buttonText="Notify Me When It Launches"
               placeholder="you@example.com"
@@ -160,22 +176,30 @@ export default function Home() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-20 max-w-5xl mx-auto">
           <div className="text-center">
             <div className="text-4xl mb-2">⚡</div>
-            <div className="text-3xl font-bold bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">2 min</div>
+            <div className="text-3xl font-bold bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">
+              2 min
+            </div>
             <div className="text-sm text-gray-400">Setup Time</div>
           </div>
           <div className="text-center">
             <div className="text-4xl mb-2">🤖</div>
-            <div className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent">8+</div>
+            <div className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent">
+              8+
+            </div>
             <div className="text-sm text-gray-400">Content Types</div>
           </div>
           <div className="text-center">
             <div className="text-4xl mb-2">💰</div>
-            <div className="text-3xl font-bold bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent">90%</div>
+            <div className="text-3xl font-bold bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent">
+              90%
+            </div>
             <div className="text-sm text-gray-400">Cost Savings</div>
           </div>
           <div className="text-center">
             <div className="text-4xl mb-2">✅</div>
-            <div className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-cyan-500 bg-clip-text text-transparent">100%</div>
+            <div className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-cyan-500 bg-clip-text text-transparent">
+              100%
+            </div>
             <div className="text-sm text-gray-400">FTC Compliant</div>
           </div>
         </div>
@@ -184,8 +208,12 @@ export default function Home() {
       {/* Footer */}
       <div className="relative border-t border-gray-800 mt-20">
         <div className="max-w-6xl mx-auto px-6 py-12 text-center text-gray-500">
-          <p className="mb-2">© 2024 Blitz. Simplify marketing, amplify results.</p>
-          <p className="text-sm">Built with ❤️ for creators, marketers, and entrepreneurs</p>
+          <p className="mb-2">
+            © 2024 Blitz. Simplify marketing, amplify results.
+          </p>
+          <p className="text-sm">
+            Built with ❤️ for creators, marketers, and entrepreneurs
+          </p>
         </div>
       </div>
     </div>

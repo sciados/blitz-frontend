@@ -509,7 +509,7 @@ EXTRACT THE FOLLOWING (return as structured JSON):
    - Confidence score (0-1) based on content quality
    - Completeness score (0-1) - how much info is available
    - Missing elements that would improve the sales page
-   - Recommendations for affiliate marketers promoting this
+   - Recommendations for Marketers promoting this
 
 Return ONLY valid JSON, no markdown formatting.
 """

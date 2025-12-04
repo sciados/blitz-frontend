@@ -9,7 +9,7 @@
 
 ## 📋 Executive Summary
 
-This document provides complete implementation instructions for integrating the new email signup service into the existing Blitz SaaS platform. The service captures pre-launch signups for three distinct user types: Product Developers, Affiliate Marketers, and Small Business Owners.
+This document provides complete implementation instructions for integrating the new email signup service into the existing Blitz SaaS platform. The service captures pre-launch signups for three distinct user types: Product Developers, Marketers, and Small Business Owners.
 
 ### Technology Stack
 - **Frontend:** Next.js 14, React, TypeScript, Tailwind CSS (EXISTING)
@@ -83,7 +83,7 @@ blitz-frontend/
 │   ├── for-developers/
 │   │   └── page.tsx            # NEW - Product Developers page
 │   ├── for-affiliates/
-│   │   └── page.tsx            # NEW - Affiliate Marketers page
+│   │   └── page.tsx            # NEW - Marketers page
 │   └── for-businesses/
 │       └── page.tsx            # NEW - Small Business page
 ├── components/
@@ -450,7 +450,7 @@ export default function SignupForm({
           >
             <option value="">Select...</option>
             <option value="product-dev">Product Developer</option>
-            <option value="affiliate">Affiliate Marketer</option>
+            <option value="affiliate">Marketer</option>
             <option value="business">Business Owner</option>
           </select>
         </div>

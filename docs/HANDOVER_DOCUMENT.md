@@ -1,11 +1,11 @@
 HANDOVER_DOCUMENT.md
-Project: Blitz — Modular SaaS for Affiliate Marketers
+Project: Blitz — Modular SaaS for Marketers
 Backend: FastAPI + PostgreSQL (Railway)
 Frontend: Next.js (Vercel)
 Date: 2025-10-23
 Executive Summary
 
-Blitz is a modular, intelligence-driven SaaS for affiliate marketers to research products, compile market intelligence, and generate compliant promotional content. The backend is built with FastAPI, PostgreSQL, and Alembic for migrations; the frontend will be built with Next.js on Vercel. The system emphasizes a three-stage intelligence pipeline (extraction → AI enhancement → RAG indexing/retrieval), modular services, and cost-optimized AI routing.
+Blitz is a modular, intelligence-driven SaaS for Marketers to research products, compile market intelligence, and generate compliant promotional content. The backend is built with FastAPI, PostgreSQL, and Alembic for migrations; the frontend will be built with Next.js on Vercel. The system emphasizes a three-stage intelligence pipeline (extraction → AI enhancement → RAG indexing/retrieval), modular services, and cost-optimized AI routing.
 
 This document merges the previous handover with all subsequent changes and fixes so you can resume seamlessly in a new chat or environment.
 

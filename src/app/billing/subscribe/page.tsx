@@ -40,7 +40,8 @@ export default function SubscribePage() {
               Upgrade to Pro Affiliate
             </h1>
             <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
-              Unlock the full potential of Blitz with Pro features designed for serious affiliate marketers
+              Unlock the full potential of Blitz with Pro features designed for
+              serious Marketers
             </p>
           </div>
 
@@ -143,31 +144,61 @@ export default function SubscribePage() {
               <table className="w-full text-left">
                 <thead>
                   <tr className="border-b border-gray-200 dark:border-gray-700">
-                    <th className="pb-3 text-gray-700 dark:text-gray-300">Feature</th>
-                    <th className="pb-3 text-center text-gray-700 dark:text-gray-300">Standard</th>
-                    <th className="pb-3 text-center text-gray-700 dark:text-gray-300">Pro</th>
+                    <th className="pb-3 text-gray-700 dark:text-gray-300">
+                      Feature
+                    </th>
+                    <th className="pb-3 text-center text-gray-700 dark:text-gray-300">
+                      Standard
+                    </th>
+                    <th className="pb-3 text-center text-gray-700 dark:text-gray-300">
+                      Pro
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="text-sm">
                   <tr className="border-b border-gray-100 dark:border-gray-800">
-                    <td className="py-3 text-gray-600 dark:text-gray-400">Campaigns from Product Library</td>
-                    <td className="py-3 text-center text-green-600 dark:text-green-400">✓</td>
-                    <td className="py-3 text-center text-green-600 dark:text-green-400">✓</td>
+                    <td className="py-3 text-gray-600 dark:text-gray-400">
+                      Campaigns from Product Library
+                    </td>
+                    <td className="py-3 text-center text-green-600 dark:text-green-400">
+                      ✓
+                    </td>
+                    <td className="py-3 text-center text-green-600 dark:text-green-400">
+                      ✓
+                    </td>
                   </tr>
                   <tr className="border-b border-gray-100 dark:border-gray-800">
-                    <td className="py-3 text-gray-600 dark:text-gray-400">Campaigns from Any URL</td>
-                    <td className="py-3 text-center text-red-600 dark:text-red-400">✗</td>
-                    <td className="py-3 text-center text-green-600 dark:text-green-400">✓</td>
+                    <td className="py-3 text-gray-600 dark:text-gray-400">
+                      Campaigns from Any URL
+                    </td>
+                    <td className="py-3 text-center text-red-600 dark:text-red-400">
+                      ✗
+                    </td>
+                    <td className="py-3 text-center text-green-600 dark:text-green-400">
+                      ✓
+                    </td>
                   </tr>
                   <tr className="border-b border-gray-100 dark:border-gray-800">
-                    <td className="py-3 text-gray-600 dark:text-gray-400">Affiliate Platforms</td>
-                    <td className="py-3 text-center text-red-600 dark:text-red-400">Limited</td>
-                    <td className="py-3 text-center text-green-600 dark:text-green-400">All</td>
+                    <td className="py-3 text-gray-600 dark:text-gray-400">
+                      Affiliate Platforms
+                    </td>
+                    <td className="py-3 text-center text-red-600 dark:text-red-400">
+                      Limited
+                    </td>
+                    <td className="py-3 text-center text-green-600 dark:text-green-400">
+                      All
+                    </td>
                   </tr>
                   <tr>
-                    <td className="py-3 text-gray-600 dark:text-gray-400">Support</td>
-                    <td className="py-3 text-center text-gray-600 dark:text-gray-400">Standard</td>
-                    <td className="py-3 text-center text-green-600 dark:text-green-400">Priority</td>
+                    <td className="py-3 text-gray-600 dark:text-gray-400">
+                      Support
+                    </td>
+                    <td className="py-3 text-center text-gray-600 dark:text-gray-400">
+                      Standard
+                    </td>
+                    <td className="py-3 text-center text-green-600 dark:text-green-400">
+                      Priority
+                    </td>
                   </tr>
                 </tbody>
               </table>

@@ -140,21 +140,20 @@ export default function Layout({ children }: LayoutProps) {
         const unreadCount = inboxData.unread_count;
 
         // Show notification if there are new requests OR new messages
-        if ((pendingRequests.length > 0 && pendingRequests.length > lastRequestCount.current) ||
-            (unreadCount > lastMessageCount.current)) {
-
+        if (
+          (pendingRequests.length > 0 &&
+            pendingRequests.length > lastRequestCount.current) ||
+          unreadCount > lastMessageCount.current
+        ) {
           // Show notification with combined data
-          const notification = new CustomEvent(
-            "showMessageNotification",
-            {
-              detail: {
-                requests: pendingRequests,
-                unreadCount: unreadCount,
-                hasNewRequests: pendingRequests.length > lastRequestCount.current,
-                hasNewMessages: unreadCount > lastMessageCount.current
-              },
-            }
-          );
+          const notification = new CustomEvent("showMessageNotification", {
+            detail: {
+              requests: pendingRequests,
+              unreadCount: unreadCount,
+              hasNewRequests: pendingRequests.length > lastRequestCount.current,
+              hasNewMessages: unreadCount > lastMessageCount.current,
+            },
+          });
           window.dispatchEvent(notification);
         }
 
@@ -298,7 +297,7 @@ export default function Layout({ children }: LayoutProps) {
       ];
     }
 
-    // Affiliate Marketer menu (promoting others' products)
+    // Marketer menu (promoting others' products)
     return [
       { href: "/dashboard", label: "Dashboard", icon: "🏠" },
       { href: "/products", label: "Product Library", icon: "📦" },
@@ -358,7 +357,9 @@ export default function Layout({ children }: LayoutProps) {
       {!isAuthPage && <TokenRefresh />}
 
       {/* Message request notification banner */}
-      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100 }}>
+      <div
+        style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100 }}
+      >
         <MessageRequestNotification />
       </div>
 
@@ -409,7 +410,7 @@ export default function Layout({ children }: LayoutProps) {
                   {userInfo.role === "creator"
                     ? "Product Developer"
                     : userInfo.role === "affiliate"
-                    ? "Affiliate Marketer"
+                    ? "Marketer"
                     : userInfo.role === "business"
                     ? "Business"
                     : userInfo.role === "admin"
@@ -504,7 +505,7 @@ export default function Layout({ children }: LayoutProps) {
                             {userInfo?.role === "creator"
                               ? "Product Developer"
                               : userInfo?.role === "affiliate"
-                              ? "Affiliate Marketer"
+                              ? "Marketer"
                               : userInfo?.role === "business"
                               ? "Business"
                               : userInfo?.role || "user"}
@@ -567,7 +568,7 @@ export default function Layout({ children }: LayoutProps) {
                         ? "🎯 Product Developer"
                         : userInfo.role === "business"
                         ? "💼 Business"
-                        : "🚀 Affiliate Marketer"}
+                        : "🚀 Marketer"}
                     </div>
                   </div>
                 </div>

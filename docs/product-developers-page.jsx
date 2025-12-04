@@ -21,7 +21,7 @@ export default function ProductDevelopersPage() {
     {
       emoji: "🎯",
       title: "Affiliate Network",
-      description: "Get your products in front of motivated affiliate marketers ready to promote."
+      description: "Get your products in front of motivated Marketers ready to promote."
     },
     {
       emoji: "⚡",
@@ -37,7 +37,7 @@ export default function ProductDevelopersPage() {
 
   const benefits = [
     "Zero manual data entry - AI does the heavy lifting",
-    "Reach hundreds of affiliate marketers instantly",
+    "Reach hundreds of Marketers instantly",
     "Professional product descriptions generated automatically",
     "Real-time analytics on affiliate activity",
     "FTC-compliant content generation for all promotions",
@@ -58,7 +58,7 @@ export default function ProductDevelopersPage() {
               Your Products.<br />Endless Promotion.
             </h1>
             <p className="text-xl md:text-2xl text-gray-300 max-w-3xl mx-auto">
-              Blitz connects your products with a network of affiliate marketers who create AI-powered campaigns to drive your sales. Set it up once, watch it scale.
+              Blitz connects your products with a network of Marketers who create AI-powered campaigns to drive your sales. Set it up once, watch it scale.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-6">
               <button className="group px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg font-semibold text-lg hover:shadow-2xl hover:shadow-purple-500/50 transition-all duration-300 flex items-center gap-2">
@@ -117,7 +117,7 @@ export default function ProductDevelopersPage() {
               <div className="text-6xl mb-6">2️⃣</div>
               <h3 className="text-2xl font-bold mb-4">Publish to Library</h3>
               <p className="text-gray-300">
-                One click to publish your product to our marketplace where affiliate marketers can discover and promote it.
+                One click to publish your product to our marketplace where Marketers can discover and promote it.
               </p>
             </div>
           </div>

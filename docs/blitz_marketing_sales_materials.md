@@ -2,7 +2,7 @@
 
 ## Main Value Propositions
 
-### For Affiliates: "Become the Affiliate Marketer You Were Meant to Be"
+### For Affiliates: "Become the Marketer You Were Meant to Be"
 
 **Tagline Ideas:**
 - "Build Relationships. Promote Better. Earn More."
@@ -23,7 +23,7 @@
 ### 1. Hero Section
 
 **Headline Option A:**
-# Blitz: Where Affiliate Marketers and Developers Build Real Relationships
+# Blitz: Where Marketers and Developers Build Real Relationships
 
 **Subheadline:**
 The only platform that helps Affiliates connect with the right Developers AND helps Developers build powerful networks with fellow creators. Your success is built on relationships.
@@ -529,7 +529,7 @@ Blitz helps developers:
 ## Website Copy Elements
 
 ### Page Titles:
-- "Where Affiliate Marketers and Developers Build Real Relationships"
+- "Where Marketers and Developers Build Real Relationships"
 - "The Relationship-Driven Affiliate Platform"
 - "Your Network is Your Net Worth"
 
@@ -554,7 +554,7 @@ Blitz helps developers:
 2. "Why Your Affiliate Relationships Are Failing (And How to Build Better Ones)"
 3. "The Developer Playbook: Building a Quality Affiliate Network"
 4. "How to Find Affiliate Partners Who Actually Want You to Succeed"
-5. "The Case for Collaboration: Why Affiliate Marketers Should Work Together"
+5. "The Case for Collaboration: Why Marketers Should Work Together"
 6. "Developer Spotlight: How One SaaS Founder Built a 7-Figure Affiliate Network"
 7. "From Solo to Network: How Community Can 10X Your Affiliate Success"
 8. "The Relationship ROI: Why Connections Matter More Than Conversions"
@@ -567,7 +567,7 @@ Blitz helps developers:
 
 [Scene 1: Split screen - Struggling affiliate on left, struggling developer on right]
 
-Narrator: "Affiliate marketers struggle to find quality products. Developers struggle to find quality affiliates. Everyone's frustrated."
+Narrator: "Marketers struggle to find quality products. Developers struggle to find quality affiliates. Everyone's frustrated."
 
 [Scene 2: Blitz interface showing directory]
 

@@ -96,7 +96,7 @@ export default function AnalyticsPage() {
       enabled: isProductDeveloper,
     });
 
-  // Affiliate Marketer Analytics
+  // Marketer Analytics
   const { data: campaigns = [], isLoading: campaignsLoading } = useQuery<
     CampaignWithStats[]
   >({

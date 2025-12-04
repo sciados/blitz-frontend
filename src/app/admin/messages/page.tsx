@@ -7,7 +7,12 @@ import { api } from "src/lib/appClient";
 import { AuthGate } from "src/components/AuthGate";
 import { toast } from "sonner";
 
-type UserType = "all" | "affiliates" | "product_developers" | "business_owners" | "individuals";
+type UserType =
+  | "all"
+  | "affiliates"
+  | "product_developers"
+  | "business_owners"
+  | "individuals";
 
 type IndividualRecipient = {
   id: number;
@@ -23,13 +28,14 @@ export default function AdminMessagesPage() {
   const [content, setContent] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedRecipients, setSelectedRecipients] = useState<number[]>([]);
-  const [individualRecipients, setIndividualRecipients] = useState<IndividualRecipient[]>([]);
+  const [individualRecipients, setIndividualRecipients] = useState<
+    IndividualRecipient[]
+  >([]);
 
   const sendMutation = useMutation({
     mutationFn: async () => {
-      const recipients = messageType === "individuals"
-        ? selectedRecipients
-        : []; // Backend will fetch based on type
+      const recipients =
+        messageType === "individuals" ? selectedRecipients : []; // Backend will fetch based on type
 
       const response = await api.post("/api/admin/messages/broadcast", {
         message_type: messageType,
@@ -55,7 +61,9 @@ export default function AdminMessagesPage() {
 
   const searchUsersMutation = useMutation({
     mutationFn: async (query: string) => {
-      const response = await api.get(`/api/admin/users?search=${encodeURIComponent(query)}`);
+      const response = await api.get(
+        `/api/admin/users?search=${encodeURIComponent(query)}`
+      );
       return response.data as IndividualRecipient[];
     },
     onSuccess: (data) => {
@@ -73,9 +81,9 @@ export default function AdminMessagesPage() {
   };
 
   const toggleRecipient = (userId: number) => {
-    setSelectedRecipients(prev =>
+    setSelectedRecipients((prev) =>
       prev.includes(userId)
-        ? prev.filter(id => id !== userId)
+        ? prev.filter((id) => id !== userId)
         : [...prev, userId]
     );
   };
@@ -91,7 +99,9 @@ export default function AdminMessagesPage() {
       case "all":
         return "All Users";
       case "individuals":
-        return `${selectedRecipients.length} recipient${selectedRecipients.length !== 1 ? 's' : ''}`;
+        return `${selectedRecipients.length} recipient${
+          selectedRecipients.length !== 1 ? "s" : ""
+        }`;
       default:
         return "0";
     }
@@ -125,7 +135,10 @@ export default function AdminMessagesPage() {
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
             <Send className="w-8 h-8 text-blue-600" />
-            <h1 className="text-3xl font-bold" style={{ color: "var(--text-primary)" }}>
+            <h1
+              className="text-3xl font-bold"
+              style={{ color: "var(--text-primary)" }}
+            >
               Admin Messenger
             </h1>
           </div>
@@ -142,7 +155,10 @@ export default function AdminMessagesPage() {
             borderColor: "var(--border-color)",
           }}
         >
-          <h2 className="text-lg font-semibold mb-4" style={{ color: "var(--text-primary)" }}>
+          <h2
+            className="text-lg font-semibold mb-4"
+            style={{ color: "var(--text-primary)" }}
+          >
             Select Recipients
           </h2>
 
@@ -156,16 +172,25 @@ export default function AdminMessagesPage() {
                   : "border-gray-200 dark:border-gray-700 hover:border-blue-300"
               }`}
               style={{
-                borderColor: messageType === "all" ? "var(--accent-primary)" : "var(--border-color)",
+                borderColor:
+                  messageType === "all"
+                    ? "var(--accent-primary)"
+                    : "var(--border-color)",
               }}
             >
               <div className="flex items-center gap-3">
                 <Users className="w-6 h-6 text-blue-600" />
                 <div>
-                  <div className="font-semibold" style={{ color: "var(--text-primary)" }}>
+                  <div
+                    className="font-semibold"
+                    style={{ color: "var(--text-primary)" }}
+                  >
                     All Users
                   </div>
-                  <div className="text-sm" style={{ color: "var(--text-secondary)" }}>
+                  <div
+                    className="text-sm"
+                    style={{ color: "var(--text-secondary)" }}
+                  >
                     Broadcast to every user
                   </div>
                 </div>
@@ -180,17 +205,26 @@ export default function AdminMessagesPage() {
                   : "border-gray-200 dark:border-gray-700 hover:border-blue-300"
               }`}
               style={{
-                borderColor: messageType === "affiliates" ? "var(--accent-primary)" : "var(--border-color)",
+                borderColor:
+                  messageType === "affiliates"
+                    ? "var(--accent-primary)"
+                    : "var(--border-color)",
               }}
             >
               <div className="flex items-center gap-3">
                 <Users className="w-6 h-6 text-green-600" />
                 <div>
-                  <div className="font-semibold" style={{ color: "var(--text-primary)" }}>
+                  <div
+                    className="font-semibold"
+                    style={{ color: "var(--text-primary)" }}
+                  >
                     All Affiliates
                   </div>
-                  <div className="text-sm" style={{ color: "var(--text-secondary)" }}>
-                    Broadcast to all affiliate marketers
+                  <div
+                    className="text-sm"
+                    style={{ color: "var(--text-secondary)" }}
+                  >
+                    Broadcast to all Marketers
                   </div>
                 </div>
               </div>
@@ -204,16 +238,25 @@ export default function AdminMessagesPage() {
                   : "border-gray-200 dark:border-gray-700 hover:border-blue-300"
               }`}
               style={{
-                borderColor: messageType === "product_developers" ? "var(--accent-primary)" : "var(--border-color)",
+                borderColor:
+                  messageType === "product_developers"
+                    ? "var(--accent-primary)"
+                    : "var(--border-color)",
               }}
             >
               <div className="flex items-center gap-3">
                 <Users className="w-6 h-6 text-purple-600" />
                 <div>
-                  <div className="font-semibold" style={{ color: "var(--text-primary)" }}>
+                  <div
+                    className="font-semibold"
+                    style={{ color: "var(--text-primary)" }}
+                  >
                     All Product Developers
                   </div>
-                  <div className="text-sm" style={{ color: "var(--text-secondary)" }}>
+                  <div
+                    className="text-sm"
+                    style={{ color: "var(--text-secondary)" }}
+                  >
                     Broadcast to all product creators
                   </div>
                 </div>
@@ -228,16 +271,25 @@ export default function AdminMessagesPage() {
                   : "border-gray-200 dark:border-gray-700 hover:border-blue-300"
               }`}
               style={{
-                borderColor: messageType === "business_owners" ? "var(--accent-primary)" : "var(--border-color)",
+                borderColor:
+                  messageType === "business_owners"
+                    ? "var(--accent-primary)"
+                    : "var(--border-color)",
               }}
             >
               <div className="flex items-center gap-3">
                 <Users className="w-6 h-6 text-orange-600" />
                 <div>
-                  <div className="font-semibold" style={{ color: "var(--text-primary)" }}>
+                  <div
+                    className="font-semibold"
+                    style={{ color: "var(--text-primary)" }}
+                  >
                     All Business Owners
                   </div>
-                  <div className="text-sm" style={{ color: "var(--text-secondary)" }}>
+                  <div
+                    className="text-sm"
+                    style={{ color: "var(--text-secondary)" }}
+                  >
                     Broadcast to all business users
                   </div>
                 </div>
@@ -252,16 +304,25 @@ export default function AdminMessagesPage() {
                   : "border-gray-200 dark:border-gray-700 hover:border-blue-300"
               }`}
               style={{
-                borderColor: messageType === "individuals" ? "var(--accent-primary)" : "var(--border-color)",
+                borderColor:
+                  messageType === "individuals"
+                    ? "var(--accent-primary)"
+                    : "var(--border-color)",
               }}
             >
               <div className="flex items-center gap-3">
                 <User className="w-6 h-6 text-blue-600" />
                 <div>
-                  <div className="font-semibold" style={{ color: "var(--text-primary)" }}>
+                  <div
+                    className="font-semibold"
+                    style={{ color: "var(--text-primary)" }}
+                  >
                     Specific Individuals
                   </div>
-                  <div className="text-sm" style={{ color: "var(--text-secondary)" }}>
+                  <div
+                    className="text-sm"
+                    style={{ color: "var(--text-secondary)" }}
+                  >
                     Select specific users to message
                   </div>
                 </div>
@@ -273,7 +334,10 @@ export default function AdminMessagesPage() {
           <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
             <div className="flex items-center gap-2">
               <Users className="w-5 h-5 text-blue-600" />
-              <span className="font-medium" style={{ color: "var(--text-primary)" }}>
+              <span
+                className="font-medium"
+                style={{ color: "var(--text-primary)" }}
+              >
                 Recipients: {getRecipientCount()}
               </span>
             </div>
@@ -289,13 +353,19 @@ export default function AdminMessagesPage() {
               borderColor: "var(--border-color)",
             }}
           >
-            <h3 className="text-lg font-semibold mb-4" style={{ color: "var(--text-primary)" }}>
+            <h3
+              className="text-lg font-semibold mb-4"
+              style={{ color: "var(--text-primary)" }}
+            >
               Select Recipients
             </h3>
 
             <form onSubmit={handleSearch} className="mb-4">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" style={{ color: "var(--text-tertiary)" }} />
+                <Search
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5"
+                  style={{ color: "var(--text-tertiary)" }}
+                />
                 <input
                   type="text"
                   placeholder="Search users by name or email..."
@@ -320,7 +390,10 @@ export default function AdminMessagesPage() {
             {/* Search Results */}
             {individualRecipients.length > 0 && (
               <div className="mb-4">
-                <h4 className="text-sm font-medium mb-2" style={{ color: "var(--text-primary)" }}>
+                <h4
+                  className="text-sm font-medium mb-2"
+                  style={{ color: "var(--text-primary)" }}
+                >
                   Search Results ({individualRecipients.length})
                 </h4>
                 <div className="space-y-2 max-h-60 overflow-y-auto">
@@ -334,7 +407,9 @@ export default function AdminMessagesPage() {
                           : "border-gray-200 dark:border-gray-700 hover:border-blue-300"
                       }`}
                       style={{
-                        borderColor: selectedRecipients.includes(user.id) ? "var(--accent-primary)" : "var(--border-color)",
+                        borderColor: selectedRecipients.includes(user.id)
+                          ? "var(--accent-primary)"
+                          : "var(--border-color)",
                       }}
                     >
                       <div className="flex items-center gap-3">
@@ -345,10 +420,16 @@ export default function AdminMessagesPage() {
                           className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
                         />
                         <div className="flex-1">
-                          <div className="font-medium" style={{ color: "var(--text-primary)" }}>
+                          <div
+                            className="font-medium"
+                            style={{ color: "var(--text-primary)" }}
+                          >
                             {user.full_name || "Unknown"}
                           </div>
-                          <div className="text-sm" style={{ color: "var(--text-secondary)" }}>
+                          <div
+                            className="text-sm"
+                            style={{ color: "var(--text-secondary)" }}
+                          >
                             {user.email} • {user.role}
                           </div>
                         </div>
@@ -362,18 +443,25 @@ export default function AdminMessagesPage() {
             {/* Selected Recipients */}
             {selectedRecipients.length > 0 && (
               <div>
-                <h4 className="text-sm font-medium mb-2" style={{ color: "var(--text-primary)" }}>
+                <h4
+                  className="text-sm font-medium mb-2"
+                  style={{ color: "var(--text-primary)" }}
+                >
                   Selected Recipients ({selectedRecipients.length})
                 </h4>
                 <div className="flex flex-wrap gap-2">
                   {selectedRecipients.map((userId) => {
-                    const user = individualRecipients.find(u => u.id === userId);
+                    const user = individualRecipients.find(
+                      (u) => u.id === userId
+                    );
                     return (
                       <div
                         key={userId}
                         className="flex items-center gap-2 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-3 py-1 rounded-full text-sm"
                       >
-                        <span>{user?.full_name || user?.email || `User ${userId}`}</span>
+                        <span>
+                          {user?.full_name || user?.email || `User ${userId}`}
+                        </span>
                         <button
                           onClick={() => toggleRecipient(userId)}
                           className="hover:text-blue-900 dark:hover:text-blue-100"
@@ -398,7 +486,10 @@ export default function AdminMessagesPage() {
               borderColor: "var(--border-color)",
             }}
           >
-            <h2 className="text-lg font-semibold mb-4" style={{ color: "var(--text-primary)" }}>
+            <h2
+              className="text-lg font-semibold mb-4"
+              style={{ color: "var(--text-primary)" }}
+            >
               Compose Message
             </h2>
 

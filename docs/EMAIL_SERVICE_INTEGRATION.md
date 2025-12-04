@@ -173,7 +173,7 @@ class ResendEmailService:
                 <ul>
                     <li>Add your products in 2 minutes</li>
                     <li>Get instant AI-powered intelligence</li>
-                    <li>Access our network of affiliate marketers</li>
+                    <li>Access our network of Marketers</li>
                     <li>Track performance in real-time</li>
                 </ul>
                 <a href="https://blitz.com/login" style="display: inline-block; background: linear-gradient(to right, #8b5cf6, #3b82f6); color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; margin: 20px 0;">
@@ -219,7 +219,7 @@ class ResendEmailService:
                 <ul>
                     <li>Generate professional content instantly</li>
                     <li>Access AI-powered marketing campaigns</li>
-                    <li>Connect with affiliate marketers</li>
+                    <li>Connect with Marketers</li>
                     <li>Save $150k+/year vs agencies</li>
                 </ul>
                 <a href="https://blitz.com/login" style="display: inline-block; background: linear-gradient(to right, #3b82f6, #8b5cf6); color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; margin: 20px 0;">
@@ -488,7 +488,7 @@ export default function WelcomeEmail({ name, audienceType }: WelcomeEmailProps) 
   const content = {
     'product-dev': {
       title: '🎯 Get Your Products Promoted',
-      message: 'Access our network of affiliate marketers ready to promote your products.',
+      message: 'Access our network of Marketers ready to promote your products.',
     },
     'affiliate': {
       title: '💰 Start Earning Today',
@@ -735,7 +735,7 @@ class ResendService:
                 "cta_text": "Add Your Products →",
                 "cta_url": "https://blitz.com/login",
                 "features": [
-                    "Access our network of 1000+ affiliate marketers",
+                    "Access our network of 1000+ Marketers",
                     "AI-powered product intelligence and descriptions",
                     "Real-time performance tracking and analytics",
                     "Automated commission management"
@@ -765,7 +765,7 @@ class ResendService:
                 "features": [
                     "Generate professional content instantly",
                     "Access AI-powered marketing campaigns",
-                    "Connect with affiliate marketers",
+                    "Connect with Marketers",
                     "Save $150k+/year vs agencies"
                 ]
             }

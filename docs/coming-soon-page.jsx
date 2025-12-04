@@ -16,7 +16,7 @@ export default function ComingSoonPage() {
     {
       id: 'affiliate',
       emoji: '💰',
-      title: 'Affiliate Marketer',
+      title: 'Marketer',
       description: 'I want to earn promoting products'
     },
     {
@@ -74,7 +74,7 @@ export default function ComingSoonPage() {
           </p>
           
           <p className="text-xl md:text-2xl text-gray-300 max-w-3xl mx-auto mb-4">
-            The platform that connects Product Creators, Affiliate Marketers, and Business Owners through intelligent automation.
+            The platform that connects Product Creators, Marketers, and Business Owners through intelligent automation.
           </p>
         </div>
 
@@ -90,7 +90,7 @@ export default function ComingSoonPage() {
           
           <div className="bg-gradient-to-br from-green-900/20 to-green-800/20 rounded-2xl p-8 border border-green-700/30 text-center">
             <div className="text-6xl mb-4">💰</div>
-            <h3 className="text-2xl font-bold mb-3">Affiliate Marketers</h3>
+            <h3 className="text-2xl font-bold mb-3">Marketers</h3>
             <p className="text-gray-300">
               Create professional campaigns in minutes. AI generates articles, emails, videos, social posts, and images.
             </p>

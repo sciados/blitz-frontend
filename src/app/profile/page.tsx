@@ -39,7 +39,10 @@ export default function ProfilePage() {
 
   // Update profile mutation
   const updateProfileMutation = useMutation({
-    mutationFn: async (data: { full_name: string; profile_image_url?: string }) => {
+    mutationFn: async (data: {
+      full_name: string;
+      profile_image_url?: string;
+    }) => {
       return await api.patch("/api/auth/profile", data);
     },
     onSuccess: () => {
@@ -56,7 +59,7 @@ export default function ProfilePage() {
   const handleSave = () => {
     updateProfileMutation.mutate({
       full_name: fullName,
-      profile_image_url: profileImageUrl || undefined
+      profile_image_url: profileImageUrl || undefined,
     });
   };
 
@@ -73,16 +76,16 @@ export default function ProfilePage() {
     if (!file) return;
 
     // Validate file type
-    const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    const validTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
     if (!validTypes.includes(file.type)) {
-      toast.error('Please select a valid image file (JPG, PNG, GIF, or WebP)');
+      toast.error("Please select a valid image file (JPG, PNG, GIF, or WebP)");
       return;
     }
 
     // Validate file size (5MB max)
     const maxSize = 5 * 1024 * 1024;
     if (file.size > maxSize) {
-      toast.error('Image must be less than 5MB');
+      toast.error("Image must be less than 5MB");
       return;
     }
 
@@ -98,7 +101,7 @@ export default function ProfilePage() {
 
   const handleImageUpload = async () => {
     if (!selectedFile) {
-      toast.error('Please select an image first');
+      toast.error("Please select an image first");
       return;
     }
 
@@ -106,24 +109,28 @@ export default function ProfilePage() {
 
     try {
       const formData = new FormData();
-      formData.append('file', selectedFile);
+      formData.append("file", selectedFile);
 
-      const response = await api.post('/api/auth/upload-profile-image', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      const response = await api.post(
+        "/api/auth/upload-profile-image",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
 
-      toast.success('Profile image uploaded successfully');
+      toast.success("Profile image uploaded successfully");
       setProfileImageUrl(response.data.profile_image_url);
       setSelectedFile(null);
       setPreviewUrl(null);
 
       // Refresh user data
-      queryClient.invalidateQueries({ queryKey: ['userProfile'] });
-      queryClient.invalidateQueries({ queryKey: ['userInfo'] });
+      queryClient.invalidateQueries({ queryKey: ["userProfile"] });
+      queryClient.invalidateQueries({ queryKey: ["userInfo"] });
     } catch (error: any) {
-      toast.error(error?.response?.data?.detail || 'Failed to upload image');
+      toast.error(error?.response?.data?.detail || "Failed to upload image");
     } finally {
       setUploadingImage(false);
     }
@@ -144,20 +151,24 @@ export default function ProfilePage() {
 
   const getUserTypeLabel = (userType: string) => {
     if (userType === "creator") return "Product Developer";
-    if (userType === "affiliate") return "Affiliate Marketer";
+    if (userType === "affiliate") return "Marketer";
     if (userType === "business") return "Business";
     return userType;
   };
 
   const getRoleColor = (role: string) => {
-    if (role === "admin") return "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300";
+    if (role === "admin")
+      return "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300";
     return "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300";
   };
 
   const getUserTypeColor = (userType: string) => {
-    if (userType === "creator") return "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300";
-    if (userType === "affiliate") return "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300";
-    if (userType === "business") return "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300";
+    if (userType === "creator")
+      return "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300";
+    if (userType === "affiliate")
+      return "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300";
+    if (userType === "business")
+      return "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300";
     return "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300";
   };
 
@@ -166,7 +177,9 @@ export default function ProfilePage() {
       <div className="p-6 max-w-4xl mx-auto space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold text-[var(--text-primary)]">Profile</h1>
+          <h1 className="text-3xl font-bold text-[var(--text-primary)]">
+            Profile
+          </h1>
           <p className="text-[var(--text-secondary)] mt-2">
             Manage your account information and preferences
           </p>
@@ -204,7 +217,9 @@ export default function ProfilePage() {
               ) : (
                 <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center border-2 border-[var(--border-color)]">
                   <span className="text-4xl font-bold text-white">
-                    {user?.full_name?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || "?"}
+                    {user?.full_name?.charAt(0)?.toUpperCase() ||
+                      user?.email?.charAt(0)?.toUpperCase() ||
+                      "?"}
                   </span>
                 </div>
               )}
@@ -227,7 +242,9 @@ export default function ProfilePage() {
                       <div className="flex items-center space-x-2 px-4 py-2 border-2 border-dashed border-[var(--border-color)] hover:border-blue-400 rounded-lg transition bg-[var(--bg-primary)] text-[var(--text-primary)]">
                         <span className="text-xl">📁</span>
                         <span className="text-sm">
-                          {selectedFile ? selectedFile.name : 'Choose image file'}
+                          {selectedFile
+                            ? selectedFile.name
+                            : "Choose image file"}
                         </span>
                       </div>
                     </label>
@@ -239,14 +256,29 @@ export default function ProfilePage() {
                       >
                         {uploadingImage ? (
                           <span className="flex items-center space-x-2">
-                            <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                            <svg
+                              className="animate-spin h-4 w-4"
+                              viewBox="0 0 24 24"
+                            >
+                              <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                                fill="none"
+                              />
+                              <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                              />
                             </svg>
                             <span>Uploading...</span>
                           </span>
                         ) : (
-                          'Upload'
+                          "Upload"
                         )}
                       </button>
                     )}
@@ -258,7 +290,8 @@ export default function ProfilePage() {
                     <div className="flex items-center space-x-2 text-xs text-green-600 dark:text-green-400">
                       <span>✓</span>
                       <span>
-                        {selectedFile.name} ({(selectedFile.size / 1024).toFixed(1)} KB)
+                        {selectedFile.name} (
+                        {(selectedFile.size / 1024).toFixed(1)} KB)
                       </span>
                     </div>
                   )}
@@ -266,7 +299,9 @@ export default function ProfilePage() {
               ) : (
                 <div>
                   <p className="text-sm text-[var(--text-primary)]">
-                    {user?.profile_image_url ? "Custom image set" : "Using default avatar"}
+                    {user?.profile_image_url
+                      ? "Custom image set"
+                      : "Using default avatar"}
                   </p>
                   <p className="text-xs text-[var(--text-secondary)] mt-1">
                     Click "Edit Profile" to upload a new profile image
@@ -302,7 +337,9 @@ export default function ProfilePage() {
               <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
                 Email Address
               </label>
-              <p className="text-[var(--text-primary)] font-medium">{user?.email}</p>
+              <p className="text-[var(--text-primary)] font-medium">
+                {user?.email}
+              </p>
               <p className="text-xs text-[var(--text-secondary)] mt-1">
                 Email cannot be changed
               </p>
@@ -313,7 +350,11 @@ export default function ProfilePage() {
               <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
                 Role
               </label>
-              <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${getRoleColor(user?.role || "")}`}>
+              <span
+                className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${getRoleColor(
+                  user?.role || ""
+                )}`}
+              >
                 {user?.role === "admin" ? "🔧 Admin" : "👤 User"}
               </span>
             </div>
@@ -323,8 +364,19 @@ export default function ProfilePage() {
               <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
                 Account Type
               </label>
-              <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${getUserTypeColor(user?.role || "")}`}>
-                {user?.role === "creator" ? "🎯" : user?.role === "affiliate" ? "🚀" : user?.user_type === "Business" ? "💼" : "👤"} {getUserTypeLabel(user?.role || "")}
+              <span
+                className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${getUserTypeColor(
+                  user?.role || ""
+                )}`}
+              >
+                {user?.role === "creator"
+                  ? "🎯"
+                  : user?.role === "affiliate"
+                  ? "🚀"
+                  : user?.user_type === "Business"
+                  ? "💼"
+                  : "👤"}{" "}
+                {getUserTypeLabel(user?.role || "")}
               </span>
             </div>
 
@@ -333,7 +385,9 @@ export default function ProfilePage() {
               <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
                 User ID
               </label>
-              <p className="text-[var(--text-primary)] font-mono text-sm">{user?.id}</p>
+              <p className="text-[var(--text-primary)] font-mono text-sm">
+                {user?.id}
+              </p>
             </div>
 
             {/* Member Since */}
@@ -342,11 +396,13 @@ export default function ProfilePage() {
                 Member Since
               </label>
               <p className="text-[var(--text-primary)] font-medium">
-                {user?.created_at ? new Date(user.created_at).toLocaleDateString("en-US", {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric"
-                }) : "Unknown"}
+                {user?.created_at
+                  ? new Date(user.created_at).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })
+                  : "Unknown"}
               </p>
             </div>
           </div>
@@ -384,21 +440,39 @@ export default function ProfilePage() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="p-4 border border-[var(--border-color)] rounded-lg">
-                <p className="text-sm text-[var(--text-secondary)] mb-1">Total Products</p>
-                <p className="text-3xl font-bold text-purple-600 dark:text-purple-400">—</p>
-                <p className="text-xs text-[var(--text-secondary)] mt-1">In product library</p>
+                <p className="text-sm text-[var(--text-secondary)] mb-1">
+                  Total Products
+                </p>
+                <p className="text-3xl font-bold text-purple-600 dark:text-purple-400">
+                  —
+                </p>
+                <p className="text-xs text-[var(--text-secondary)] mt-1">
+                  In product library
+                </p>
               </div>
 
               <div className="p-4 border border-[var(--border-color)] rounded-lg">
-                <p className="text-sm text-[var(--text-secondary)] mb-1">Active Affiliates</p>
-                <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">—</p>
-                <p className="text-xs text-[var(--text-secondary)] mt-1">Promoting your products</p>
+                <p className="text-sm text-[var(--text-secondary)] mb-1">
+                  Active Affiliates
+                </p>
+                <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
+                  —
+                </p>
+                <p className="text-xs text-[var(--text-secondary)] mt-1">
+                  Promoting your products
+                </p>
               </div>
 
               <div className="p-4 border border-[var(--border-color)] rounded-lg">
-                <p className="text-sm text-[var(--text-secondary)] mb-1">Total Clicks</p>
-                <p className="text-3xl font-bold text-green-600 dark:text-green-400">—</p>
-                <p className="text-xs text-[var(--text-secondary)] mt-1">From all affiliates</p>
+                <p className="text-sm text-[var(--text-secondary)] mb-1">
+                  Total Clicks
+                </p>
+                <p className="text-3xl font-bold text-green-600 dark:text-green-400">
+                  —
+                </p>
+                <p className="text-xs text-[var(--text-secondary)] mt-1">
+                  From all affiliates
+                </p>
               </div>
             </div>
 
@@ -418,27 +492,45 @@ export default function ProfilePage() {
             <div className="flex items-center space-x-2">
               <span className="text-2xl">🚀</span>
               <h2 className="text-xl font-semibold text-[var(--text-primary)]">
-                Affiliate Marketer Statistics
+                Marketer Statistics
               </h2>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="p-4 border border-[var(--border-color)] rounded-lg">
-                <p className="text-sm text-[var(--text-secondary)] mb-1">Active Campaigns</p>
-                <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">—</p>
-                <p className="text-xs text-[var(--text-secondary)] mt-1">Currently running</p>
+                <p className="text-sm text-[var(--text-secondary)] mb-1">
+                  Active Campaigns
+                </p>
+                <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
+                  —
+                </p>
+                <p className="text-xs text-[var(--text-secondary)] mt-1">
+                  Currently running
+                </p>
               </div>
 
               <div className="p-4 border border-[var(--border-color)] rounded-lg">
-                <p className="text-sm text-[var(--text-secondary)] mb-1">Content Pieces</p>
-                <p className="text-3xl font-bold text-green-600 dark:text-green-400">—</p>
-                <p className="text-xs text-[var(--text-secondary)] mt-1">Generated with AI</p>
+                <p className="text-sm text-[var(--text-secondary)] mb-1">
+                  Content Pieces
+                </p>
+                <p className="text-3xl font-bold text-green-600 dark:text-green-400">
+                  —
+                </p>
+                <p className="text-xs text-[var(--text-secondary)] mt-1">
+                  Generated with AI
+                </p>
               </div>
 
               <div className="p-4 border border-[var(--border-color)] rounded-lg">
-                <p className="text-sm text-[var(--text-secondary)] mb-1">Total Clicks</p>
-                <p className="text-3xl font-bold text-purple-600 dark:text-purple-400">—</p>
-                <p className="text-xs text-[var(--text-secondary)] mt-1">On your affiliate links</p>
+                <p className="text-sm text-[var(--text-secondary)] mb-1">
+                  Total Clicks
+                </p>
+                <p className="text-3xl font-bold text-purple-600 dark:text-purple-400">
+                  —
+                </p>
+                <p className="text-xs text-[var(--text-secondary)] mt-1">
+                  On your affiliate links
+                </p>
               </div>
             </div>
 
@@ -463,7 +555,9 @@ export default function ProfilePage() {
             {/* Password Section */}
             <div className="flex items-center justify-between p-4 border border-[var(--border-color)] rounded-lg">
               <div>
-                <h3 className="font-medium text-[var(--text-primary)]">Password</h3>
+                <h3 className="font-medium text-[var(--text-primary)]">
+                  Password
+                </h3>
                 <p className="text-sm text-[var(--text-secondary)]">
                   Last changed: Never
                 </p>
@@ -491,7 +585,9 @@ export default function ProfilePage() {
             {/* Active Sessions */}
             <div className="flex items-center justify-between p-4 border border-[var(--border-color)] rounded-lg">
               <div>
-                <h3 className="font-medium text-[var(--text-primary)]">Active Sessions</h3>
+                <h3 className="font-medium text-[var(--text-primary)]">
+                  Active Sessions
+                </h3>
                 <p className="text-sm text-[var(--text-secondary)]">
                   Manage devices where you're currently logged in
                 </p>

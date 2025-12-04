@@ -27,8 +27,8 @@ export function Footer() {
               className="text-sm mb-4"
               style={{ color: "var(--text-secondary)" }}
             >
-              Streamlined marketing automation platform for affiliate marketers
-              and product creators.
+              Streamlined marketing automation platform for Marketers and
+              product creators.
             </p>
             <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
               © {currentYear} Blitz. All rights reserved.
