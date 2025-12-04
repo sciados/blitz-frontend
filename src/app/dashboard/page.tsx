@@ -1106,14 +1106,30 @@ function AffiliateMarketerDashboard() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-[var(--text-secondary)] mb-1">
-                Content Pieces
+                Text Content
               </p>
               <p className="text-3xl font-bold text-purple-600 dark:text-purple-400">
-                {stats?.contentPieces || 0}
+                {stats?.textContentPieces || 0}
               </p>
             </div>
             <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
               <span className="text-2xl">✍️</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="card p-4 border-l-4 border-pink-500">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-[var(--text-secondary)] mb-1">
+                Images
+              </p>
+              <p className="text-3xl font-bold text-pink-600 dark:text-pink-400">
+                {stats?.imageContentPieces || 0}
+              </p>
+            </div>
+            <div className="w-12 h-12 bg-pink-100 dark:bg-pink-900/30 rounded-lg flex items-center justify-center">
+              <span className="text-2xl">🖼️</span>
             </div>
           </div>
         </div>
