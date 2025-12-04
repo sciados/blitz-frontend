@@ -1039,35 +1039,6 @@ function AffiliateMarketerDashboard() {
 
   return (
     <>
-      {/* Affiliate Tier Indicator */}
-      <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800 mb-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
-              {userInfo?.affiliate_tier === "pro" ? (
-                <span className="text-blue-600 dark:text-blue-400 text-xl">
-                  ⭐
-                </span>
-              ) : (
-                <span className="text-blue-600 dark:text-blue-400 text-xl">
-                  👤
-                </span>
-              )}
-            </div>
-            <div>
-              <h3 className="text-sm font-medium text-blue-900 dark:text-blue-300">
-                Affiliate Tier
-              </h3>
-              <p className="text-sm text-blue-700 dark:text-blue-400">
-                {userInfo?.affiliate_tier === "pro"
-                  ? "Pro Affiliate"
-                  : "Marketer"}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Quick Stats Section */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div className="card p-4 border-l-4 border-blue-500">
