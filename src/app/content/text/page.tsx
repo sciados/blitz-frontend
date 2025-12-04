@@ -197,12 +197,14 @@ export default function ContentPage() {
     // Remove enabled condition so images load immediately with text content
   });
 
-  // Refetch images when tab changes to images
+  // Refetch content when tab changes
   useEffect(() => {
-    if (activeLibraryTab === "images") {
+    if (activeLibraryTab === "text") {
+      refetchContent();
+    } else if (activeLibraryTab === "images") {
       refetchImages();
     }
-  }, [activeLibraryTab, refetchImages]);
+  }, [activeLibraryTab, refetchContent, refetchImages]);
 
   // Filter images based on campaign
   const filteredImages = allImages.filter((image) => {
