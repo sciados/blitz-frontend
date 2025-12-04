@@ -1069,164 +1069,171 @@ function AffiliateMarketerDashboard() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Product Library */}
-        <Link
-          href="/products"
-          className="group block p-6 rounded-lg transition-all duration-300 card hover:shadow-xl hover:-translate-y-1 hover:border-purple-400 dark:hover:border-purple-500 border-2 border-transparent "
-        >
-          <div className="flex items-center space-x-3 mb-2">
-            <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
-              <span className="text-purple-600 dark:text-purple-400 text-xl">
-                📦
-              </span>
+      <div className="border-t grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div>
+          <h3 className="text-lg font-semibold mb-4 text-[var(--text-primary)]">
+            Menu
+          </h3>
+          {/* Product Library */}
+          <Link
+            href="/products"
+            className="group block p-6 rounded-lg transition-all duration-300 card hover:shadow-xl hover:-translate-y-1 hover:border-purple-400 dark:hover:border-purple-500 border-2 border-transparent "
+          >
+            <div className="flex items-center space-x-3 mb-2">
+              <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+                <span className="text-purple-600 dark:text-purple-400 text-xl">
+                  📦
+                </span>
+              </div>
+              <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors duration-300">
+                Product Library
+              </h2>
             </div>
-            <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors duration-300">
-              Product Library
-            </h2>
-          </div>
-          <p className="text-sm text-[var(--text-secondary)]">
-            Browse products and create campaigns
-          </p>
-        </Link>
+            <p className="text-sm text-[var(--text-secondary)]">
+              Browse products and create campaigns
+            </p>
+          </Link>
 
-        {/* Campaigns */}
-        <Link
-          href="/campaigns"
-          className="group block p-6 rounded-lg transition-all duration-300 card hover:shadow-xl hover:-translate-y-1 hover:border-blue-400 dark:hover:border-blue-500 border-2 border-transparent "
-        >
-          <div className="flex items-center space-x-3 mb-2">
-            <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
-              <span className="text-blue-600 dark:text-blue-400 text-xl">
-                📢
-              </span>
+          {/* Campaigns */}
+          <Link
+            href="/campaigns"
+            className="group block p-6 rounded-lg transition-all duration-300 card hover:shadow-xl hover:-translate-y-1 hover:border-blue-400 dark:hover:border-blue-500 border-2 border-transparent "
+          >
+            <div className="flex items-center space-x-3 mb-2">
+              <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+                <span className="text-blue-600 dark:text-blue-400 text-xl">
+                  📢
+                </span>
+              </div>
+              <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">
+                Campaigns
+              </h2>
             </div>
-            <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">
-              Campaigns
-            </h2>
-          </div>
-          <p className="text-sm text-[var(--text-secondary)]">
-            Create and manage marketing campaigns
-          </p>
-        </Link>
+            <p className="text-sm text-[var(--text-secondary)]">
+              Create and manage marketing campaigns
+            </p>
+          </Link>
 
-        {/* Content Generation */}
-        <Link
-          href="/content"
-          className="group block p-6 rounded-lg transition-all duration-300 card hover:shadow-xl hover:-translate-y-1 hover:border-green-400 dark:hover:border-green-500 border-2 border-transparent "
-        >
-          <div className="flex items-center space-x-3 mb-2">
-            <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
-              <span className="text-green-600 dark:text-green-400 text-xl">
-                ✍️
-              </span>
+          {/* Content Generation */}
+          <Link
+            href="/content"
+            className="group block p-6 rounded-lg transition-all duration-300 card hover:shadow-xl hover:-translate-y-1 hover:border-green-400 dark:hover:border-green-500 border-2 border-transparent "
+          >
+            <div className="flex items-center space-x-3 mb-2">
+              <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+                <span className="text-green-600 dark:text-green-400 text-xl">
+                  ✍️
+                </span>
+              </div>
+              <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors duration-300">
+                Content
+              </h2>
             </div>
-            <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors duration-300">
-              Content
-            </h2>
-          </div>
-          <p className="text-sm text-[var(--text-secondary)]">
-            Generate AI-powered campaign content
-          </p>
-        </Link>
+            <p className="text-sm text-[var(--text-secondary)]">
+              Generate AI-powered campaign content
+            </p>
+          </Link>
 
-        {/* Intelligence/RAG */}
-        <Link
-          href="/intelligence"
-          className="group block p-6 rounded-lg transition-all duration-300 card hover:shadow-xl hover:-translate-y-1 hover:border-indigo-400 dark:hover:border-indigo-500 border-2 border-transparent "
-        >
-          <div className="flex items-center space-x-3 mb-2">
-            <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
-              <span className="text-indigo-600 dark:text-indigo-400 text-xl">
-                🧠
-              </span>
+          {/* Intelligence/RAG */}
+          <Link
+            href="/intelligence"
+            className="group block p-6 rounded-lg transition-all duration-300 card hover:shadow-xl hover:-translate-y-1 hover:border-indigo-400 dark:hover:border-indigo-500 border-2 border-transparent "
+          >
+            <div className="flex items-center space-x-3 mb-2">
+              <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+                <span className="text-indigo-600 dark:text-indigo-400 text-xl">
+                  🧠
+                </span>
+              </div>
+              <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-300">
+                Intelligence
+              </h2>
             </div>
-            <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-300">
-              Intelligence
-            </h2>
-          </div>
-          <p className="text-sm text-[var(--text-secondary)]">
-            Access product intelligence and insights
-          </p>
-        </Link>
+            <p className="text-sm text-[var(--text-secondary)]">
+              Access product intelligence and insights
+            </p>
+          </Link>
 
-        {/* Analytics */}
-        <Link
-          href="/analytics"
-          className="group block p-6 rounded-lg transition-all duration-300 card hover:shadow-xl hover:-translate-y-1 hover:border-orange-400 dark:hover:border-orange-500 border-2 border-transparent "
-        >
-          <div className="flex items-center space-x-3 mb-2">
-            <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
-              <span className="text-orange-600 dark:text-orange-400 text-xl">
-                📈
-              </span>
+          {/* Analytics */}
+          <Link
+            href="/analytics"
+            className="group block p-6 rounded-lg transition-all duration-300 card hover:shadow-xl hover:-translate-y-1 hover:border-orange-400 dark:hover:border-orange-500 border-2 border-transparent "
+          >
+            <div className="flex items-center space-x-3 mb-2">
+              <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+                <span className="text-orange-600 dark:text-orange-400 text-xl">
+                  📈
+                </span>
+              </div>
+              <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors duration-300">
+                Analytics
+              </h2>
             </div>
-            <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors duration-300">
-              Analytics
-            </h2>
-          </div>
-          <p className="text-sm text-[var(--text-secondary)]">
-            View campaign performance metrics
-          </p>
-        </Link>
+            <p className="text-sm text-[var(--text-secondary)]">
+              View campaign performance metrics
+            </p>
+          </Link>
 
-        {/* Messages */}
-        <Link
-          href="/messages"
-          className="group block p-6 rounded-lg transition-all duration-300 card hover:shadow-xl hover:-translate-y-1 hover:border-pink-400 dark:hover:border-pink-500 border-2 border-transparent "
-        >
-          <div className="flex items-center space-x-3 mb-2">
-            <div className="w-10 h-10 bg-pink-100 dark:bg-pink-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
-              <span className="text-pink-600 dark:text-pink-400 text-xl">
-                💬
-              </span>
+          {/* Messages */}
+          <Link
+            href="/messages"
+            className="group block p-6 rounded-lg transition-all duration-300 card hover:shadow-xl hover:-translate-y-1 hover:border-pink-400 dark:hover:border-pink-500 border-2 border-transparent "
+          >
+            <div className="flex items-center space-x-3 mb-2">
+              <div className="w-10 h-10 bg-pink-100 dark:bg-pink-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+                <span className="text-pink-600 dark:text-pink-400 text-xl">
+                  💬
+                </span>
+              </div>
+              <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-pink-600 dark:group-hover:text-pink-400 transition-colors duration-300">
+                Messages
+              </h2>
             </div>
-            <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-pink-600 dark:group-hover:text-pink-400 transition-colors duration-300">
-              Messages
-            </h2>
-          </div>
-          <p className="text-sm text-[var(--text-secondary)]">
-            Chat with affiliates and product creators
-          </p>
-        </Link>
+            <p className="text-sm text-[var(--text-secondary)]">
+              Chat with affiliates and product creators
+            </p>
+          </Link>
 
-        {/* Compliance Check */}
-        <Link
-          href="/compliance"
-          className="group block p-6 rounded-lg transition-all duration-300 card hover:shadow-xl hover:-translate-y-1 hover:border-red-400 dark:hover:border-red-500 border-2 border-transparent "
-        >
-          <div className="flex items-center space-x-3 mb-2">
-            <div className="w-10 h-10 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
-              <span className="text-red-600 dark:text-red-400 text-xl">✓</span>
+          {/* Compliance Check */}
+          <Link
+            href="/compliance"
+            className="group block p-6 rounded-lg transition-all duration-300 card hover:shadow-xl hover:-translate-y-1 hover:border-red-400 dark:hover:border-red-500 border-2 border-transparent "
+          >
+            <div className="flex items-center space-x-3 mb-2">
+              <div className="w-10 h-10 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+                <span className="text-red-600 dark:text-red-400 text-xl">
+                  ✓
+                </span>
+              </div>
+              <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors duration-300">
+                Compliance
+              </h2>
             </div>
-            <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors duration-300">
-              Compliance
-            </h2>
-          </div>
-          <p className="text-sm text-[var(--text-secondary)]">
-            Check content against compliance rules
-          </p>
-        </Link>
+            <p className="text-sm text-[var(--text-secondary)]">
+              Check content against FTC Compliance rules
+            </p>
+          </Link>
 
-        {/* Settings */}
-        <Link
-          href="/settings"
-          className="group block p-6 rounded-lg transition-all duration-300 card hover:shadow-xl hover:-translate-y-1 hover:border-gray-400 dark:hover:border-gray-500 border-2 border-transparent "
-        >
-          <div className="flex items-center space-x-3 mb-2">
-            <div className="w-10 h-10 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
-              <span className="text-gray-600 dark:text-gray-400 text-xl">
-                ⚙️
-              </span>
+          {/* Settings */}
+          <Link
+            href="/settings"
+            className="group block p-6 rounded-lg transition-all duration-300 card hover:shadow-xl hover:-translate-y-1 hover:border-gray-400 dark:hover:border-gray-500 border-2 border-transparent "
+          >
+            <div className="flex items-center space-x-3 mb-2">
+              <div className="w-10 h-10 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+                <span className="text-gray-600 dark:text-gray-400 text-xl">
+                  ⚙️
+                </span>
+              </div>
+              <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors duration-300">
+                Settings
+              </h2>
             </div>
-            <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors duration-300">
-              Settings
-            </h2>
-          </div>
-          <p className="text-sm text-[var(--text-secondary)]">
-            Manage your account and preferences
-          </p>
-        </Link>
+            <p className="text-sm text-[var(--text-secondary)]">
+              Manage your account and preferences
+            </p>
+          </Link>
+        </div>
       </div>
 
       {/* Quick Actions & Tips */}
