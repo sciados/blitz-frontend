@@ -9,6 +9,7 @@ type UserInfo = {
   email: string;
   role: string;
   user_type: string;
+  affiliate_tier?: string | null;
 };
 
 export default function DashboardPage() {
@@ -968,6 +969,12 @@ function BusinessOwnerDashboard() {
 // ============================================================================
 
 function AffiliateMarketerDashboard() {
+  // Fetch user info to get affiliate tier
+  const { data: userInfo } = useQuery({
+    queryKey: ["userInfo"],
+    queryFn: async () => (await api.get("/api/auth/me")).data,
+  });
+
   // Fetch affiliate marketer stats
   const { data: stats } = useQuery({
     queryKey: ["affiliateMarketerStats"],
@@ -1018,6 +1025,49 @@ function AffiliateMarketerDashboard() {
 
   return (
     <>
+      {/* Affiliate Tier Indicator */}
+      <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800 mb-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
+              {userInfo?.affiliate_tier === "pro" ? (
+                <span className="text-blue-600 dark:text-blue-400 text-xl">⭐</span>
+              ) : (
+                <span className="text-blue-600 dark:text-blue-400 text-xl">👤</span>
+              )}
+            </div>
+            <div>
+              <h3 className="text-sm font-medium text-blue-900 dark:text-blue-300">
+                Affiliate Tier
+              </h3>
+              <p className="text-sm text-blue-700 dark:text-blue-400">
+                {userInfo?.affiliate_tier === "pro" ? "Pro Affiliate" : "Standard Affiliate"}
+              </p>
+            </div>
+          </div>
+          <div>
+            {userInfo?.affiliate_tier === "pro" ? (
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
+                <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                Active
+              </span>
+            ) : (
+              <Link
+                href="/campaigns"
+                className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400 hover:bg-orange-200 dark:hover:bg-orange-900/50 transition"
+              >
+                <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                Upgrade to Pro
+              </Link>
+            )}
+          </div>
+        </div>
+      </div>
+
       {/* Quick Stats Section */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div className="card p-4 border-l-4 border-blue-500">
@@ -1069,307 +1119,310 @@ function AffiliateMarketerDashboard() {
         </div>
       </div>
 
-      <div>
-        <h3 className="text-lg font-semibold mb-4 text-[var(--text-primary)]">
-          Menu
-        </h3>
-        <div className="border-t grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Product Library */}
-          <Link
-            href="/products"
-            className="group block p-6 rounded-lg transition-all duration-300 card hover:shadow-xl hover:-translate-y-1 hover:border-purple-400 dark:hover:border-purple-500 border-2 border-transparent "
-          >
-            <div className="flex items-center space-x-3 mb-2">
-              <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
-                <span className="text-purple-600 dark:text-purple-400 text-xl">
-                  📦
-                </span>
-              </div>
-              <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors duration-300">
-                Product Library
-              </h2>
-            </div>
-            <p className="text-sm text-[var(--text-secondary)]">
-              Browse products and create campaigns
-            </p>
-          </Link>
-
-          {/* Campaigns */}
-          <Link
-            href="/campaigns"
-            className="group block p-6 rounded-lg transition-all duration-300 card hover:shadow-xl hover:-translate-y-1 hover:border-blue-400 dark:hover:border-blue-500 border-2 border-transparent "
-          >
-            <div className="flex items-center space-x-3 mb-2">
-              <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
-                <span className="text-blue-600 dark:text-blue-400 text-xl">
-                  📢
-                </span>
-              </div>
-              <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">
-                Campaigns
-              </h2>
-            </div>
-            <p className="text-sm text-[var(--text-secondary)]">
-              Create and manage marketing campaigns
-            </p>
-          </Link>
-
-          {/* Content Generation */}
-          <Link
-            href="/content"
-            className="group block p-6 rounded-lg transition-all duration-300 card hover:shadow-xl hover:-translate-y-1 hover:border-green-400 dark:hover:border-green-500 border-2 border-transparent "
-          >
-            <div className="flex items-center space-x-3 mb-2">
-              <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
-                <span className="text-green-600 dark:text-green-400 text-xl">
-                  ✍️
-                </span>
-              </div>
-              <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors duration-300">
-                Content
-              </h2>
-            </div>
-            <p className="text-sm text-[var(--text-secondary)]">
-              Generate AI-powered campaign content
-            </p>
-          </Link>
-
-          {/* Intelligence/RAG */}
-          <Link
-            href="/intelligence"
-            className="group block p-6 rounded-lg transition-all duration-300 card hover:shadow-xl hover:-translate-y-1 hover:border-indigo-400 dark:hover:border-indigo-500 border-2 border-transparent "
-          >
-            <div className="flex items-center space-x-3 mb-2">
-              <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
-                <span className="text-indigo-600 dark:text-indigo-400 text-xl">
-                  🧠
-                </span>
-              </div>
-              <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-300">
-                Intelligence
-              </h2>
-            </div>
-            <p className="text-sm text-[var(--text-secondary)]">
-              Access product intelligence and insights
-            </p>
-          </Link>
-
-          {/* Analytics */}
-          <Link
-            href="/analytics"
-            className="group block p-6 rounded-lg transition-all duration-300 card hover:shadow-xl hover:-translate-y-1 hover:border-orange-400 dark:hover:border-orange-500 border-2 border-transparent "
-          >
-            <div className="flex items-center space-x-3 mb-2">
-              <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
-                <span className="text-orange-600 dark:text-orange-400 text-xl">
-                  📈
-                </span>
-              </div>
-              <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors duration-300">
-                Analytics
-              </h2>
-            </div>
-            <p className="text-sm text-[var(--text-secondary)]">
-              View campaign performance metrics
-            </p>
-          </Link>
-
-          {/* Messages */}
-          <Link
-            href="/messages"
-            className="group block p-6 rounded-lg transition-all duration-300 card hover:shadow-xl hover:-translate-y-1 hover:border-pink-400 dark:hover:border-pink-500 border-2 border-transparent "
-          >
-            <div className="flex items-center space-x-3 mb-2">
-              <div className="w-10 h-10 bg-pink-100 dark:bg-pink-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
-                <span className="text-pink-600 dark:text-pink-400 text-xl">
-                  💬
-                </span>
-              </div>
-              <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-pink-600 dark:group-hover:text-pink-400 transition-colors duration-300">
-                Messages
-              </h2>
-            </div>
-            <p className="text-sm text-[var(--text-secondary)]">
-              Chat with affiliates and product creators
-            </p>
-          </Link>
-
-          {/* Compliance Check */}
-          <Link
-            href="/compliance"
-            className="group block p-6 rounded-lg transition-all duration-300 card hover:shadow-xl hover:-translate-y-1 hover:border-red-400 dark:hover:border-red-500 border-2 border-transparent "
-          >
-            <div className="flex items-center space-x-3 mb-2">
-              <div className="w-10 h-10 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
-                <span className="text-red-600 dark:text-red-400 text-xl">
-                  ✓
-                </span>
-              </div>
-              <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors duration-300">
-                Compliance
-              </h2>
-            </div>
-            <p className="text-sm text-[var(--text-secondary)]">
-              Check content against FTC Compliance rules
-            </p>
-          </Link>
-
-          {/* Settings */}
-          <Link
-            href="/settings"
-            className="group block p-6 rounded-lg transition-all duration-300 card hover:shadow-xl hover:-translate-y-1 hover:border-gray-400 dark:hover:border-gray-500 border-2 border-transparent "
-          >
-            <div className="flex items-center space-x-3 mb-2">
-              <div className="w-10 h-10 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
-                <span className="text-gray-600 dark:text-gray-400 text-xl">
-                  ⚙️
-                </span>
-              </div>
-              <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors duration-300">
-                Settings
-              </h2>
-            </div>
-            <p className="text-sm text-[var(--text-secondary)]">
-              Manage your account and preferences
-            </p>
-          </Link>
-        </div>
-      </div>
-
-      {/* Quick Actions & Tips */}
       <div className="border-t pt-6 space-y-6">
         <div>
           <h3 className="text-lg font-semibold mb-4 text-[var(--text-primary)]">
-            Quick Actions
+            Menu
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Link
-              href="/campaigns"
-              className="p-4 card hover:shadow-md transition-shadow border-2 border-transparent hover:border-blue-400 dark:hover:border-blue-500"
-            >
-              <div className="flex items-center space-x-3 mb-2">
-                <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-                  <span className="text-xl">➕</span>
-                </div>
-                <h4 className="font-semibold text-[var(--text-primary)]">
-                  Create Campaign
-                </h4>
-              </div>
-              <p className="text-sm text-[var(--text-secondary)]">
-                Start a new marketing campaign
-              </p>
-            </Link>
-
-            <Link
-              href="/content"
-              className="p-4 card hover:shadow-md transition-shadow border-2 border-transparent hover:border-green-400 dark:hover:border-green-500"
-            >
-              <div className="flex items-center space-x-3 mb-2">
-                <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
-                  <span className="text-xl">✍️</span>
-                </div>
-                <h4 className="font-semibold text-[var(--text-primary)]">
-                  Generate Content
-                </h4>
-              </div>
-              <p className="text-sm text-[var(--text-secondary)]">
-                Create AI-powered marketing content
-              </p>
-            </Link>
-
+          <div className="border-t grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Product Library */}
             <Link
               href="/products"
-              className="p-4 card hover:shadow-md transition-shadow border-2 border-transparent hover:border-purple-400 dark:hover:border-purple-500"
+              className="group block p-6 rounded-lg transition-all duration-300 card hover:shadow-xl hover:-translate-y-1 hover:border-purple-400 dark:hover:border-purple-500 border-2 border-transparent "
             >
               <div className="flex items-center space-x-3 mb-2">
-                <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
-                  <span className="text-xl">🔍</span>
+                <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+                  <span className="text-purple-600 dark:text-purple-400 text-xl">
+                    📦
+                  </span>
                 </div>
-                <h4 className="font-semibold text-[var(--text-primary)]">
-                  Browse Products
-                </h4>
+                <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors duration-300">
+                  Product Library
+                </h2>
               </div>
               <p className="text-sm text-[var(--text-secondary)]">
-                Find products to promote
+                Browse products and create campaigns
+              </p>
+            </Link>
+
+            {/* Campaigns */}
+            <Link
+              href="/campaigns"
+              className="group block p-6 rounded-lg transition-all duration-300 card hover:shadow-xl hover:-translate-y-1 hover:border-blue-400 dark:hover:border-blue-500 border-2 border-transparent "
+            >
+              <div className="flex items-center space-x-3 mb-2">
+                <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+                  <span className="text-blue-600 dark:text-blue-400 text-xl">
+                    📢
+                  </span>
+                </div>
+                <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">
+                  Campaigns
+                </h2>
+              </div>
+              <p className="text-sm text-[var(--text-secondary)]">
+                Create and manage marketing campaigns
+              </p>
+            </Link>
+
+            {/* Content Generation */}
+            <Link
+              href="/content"
+              className="group block p-6 rounded-lg transition-all duration-300 card hover:shadow-xl hover:-translate-y-1 hover:border-green-400 dark:hover:border-green-500 border-2 border-transparent "
+            >
+              <div className="flex items-center space-x-3 mb-2">
+                <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+                  <span className="text-green-600 dark:text-green-400 text-xl">
+                    ✍️
+                  </span>
+                </div>
+                <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors duration-300">
+                  Content
+                </h2>
+              </div>
+              <p className="text-sm text-[var(--text-secondary)]">
+                Generate AI-powered campaign content
+              </p>
+            </Link>
+
+            {/* Intelligence/RAG */}
+            <Link
+              href="/intelligence"
+              className="group block p-6 rounded-lg transition-all duration-300 card hover:shadow-xl hover:-translate-y-1 hover:border-indigo-400 dark:hover:border-indigo-500 border-2 border-transparent "
+            >
+              <div className="flex items-center space-x-3 mb-2">
+                <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+                  <span className="text-indigo-600 dark:text-indigo-400 text-xl">
+                    🧠
+                  </span>
+                </div>
+                <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-300">
+                  Intelligence
+                </h2>
+              </div>
+              <p className="text-sm text-[var(--text-secondary)]">
+                Access product intelligence and insights
+              </p>
+            </Link>
+
+            {/* Analytics */}
+            <Link
+              href="/analytics"
+              className="group block p-6 rounded-lg transition-all duration-300 card hover:shadow-xl hover:-translate-y-1 hover:border-orange-400 dark:hover:border-orange-500 border-2 border-transparent "
+            >
+              <div className="flex items-center space-x-3 mb-2">
+                <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+                  <span className="text-orange-600 dark:text-orange-400 text-xl">
+                    📈
+                  </span>
+                </div>
+                <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors duration-300">
+                  Analytics
+                </h2>
+              </div>
+              <p className="text-sm text-[var(--text-secondary)]">
+                View campaign performance metrics
+              </p>
+            </Link>
+
+            {/* Messages */}
+            <Link
+              href="/messages"
+              className="group block p-6 rounded-lg transition-all duration-300 card hover:shadow-xl hover:-translate-y-1 hover:border-pink-400 dark:hover:border-pink-500 border-2 border-transparent "
+            >
+              <div className="flex items-center space-x-3 mb-2">
+                <div className="w-10 h-10 bg-pink-100 dark:bg-pink-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+                  <span className="text-pink-600 dark:text-pink-400 text-xl">
+                    💬
+                  </span>
+                </div>
+                <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-pink-600 dark:group-hover:text-pink-400 transition-colors duration-300">
+                  Messages
+                </h2>
+              </div>
+              <p className="text-sm text-[var(--text-secondary)]">
+                Chat with affiliates and product creators
+              </p>
+            </Link>
+
+            {/* Compliance Check */}
+            <Link
+              href="/compliance"
+              className="group block p-6 rounded-lg transition-all duration-300 card hover:shadow-xl hover:-translate-y-1 hover:border-red-400 dark:hover:border-red-500 border-2 border-transparent "
+            >
+              <div className="flex items-center space-x-3 mb-2">
+                <div className="w-10 h-10 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+                  <span className="text-red-600 dark:text-red-400 text-xl">
+                    ✓
+                  </span>
+                </div>
+                <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors duration-300">
+                  Compliance
+                </h2>
+              </div>
+              <p className="text-sm text-[var(--text-secondary)]">
+                Check content against FTC Compliance rules
+              </p>
+            </Link>
+
+            {/* Settings */}
+            <Link
+              href="/settings"
+              className="group block p-6 rounded-lg transition-all duration-300 card hover:shadow-xl hover:-translate-y-1 hover:border-gray-400 dark:hover:border-gray-500 border-2 border-transparent "
+            >
+              <div className="flex items-center space-x-3 mb-2">
+                <div className="w-10 h-10 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+                  <span className="text-gray-600 dark:text-gray-400 text-xl">
+                    ⚙️
+                  </span>
+                </div>
+                <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors duration-300">
+                  Settings
+                </h2>
+              </div>
+              <p className="text-sm text-[var(--text-secondary)]">
+                Manage your account and preferences
               </p>
             </Link>
           </div>
         </div>
 
-        <div>
-          <h3 className="text-lg font-semibold mb-4 text-[var(--text-primary)]">
-            {stats?.totalCampaigns === 0 ? "Getting Started" : "Pro Tips"}
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {stats?.totalCampaigns === 0 ? (
-              <>
-                <div className="p-4 card border-l-4 border-blue-500">
-                  <h4 className="font-semibold text-[var(--text-primary)] mb-2">
-                    📢 Create Your First Campaign
+        {/* Quick Actions & Tips */}
+        <div className="border-t pt-6 space-y-6">
+          <div>
+            <h3 className="text-lg font-semibold mb-4 text-[var(--text-primary)]">
+              Quick Actions
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Link
+                href="/campaigns"
+                className="p-4 card hover:shadow-md transition-shadow border-2 border-transparent hover:border-blue-400 dark:hover:border-blue-500"
+              >
+                <div className="flex items-center space-x-3 mb-2">
+                  <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                    <span className="text-xl">➕</span>
+                  </div>
+                  <h4 className="font-semibold text-[var(--text-primary)]">
+                    Create Campaign
                   </h4>
-                  <p className="text-sm text-[var(--text-secondary)] mb-3">
-                    Start by creating a campaign for a product you want to
-                    promote. Browse the Product Library to find great products.
-                  </p>
-                  <Link
-                    href="/campaigns"
-                    className="text-sm text-blue-600 dark:text-blue-400 hover:underline font-medium"
-                  >
-                    Create Campaign →
-                  </Link>
                 </div>
+                <p className="text-sm text-[var(--text-secondary)]">
+                  Start a new marketing campaign
+                </p>
+              </Link>
 
-                <div className="p-4 card border-l-4 border-green-500">
-                  <h4 className="font-semibold text-[var(--text-primary)] mb-2">
-                    ✍️ Generate AI Content
+              <Link
+                href="/content"
+                className="p-4 card hover:shadow-md transition-shadow border-2 border-transparent hover:border-green-400 dark:hover:border-green-500"
+              >
+                <div className="flex items-center space-x-3 mb-2">
+                  <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+                    <span className="text-xl">✍️</span>
+                  </div>
+                  <h4 className="font-semibold text-[var(--text-primary)]">
+                    Generate Content
                   </h4>
-                  <p className="text-sm text-[var(--text-secondary)] mb-3">
-                    Use AI to generate high-quality marketing content including
-                    emails, articles, social posts, and more.
-                  </p>
-                  <Link
-                    href="/content"
-                    className="text-sm text-green-600 dark:text-green-400 hover:underline font-medium"
-                  >
-                    Start Creating →
-                  </Link>
                 </div>
-              </>
-            ) : (
-              <>
-                <div className="p-4 card border-l-4 border-orange-500">
-                  <h4 className="font-semibold text-[var(--text-primary)] mb-2">
-                    📊 Track Your Results
-                  </h4>
-                  <p className="text-sm text-[var(--text-secondary)] mb-3">
-                    Monitor your campaign performance in Analytics. Focus on
-                    what's working and optimize underperforming campaigns.
-                  </p>
-                  <Link
-                    href="/analytics"
-                    className="text-sm text-orange-600 dark:text-orange-400 hover:underline font-medium"
-                  >
-                    View Analytics →
-                  </Link>
-                </div>
+                <p className="text-sm text-[var(--text-secondary)]">
+                  Create AI-powered marketing content
+                </p>
+              </Link>
 
-                <div className="p-4 card border-l-4 border-indigo-500">
-                  <h4 className="font-semibold text-[var(--text-primary)] mb-2">
-                    🧠 Campiagn Intelligence
+              <Link
+                href="/products"
+                className="p-4 card hover:shadow-md transition-shadow border-2 border-transparent hover:border-purple-400 dark:hover:border-purple-500"
+              >
+                <div className="flex items-center space-x-3 mb-2">
+                  <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
+                    <span className="text-xl">🔍</span>
+                  </div>
+                  <h4 className="font-semibold text-[var(--text-primary)]">
+                    Browse Products
                   </h4>
-                  <p className="text-sm text-[var(--text-secondary)] mb-3">
-                    Leverage product intelligence and insights to create more
-                    targeted, effective marketing content.
-                  </p>
-                  <Link
-                    href="/intelligence"
-                    className="text-sm text-indigo-600 dark:text-indigo-400 hover:underline font-medium"
-                  >
-                    Access Intelligence →
-                  </Link>
                 </div>
-              </>
-            )}
+                <p className="text-sm text-[var(--text-secondary)]">
+                  Find products to promote
+                </p>
+              </Link>
+            </div>
+          </div>
+
+          <div>
+            <h3 className="text-lg font-semibold mb-4 text-[var(--text-primary)]">
+              {stats?.totalCampaigns === 0 ? "Getting Started" : "Pro Tips"}
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {stats?.totalCampaigns === 0 ? (
+                <>
+                  <div className="p-4 card border-l-4 border-blue-500">
+                    <h4 className="font-semibold text-[var(--text-primary)] mb-2">
+                      📢 Create Your First Campaign
+                    </h4>
+                    <p className="text-sm text-[var(--text-secondary)] mb-3">
+                      Start by creating a campaign for a product you want to
+                      promote. Browse the Product Library to find great
+                      products.
+                    </p>
+                    <Link
+                      href="/campaigns"
+                      className="text-sm text-blue-600 dark:text-blue-400 hover:underline font-medium"
+                    >
+                      Create Campaign →
+                    </Link>
+                  </div>
+
+                  <div className="p-4 card border-l-4 border-green-500">
+                    <h4 className="font-semibold text-[var(--text-primary)] mb-2">
+                      ✍️ Generate AI Content
+                    </h4>
+                    <p className="text-sm text-[var(--text-secondary)] mb-3">
+                      Use AI to generate high-quality marketing content
+                      including emails, articles, social posts, and more.
+                    </p>
+                    <Link
+                      href="/content"
+                      className="text-sm text-green-600 dark:text-green-400 hover:underline font-medium"
+                    >
+                      Start Creating →
+                    </Link>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="p-4 card border-l-4 border-orange-500">
+                    <h4 className="font-semibold text-[var(--text-primary)] mb-2">
+                      📊 Track Your Results
+                    </h4>
+                    <p className="text-sm text-[var(--text-secondary)] mb-3">
+                      Monitor your campaign performance in Analytics. Focus on
+                      what's working and optimize underperforming campaigns.
+                    </p>
+                    <Link
+                      href="/analytics"
+                      className="text-sm text-orange-600 dark:text-orange-400 hover:underline font-medium"
+                    >
+                      View Analytics →
+                    </Link>
+                  </div>
+
+                  <div className="p-4 card border-l-4 border-indigo-500">
+                    <h4 className="font-semibold text-[var(--text-primary)] mb-2">
+                      🧠 Campiagn Intelligence
+                    </h4>
+                    <p className="text-sm text-[var(--text-secondary)] mb-3">
+                      Leverage product intelligence and insights to create more
+                      targeted, effective marketing content.
+                    </p>
+                    <Link
+                      href="/intelligence"
+                      className="text-sm text-indigo-600 dark:text-indigo-400 hover:underline font-medium"
+                    >
+                      Access Intelligence →
+                    </Link>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </div>

@@ -5,6 +5,8 @@ export type User = {
     role: string; // "user" | "business" | "affiliate" | "creator" | "admin"
     developer_tier?: string | null; // "new" | "verified" | "premium"
     developer_tier_upgraded_at?: string | null;
+    affiliate_tier?: string | null; // "standard" | "pro"
+    affiliate_tier_upgraded_at?: string | null;
     stripe_subscription_id?: string | null;
     created_at: string;
 };
