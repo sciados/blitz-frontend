@@ -344,12 +344,6 @@ export default function Layout({ children }: LayoutProps) {
     console.debug("[Layout] render");
   }
 
-  // If auth page or landing page, render children without layout chrome
-  // This comes AFTER all hooks to avoid violating Rules of Hooks
-  if (isAuthPage || isLandingPage) {
-    return <>{children}</>;
-  }
-
   return (
     // Use the same background for the shell and page canvas so the main page matches the sidebar
     <>

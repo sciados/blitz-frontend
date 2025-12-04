@@ -2,7 +2,6 @@
 import "src/app/globals.css";
 import { ThemeProvider } from "src/contexts/ThemeContext";
 import { Providers } from "src/components/Providers";
-import Layout from "src/components/Layout"; // default import
 
 export default function RootLayout({
   children,
@@ -14,7 +13,7 @@ export default function RootLayout({
       <body>
         <Providers>
           <ThemeProvider>
-            <Layout>{children}</Layout>
+            {children}
           </ThemeProvider>
         </Providers>
       </body>
