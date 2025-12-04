@@ -8,6 +8,7 @@ export const api = axios.create({
     headers: {
         "Content-Type": "application/json",
     },
+    maxRedirects: 5,
 });
 
 // Request interceptor to add auth token

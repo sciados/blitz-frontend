@@ -534,19 +534,16 @@ function BusinessOwnerDashboard() {
         const [campaignsRes, textContentRes] = await Promise.all([
           api.get("/api/campaigns"),
           api.get("/api/content").catch((err) => {
-            console.error("Failed to fetch text content:", err);
+            console.error("Failed to fetch text content:", err.response?.status, err.response?.data || err.message);
             return { data: [] };
           }),
         ]);
 
         const campaigns = campaignsRes.data || [];
-        console.log("Fetched campaigns:", campaigns.length, "campaigns");
         const activeCampaigns = campaigns.filter(
           (c: any) => c.status === "active"
         ).length;
         const textContent = textContentRes.data || [];
-        console.log("Fetched text content:", textContent.length, "items");
-        console.log("textContentRes:", textContentRes);
 
         // Fetch images for all campaigns (same pattern as Content Library)
         const allImagePromises = campaigns.map((campaign: any) =>
@@ -989,19 +986,16 @@ function AffiliateMarketerDashboard() {
         const [campaignsRes, textContentRes] = await Promise.all([
           api.get("/api/campaigns"),
           api.get("/api/content").catch((err) => {
-            console.error("Failed to fetch text content:", err);
+            console.error("Failed to fetch text content:", err.response?.status, err.response?.data || err.message);
             return { data: [] };
           }),
         ]);
 
         const campaigns = campaignsRes.data || [];
-        console.log("Fetched campaigns:", campaigns.length, "campaigns");
         const activeCampaigns = campaigns.filter(
           (c: any) => c.status === "active"
         ).length;
         const textContent = textContentRes.data || [];
-        console.log("Fetched text content:", textContent.length, "items");
-        console.log("textContentRes:", textContentRes);
 
         // Fetch images for all campaigns (same pattern as Content Library)
         const allImagePromises = campaigns.map((campaign: any) =>
