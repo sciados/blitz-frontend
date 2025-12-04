@@ -1061,7 +1061,7 @@ function AffiliateMarketerDashboard() {
               <p className="text-sm text-blue-700 dark:text-blue-400">
                 {userInfo?.affiliate_tier === "pro"
                   ? "Pro Affiliate"
-                  : "Standard Affiliate"}
+                  : "Marketer"}
               </p>
             </div>
           </div>

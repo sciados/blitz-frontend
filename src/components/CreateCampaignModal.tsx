@@ -623,8 +623,9 @@ export function CreateCampaignModal({
                     Unlock Pro Features
                   </h4>
                   <p className="text-gray-600 dark:text-gray-400 mb-4">
-                    Standard affiliates can only create campaigns from products in the Product Library.
-                    Upgrade to Pro to create campaigns from any product URL on any platform.
+                    Marketers can only create campaigns from products in the
+                    Product Library. Upgrade to Pro to create campaigns from any
+                    product URL on any platform.
                   </p>
                   <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
                     <h5 className="font-medium text-blue-900 dark:text-blue-300 mb-2">
@@ -632,20 +633,50 @@ export function CreateCampaignModal({
                     </h5>
                     <ul className="space-y-1 text-sm text-blue-800 dark:text-blue-400">
                       <li className="flex items-center space-x-2">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M5 13l4 4L19 7"
+                          />
                         </svg>
                         <span>Create campaigns from any product URL</span>
                       </li>
                       <li className="flex items-center space-x-2">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M5 13l4 4L19 7"
+                          />
                         </svg>
                         <span>Access to all affiliate platforms</span>
                       </li>
                       <li className="flex items-center space-x-2">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M5 13l4 4L19 7"
+                          />
                         </svg>
                         <span>Priority support</span>
                       </li>
@@ -666,7 +697,9 @@ export function CreateCampaignModal({
               <button
                 onClick={() => {
                   setShowUpgradeModal(false);
-                  toast.info("Upgrade feature coming soon! Contact support for early access.");
+                  toast.info(
+                    "Upgrade feature coming soon! Contact support for early access."
+                  );
                 }}
                 className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition"
               >
