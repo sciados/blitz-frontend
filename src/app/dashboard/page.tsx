@@ -1069,11 +1069,11 @@ function AffiliateMarketerDashboard() {
         </div>
       </div>
 
-      <div className="border-t grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div>
-          <h3 className="text-lg font-semibold mb-4 text-[var(--text-primary)]">
-            Menu
-          </h3>
+      <div>
+        <h3 className="text-lg font-semibold mb-4 text-[var(--text-primary)]">
+          Menu
+        </h3>
+        <div className="border-t grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Product Library */}
           <Link
             href="/products"
