@@ -159,7 +159,8 @@
       "Bash(GIT_DIR=/c/Users/shaun/OneDrive/Documents/GitHub/blitz-backend/.git git show:*)",
       "Bash(GIT_DIR=/c/Users/shaun/OneDrive/Documents/GitHub/blitz-backend/.git git add:*)",
       "Bash(GIT_DIR=/c/Users/shaun/OneDrive/Documents/GitHub/blitz-backend/.git git commit:*)",
-      "Bash(GIT_DIR=/c/Users/shaun/OneDrive/Documents/GitHub/blitz-backend/.git git push:*)"
+      "Bash(GIT_DIR=/c/Users/shaun/OneDrive/Documents/GitHub/blitz-backend/.git git push:*)",
+      "Bash(grep:*)"
     ],
     "deny": [],
     "ask": []
