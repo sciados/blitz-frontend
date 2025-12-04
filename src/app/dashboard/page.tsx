@@ -25,7 +25,7 @@ export default function DashboardPage() {
           <div className="animate-pulse">
             <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-4"></div>
             <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mb-6"></div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {[1, 2, 3, 4, 5, 6].map((i) => (
                 <div
                   key={i}
@@ -179,7 +179,7 @@ function ProductCreatorDashboard() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Product Library */}
         <Link
           href="/products"
@@ -490,10 +490,9 @@ function BusinessOwnerDashboard() {
     queryKey: ["businessOwnerStats"],
     queryFn: async () => {
       try {
-        const [campaignsRes, textContentRes, imagesRes] = await Promise.all([
+        const [campaignsRes, textContentRes] = await Promise.all([
           api.get("/api/campaigns"),
           api.get("/api/content").catch(() => ({ data: [] })),
-          api.get("/api/images").catch(() => ({ data: [] })),
         ]);
 
         const campaigns = campaignsRes.data || [];
@@ -501,7 +500,16 @@ function BusinessOwnerDashboard() {
           (c: any) => c.status === "active"
         ).length;
         const textContent = textContentRes.data || [];
-        const images = imagesRes.data || [];
+
+        // Fetch images for all campaigns (same pattern as Content Library)
+        const allImagePromises = campaigns.map((campaign: any) =>
+          api
+            .get(`/api/images/campaign/${campaign.id}`)
+            .then((res) => res.data.images || [])
+            .catch(() => [])
+        );
+        const allImageArrays = await Promise.all(allImagePromises);
+        const images = allImageArrays.flat();
         const totalContentPieces = textContent.length + images.length;
 
         return {
@@ -578,7 +586,7 @@ function BusinessOwnerDashboard() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Business Campaigns */}
         <Link
           href="/campaigns"
@@ -925,10 +933,9 @@ function AffiliateMarketerDashboard() {
     queryKey: ["affiliateMarketerStats"],
     queryFn: async () => {
       try {
-        const [campaignsRes, textContentRes, imagesRes] = await Promise.all([
+        const [campaignsRes, textContentRes] = await Promise.all([
           api.get("/api/campaigns"),
           api.get("/api/content").catch(() => ({ data: [] })),
-          api.get("/api/images").catch(() => ({ data: [] })),
         ]);
 
         const campaigns = campaignsRes.data || [];
@@ -936,7 +943,16 @@ function AffiliateMarketerDashboard() {
           (c: any) => c.status === "active"
         ).length;
         const textContent = textContentRes.data || [];
-        const images = imagesRes.data || [];
+
+        // Fetch images for all campaigns (same pattern as Content Library)
+        const allImagePromises = campaigns.map((campaign: any) =>
+          api
+            .get(`/api/images/campaign/${campaign.id}`)
+            .then((res) => res.data.images || [])
+            .catch(() => [])
+        );
+        const allImageArrays = await Promise.all(allImagePromises);
+        const images = allImageArrays.flat();
         const totalContentPieces = textContent.length + images.length;
 
         return {
@@ -1013,7 +1029,7 @@ function AffiliateMarketerDashboard() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Campaigns */}
         <Link
           href="/campaigns"
@@ -1287,42 +1303,6 @@ function AffiliateMarketerDashboard() {
                 </div>
               </>
             )}
-          </div>
-        </div>
-
-        <div>
-          <h3 className="text-lg font-semibold mb-4 text-[var(--text-primary)]">
-            Campaign Status Overview
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="p-4 card border-l-4 border-green-500">
-              <p className="text-sm text-[var(--text-secondary)] mb-1">
-                Active Campaigns
-              </p>
-              <p className="text-2xl font-bold text-green-600 dark:text-green-400">
-                {stats?.activeCampaigns || 0}
-              </p>
-            </div>
-
-            <div className="p-4 card border-l-4 border-yellow-500">
-              <p className="text-sm text-[var(--text-secondary)] mb-1">
-                Draft/Paused
-              </p>
-              <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
-                {stats?.totalCampaigns
-                  ? stats.totalCampaigns - stats.activeCampaigns
-                  : 0}
-              </p>
-            </div>
-
-            <div className="p-4 card border-l-4 border-blue-500">
-              <p className="text-sm text-[var(--text-secondary)] mb-1">
-                Total Campaigns
-              </p>
-              <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                {stats?.totalCampaigns || 0}
-              </p>
-            </div>
           </div>
         </div>
       </div>
