@@ -149,7 +149,17 @@
       "WebFetch(domain:docs.railway.com)",
       "Bash(tree:*)",
       "Bash(git -C /c/Users/shaun/OneDrive/Documents/GitHub/blitz-backend diff 6270b3e^..6270b3e app/api/content/images.py)",
-      "Bash(railway:*)"
+      "Bash(railway:*)",
+      "Bash(GIT_DIR=/c/Users/shaun/OneDrive/Documents/GitHub/blitz-backend/.git git ls-files:*)",
+      "Bash(GIT_DIR=/c/Users/shaun/OneDrive/Documents/GitHub/blitz-backend/.git git status --porcelain)",
+      "Bash(GIT_DIR=/c/Users/shaun/OneDrive/Documents/GitHub/blitz-backend/.git git log:*)",
+      "Bash(GIT_DIR=/c/Users/shaun/OneDrive/Documents/GitHub/blitz-backend/.git git status:*)",
+      "Bash(GIT_DIR=/c/Users/shaun/OneDrive/Documents/GitHub/blitz-backend/.git git diff:*)",
+      "Bash(GIT_DIR=/c/Users/shaun/OneDrive/Documents/GitHub/blitz-backend/.git git restore:*)",
+      "Bash(GIT_DIR=/c/Users/shaun/OneDrive/Documents/GitHub/blitz-backend/.git git show:*)",
+      "Bash(GIT_DIR=/c/Users/shaun/OneDrive/Documents/GitHub/blitz-backend/.git git add:*)",
+      "Bash(GIT_DIR=/c/Users/shaun/OneDrive/Documents/GitHub/blitz-backend/.git git commit:*)",
+      "Bash(GIT_DIR=/c/Users/shaun/OneDrive/Documents/GitHub/blitz-backend/.git git push:*)"
     ],
     "deny": [],
     "ask": []

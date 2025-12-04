@@ -200,6 +200,26 @@ function ProductCreatorDashboard() {
           </p>
         </Link>
 
+        {/* Product Analytics */}
+        <Link
+          href="/product-analytics"
+          className="group block p-6 rounded-lg transition-all duration-300 card hover:shadow-xl hover:-translate-y-1 hover:border-cyan-400 dark:hover:border-cyan-500 border-2 border-transparent "
+        >
+          <div className="flex items-center space-x-3 mb-2">
+            <div className="w-10 h-10 bg-cyan-100 dark:bg-cyan-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+              <span className="text-cyan-600 dark:text-cyan-400 text-xl">
+                📊
+              </span>
+            </div>
+            <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors duration-300">
+              Product Analytics
+            </h2>
+          </div>
+          <p className="text-sm text-[var(--text-secondary)]">
+            Track affiliate performance and leaderboards
+          </p>
+        </Link>
+
         {/* Intelligence */}
         <Link
           href="/intelligence"
@@ -220,23 +240,43 @@ function ProductCreatorDashboard() {
           </p>
         </Link>
 
-        {/* Content */}
+        {/* Networking */}
         <Link
-          href="/content"
-          className="group block p-6 rounded-lg transition-all duration-300 card hover:shadow-xl hover:-translate-y-1 hover:border-green-400 dark:hover:border-green-500 border-2 border-transparent "
+          href="/affiliates"
+          className="group block p-6 rounded-lg transition-all duration-300 card hover:shadow-xl hover:-translate-y-1 hover:border-purple-400 dark:hover:border-purple-500 border-2 border-transparent "
         >
           <div className="flex items-center space-x-3 mb-2">
-            <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
-              <span className="text-green-600 dark:text-green-400 text-xl">
-                ✍️
+            <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+              <span className="text-purple-600 dark:text-purple-400 text-xl">
+                👥
               </span>
             </div>
-            <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors duration-300">
-              Content
+            <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors duration-300">
+              Networking
             </h2>
           </div>
           <p className="text-sm text-[var(--text-secondary)]">
-            Generate marketing content and sales copy
+            Connect with quality affiliates
+          </p>
+        </Link>
+
+        {/* Messages */}
+        <Link
+          href="/messages"
+          className="group block p-6 rounded-lg transition-all duration-300 card hover:shadow-xl hover:-translate-y-1 hover:border-pink-400 dark:hover:border-pink-500 border-2 border-transparent "
+        >
+          <div className="flex items-center space-x-3 mb-2">
+            <div className="w-10 h-10 bg-pink-100 dark:bg-pink-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+              <span className="text-pink-600 dark:text-pink-400 text-xl">
+                💬
+              </span>
+            </div>
+            <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-pink-600 dark:group-hover:text-pink-400 transition-colors duration-300">
+              Messages
+            </h2>
+          </div>
+          <p className="text-sm text-[var(--text-secondary)]">
+            Communicate with affiliates and partners
           </p>
         </Link>
 
@@ -260,6 +300,26 @@ function ProductCreatorDashboard() {
           </p>
         </Link>
 
+        {/* Content */}
+        <Link
+          href="/content"
+          className="group block p-6 rounded-lg transition-all duration-300 card hover:shadow-xl hover:-translate-y-1 hover:border-green-400 dark:hover:border-green-500 border-2 border-transparent "
+        >
+          <div className="flex items-center space-x-3 mb-2">
+            <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+              <span className="text-green-600 dark:text-green-400 text-xl">
+                ✍️
+              </span>
+            </div>
+            <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors duration-300">
+              Content
+            </h2>
+          </div>
+          <p className="text-sm text-[var(--text-secondary)]">
+            Generate marketing content and sales copy
+          </p>
+        </Link>
+
         {/* Compliance */}
         <Link
           href="/compliance"
@@ -275,26 +335,6 @@ function ProductCreatorDashboard() {
           </div>
           <p className="text-sm text-[var(--text-secondary)]">
             Check content against FTC and network guidelines
-          </p>
-        </Link>
-
-        {/* Product Analytics */}
-        <Link
-          href="/product-analytics"
-          className="group block p-6 rounded-lg transition-all duration-300 card hover:shadow-xl hover:-translate-y-1 hover:border-cyan-400 dark:hover:border-cyan-500 border-2 border-transparent "
-        >
-          <div className="flex items-center space-x-3 mb-2">
-            <div className="w-10 h-10 bg-cyan-100 dark:bg-cyan-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
-              <span className="text-cyan-600 dark:text-cyan-400 text-xl">
-                📊
-              </span>
-            </div>
-            <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors duration-300">
-              Product Analytics
-            </h2>
-          </div>
-          <p className="text-sm text-[var(--text-secondary)]">
-            Track affiliate performance and leaderboards
           </p>
         </Link>
 
@@ -1030,26 +1070,6 @@ function AffiliateMarketerDashboard() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Campaigns */}
-        <Link
-          href="/campaigns"
-          className="group block p-6 rounded-lg transition-all duration-300 card hover:shadow-xl hover:-translate-y-1 hover:border-blue-400 dark:hover:border-blue-500 border-2 border-transparent "
-        >
-          <div className="flex items-center space-x-3 mb-2">
-            <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
-              <span className="text-blue-600 dark:text-blue-400 text-xl">
-                📢
-              </span>
-            </div>
-            <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">
-              Campaigns
-            </h2>
-          </div>
-          <p className="text-sm text-[var(--text-secondary)]">
-            Create and manage your marketing campaigns
-          </p>
-        </Link>
-
         {/* Product Library */}
         <Link
           href="/products"
@@ -1066,7 +1086,27 @@ function AffiliateMarketerDashboard() {
             </h2>
           </div>
           <p className="text-sm text-[var(--text-secondary)]">
-            Browse products to add to your campaigns
+            Browse products and create campaigns
+          </p>
+        </Link>
+
+        {/* Campaigns */}
+        <Link
+          href="/campaigns"
+          className="group block p-6 rounded-lg transition-all duration-300 card hover:shadow-xl hover:-translate-y-1 hover:border-blue-400 dark:hover:border-blue-500 border-2 border-transparent "
+        >
+          <div className="flex items-center space-x-3 mb-2">
+            <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+              <span className="text-blue-600 dark:text-blue-400 text-xl">
+                📢
+              </span>
+            </div>
+            <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">
+              Campaigns
+            </h2>
+          </div>
+          <p className="text-sm text-[var(--text-secondary)]">
+            Create and manage marketing campaigns
           </p>
         </Link>
 
@@ -1086,7 +1126,7 @@ function AffiliateMarketerDashboard() {
             </h2>
           </div>
           <p className="text-sm text-[var(--text-secondary)]">
-            Generate AI-powered content for your campaigns
+            Generate AI-powered campaign content
           </p>
         </Link>
 
@@ -1110,24 +1150,6 @@ function AffiliateMarketerDashboard() {
           </p>
         </Link>
 
-        {/* Compliance Check */}
-        <Link
-          href="/compliance"
-          className="group block p-6 rounded-lg transition-all duration-300 card hover:shadow-xl hover:-translate-y-1 hover:border-red-400 dark:hover:border-red-500 border-2 border-transparent "
-        >
-          <div className="flex items-center space-x-3 mb-2">
-            <div className="w-10 h-10 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
-              <span className="text-red-600 dark:text-red-400 text-xl">✓</span>
-            </div>
-            <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors duration-300">
-              Compliance
-            </h2>
-          </div>
-          <p className="text-sm text-[var(--text-secondary)]">
-            Check content against compliance rules
-          </p>
-        </Link>
-
         {/* Analytics */}
         <Link
           href="/analytics"
@@ -1144,7 +1166,45 @@ function AffiliateMarketerDashboard() {
             </h2>
           </div>
           <p className="text-sm text-[var(--text-secondary)]">
-            View performance metrics for your campaigns
+            View campaign performance metrics
+          </p>
+        </Link>
+
+        {/* Messages */}
+        <Link
+          href="/messages"
+          className="group block p-6 rounded-lg transition-all duration-300 card hover:shadow-xl hover:-translate-y-1 hover:border-pink-400 dark:hover:border-pink-500 border-2 border-transparent "
+        >
+          <div className="flex items-center space-x-3 mb-2">
+            <div className="w-10 h-10 bg-pink-100 dark:bg-pink-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+              <span className="text-pink-600 dark:text-pink-400 text-xl">
+                💬
+              </span>
+            </div>
+            <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-pink-600 dark:group-hover:text-pink-400 transition-colors duration-300">
+              Messages
+            </h2>
+          </div>
+          <p className="text-sm text-[var(--text-secondary)]">
+            Chat with affiliates and product creators
+          </p>
+        </Link>
+
+        {/* Compliance Check */}
+        <Link
+          href="/compliance"
+          className="group block p-6 rounded-lg transition-all duration-300 card hover:shadow-xl hover:-translate-y-1 hover:border-red-400 dark:hover:border-red-500 border-2 border-transparent "
+        >
+          <div className="flex items-center space-x-3 mb-2">
+            <div className="w-10 h-10 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+              <span className="text-red-600 dark:text-red-400 text-xl">✓</span>
+            </div>
+            <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors duration-300">
+              Compliance
+            </h2>
+          </div>
+          <p className="text-sm text-[var(--text-secondary)]">
+            Check content against compliance rules
           </p>
         </Link>
 
