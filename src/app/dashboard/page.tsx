@@ -27,7 +27,10 @@ export default function DashboardPage() {
             <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mb-6"></div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {[1, 2, 3, 4, 5, 6].map((i) => (
-                <div key={i} className="h-32 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                <div
+                  key={i}
+                  className="h-32 bg-gray-200 dark:bg-gray-700 rounded"
+                ></div>
               ))}
             </div>
           </div>
@@ -81,23 +84,25 @@ function ProductCreatorDashboard() {
       try {
         const [productsRes, analyticsRes] = await Promise.all([
           api.get("/api/products"),
-          api.get("/api/product-analytics/summary").catch(() => ({ data: null }))
+          api
+            .get("/api/product-analytics/summary")
+            .catch(() => ({ data: null })),
         ]);
         return {
           totalProducts: productsRes.data?.length || 0,
           activeAffiliates: analyticsRes.data?.active_affiliates || 0,
           totalClicks: analyticsRes.data?.total_clicks || 0,
-          topProducts: analyticsRes.data?.top_products || []
+          topProducts: analyticsRes.data?.top_products || [],
         };
       } catch (error) {
         return {
           totalProducts: 0,
           activeAffiliates: 0,
           totalClicks: 0,
-          topProducts: []
+          topProducts: [],
         };
       }
-    }
+    },
   });
 
   return (
@@ -107,7 +112,9 @@ function ProductCreatorDashboard() {
         <div className="card p-4 border-l-4 border-purple-500">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-[var(--text-secondary)] mb-1">Total Products</p>
+              <p className="text-sm text-[var(--text-secondary)] mb-1">
+                Total Products
+              </p>
               <p className="text-3xl font-bold text-purple-600 dark:text-purple-400">
                 {stats?.totalProducts || 0}
               </p>
@@ -121,7 +128,9 @@ function ProductCreatorDashboard() {
         <div className="card p-4 border-l-4 border-blue-500">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-[var(--text-secondary)] mb-1">Active Affiliates</p>
+              <p className="text-sm text-[var(--text-secondary)] mb-1">
+                Active Affiliates
+              </p>
               <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
                 {stats?.activeAffiliates || 0}
               </p>
@@ -135,7 +144,9 @@ function ProductCreatorDashboard() {
         <div className="card p-4 border-l-4 border-green-500">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-[var(--text-secondary)] mb-1">Total Clicks (7d)</p>
+              <p className="text-sm text-[var(--text-secondary)] mb-1">
+                Total Clicks (7d)
+              </p>
               <p className="text-3xl font-bold text-green-600 dark:text-green-400">
                 {stats?.totalClicks || 0}
               </p>
@@ -149,13 +160,17 @@ function ProductCreatorDashboard() {
         <div className="card p-4 border-l-4 border-cyan-500">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-[var(--text-secondary)] mb-1">Avg Performance</p>
+              <p className="text-sm text-[var(--text-secondary)] mb-1">
+                Avg Performance
+              </p>
               <p className="text-3xl font-bold text-cyan-600 dark:text-cyan-400">
                 {stats?.totalProducts && stats?.totalClicks
                   ? Math.round(stats.totalClicks / stats.totalProducts)
                   : 0}
               </p>
-              <p className="text-xs text-[var(--text-secondary)]">clicks/product</p>
+              <p className="text-xs text-[var(--text-secondary)]">
+                clicks/product
+              </p>
             </div>
             <div className="w-12 h-12 bg-cyan-100 dark:bg-cyan-900/30 rounded-lg flex items-center justify-center">
               <span className="text-2xl">📊</span>
@@ -172,7 +187,9 @@ function ProductCreatorDashboard() {
         >
           <div className="flex items-center space-x-3 mb-2">
             <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
-              <span className="text-purple-600 dark:text-purple-400 text-xl">📦</span>
+              <span className="text-purple-600 dark:text-purple-400 text-xl">
+                📦
+              </span>
             </div>
             <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors duration-300">
               Product Library
@@ -190,7 +207,9 @@ function ProductCreatorDashboard() {
         >
           <div className="flex items-center space-x-3 mb-2">
             <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
-              <span className="text-indigo-600 dark:text-indigo-400 text-xl">🧠</span>
+              <span className="text-indigo-600 dark:text-indigo-400 text-xl">
+                🧠
+              </span>
             </div>
             <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-300">
               Intelligence
@@ -208,7 +227,9 @@ function ProductCreatorDashboard() {
         >
           <div className="flex items-center space-x-3 mb-2">
             <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
-              <span className="text-green-600 dark:text-green-400 text-xl">✍️</span>
+              <span className="text-green-600 dark:text-green-400 text-xl">
+                ✍️
+              </span>
             </div>
             <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors duration-300">
               Content
@@ -226,7 +247,9 @@ function ProductCreatorDashboard() {
         >
           <div className="flex items-center space-x-3 mb-2">
             <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
-              <span className="text-blue-600 dark:text-blue-400 text-xl">📢</span>
+              <span className="text-blue-600 dark:text-blue-400 text-xl">
+                📢
+              </span>
             </div>
             <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">
               Campaigns
@@ -262,7 +285,9 @@ function ProductCreatorDashboard() {
         >
           <div className="flex items-center space-x-3 mb-2">
             <div className="w-10 h-10 bg-cyan-100 dark:bg-cyan-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
-              <span className="text-cyan-600 dark:text-cyan-400 text-xl">📊</span>
+              <span className="text-cyan-600 dark:text-cyan-400 text-xl">
+                📊
+              </span>
             </div>
             <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors duration-300">
               Product Analytics
@@ -280,7 +305,9 @@ function ProductCreatorDashboard() {
         >
           <div className="flex items-center space-x-3 mb-2">
             <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
-              <span className="text-orange-600 dark:text-orange-400 text-xl">📈</span>
+              <span className="text-orange-600 dark:text-orange-400 text-xl">
+                📈
+              </span>
             </div>
             <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors duration-300">
               Analytics
@@ -298,7 +325,9 @@ function ProductCreatorDashboard() {
         >
           <div className="flex items-center space-x-3 mb-2">
             <div className="w-10 h-10 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
-              <span className="text-gray-600 dark:text-gray-400 text-xl">⚙️</span>
+              <span className="text-gray-600 dark:text-gray-400 text-xl">
+                ⚙️
+              </span>
             </div>
             <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors duration-300">
               Settings
@@ -382,7 +411,8 @@ function ProductCreatorDashboard() {
                     📝 Add Your First Product
                   </h4>
                   <p className="text-sm text-[var(--text-secondary)] mb-3">
-                    Start by adding your product to the library. Include product details, pricing, and commission information.
+                    Start by adding your product to the library. Include product
+                    details, pricing, and commission information.
                   </p>
                   <Link
                     href="/products"
@@ -397,7 +427,8 @@ function ProductCreatorDashboard() {
                     🧠 Build Intelligence
                   </h4>
                   <p className="text-sm text-[var(--text-secondary)] mb-3">
-                    Compile product intelligence to help affiliates understand your product better and create better content.
+                    Compile product intelligence to help affiliates understand
+                    your product better and create better content.
                   </p>
                   <Link
                     href="/intelligence"
@@ -414,7 +445,8 @@ function ProductCreatorDashboard() {
                     📊 Monitor Performance
                   </h4>
                   <p className="text-sm text-[var(--text-secondary)] mb-3">
-                    Check your affiliate leaderboard regularly. Reward top performers to boost motivation and results.
+                    Check your affiliate leaderboard regularly. Reward top
+                    performers to boost motivation and results.
                   </p>
                   <Link
                     href="/product-analytics"
@@ -429,7 +461,8 @@ function ProductCreatorDashboard() {
                     ✅ Stay Compliant
                   </h4>
                   <p className="text-sm text-[var(--text-secondary)] mb-3">
-                    Ensure your marketing materials meet FTC guidelines and affiliate network requirements.
+                    Ensure your marketing materials meet FTC guidelines and
+                    affiliate network requirements.
                   </p>
                   <Link
                     href="/compliance"
@@ -457,34 +490,19 @@ function BusinessOwnerDashboard() {
     queryKey: ["businessOwnerStats"],
     queryFn: async () => {
       try {
-        const [campaignsRes, textContentRes, imagesRes, analyticsRes] = await Promise.all([
+        const [campaignsRes, textContentRes, imagesRes] = await Promise.all([
           api.get("/api/campaigns"),
           api.get("/api/content").catch(() => ({ data: [] })),
           api.get("/api/images").catch(() => ({ data: [] })),
-          api.get("/api/analytics/summary").catch(() => ({ data: null }))
         ]);
 
         const campaigns = campaignsRes.data || [];
-        const activeCampaigns = campaigns.filter((c: any) => c.status === "active").length;
+        const activeCampaigns = campaigns.filter(
+          (c: any) => c.status === "active"
+        ).length;
         const textContent = textContentRes.data || [];
         const images = imagesRes.data || [];
         const totalContentPieces = textContent.length + images.length;
-
-        // Debug logging
-        console.log("🔍 DEBUG - Business Owner API Responses:", {
-          campaigns: {
-            count: campaigns.length,
-            data: campaignsRes.data
-          },
-          textContent: {
-            count: textContent.length,
-            data: textContentRes.data
-          },
-          images: {
-            count: images.length,
-            data: imagesRes.data
-          }
-        });
 
         return {
           totalCampaigns: campaigns.length,
@@ -492,8 +510,7 @@ function BusinessOwnerDashboard() {
           contentPieces: totalContentPieces,
           textContentPieces: textContent.length,
           imageContentPieces: images.length,
-          totalClicks: analyticsRes.data?.total_clicks || 0,
-          recentCampaigns: campaigns.slice(0, 3)
+          recentCampaigns: campaigns.slice(0, 3),
         };
       } catch (error) {
         return {
@@ -502,11 +519,10 @@ function BusinessOwnerDashboard() {
           contentPieces: 0,
           textContentPieces: 0,
           imageContentPieces: 0,
-          totalClicks: 0,
-          recentCampaigns: []
+          recentCampaigns: [],
         };
       }
-    }
+    },
   });
 
   return (
@@ -516,7 +532,9 @@ function BusinessOwnerDashboard() {
         <div className="card p-4 border-l-4 border-blue-500">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-[var(--text-secondary)] mb-1">Business Campaigns</p>
+              <p className="text-sm text-[var(--text-secondary)] mb-1">
+                Business Campaigns
+              </p>
               <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
                 {stats?.totalCampaigns || 0}
               </p>
@@ -530,7 +548,9 @@ function BusinessOwnerDashboard() {
         <div className="card p-4 border-l-4 border-green-500">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-[var(--text-secondary)] mb-1">Active Campaigns</p>
+              <p className="text-sm text-[var(--text-secondary)] mb-1">
+                Active Campaigns
+              </p>
               <p className="text-3xl font-bold text-green-600 dark:text-green-400">
                 {stats?.activeCampaigns || 0}
               </p>
@@ -544,27 +564,15 @@ function BusinessOwnerDashboard() {
         <div className="card p-4 border-l-4 border-purple-500">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-[var(--text-secondary)] mb-1">Marketing Content</p>
+              <p className="text-sm text-[var(--text-secondary)] mb-1">
+                Marketing Content
+              </p>
               <p className="text-3xl font-bold text-purple-600 dark:text-purple-400">
                 {stats?.contentPieces || 0}
               </p>
             </div>
             <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
               <span className="text-2xl">✍️</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="card p-4 border-l-4 border-orange-500">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-[var(--text-secondary)] mb-1">Total Clicks (7d)</p>
-              <p className="text-3xl font-bold text-orange-600 dark:text-orange-400">
-                {stats?.totalClicks || 0}
-              </p>
-            </div>
-            <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center">
-              <span className="text-2xl">👆</span>
             </div>
           </div>
         </div>
@@ -578,7 +586,9 @@ function BusinessOwnerDashboard() {
         >
           <div className="flex items-center space-x-3 mb-2">
             <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
-              <span className="text-blue-600 dark:text-blue-400 text-xl">📢</span>
+              <span className="text-blue-600 dark:text-blue-400 text-xl">
+                📢
+              </span>
             </div>
             <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">
               Business Campaigns
@@ -596,7 +606,9 @@ function BusinessOwnerDashboard() {
         >
           <div className="flex items-center space-x-3 mb-2">
             <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
-              <span className="text-green-600 dark:text-green-400 text-xl">✍️</span>
+              <span className="text-green-600 dark:text-green-400 text-xl">
+                ✍️
+              </span>
             </div>
             <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors duration-300">
               Content
@@ -614,7 +626,9 @@ function BusinessOwnerDashboard() {
         >
           <div className="flex items-center space-x-3 mb-2">
             <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
-              <span className="text-indigo-600 dark:text-indigo-400 text-xl">🧠</span>
+              <span className="text-indigo-600 dark:text-indigo-400 text-xl">
+                🧠
+              </span>
             </div>
             <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-300">
               Intelligence
@@ -632,7 +646,9 @@ function BusinessOwnerDashboard() {
         >
           <div className="flex items-center space-x-3 mb-2">
             <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
-              <span className="text-orange-600 dark:text-orange-400 text-xl">📈</span>
+              <span className="text-orange-600 dark:text-orange-400 text-xl">
+                📈
+              </span>
             </div>
             <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors duration-300">
               Analytics
@@ -650,7 +666,9 @@ function BusinessOwnerDashboard() {
         >
           <div className="flex items-center space-x-3 mb-2">
             <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
-              <span className="text-purple-600 dark:text-purple-400 text-xl">👥</span>
+              <span className="text-purple-600 dark:text-purple-400 text-xl">
+                👥
+              </span>
             </div>
             <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors duration-300">
               Networking
@@ -668,7 +686,9 @@ function BusinessOwnerDashboard() {
         >
           <div className="flex items-center space-x-3 mb-2">
             <div className="w-10 h-10 bg-pink-100 dark:bg-pink-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
-              <span className="text-pink-600 dark:text-pink-400 text-xl">💬</span>
+              <span className="text-pink-600 dark:text-pink-400 text-xl">
+                💬
+              </span>
             </div>
             <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-pink-600 dark:group-hover:text-pink-400 transition-colors duration-300">
               Messages
@@ -704,7 +724,9 @@ function BusinessOwnerDashboard() {
         >
           <div className="flex items-center space-x-3 mb-2">
             <div className="w-10 h-10 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
-              <span className="text-gray-600 dark:text-gray-400 text-xl">⚙️</span>
+              <span className="text-gray-600 dark:text-gray-400 text-xl">
+                ⚙️
+              </span>
             </div>
             <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors duration-300">
               Settings
@@ -788,7 +810,8 @@ function BusinessOwnerDashboard() {
                     📢 Create Your First Campaign
                   </h4>
                   <p className="text-sm text-[var(--text-secondary)] mb-3">
-                    Start by creating a campaign for your business. Enter your business website URL to compile intelligence.
+                    Start by creating a campaign for your business. Enter your
+                    business website URL to compile intelligence.
                   </p>
                   <Link
                     href="/campaigns"
@@ -803,7 +826,8 @@ function BusinessOwnerDashboard() {
                     ✍️ Generate Marketing Content
                   </h4>
                   <p className="text-sm text-[var(--text-secondary)] mb-3">
-                    Create compelling marketing materials that your affiliates can use to promote your business.
+                    Create compelling marketing materials that your affiliates
+                    can use to promote your business.
                   </p>
                   <Link
                     href="/content"
@@ -820,7 +844,8 @@ function BusinessOwnerDashboard() {
                     👥 Build Your Affiliate Network
                   </h4>
                   <p className="text-sm text-[var(--text-secondary)] mb-3">
-                    Reach out to quality affiliates who can drive significant traffic to your business.
+                    Reach out to quality affiliates who can drive significant
+                    traffic to your business.
                   </p>
                   <Link
                     href="/affiliates"
@@ -835,7 +860,8 @@ function BusinessOwnerDashboard() {
                     📊 Monitor Performance
                   </h4>
                   <p className="text-sm text-[var(--text-secondary)] mb-3">
-                    Track which campaigns and affiliates are driving the most traffic and conversions.
+                    Track which campaigns and affiliates are driving the most
+                    traffic and conversions.
                   </p>
                   <Link
                     href="/analytics"
@@ -855,21 +881,29 @@ function BusinessOwnerDashboard() {
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="p-4 card border-l-4 border-green-500">
-              <p className="text-sm text-[var(--text-secondary)] mb-1">Active Campaigns</p>
+              <p className="text-sm text-[var(--text-secondary)] mb-1">
+                Active Campaigns
+              </p>
               <p className="text-2xl font-bold text-green-600 dark:text-green-400">
                 {stats?.activeCampaigns || 0}
               </p>
             </div>
 
             <div className="p-4 card border-l-4 border-yellow-500">
-              <p className="text-sm text-[var(--text-secondary)] mb-1">Draft/Paused</p>
+              <p className="text-sm text-[var(--text-secondary)] mb-1">
+                Draft/Paused
+              </p>
               <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
-                {stats?.totalCampaigns ? stats.totalCampaigns - stats.activeCampaigns : 0}
+                {stats?.totalCampaigns
+                  ? stats.totalCampaigns - stats.activeCampaigns
+                  : 0}
               </p>
             </div>
 
             <div className="p-4 card border-l-4 border-blue-500">
-              <p className="text-sm text-[var(--text-secondary)] mb-1">Total Campaigns</p>
+              <p className="text-sm text-[var(--text-secondary)] mb-1">
+                Total Campaigns
+              </p>
               <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                 {stats?.totalCampaigns || 0}
               </p>
@@ -891,34 +925,19 @@ function AffiliateMarketerDashboard() {
     queryKey: ["affiliateMarketerStats"],
     queryFn: async () => {
       try {
-        const [campaignsRes, textContentRes, imagesRes, analyticsRes] = await Promise.all([
+        const [campaignsRes, textContentRes, imagesRes] = await Promise.all([
           api.get("/api/campaigns"),
           api.get("/api/content").catch(() => ({ data: [] })),
           api.get("/api/images").catch(() => ({ data: [] })),
-          api.get("/api/analytics/summary").catch(() => ({ data: null }))
         ]);
 
         const campaigns = campaignsRes.data || [];
-        const activeCampaigns = campaigns.filter((c: any) => c.status === "active").length;
+        const activeCampaigns = campaigns.filter(
+          (c: any) => c.status === "active"
+        ).length;
         const textContent = textContentRes.data || [];
         const images = imagesRes.data || [];
         const totalContentPieces = textContent.length + images.length;
-
-        // Debug logging
-        console.log("🔍 DEBUG - API Responses:", {
-          campaigns: {
-            count: campaigns.length,
-            data: campaignsRes.data
-          },
-          textContent: {
-            count: textContent.length,
-            data: textContentRes.data
-          },
-          images: {
-            count: images.length,
-            data: imagesRes.data
-          }
-        });
 
         return {
           totalCampaigns: campaigns.length,
@@ -926,8 +945,7 @@ function AffiliateMarketerDashboard() {
           contentPieces: totalContentPieces,
           textContentPieces: textContent.length,
           imageContentPieces: images.length,
-          totalClicks: analyticsRes.data?.total_clicks || 0,
-          recentCampaigns: campaigns.slice(0, 3)
+          recentCampaigns: campaigns.slice(0, 3),
         };
       } catch (error) {
         return {
@@ -936,11 +954,10 @@ function AffiliateMarketerDashboard() {
           contentPieces: 0,
           textContentPieces: 0,
           imageContentPieces: 0,
-          totalClicks: 0,
-          recentCampaigns: []
+          recentCampaigns: [],
         };
       }
-    }
+    },
   });
 
   return (
@@ -950,7 +967,9 @@ function AffiliateMarketerDashboard() {
         <div className="card p-4 border-l-4 border-blue-500">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-[var(--text-secondary)] mb-1">Total Campaigns</p>
+              <p className="text-sm text-[var(--text-secondary)] mb-1">
+                Total Campaigns
+              </p>
               <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
                 {stats?.totalCampaigns || 0}
               </p>
@@ -964,7 +983,9 @@ function AffiliateMarketerDashboard() {
         <div className="card p-4 border-l-4 border-green-500">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-[var(--text-secondary)] mb-1">Active Campaigns</p>
+              <p className="text-sm text-[var(--text-secondary)] mb-1">
+                Active Campaigns
+              </p>
               <p className="text-3xl font-bold text-green-600 dark:text-green-400">
                 {stats?.activeCampaigns || 0}
               </p>
@@ -978,27 +999,15 @@ function AffiliateMarketerDashboard() {
         <div className="card p-4 border-l-4 border-purple-500">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-[var(--text-secondary)] mb-1">Content Pieces</p>
+              <p className="text-sm text-[var(--text-secondary)] mb-1">
+                Content Pieces
+              </p>
               <p className="text-3xl font-bold text-purple-600 dark:text-purple-400">
                 {stats?.contentPieces || 0}
               </p>
             </div>
             <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
               <span className="text-2xl">✍️</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="card p-4 border-l-4 border-orange-500">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-[var(--text-secondary)] mb-1">Total Clicks (7d)</p>
-              <p className="text-3xl font-bold text-orange-600 dark:text-orange-400">
-                {stats?.totalClicks || 0}
-              </p>
-            </div>
-            <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center">
-              <span className="text-2xl">👆</span>
             </div>
           </div>
         </div>
@@ -1012,7 +1021,9 @@ function AffiliateMarketerDashboard() {
         >
           <div className="flex items-center space-x-3 mb-2">
             <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
-              <span className="text-blue-600 dark:text-blue-400 text-xl">📢</span>
+              <span className="text-blue-600 dark:text-blue-400 text-xl">
+                📢
+              </span>
             </div>
             <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">
               Campaigns
@@ -1030,7 +1041,9 @@ function AffiliateMarketerDashboard() {
         >
           <div className="flex items-center space-x-3 mb-2">
             <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
-              <span className="text-purple-600 dark:text-purple-400 text-xl">📦</span>
+              <span className="text-purple-600 dark:text-purple-400 text-xl">
+                📦
+              </span>
             </div>
             <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors duration-300">
               Product Library
@@ -1048,7 +1061,9 @@ function AffiliateMarketerDashboard() {
         >
           <div className="flex items-center space-x-3 mb-2">
             <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
-              <span className="text-green-600 dark:text-green-400 text-xl">✍️</span>
+              <span className="text-green-600 dark:text-green-400 text-xl">
+                ✍️
+              </span>
             </div>
             <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors duration-300">
               Content
@@ -1066,7 +1081,9 @@ function AffiliateMarketerDashboard() {
         >
           <div className="flex items-center space-x-3 mb-2">
             <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
-              <span className="text-indigo-600 dark:text-indigo-400 text-xl">🧠</span>
+              <span className="text-indigo-600 dark:text-indigo-400 text-xl">
+                🧠
+              </span>
             </div>
             <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-300">
               Intelligence
@@ -1102,7 +1119,9 @@ function AffiliateMarketerDashboard() {
         >
           <div className="flex items-center space-x-3 mb-2">
             <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
-              <span className="text-orange-600 dark:text-orange-400 text-xl">📈</span>
+              <span className="text-orange-600 dark:text-orange-400 text-xl">
+                📈
+              </span>
             </div>
             <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors duration-300">
               Analytics
@@ -1120,7 +1139,9 @@ function AffiliateMarketerDashboard() {
         >
           <div className="flex items-center space-x-3 mb-2">
             <div className="w-10 h-10 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
-              <span className="text-gray-600 dark:text-gray-400 text-xl">⚙️</span>
+              <span className="text-gray-600 dark:text-gray-400 text-xl">
+                ⚙️
+              </span>
             </div>
             <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors duration-300">
               Settings
@@ -1204,7 +1225,8 @@ function AffiliateMarketerDashboard() {
                     📢 Create Your First Campaign
                   </h4>
                   <p className="text-sm text-[var(--text-secondary)] mb-3">
-                    Start by creating a campaign for a product you want to promote. Browse the Product Library to find great products.
+                    Start by creating a campaign for a product you want to
+                    promote. Browse the Product Library to find great products.
                   </p>
                   <Link
                     href="/campaigns"
@@ -1219,7 +1241,8 @@ function AffiliateMarketerDashboard() {
                     ✍️ Generate AI Content
                   </h4>
                   <p className="text-sm text-[var(--text-secondary)] mb-3">
-                    Use AI to generate high-quality marketing content including emails, articles, social posts, and more.
+                    Use AI to generate high-quality marketing content including
+                    emails, articles, social posts, and more.
                   </p>
                   <Link
                     href="/content"
@@ -1236,7 +1259,8 @@ function AffiliateMarketerDashboard() {
                     📊 Track Your Results
                   </h4>
                   <p className="text-sm text-[var(--text-secondary)] mb-3">
-                    Monitor your campaign performance in Analytics. Focus on what's working and optimize underperforming campaigns.
+                    Monitor your campaign performance in Analytics. Focus on
+                    what's working and optimize underperforming campaigns.
                   </p>
                   <Link
                     href="/analytics"
@@ -1248,10 +1272,11 @@ function AffiliateMarketerDashboard() {
 
                 <div className="p-4 card border-l-4 border-indigo-500">
                   <h4 className="font-semibold text-[var(--text-primary)] mb-2">
-                    🧠 Use Intelligence
+                    🧠 Campiagn Intelligence
                   </h4>
                   <p className="text-sm text-[var(--text-secondary)] mb-3">
-                    Leverage product intelligence and insights to create more targeted, effective marketing content.
+                    Leverage product intelligence and insights to create more
+                    targeted, effective marketing content.
                   </p>
                   <Link
                     href="/intelligence"
@@ -1271,21 +1296,29 @@ function AffiliateMarketerDashboard() {
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="p-4 card border-l-4 border-green-500">
-              <p className="text-sm text-[var(--text-secondary)] mb-1">Active Campaigns</p>
+              <p className="text-sm text-[var(--text-secondary)] mb-1">
+                Active Campaigns
+              </p>
               <p className="text-2xl font-bold text-green-600 dark:text-green-400">
                 {stats?.activeCampaigns || 0}
               </p>
             </div>
 
             <div className="p-4 card border-l-4 border-yellow-500">
-              <p className="text-sm text-[var(--text-secondary)] mb-1">Draft/Paused</p>
+              <p className="text-sm text-[var(--text-secondary)] mb-1">
+                Draft/Paused
+              </p>
               <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
-                {stats?.totalCampaigns ? stats.totalCampaigns - stats.activeCampaigns : 0}
+                {stats?.totalCampaigns
+                  ? stats.totalCampaigns - stats.activeCampaigns
+                  : 0}
               </p>
             </div>
 
             <div className="p-4 card border-l-4 border-blue-500">
-              <p className="text-sm text-[var(--text-secondary)] mb-1">Total Campaigns</p>
+              <p className="text-sm text-[var(--text-secondary)] mb-1">
+                Total Campaigns
+              </p>
               <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                 {stats?.totalCampaigns || 0}
               </p>
