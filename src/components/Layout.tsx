@@ -31,6 +31,7 @@ type UserInfo = {
   profile_image_url?: string;
   full_name?: string;
   user_type?: string; // For backward compatibility
+  affiliate_tier?: string | null;
 };
 
 export default function Layout({ children }: LayoutProps) {
@@ -393,8 +394,31 @@ export default function Layout({ children }: LayoutProps) {
             </Link>
           </div>
 
-          {/* Right: User Info + Profile Dropdown */}
+          {/* Right: User Info + Upgrade + Profile Dropdown */}
           <div className="flex items-center space-x-4">
+            {/* Upgrade Button for Non-Pro Affiliates */}
+            {userInfo?.affiliate_tier !== "pro" && userInfo?.role === "affiliate" && (
+              <Link
+                href="/billing/subscribe"
+                className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400 hover:bg-orange-200 dark:hover:bg-orange-900/50 transition"
+              >
+                <svg
+                  className="w-3 h-3 mr-1"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13 10V3L4 14h7v7l9-11h-7z"
+                  />
+                </svg>
+                Upgrade to Pro
+              </Link>
+            )}
+
             {userInfo && (
               <div className="hidden md:flex flex-col items-end">
                 <span className="text-sm font-semibold text-[var(--text-primary)]">
