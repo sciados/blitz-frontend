@@ -12,6 +12,7 @@ import {
   CheckCircle2,
   ArrowRight,
   TrendingUp,
+  Clock,
 } from "lucide-react";
 import { EmailSignupForm } from "src/components/EmailSignupForm";
 
@@ -354,52 +355,59 @@ export default function AffiliateMarketersPage() {
           {detailedSteps.map((item, index) => (
             <div
               key={index}
-              className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 rounded-2xl p-8 border border-gray-700/50 hover:border-green-500/30 transition-all duration-300"
+              className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl border border-gray-700 overflow-hidden"
             >
-              <div className="flex flex-col lg:flex-row gap-6">
-                <div className="flex-shrink-0">
-                  <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 bg-gradient-to-br from-green-600 to-emerald-600 rounded-full flex items-center justify-center text-2xl">
-                      {item.icon}
-                    </div>
+              <div className="p-6 border-b border-gray-700/50">
+                <div className="flex flex-col md:flex-row md:items-center gap-4">
+                  <div className="flex items-center gap-4 flex-1">
+                    <div className="text-5xl">{item.icon}</div>
                     <div>
-                      <div className="text-sm font-bold text-green-400 mb-1">
-                        STEP {item.step}
+                      <div className="flex items-center gap-3 mb-2">
+                        <span className="text-sm font-bold text-green-400 bg-green-900/30 px-3 py-1 rounded-full">
+                          STEP {item.step}
+                        </span>
+                        <span className="text-sm font-medium text-gray-400 flex items-center gap-1">
+                          <Clock size={16} />
+                          {item.time}
+                        </span>
                       </div>
-                      <h3 className="text-2xl font-bold mb-1">{item.title}</h3>
-                      <div className="text-sm text-gray-400">
-                        ⏱️ {item.time}
-                      </div>
+                      <h3 className="text-2xl font-bold">{item.title}</h3>
+                      <p className="text-gray-400 mt-1">{item.description}</p>
                     </div>
                   </div>
                 </div>
+              </div>
 
-                <div className="flex-1">
-                  <p className="text-lg text-gray-300 mb-4">
-                    {item.description}
-                  </p>
-                  <ul className="space-y-2 mb-4">
+              <div className="p-6">
+                <div className="mb-4">
+                  <h4 className="font-semibold text-white mb-3">What you'll do:</h4>
+                  <ul className="space-y-2">
                     {item.details.map((detail, i) => (
                       <li
                         key={i}
-                        className="flex items-start gap-2 text-gray-400"
+                        className="flex items-start gap-3 text-gray-300"
                       >
                         <CheckCircle2
-                          className="text-green-500 flex-shrink-0 mt-1"
-                          size={16}
+                          className="text-green-400 flex-shrink-0 mt-1"
+                          size={18}
                         />
-                        <span className="text-sm">{detail}</span>
+                        <span>{detail}</span>
                       </li>
                     ))}
                   </ul>
-                  <div className="bg-green-900/20 border border-green-700/30 rounded-lg p-3">
-                    <div className="flex items-start gap-2">
-                      <span className="text-green-400 font-bold text-sm">
-                        💡 Pro Tip:
+                </div>
+
+                <div className="bg-gradient-to-r from-green-900/20 to-emerald-900/20 rounded-lg p-4 border border-green-700/30">
+                  <div className="flex items-start gap-3">
+                    <Sparkles
+                      className="text-yellow-400 flex-shrink-0 mt-1"
+                      size={18}
+                    />
+                    <div>
+                      <span className="font-semibold text-yellow-400">
+                        Pro Tip:{" "}
                       </span>
-                      <span className="text-sm text-green-300">
-                        {item.proTip}
-                      </span>
+                      <span className="text-gray-300">{item.proTip}</span>
                     </div>
                   </div>
                 </div>
