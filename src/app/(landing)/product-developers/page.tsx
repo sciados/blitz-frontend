@@ -8,10 +8,119 @@ import {
   Sparkles,
   CheckCircle2,
   ArrowRight,
+  Clock,
+  Target,
+  DollarSign,
 } from "lucide-react";
 import { EmailSignupForm } from "src/components/EmailSignupForm";
 
 export default function ProductDevelopersPage() {
+  const detailedWorkflow = [
+    {
+      step: 1,
+      icon: "🔑",
+      title: "Login & Product Dashboard",
+      time: "2 minutes",
+      description: "Access your personalized product developer dashboard",
+      details: [
+        "View all your products and their promotion status",
+        "Quick stats on views, clicks, and conversions",
+        "Navigation to Products, Analytics, Settings, and Billing",
+        "Overview of affiliate performance across your catalog"
+      ],
+      proTip: "The product dashboard gives you complete visibility into how your products are performing across the entire affiliate network."
+    },
+    {
+      step: 2,
+      icon: "📦",
+      title: "Add Product to Library",
+      time: "2 minutes",
+      description: "Upload your product details for affiliate discovery",
+      details: [
+        "Paste your sales page URL or product link",
+        "AI automatically extracts product information",
+        "Upload product images (or let AI capture them)",
+        "Add category tags for better discoverability",
+        "Set product status (draft, published, or hidden)"
+      ],
+      proTip: "Use high-quality product images—the better your visuals, the more attractive your product appears to affiliates!"
+    },
+    {
+      step: 3,
+      icon: "🤖",
+      title: "AI Compiles Intelligence",
+      time: "1-2 minutes",
+      description: "AI analyzes your product and creates marketing assets",
+      details: [
+        "Extracts key features, benefits, and unique selling points",
+        "Identifies target audience and pain points",
+        "Conducts competitor research and positioning",
+        "Generates compelling product descriptions",
+        "Creates affiliate marketing materials automatically"
+      ],
+      proTip: "Review the AI-generated intelligence—accurate product info leads to better affiliate promotions and higher conversions!"
+    },
+    {
+      step: 4,
+      icon: "💰",
+      title: "Set Commission Structure",
+      time: "3 minutes",
+      description: "Configure affiliate commission rates and terms",
+      details: [
+        "Choose commission type (percentage or fixed amount)",
+        "Set commission rate (industry standard: 30-50%)",
+        "Enable recurring commissions for subscription products",
+        "Configure bonus structures for top performers",
+        "Set minimum payout thresholds"
+      ],
+      proTip: "Higher commission rates (40-50%) attract premium affiliates. Recurring commissions are especially effective for SaaS and subscription products!"
+    },
+    {
+      step: 5,
+      icon: "🚀",
+      title: "Publish to Marketplace",
+      time: "30 seconds",
+      description: "Make your product visible to the affiliate network",
+      details: [
+        "One-click publish to the product library",
+        "Affiliates can now discover and promote your product",
+        "Set visibility (public, approved affiliates only, or hidden)",
+        "Receive notifications when affiliates show interest",
+        "Monitor initial views and engagement"
+      ],
+      proTip: "Start with a 'public' listing to build momentum, then you can switch to 'approved only' to curate your affiliate network."
+    },
+    {
+      step: 6,
+      icon: "📊",
+      title: "Monitor Affiliate Activity",
+      time: "5 minutes daily",
+      description: "Track which affiliates are promoting your products",
+      details: [
+        "View real-time analytics dashboard",
+        "Track clicks, conversions, and revenue by affiliate",
+        "Monitor which products are getting the most promotion",
+        "Identify top-performing affiliates and campaigns",
+        "Review commission payouts and outstanding balances"
+      ],
+      proTip: "Check analytics daily. Reach out to high-performing affiliates with exclusive bonuses to strengthen those relationships!"
+    },
+    {
+      step: 7,
+      icon: "🎯",
+      title: "Optimize & Scale",
+      time: "Ongoing",
+      description: "Continuously improve and expand your reach",
+      details: [
+        "A/B test commission rates to attract better affiliates",
+        "Provide additional resources to top performers",
+        "Launch new products to your active affiliate network",
+        "Create affiliate-exclusive promotions and bonuses",
+        "Expand into new niches with complementary products"
+      ],
+      proTip: "Your top 20% of affiliates typically drive 80% of your sales. Focus on nurturing these relationships with special perks and higher rates!"
+    }
+  ];
   const features = [
     {
       emoji: "🚀",
@@ -184,6 +293,190 @@ export default function ProductDevelopersPage() {
                 Watch affiliates create campaigns, monitor performance
                 analytics, and see your sales grow on autopilot.
               </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Detailed Workflow Section */}
+      <div className="max-w-6xl mx-auto px-6 py-20">
+        <div className="text-center mb-16">
+          <h2 className="text-4xl md:text-5xl font-bold mb-4">
+            Complete Product Developer Walkthrough
+          </h2>
+          <p className="text-xl text-gray-400">
+            From product upload to affiliate sales—in under 10 minutes total
+          </p>
+        </div>
+
+        <div className="space-y-6">
+          {detailedWorkflow.map((step, index) => (
+            <div
+              key={index}
+              className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl border border-gray-700 overflow-hidden"
+            >
+              <div className="p-6 border-b border-gray-700/50">
+                <div className="flex flex-col md:flex-row md:items-center gap-4">
+                  <div className="flex items-center gap-4 flex-1">
+                    <div className="text-5xl">{step.icon}</div>
+                    <div>
+                      <div className="flex items-center gap-3 mb-2">
+                        <span className="text-sm font-bold text-purple-400 bg-purple-900/30 px-3 py-1 rounded-full">
+                          STEP {step.step}
+                        </span>
+                        <span className="text-sm font-medium text-gray-400 flex items-center gap-1">
+                          <Clock size={16} />
+                          {step.time}
+                        </span>
+                      </div>
+                      <h3 className="text-2xl font-bold">{step.title}</h3>
+                      <p className="text-gray-400 mt-1">{step.description}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-6">
+                <div className="mb-4">
+                  <h4 className="font-semibold text-white mb-3">What you'll do:</h4>
+                  <ul className="space-y-2">
+                    {step.details.map((detail, i) => (
+                      <li
+                        key={i}
+                        className="flex items-start gap-3 text-gray-300"
+                      >
+                        <CheckCircle2
+                          className="text-green-400 flex-shrink-0 mt-1"
+                          size={18}
+                        />
+                        <span>{detail}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="bg-gradient-to-r from-purple-900/20 to-blue-900/20 rounded-lg p-4 border border-purple-700/30">
+                  <div className="flex items-start gap-3">
+                    <Sparkles
+                      className="text-yellow-400 flex-shrink-0 mt-1"
+                      size={18}
+                    />
+                    <div>
+                      <span className="font-semibold text-yellow-400">
+                        Pro Tip:{" "}
+                      </span>
+                      <span className="text-gray-300">{step.proTip}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-16 bg-gradient-to-br from-purple-900/20 to-blue-900/20 rounded-3xl p-12 border border-purple-700/30">
+          <div className="text-center mb-8">
+            <h3 className="text-3xl font-bold mb-4">
+              Real Example: SaaS Tool Launch
+            </h3>
+            <p className="text-gray-300">
+              How one developer got 100+ affiliates promoting their product in 14 days
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+            <div className="text-center">
+              <div className="text-5xl mb-3">📦</div>
+              <h4 className="font-bold mb-2">Day 1</h4>
+              <p className="text-sm text-gray-400">
+                Added project management SaaS to library<br />
+                Set 45% recurring commission<br />
+                AI generated product intelligence<br />
+                Published to marketplace
+              </p>
+            </div>
+
+            <div className="text-center">
+              <div className="text-5xl mb-3">👥</div>
+              <h4 className="font-bold mb-2">Week 1</h4>
+              <p className="text-sm text-gray-400">
+                37 affiliates promoting<br />
+                12 published review articles<br />
+                8 email sequences created<br />
+                247 clicks generated
+              </p>
+            </div>
+
+            <div className="text-center">
+              <div className="text-5xl mb-3">📈</div>
+              <h4 className="font-bold mb-2">Day 14</h4>
+              <p className="text-sm text-gray-400">
+                103 active affiliates<br />
+                $89K in attributed sales<br />
+                $40K in commissions paid<br />
+                23% conversion rate
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-12 bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-8 border border-gray-700">
+          <h3 className="text-2xl font-bold mb-6 text-center">
+            Product Developer Success Formula
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+            <div className="flex items-start gap-3">
+              <Target className="text-purple-400 flex-shrink-0 mt-1" size={24} />
+              <div>
+                <h4 className="font-bold mb-1">
+                  Competitive commissions (40-50%)
+                </h4>
+                <p className="text-gray-400 text-sm">
+                  Premium rates attract top-tier affiliates
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <Users className="text-blue-400 flex-shrink-0 mt-1" size={24} />
+              <div>
+                <h4 className="font-bold mb-1">
+                  High-quality product images
+                </h4>
+                <p className="text-gray-400 text-sm">
+                  Visual appeal drives affiliate interest
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <DollarSign
+                className="text-green-400 flex-shrink-0 mt-1"
+                size={24}
+              />
+              <div>
+                <h4 className="font-bold mb-1">
+                  Recurring commissions for SaaS
+                </h4>
+                <p className="text-gray-400 text-sm">
+                  Long-term value for affiliates and you
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <BarChart3
+                className="text-orange-400 flex-shrink-0 mt-1"
+                size={24}
+              />
+              <div>
+                <h4 className="font-bold mb-1">
+                  Monitor and optimize daily
+                </h4>
+                <p className="text-gray-400 text-sm">
+                  Data-driven decisions drive growth
+                </p>
+              </div>
             </div>
           </div>
         </div>
