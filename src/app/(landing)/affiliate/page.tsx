@@ -66,6 +66,109 @@ export default function AffiliateMarketersPage() {
     { step: "4", emoji: "🚀", title: "Deploy & Earn", desc: "Publish and track your results" }
   ];
 
+  const detailedSteps = [
+    {
+      step: 1,
+      icon: "🔑",
+      title: "Login & Dashboard",
+      time: "2 minutes",
+      description: "Sign in to your personalized dashboard",
+      details: [
+        "See your quick stats (campaigns, content, performance)",
+        "Quick action buttons for common tasks",
+        "Upgrade prompt if on Standard tier (visible in header)"
+      ],
+      proTip: "Standard affiliates can create campaigns from Product Library. Pro affiliates ($67/mo) can create campaigns with ANY product URL."
+    },
+    {
+      step: 2,
+      icon: "📚",
+      title: "Browse Product Library",
+      time: "10 minutes",
+      description: "Find products with great commission rates",
+      details: [
+        "Browse products with thumbnails, names, and commission rates",
+        "Filter by commission type (recurring vs one-time), network, popularity",
+        "Sort by recent additions, commission rate, or most popular",
+        "Click product to view full details"
+      ],
+      proTip: "Products with recurring commissions are goldmines - they pay you monthly for referred customers!"
+    },
+    {
+      step: 3,
+      icon: "🎯",
+      title: "Create Campaign",
+      time: "5 minutes",
+      description: "Set up your marketing campaign for the product",
+      details: [
+        "Click 'Create Campaign' on any product",
+        "Add your unique affiliate link from the network",
+        "Add relevant keywords for your target audience",
+        "Name your campaign (e.g., 'Supplement Review - Molityn')",
+        "Campaign auto-links to product intelligence"
+      ],
+      proTip: "Use descriptive campaign names so you can easily identify them later!"
+    },
+    {
+      step: 4,
+      icon: "🧠",
+      title: "Generate Intelligence",
+      time: "1 minute",
+      description: "AI compiles product insights and target audience data",
+      details: [
+        "Go to Intelligence → Select your campaign",
+        "Click 'Compile Intelligence'",
+        "Wait 30-60 seconds while AI analyzes the product",
+        "Get: Target audience, pain points, benefits, competitor analysis"
+      ],
+      proTip: "Campaigns with intelligence generate 3x better content because AI knows exactly who to target!"
+    },
+    {
+      step: 5,
+      icon: "✨",
+      title: "Create Content",
+      time: "3 minutes",
+      description: "Generate high-converting marketing content",
+      details: [
+        "Go to Content → Choose Text or Image content",
+        "Select your campaign and content type (article, email, video, etc.)",
+        "Set parameters: marketing angle, tone, length",
+        "Click 'Generate' and AI creates content based on campaign intelligence",
+        "Automatic FTC compliance checking included"
+      ],
+      proTip: "Generate 3-5 variations and A/B test to see what converts best!"
+    },
+    {
+      step: 6,
+      icon: "✅",
+      title: "Review & Download",
+      time: "5 minutes",
+      description: "Review content and prepare for deployment",
+      details: [
+        "Check compliance score (Green = compliant, Red = needs fixing)",
+        "Click 'Fix Compliance' to auto-add required disclosures",
+        "Edit any specific details",
+        "Create variations for A/B testing",
+        "Download or copy to your marketing channels"
+      ],
+      proTip: "Always check compliance before publishing - FTC violations can be costly!"
+    },
+    {
+      step: 7,
+      icon: "📈",
+      title: "Track Performance",
+      time: "Ongoing",
+      description: "Monitor clicks, conversions, and earnings",
+      details: [
+        "Check Analytics dashboard weekly",
+        "Identify top-performing content",
+        "Double down on winning strategies",
+        "Fix or retire underperforming content"
+      ],
+      proTip: "Focus 80% of your effort on content types driving actual sales!"
+    }
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white">
       {/* Hero Section */}
@@ -158,6 +261,129 @@ export default function AffiliateMarketersPage() {
               )}
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* Detailed Workflow Section */}
+      <div className="max-w-6xl mx-auto px-6 py-20">
+        <div className="text-center mb-16">
+          <h2 className="text-4xl md:text-5xl font-bold mb-4">Complete Affiliate Walkthrough</h2>
+          <p className="text-xl text-gray-400">From login to profitable content in 7 simple steps</p>
+        </div>
+
+        <div className="space-y-6">
+          {detailedSteps.map((item, index) => (
+            <div key={index} className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 rounded-2xl p-8 border border-gray-700/50 hover:border-green-500/30 transition-all duration-300">
+              <div className="flex flex-col lg:flex-row gap-6">
+                <div className="flex-shrink-0">
+                  <div className="flex items-center gap-4">
+                    <div className="w-16 h-16 bg-gradient-to-br from-green-600 to-emerald-600 rounded-full flex items-center justify-center text-2xl">
+                      {item.icon}
+                    </div>
+                    <div>
+                      <div className="text-sm font-bold text-green-400 mb-1">STEP {item.step}</div>
+                      <h3 className="text-2xl font-bold mb-1">{item.title}</h3>
+                      <div className="text-sm text-gray-400">⏱️ {item.time}</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex-1">
+                  <p className="text-lg text-gray-300 mb-4">{item.description}</p>
+                  <ul className="space-y-2 mb-4">
+                    {item.details.map((detail, i) => (
+                      <li key={i} className="flex items-start gap-2 text-gray-400">
+                        <CheckCircle2 className="text-green-500 flex-shrink-0 mt-1" size={16} />
+                        <span className="text-sm">{detail}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="bg-green-900/20 border border-green-700/30 rounded-lg p-3">
+                    <div className="flex items-start gap-2">
+                      <span className="text-green-400 font-bold text-sm">💡 Pro Tip:</span>
+                      <span className="text-sm text-green-300">{item.proTip}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-12 bg-gradient-to-r from-green-900/30 to-emerald-900/30 rounded-2xl p-8 border border-green-700/30 text-center">
+          <h3 className="text-2xl font-bold mb-4">Total Time: ~25 minutes</h3>
+          <p className="text-lg text-gray-300 mb-4">
+            From product selection to ready-to-publish content
+          </p>
+          <div className="flex items-center justify-center gap-8 text-sm text-gray-400">
+            <div>
+              <span className="text-green-400 font-bold">vs Traditional:</span> 4-6 hours
+            </div>
+            <div>
+              <span className="text-green-400 font-bold">Time Saved:</span> 90%
+            </div>
+            <div>
+              <span className="text-green-400 font-bold">Quality:</span> Professional
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Real Example Section */}
+      <div className="max-w-6xl mx-auto px-6 py-20">
+        <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-3xl p-12 border border-gray-700">
+          <div className="text-center mb-12">
+            <div className="text-6xl mb-6">🎯</div>
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">Real Example: Promoting a Supplement</h2>
+            <p className="text-xl text-gray-300">See exactly how easy it is to create a profitable campaign</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="bg-gradient-to-br from-green-900/30 to-emerald-900/30 rounded-xl p-6 border border-green-700/30">
+              <div className="text-4xl mb-3">📦</div>
+              <h3 className="text-xl font-bold mb-2">Day 1: Setup</h3>
+              <ul className="space-y-2 text-sm text-gray-300">
+                <li>• Login → Browse Product Library</li>
+                <li>• Find "Mitolyn Supplement" (50% recurring)</li>
+                <li>• Create Campaign → Add affiliate link</li>
+              </ul>
+            </div>
+            <div className="bg-gradient-to-br from-blue-900/30 to-purple-900/30 rounded-xl p-6 border border-blue-700/30">
+              <div className="text-4xl mb-3">✨</div>
+              <h3 className="text-xl font-bold mb-2">Day 2-3: Content</h3>
+              <ul className="space-y-2 text-sm text-gray-300">
+                <li>• Generate intelligence (1 min)</li>
+                <li>• Create review article (3 min)</li>
+                <li>• Auto-check compliance ✅</li>
+                <li>• Download ready-to-publish</li>
+              </ul>
+            </div>
+            <div className="bg-gradient-to-br from-yellow-900/30 to-orange-900/30 rounded-xl p-6 border border-yellow-700/30">
+              <div className="text-4xl mb-3">🚀</div>
+              <h3 className="text-xl font-bold mb-2">Week 1: Results</h3>
+              <ul className="space-y-2 text-sm text-gray-300">
+                <li>• Publish article on blog</li>
+                <li>• Share on social media</li>
+                <li>• Build email sequence</li>
+                <li>• Conversions starting!</li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="text-center bg-gray-800/50 rounded-xl p-6 border border-gray-700">
+            <h4 className="text-lg font-bold mb-3">Time Investment Comparison</h4>
+            <div className="flex items-center justify-center gap-12">
+              <div>
+                <div className="text-3xl font-bold text-red-400 mb-1">4-6 hrs</div>
+                <div className="text-sm text-gray-400">Traditional Method</div>
+              </div>
+              <div className="text-4xl text-green-400">→</div>
+              <div>
+                <div className="text-3xl font-bold text-green-400 mb-1">25 min</div>
+                <div className="text-sm text-gray-400">With Blitz</div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 

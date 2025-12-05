@@ -186,6 +186,121 @@ export const helpContent: Record<string, HelpContent> = {
     ],
   },
 
+  // Campaigns List - Affiliate Marketer
+  "/campaigns/affiliate": {
+    title: "Your Marketing Campaigns",
+    description: "Manage your campaigns to promote affiliate products. Each campaign is tied to a specific product with your affiliate link.",
+    steps: [
+      {
+        number: 1,
+        title: "Browse Products First",
+        description: "Visit the Product Library to find products with good commission rates before creating campaigns.",
+      },
+      {
+        number: 2,
+        title: "Create from Product Library",
+        description: "Click 'Create Campaign' on products you want to promote. Your campaign will auto-link to the product.",
+      },
+      {
+        number: 3,
+        title: "Set Your Affiliate Link",
+        description: "Add your unique affiliate link for each campaign so you get credit for sales.",
+      },
+      {
+        number: 4,
+        title: "Generate Intelligence",
+        description: "Compile intelligence to get target audience insights, key benefits, and marketing hooks.",
+      },
+      {
+        number: 5,
+        title: "Create Content",
+        description: "Generate articles, emails, social posts, and landing pages using your campaign's intelligence.",
+      },
+      {
+        number: 6,
+        title: "Track Performance",
+        description: "Monitor clicks, conversions, and earnings in the Analytics section.",
+      },
+    ],
+    tips: [
+      "Sort products by commission rate to find the most profitable opportunities",
+      "Standard affiliates can only create campaigns from the Product Library",
+      "Pro affiliates can create campaigns with any product URL",
+      "Generate multiple content variations and test what converts best",
+      "Check compliance status before publishing any content",
+      "Focus on products with recurring commissions for steady income",
+    ],
+  },
+
+  // Campaigns List - Product Developer
+  "/campaigns/creator": {
+    title: "View Affiliate Campaigns",
+    description: "See which affiliates are promoting your products. You can't create campaigns here - this shows your affiliates' marketing efforts.",
+    steps: [
+      {
+        number: 1,
+        title: "Campaign Cards",
+        description: "Each card shows an affiliate's campaign for your product, including campaign status and last activity.",
+      },
+      {
+        number: 2,
+        title: "Campaign Status",
+        description: "View campaign status (draft, active, paused) to understand what your affiliates are working on.",
+      },
+      {
+        number: 3,
+        title: "View Campaign Details",
+        description: "Click on any campaign to see what content and strategies your affiliates are using.",
+      },
+      {
+        number: 4,
+        title: "Monitor Performance",
+        description: "Track conversions and revenue by visiting Analytics → Conversions.",
+      },
+    ],
+    tips: [
+      "These campaigns belong to your affiliates, not you",
+      "Use this view to see what's working for your top affiliates",
+      "Reach out to successful affiliates to discuss higher rates or exclusive offers",
+      "Check which products are getting the most affiliate attention",
+      "Use Product Analytics to see which affiliates drive the most sales",
+    ],
+  },
+
+  // Campaigns List - Business
+  "/campaigns/business": {
+    title: "Campaign Overview",
+    description: "View all affiliate marketing campaigns across your product portfolio. Track performance and identify top-performing campaigns.",
+    steps: [
+      {
+        number: 1,
+        title: "Campaign Portfolio",
+        description: "See all affiliate campaigns for your products in one unified view.",
+      },
+      {
+        number: 2,
+        title: "Filter by Product",
+        description: "Filter campaigns to focus on specific products or product categories.",
+      },
+      {
+        number: 3,
+        title: "Performance Metrics",
+        description: "View campaign performance including clicks, conversions, and revenue.",
+      },
+      {
+        number: 4,
+        title: "Affiliate Insights",
+        description: "Identify which affiliates are most active and successful.",
+      },
+    ],
+    tips: [
+      "Use filters to focus on high-performing products",
+      "Reach out to top-performing affiliates for exclusive partnerships",
+      "Consider increasing commissions for products with strong affiliate engagement",
+      "Monitor campaign activity to identify dormant affiliates",
+    ],
+  },
+
   // Campaign Details
   "/campaigns/[id]": {
     title: "Campaign Details",
@@ -267,6 +382,121 @@ export const helpContent: Record<string, HelpContent> = {
       "Use Image Content for visual marketing assets",
       "Generated content uses your campaign's product info, audience insights, and marketing angles",
       "All content is automatically saved to your library",
+    ],
+  },
+
+  // Content Hub - Affiliate Marketer
+  "/content/affiliate": {
+    title: "Generate Marketing Content",
+    description: "Create high-converting marketing content using AI. Content is customized based on your campaign's product and target audience.",
+    steps: [
+      {
+        number: 1,
+        title: "Select Your Campaign",
+        description: "Choose the campaign you want to create content for. Each campaign has unique product intelligence.",
+      },
+      {
+        number: 2,
+        title: "Generate Intelligence (if needed)",
+        description: "If your campaign doesn't have intelligence yet, compile it first to get audience insights and marketing hooks.",
+      },
+      {
+        number: 3,
+        title: "Choose Content Type",
+        description: "Select Text Content (articles, emails, videos, social posts, landing pages, ads) or Image Content (visuals).",
+      },
+      {
+        number: 4,
+        title: "Customize Parameters",
+        description: "Set marketing angle (problem/solution, transformation, etc.), tone (professional, casual), and desired length.",
+      },
+      {
+        number: 5,
+        title: "Generate and Review",
+        description: "AI creates content using your campaign's intelligence. Check compliance score and use 'Fix Compliance' if needed.",
+      },
+      {
+        number: 6,
+        title: "Save and Export",
+        description: "Download, copy, or share your content. All content is saved to your library for future use.",
+      },
+    ],
+    tips: [
+      "The more detailed your campaign, the better the content quality",
+      "Generate multiple variations and A/B test to find what converts best",
+      "Always check compliance before publishing - FTC violations can be costly",
+      "Use the 'Fix Compliance' button to automatically add required disclosures",
+      "Create a content mix: articles for SEO, emails for nurturing, social posts for engagement",
+      "Landing pages and articles work best for cold traffic; emails for warm audiences",
+    ],
+  },
+
+  // Content Hub - Product Developer
+  "/content/creator": {
+    title: "Review Affiliate Content",
+    description: "View content created by your affiliates. You can't generate content here, but you can review what's being created for your products.",
+    steps: [
+      {
+        number: 1,
+        title: "View Affiliate Content",
+        description: "Browse content generated by affiliates promoting your products.",
+      },
+      {
+        number: 2,
+        title: "Content Library",
+        description: "See articles, emails, social posts, and other content across all affiliates and campaigns.",
+      },
+      {
+        number: 3,
+        title: "Compliance Checking",
+        description: "Verify that affiliate content meets your brand standards and legal requirements.",
+      },
+      {
+        number: 4,
+        title: "Quality Assessment",
+        description: "Review content quality and messaging to ensure it aligns with your product positioning.",
+      },
+    ],
+    tips: [
+      "Use this to see what marketing angles your affiliates are using",
+      "Share high-performing content examples with your affiliate network",
+      "Provide content guidelines to affiliates for better quality",
+      "Monitor compliance to protect your brand reputation",
+      "Identify top-performing content and share strategies with other affiliates",
+    ],
+  },
+
+  // Content Hub - Business
+  "/content/business": {
+    title: "Content Portfolio Management",
+    description: "Oversee content creation across your affiliate network. Monitor quality, compliance, and performance.",
+    steps: [
+      {
+        number: 1,
+        title: "Portfolio Overview",
+        description: "View all content created by affiliates across your product portfolio.",
+      },
+      {
+        number: 2,
+        title: "Filter by Product",
+        description: "Focus on content for specific products or product categories.",
+      },
+      {
+        number: 3,
+        title: "Quality Monitoring",
+        description: "Review content quality and ensure brand compliance across all affiliate content.",
+      },
+      {
+        number: 4,
+        title: "Performance Analysis",
+        description: "Identify top-performing content types and marketing angles.",
+      },
+    ],
+    tips: [
+      "Use content performance data to inform product marketing strategies",
+      "Provide content templates to improve affiliate output quality",
+      "Monitor compliance to mitigate legal risks",
+      "Recognize top-performing affiliates with bonuses or higher rates",
     ],
   },
 
@@ -388,6 +618,126 @@ export const helpContent: Record<string, HelpContent> = {
       "Reference marketing hooks and angles when generating campaign content",
       "The raw data view at the bottom shows the complete intelligence structure",
       "Campaigns without intelligence show '(No intelligence data)' in the dropdown",
+    ],
+  },
+
+  // Intelligence - Affiliate Marketer
+  "/intelligence/affiliate": {
+    title: "Product Intelligence Insights",
+    description: "Access detailed product research and marketing insights compiled from the sales page. Use this data to create high-converting marketing campaigns.",
+    steps: [
+      {
+        number: 1,
+        title: "Select Your Campaign",
+        description: "Choose which campaign's intelligence you want to review from the dropdown menu.",
+      },
+      {
+        number: 2,
+        title: "Review Product Information",
+        description: "Understand the product's main benefits, features, and selling points.",
+      },
+      {
+        number: 3,
+        title: "Study Target Audience",
+        description: "Review pain points, demographics, and interests to better target your marketing.",
+      },
+      {
+        number: 4,
+        title: "Analyze Competitors",
+        description: "See what competitors are doing and identify opportunities to differentiate.",
+      },
+      {
+        number: 5,
+        title: "Use Marketing Hooks",
+        description: "Reference the suggested marketing angles and hooks when creating content.",
+      },
+      {
+        number: 6,
+        title: "Apply to Content",
+        description: "Use intelligence insights to write better sales copy and marketing messages.",
+      },
+    ],
+    tips: [
+      "The more intelligence you have, the better your content will perform",
+      "Use pain points to create emotional hooks in your marketing",
+      "Reference competitor analysis to position your marketing differently",
+      "Marketing hooks save you time - don't reinvent the wheel",
+      "Combine multiple marketing angles for better conversion rates",
+      "Use the raw data section to dive deeper into research details",
+    ],
+  },
+
+  // Intelligence - Product Developer
+  "/intelligence/creator": {
+    title: "Intelligence Compilation",
+    description: "View how product intelligence is compiled for affiliates. See what data is extracted and made available to your affiliate network.",
+    steps: [
+      {
+        number: 1,
+        title: "Select Your Product",
+        description: "Choose a product from your catalog to view its intelligence compilation.",
+      },
+      {
+        number: 2,
+        title: "Review Compiled Data",
+        description: "See how your sales page data was extracted and structured for affiliates.",
+      },
+      {
+        number: 3,
+        title: "Verify Accuracy",
+        description: "Ensure product information, benefits, and claims are accurately captured.",
+      },
+      {
+        number: 4,
+        title: "Market Analysis",
+        description: "Review competitor analysis and market positioning data.",
+      },
+      {
+        number: 5,
+        title: "Affiliate Insights",
+        description: "See what target audience insights and marketing angles are provided to affiliates.",
+      },
+    ],
+    tips: [
+      "Accurate intelligence = better affiliate performance",
+      "Update product information when you make changes to your sales page",
+      "Use market analysis to identify positioning opportunities",
+      "Provide clear benefit statements for better affiliate marketing",
+      "Review affiliate feedback to improve intelligence quality",
+    ],
+  },
+
+  // Intelligence - Business
+  "/intelligence/business": {
+    title: "Intelligence Portfolio",
+    description: "Oversee intelligence compilation across your product portfolio. Ensure all products have comprehensive data for affiliates.",
+    steps: [
+      {
+        number: 1,
+        title: "Portfolio Overview",
+        description: "View intelligence status across all products in your catalog.",
+      },
+      {
+        number: 2,
+        title: "Coverage Analysis",
+        description: "Identify products missing intelligence data or needing updates.",
+      },
+      {
+        number: 3,
+        title: "Quality Review",
+        description: "Ensure intelligence data accurately represents your products.",
+      },
+      {
+        number: 4,
+        title: "Affiliate Impact",
+        description: "Monitor how intelligence quality affects affiliate performance.",
+      },
+    ],
+    tips: [
+      "Products without intelligence get less affiliate attention",
+      "Regularly update intelligence for new product launches",
+      "Use intelligence data to optimize product positioning",
+      "Monitor which intelligence elements drive the most conversions",
     ],
   },
 
@@ -777,6 +1127,125 @@ export const helpContent: Record<string, HelpContent> = {
       "Refine existing content instead of starting from scratch for better results",
       "Premium images are protected from accidental deletion",
       "Add images from campaign intelligence or upload your own for overlays",
+    ],
+  },
+
+  // Content Library - Affiliate Marketer
+  "/library/affiliate": {
+    title: "Your Content Library",
+    description: "Access all your generated content and images in one place. Organize, refine, and reuse content across campaigns.",
+    steps: [
+      {
+        number: 1,
+        title: "Browse Your Content",
+        description: "View all articles, emails, social posts, landing pages, and images you've created.",
+      },
+      {
+        number: 2,
+        title: "Filter by Type",
+        description: "Use tabs to view All Content, Text Only, or Images Only for focused browsing.",
+      },
+      {
+        number: 3,
+        title: "Search Content",
+        description: "Search across titles, campaign names, and content to quickly find what you need.",
+      },
+      {
+        number: 4,
+        title: "Download and Share",
+        description: "Download content as files or copy text to paste into your marketing channels.",
+      },
+      {
+        number: 5,
+        title: "Check Compliance",
+        description: "View compliance scores and use 'Fix Compliance' for any content with warnings or violations.",
+      },
+      {
+        number: 6,
+        title: "Create Variations",
+        description: "Generate variations of existing content to A/B test and improve performance.",
+      },
+    ],
+    tips: [
+      "Create a content library for each niche to speed up future campaigns",
+      "Organize content by product type for easy reuse",
+      "Track which content types convert best in Analytics",
+      "Refine and reuse high-performing content instead of creating from scratch",
+      "Keep a swipe file of your best content for inspiration",
+    ],
+  },
+
+  // Content Library - Product Developer
+  "/library/creator": {
+    title: "Monitor Affiliate Content",
+    description: "Review content created by your affiliates across all campaigns. Ensure quality and compliance.",
+    steps: [
+      {
+        number: 1,
+        title: "Browse All Affiliate Content",
+        description: "See content generated by affiliates promoting your products.",
+      },
+      {
+        number: 2,
+        title: "Filter by Campaign",
+        description: "Focus on content for specific campaigns or products.",
+      },
+      {
+        number: 3,
+        title: "Quality Review",
+        description: "Review content quality, messaging, and brand alignment.",
+      },
+      {
+        number: 4,
+        title: "Compliance Check",
+        description: "Verify all content meets legal and brand standards.",
+      },
+      {
+        number: 5,
+        title: "Best Practices",
+        description: "Identify top-performing content to share with other affiliates.",
+      },
+    ],
+    tips: [
+      "Share high-quality affiliate content examples with your network",
+      "Provide feedback to affiliates on content quality",
+      "Use compliance data to identify training needs",
+      "Monitor content themes to see which angles resonate most",
+      "Create content guidelines based on top-performing examples",
+    ],
+  },
+
+  // Content Library - Business
+  "/library/business": {
+    title: "Content Portfolio Overview",
+    description: "Comprehensive view of all content created by your affiliate network. Monitor volume, quality, and compliance.",
+    steps: [
+      {
+        number: 1,
+        title: "Portfolio Dashboard",
+        description: "View total content volume across all affiliates and products.",
+      },
+      {
+        number: 2,
+        title: "Performance Metrics",
+        description: "Identify top-performing content types and marketing angles.",
+      },
+      {
+        number: 3,
+        title: "Compliance Oversight",
+        description: "Monitor compliance rates across your affiliate network.",
+      },
+      {
+        number: 4,
+        title: "Quality Assurance",
+        description: "Review content quality standards and brand alignment.",
+      },
+    ],
+    tips: [
+      "Use content data to optimize commission structures",
+      "Identify training opportunities for affiliates",
+      "Recognize top-performing affiliates based on content quality",
+      "Monitor content volume to ensure adequate marketing coverage",
     ],
   },
 
@@ -1203,11 +1672,31 @@ export const helpContent: Record<string, HelpContent> = {
 
 // Helper function to get help content by pathname
 export function getHelpContent(pathname: string, userRole?: string | null): HelpContent | undefined {
-  // For dashboard, return user-type specific help
-  if (pathname === "/dashboard" && userRole) {
-    const dashboardKey = `/dashboard/${userRole.toLowerCase()}`;
-    if (helpContent[dashboardKey]) {
-      return helpContent[dashboardKey];
+  // If we have a user role, try to get user-type specific help first
+  if (userRole) {
+    // For dynamic routes like /campaigns/123, extract the base path
+    const basePath = pathname.split('/').slice(0, 2).join('/');
+    const userSpecificKey = `${pathname}/${userRole.toLowerCase()}`;
+
+    // Try user-type specific version first
+    if (helpContent[userSpecificKey]) {
+      return helpContent[userSpecificKey];
+    }
+
+    // Try base path with user type (e.g., /campaigns/affiliate for /campaigns)
+    if (helpContent[basePath]) {
+      const baseWithUser = `${basePath}/${userRole.toLowerCase()}`;
+      if (helpContent[baseWithUser]) {
+        return helpContent[baseWithUser];
+      }
+    }
+
+    // For dashboard, try user-type specific dashboard
+    if (pathname === "/dashboard") {
+      const dashboardKey = `/dashboard/${userRole.toLowerCase()}`;
+      if (helpContent[dashboardKey]) {
+        return helpContent[dashboardKey];
+      }
     }
   }
 
