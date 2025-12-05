@@ -189,29 +189,6 @@ export default function ContentPage() {
     }
   }, [urlCampaignId, router]);
 
-  // Auto-sync video format with length
-  useEffect(() => {
-    if (contentType === "video_script") {
-      if (videoFormat === "short_form" && length !== "short") {
-        setLength("short");
-      } else if (videoFormat === "long_form" && length !== "medium") {
-        setLength("medium");
-      } else if (videoFormat === "story" && length !== "short") {
-        setLength("short");
-      }
-    }
-  }, [videoFormat, contentType]); // eslint-disable-line
-
-  // Set defaults when content type changes to video_script
-  useEffect(() => {
-    if (contentType === "video_script") {
-      setVideoFormat("short_form");
-      setLength("short");
-      setVideoPace("fast");
-      setTargetPlatform("tiktok");
-    }
-  }, [contentType]); // eslint-disable-line
-
   const [campaignId, setCampaignId] = useState<number | null>(
     urlCampaignId ? Number(urlCampaignId) : null
   );
@@ -236,6 +213,29 @@ export default function ContentPage() {
   const [includeCameraAngles, setIncludeCameraAngles] = useState(true);
   const [includeVisualCues, setIncludeVisualCues] = useState(true);
   const [includeTransitions, setIncludeTransitions] = useState(true);
+
+  // Auto-sync video format with length
+  useEffect(() => {
+    if (contentType === "video_script") {
+      if (videoFormat === "short_form" && length !== "short") {
+        setLength("short");
+      } else if (videoFormat === "long_form" && length !== "medium") {
+        setLength("medium");
+      } else if (videoFormat === "story" && length !== "short") {
+        setLength("short");
+      }
+    }
+  }, [videoFormat, contentType, length]);
+
+  // Set defaults when content type changes to video_script
+  useEffect(() => {
+    if (contentType === "video_script") {
+      setVideoFormat("short_form");
+      setLength("short");
+      setVideoPace("fast");
+      setTargetPlatform("tiktok");
+    }
+  }, [contentType]);
 
   const [generatedContent, setGeneratedContent] = useState<GeneratedContent | null>(null);
   const [editedContent, setEditedContent] = useState("");
