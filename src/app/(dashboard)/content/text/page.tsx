@@ -1140,6 +1140,12 @@ IMPORTANT: The **Affiliate Disclosure** must be a separate, clearly labeled sect
                             </>
                           )}
                         </ul>
+                        <div className="mt-3 pt-3 border-t border-purple-300/20">
+                          <p className="text-xs text-purple-600 dark:text-purple-400">
+                            💡 <strong>Defaults set:</strong> Short Form (15-20s), Fast pace, TikTok platform,
+                            with camera angles, visual cues, and transitions included.
+                          </p>
+                        </div>
                       </div>
                     </>
                   )}
