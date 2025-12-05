@@ -58,9 +58,9 @@ const VIDEO_TYPES = [
 ];
 
 const VIDEO_FORMATS = [
-  { value: "short_form", label: "Short Form (15-20s)" },
-  { value: "long_form", label: "Long Form (1+ min)" },
-  { value: "story", label: "Story (15s)" },
+  { value: "short_form", label: "Short Form (15-20s) - TikTok, Reels, Shorts" },
+  { value: "long_form", label: "Long Form (1+ min) - YouTube, Facebook" },
+  { value: "story", label: "Story (15s) - Instagram/Snapchat Stories" },
 ];
 
 const VIDEO_ATMOSPHERES = [
@@ -153,9 +153,9 @@ const getLengthOptions = (contentType: ContentType) => {
   // Video script lengths
   if (contentType === "video_script") {
     return [
-      { ...baseLengths.short, description: "~100 words (30 sec)" },
-      { ...baseLengths.medium, description: "~250 words (1 min)" },
-      { ...baseLengths.long, description: "~750 words (3 min)" },
+      { ...baseLengths.short, description: "~50 words (15-20s)" },
+      { ...baseLengths.medium, description: "~150 words (1 min)" },
+      { ...baseLengths.long, description: "~300 words (2+ min)" },
     ];
   }
 
@@ -188,6 +188,29 @@ export default function ContentPage() {
       router.push("/content");
     }
   }, [urlCampaignId, router]);
+
+  // Auto-sync video format with length
+  useEffect(() => {
+    if (contentType === "video_script") {
+      if (videoFormat === "short_form" && length !== "short") {
+        setLength("short");
+      } else if (videoFormat === "long_form" && length !== "medium") {
+        setLength("medium");
+      } else if (videoFormat === "story" && length !== "short") {
+        setLength("short");
+      }
+    }
+  }, [videoFormat, contentType]); // eslint-disable-line
+
+  // Set defaults when content type changes to video_script
+  useEffect(() => {
+    if (contentType === "video_script") {
+      setVideoFormat("short_form");
+      setLength("short");
+      setVideoPace("fast");
+      setTargetPlatform("tiktok");
+    }
+  }, [contentType]); // eslint-disable-line
 
   const [campaignId, setCampaignId] = useState<number | null>(
     urlCampaignId ? Number(urlCampaignId) : null
