@@ -93,7 +93,7 @@ export default function AdminUsersPage() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["admin-users"] });
       toast.success(`User ${data.is_active ? 'activated' : 'deactivated'} successfully`);
-      setDeletingUser(null);
+      setActionUser(null);
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.detail || "Failed to update user status");
