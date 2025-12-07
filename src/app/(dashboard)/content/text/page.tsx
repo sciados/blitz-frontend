@@ -126,15 +126,6 @@ const getLengthOptions = (contentType: ContentType) => {
     ];
   }
 
-  // Video script lengths
-  if (contentType === "video_script") {
-    return [
-      { ...baseLengths.short, description: "~50 words (15-20s)" },
-      { ...baseLengths.medium, description: "~150 words (1 min)" },
-      { ...baseLengths.long, description: "~300 words (2+ min)" },
-    ];
-  }
-
   // Landing page and ad copy
   if (contentType === "landing_page" || contentType === "ad_copy") {
     return [
@@ -210,20 +201,6 @@ export default function ContentPage() {
   const [includeCameraAngles, setIncludeCameraAngles] = useState(true);
   const [includeVisualCues, setIncludeVisualCues] = useState(true);
   const [includeTransitions, setIncludeTransitions] = useState(true);
-
-  // Auto-sync video format with length
-  useEffect(() => {
-    if (contentType === "video_script") {
-      if (videoFormat === "short_form" && length !== "short") {
-        setLength("short");
-      } else if (videoFormat === "long_form" && length !== "long") {
-        // Long-form videos should use "long" length for more words
-        setLength("long");
-      } else if (videoFormat === "story" && length !== "short") {
-        setLength("short");
-      }
-    }
-  }, [videoFormat, contentType, length]);
 
   // Reset video defaults flag when switching away from video_script
   const [hasSetVideoDefaults, setHasSetVideoDefaults] = useState(false);
@@ -502,7 +479,6 @@ IMPORTANT: The **Affiliate Disclosure** must be a separate, clearly labeled sect
     console.log("[DEBUG] ===== GENERATE CLICKED =====");
     console.log("[DEBUG] contentType:", contentType);
     console.log("[DEBUG] videoFormat:", videoFormat);
-    console.log("[DEBUG] length:", length);
     console.log("[DEBUG] videoType:", videoType);
 
     if (!campaignId) {
@@ -521,8 +497,12 @@ IMPORTANT: The **Affiliate Disclosure** must be a separate, clearly labeled sect
         content_type: contentType,
         marketing_angle: marketingAngle,
         tone,
-        length,
       };
+
+      // Add length for non-video content (video scripts use video_format for duration)
+      if (contentType !== "video_script") {
+        payload.length = length;
+      }
 
       // Add email sequence parameters if needed
       if (contentType === "email_sequence") {
@@ -811,29 +791,40 @@ IMPORTANT: The **Affiliate Disclosure** must be a separate, clearly labeled sect
                     </select>
                   </div>
 
-                  {/* Length */}
-                  <div>
-                    <label htmlFor="length" className="block text-sm font-medium mb-2" style={{ color: "var(--text-secondary)" }}>
-                      Length
-                    </label>
-                    <select
-                      id="length"
-                      value={length}
-                      onChange={(e) => setLength(e.target.value)}
-                      className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                      style={{
-                        borderColor: "var(--card-border)",
-                        background: "var(--card-bg)",
-                        color: "var(--text-primary)",
-                      }}
-                    >
-                      {getLengthOptions(contentType).map((l) => (
-                        <option key={l.value} value={l.value}>
-                          {l.label} ({l.description})
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                  {/* Length - Hidden for video scripts since video_format controls duration */}
+                  {contentType !== "video_script" && (
+                    <div>
+                      <label htmlFor="length" className="block text-sm font-medium mb-2" style={{ color: "var(--text-secondary)" }}>
+                        Length
+                      </label>
+                      <select
+                        id="length"
+                        value={length}
+                        onChange={(e) => setLength(e.target.value)}
+                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                        style={{
+                          borderColor: "var(--card-border)",
+                          background: "var(--card-bg)",
+                          color: "var(--text-primary)",
+                        }}
+                      >
+                        {getLengthOptions(contentType).map((l) => (
+                          <option key={l.value} value={l.value}>
+                            {l.label} ({l.description})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
+                  {/* Info message for video scripts */}
+                  {contentType === "video_script" && (
+                    <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                      <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+                        <span className="font-medium">Video Duration:</span> Controlled by Video Format below (15-20s, 60-90s, or 15s)
+                      </p>
+                    </div>
+                  )}
 
                   {/* Email Sequence Configuration */}
                   {contentType === "email_sequence" && (

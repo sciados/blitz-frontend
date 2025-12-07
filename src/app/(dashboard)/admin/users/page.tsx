@@ -111,19 +111,25 @@ export default function AdminUsersPage() {
 
   const handleSubmitCreate = (e: React.FormEvent) => {
     e.preventDefault();
-    createMutation.mutate(formData);
+    const createData = {
+      ...formData,
+      user_type: formData.user_type || null, // Convert empty string to null
+    };
+    createMutation.mutate(createData);
   };
 
   const handleSubmitEdit = (e: React.FormEvent) => {
     e.preventDefault();
     if (editingUser) {
+      const updateData = {
+        full_name: formData.full_name,
+        role: formData.role || "user", // Ensure role is never empty
+        user_type: formData.user_type || null, // Convert empty string to null
+      };
+      console.log("[DEBUG] Submitting update data:", updateData);
       updateMutation.mutate({
         id: editingUser.id,
-        data: {
-          full_name: formData.full_name,
-          role: formData.role,
-          user_type: formData.user_type,
-        },
+        data: updateData,
       });
     }
   };
