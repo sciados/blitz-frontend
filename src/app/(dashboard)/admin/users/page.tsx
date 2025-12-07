@@ -436,10 +436,10 @@ export default function AdminUsersPage() {
                     style={{ borderColor: "var(--card-border)" }}
                   >
                     <option value="">None</option>
-                    <option value="affiliate">Affiliate</option>
-                    <option value="creator">Creator</option>
-                    <option value="business">Business</option>
-                    <option value="admin">Admin</option>
+                    <option value="Affiliate">Affiliate</option>
+                    <option value="Creator">Creator</option>
+                    <option value="Business">Business</option>
+                    <option value="Admin">Admin</option>
                   </select>
                 </div>
               </div>
@@ -548,10 +548,10 @@ export default function AdminUsersPage() {
                     style={{ borderColor: "var(--card-border)" }}
                   >
                     <option value="">None</option>
-                    <option value="affiliate">Affiliate</option>
-                    <option value="creator">Creator</option>
-                    <option value="business">Business</option>
-                    <option value="admin">Admin</option>
+                    <option value="Affiliate">Affiliate</option>
+                    <option value="Creator">Creator</option>
+                    <option value="Business">Business</option>
+                    <option value="Admin">Admin</option>
                   </select>
                 </div>
               </div>
