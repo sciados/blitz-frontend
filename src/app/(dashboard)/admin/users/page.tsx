@@ -132,7 +132,6 @@ export default function AdminUsersPage() {
         role: formData.role || "user", // Ensure role is never empty
         user_type: formData.user_type || "", // Ensure user_type is never null
       };
-      console.log("[DEBUG] Submitting update data:", updateData);
       updateMutation.mutate({
         id: editingUser.id,
         data: updateData,
