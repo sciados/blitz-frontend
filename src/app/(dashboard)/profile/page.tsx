@@ -13,6 +13,7 @@ interface UserProfile {
   profile_image_url?: string;
   role: string;
   user_type: string;
+  is_active: boolean;
   created_at: string;
   tier?: string;
 }
@@ -53,6 +54,28 @@ export default function ProfilePage() {
     },
     onError: (error: any) => {
       toast.error(error?.response?.data?.detail || "Failed to update profile");
+    },
+  });
+
+  // Disable/Enable account mutation
+  const toggleAccountMutation = useMutation({
+    mutationFn: async (isActive: boolean) => {
+      const response = await api.post(`/api/admin/users/${user?.id}/activate`, {
+        is_active: isActive,
+      });
+      return response.data;
+    },
+    onSuccess: (data) => {
+      toast.success(
+        data.is_active
+          ? "Your account has been enabled"
+          : "Your account has been disabled"
+      );
+      queryClient.invalidateQueries({ queryKey: ["userProfile"] });
+      queryClient.invalidateQueries({ queryKey: ["userInfo"] });
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.detail || "Failed to update account status");
     },
   });
 
@@ -150,9 +173,9 @@ export default function ProfilePage() {
   }
 
   const getUserTypeLabel = (userType: string) => {
-    if (userType === "creator") return "Product Developer";
-    if (userType === "affiliate") return "Marketer";
-    if (userType === "business") return "Business";
+    if (userType === "Creator") return "Product Developer";
+    if (userType === "Affiliate") return "Marketer";
+    if (userType === "Business") return "Business";
     return userType;
   };
 
@@ -163,11 +186,11 @@ export default function ProfilePage() {
   };
 
   const getUserTypeColor = (userType: string) => {
-    if (userType === "creator")
+    if (userType === "Creator")
       return "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300";
-    if (userType === "affiliate")
+    if (userType === "Affiliate")
       return "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300";
-    if (userType === "business")
+    if (userType === "Business")
       return "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300";
     return "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300";
   };
@@ -366,17 +389,17 @@ export default function ProfilePage() {
               </label>
               <span
                 className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${getUserTypeColor(
-                  user?.role || ""
+                  user?.user_type || ""
                 )}`}
               >
-                {user?.role === "creator"
+                {user?.user_type === "Creator"
                   ? "🎯"
-                  : user?.role === "affiliate"
+                  : user?.user_type === "Affiliate"
                   ? "🚀"
                   : user?.user_type === "Business"
                   ? "💼"
                   : "👤"}{" "}
-                {getUserTypeLabel(user?.role || "")}
+                {getUserTypeLabel(user?.user_type || "")}
               </span>
             </div>
 
@@ -609,14 +632,34 @@ export default function ProfilePage() {
             <div className="flex items-center justify-between p-4 bg-red-50 dark:bg-red-900/10 rounded-lg">
               <div>
                 <h3 className="font-medium text-[var(--text-primary)]">
-                  Delete Account
+                  {user?.is_active ? "Disable Account" : "Enable Account"}
                 </h3>
                 <p className="text-sm text-[var(--text-secondary)]">
-                  Permanently delete your account and all data
+                  {user?.is_active
+                    ? "Temporarily disable your account. You can enable it again anytime."
+                    : "Enable your account to access the platform again."}
                 </p>
               </div>
-              <button className="px-4 py-2 text-sm bg-red-600 hover:bg-red-700 text-white rounded-lg transition">
-                Delete Account
+              <button
+                onClick={() => {
+                  if (window.confirm(`Are you sure you want to ${user?.is_active ? 'disable' : 'enable'} your account?`)) {
+                    toggleAccountMutation.mutate(!user?.is_active);
+                  }
+                }}
+                disabled={toggleAccountMutation.isPending}
+                className={`px-4 py-2 text-sm text-white rounded-lg transition disabled:opacity-50 ${
+                  user?.is_active
+                    ? "bg-red-600 hover:bg-red-700"
+                    : "bg-green-600 hover:bg-green-700"
+                }`}
+              >
+                {toggleAccountMutation.isPending
+                  ? user?.is_active
+                    ? "Disabling..."
+                    : "Enabling..."
+                  : user?.is_active
+                  ? "Disable Account"
+                  : "Enable Account"}
               </button>
             </div>
           </div>

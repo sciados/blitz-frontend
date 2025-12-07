@@ -426,15 +426,11 @@ export default function Layout({ children }: LayoutProps) {
                   {userInfo.email}
                 </span>
                 <span className="text-xs text-[var(--text-secondary)] capitalize">
-                  {userInfo.role === "creator"
-                    ? "Product Developer"
-                    : userInfo.role === "affiliate"
-                    ? "Marketer"
-                    : userInfo.role === "business"
-                    ? "Business"
-                    : userInfo.role === "admin"
-                    ? "Admin"
-                    : userInfo.role}
+                  {(userInfo.user_type === "Affiliate" && "Marketer") ||
+                    (userInfo.user_type === "Creator" && "Product Developer") ||
+                    (userInfo.user_type === "Business" && "Business") ||
+                    userInfo.user_type ||
+                    (userInfo.role === "admin" ? "Admin" : "User")}
                 </span>
               </div>
             )}
@@ -521,13 +517,11 @@ export default function Layout({ children }: LayoutProps) {
                               "Loading..."}
                           </p>
                           <p className="text-xs text-[var(--text-secondary)] capitalize">
-                            {userInfo?.role === "creator"
-                              ? "Product Developer"
-                              : userInfo?.role === "affiliate"
-                              ? "Marketer"
-                              : userInfo?.role === "business"
-                              ? "Business"
-                              : userInfo?.role || "user"}
+                            {(userInfo?.user_type === "Affiliate" && "Marketer") ||
+                              (userInfo?.user_type === "Creator" && "Product Developer") ||
+                              (userInfo?.user_type === "Business" && "Business") ||
+                              userInfo?.user_type ||
+                              (userInfo?.role === "admin" ? "Admin" : "User")}
                           </p>
                         </div>
                       </div>
@@ -576,16 +570,16 @@ export default function Layout({ children }: LayoutProps) {
                     </div>
                     <div
                       className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
-                        userInfo.role === "creator"
+                        userInfo.user_type === "Creator"
                           ? "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300"
-                          : userInfo.role === "business"
+                          : userInfo.user_type === "Business"
                           ? "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300"
                           : "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
                       }`}
                     >
-                      {userInfo.role === "creator"
+                      {userInfo.user_type === "Creator"
                         ? "🎯 Product Developer"
-                        : userInfo.role === "business"
+                        : userInfo.user_type === "Business"
                         ? "💼 Business"
                         : "🚀 Marketer"}
                     </div>
