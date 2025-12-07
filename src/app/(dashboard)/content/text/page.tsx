@@ -219,8 +219,9 @@ export default function ContentPage() {
     if (contentType === "video_script") {
       if (videoFormat === "short_form" && length !== "short") {
         setLength("short");
-      } else if (videoFormat === "long_form" && length !== "medium") {
-        setLength("medium");
+      } else if (videoFormat === "long_form" && length !== "long") {
+        // Long-form videos should use "long" length for more words
+        setLength("long");
       } else if (videoFormat === "story" && length !== "short") {
         setLength("short");
       }
@@ -228,14 +229,19 @@ export default function ContentPage() {
   }, [videoFormat, contentType, length]);
 
   // Set defaults when content type changes to video_script
+  // Only set defaults on first selection, don't override user's format choice
+  const [hasSetVideoDefaults, setHasSetVideoDefaults] = useState(false);
+
   useEffect(() => {
-    if (contentType === "video_script") {
-      setVideoFormat("short_form");
-      setLength("short");
+    if (contentType === "video_script" && !hasSetVideoDefaults) {
+      // Keep current videoFormat if already set by user, otherwise default to short_form
       setVideoPace("fast");
       setTargetPlatform("tiktok");
+      setHasSetVideoDefaults(true);
+    } else if (contentType !== "video_script") {
+      setHasSetVideoDefaults(false);
     }
-  }, [contentType]);
+  }, [contentType, hasSetVideoDefaults]);
 
   const [generatedContent, setGeneratedContent] = useState<GeneratedContent | null>(null);
   const [editedContent, setEditedContent] = useState("");
