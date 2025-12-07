@@ -192,7 +192,21 @@ export default function ContentPage() {
     return "testimonial"; // default
   });
 
-  const [videoFormat, setVideoFormat] = useState("short_form");
+  const [videoFormat, setVideoFormat] = useState(() => {
+    // Try to get from URL params or localStorage
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const format = urlParams.get('video_format');
+      if (format) return format;
+    }
+    // Default to long_form for better user experience
+    return "long_form";
+  });
+
+  // Debug: Log videoFormat changes
+  useEffect(() => {
+    console.log("[DEBUG] videoFormat state changed to:", videoFormat);
+  }, [videoFormat]);
   const [includeCameraAngles, setIncludeCameraAngles] = useState(true);
   const [includeVisualCues, setIncludeVisualCues] = useState(true);
   const [includeTransitions, setIncludeTransitions] = useState(true);
@@ -485,6 +499,12 @@ IMPORTANT: The **Affiliate Disclosure** must be a separate, clearly labeled sect
   async function handleGenerate(e: React.FormEvent) {
     e.preventDefault();
 
+    console.log("[DEBUG] ===== GENERATE CLICKED =====");
+    console.log("[DEBUG] contentType:", contentType);
+    console.log("[DEBUG] videoFormat:", videoFormat);
+    console.log("[DEBUG] length:", length);
+    console.log("[DEBUG] videoType:", videoType);
+
     if (!campaignId) {
       toast.error("Please select a campaign");
       return;
@@ -512,6 +532,7 @@ IMPORTANT: The **Affiliate Disclosure** must be a separate, clearly labeled sect
 
       // Add video script parameters if needed
       if (contentType === "video_script") {
+        console.log("[DEBUG] Sending video_format:", videoFormat, "videoType:", videoType);
         payload.video_type = videoType;
         payload.video_format = videoFormat;
         payload.include_camera_angles = includeCameraAngles;
@@ -887,7 +908,10 @@ IMPORTANT: The **Affiliate Disclosure** must be a separate, clearly labeled sect
                         <select
                           id="videoFormat"
                           value={videoFormat}
-                          onChange={(e) => setVideoFormat(e.target.value)}
+                          onChange={(e) => {
+                            console.log("[DEBUG] Dropdown onChange called, value:", e.target.value);
+                            setVideoFormat(e.target.value);
+                          }}
                           className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
                           style={{
                             borderColor: "var(--card-border)",
