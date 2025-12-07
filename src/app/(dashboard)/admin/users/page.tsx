@@ -23,7 +23,7 @@ export default function AdminUsersPage() {
   const [roleFilter, setRoleFilter] = useState<string>("");
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [creatingUser, setCreatingUser] = useState(false);
-  const [deletingUser, setDeletingUser] = useState<User | null>(null);
+  const [actionUser, setActionUser] = useState<User | null>(null);
   const [formData, setFormData] = useState({
     email: "",
     full_name: "",
@@ -84,18 +84,19 @@ export default function AdminUsersPage() {
     },
   });
 
-  // Delete user mutation
-  const deleteMutation = useMutation({
-    mutationFn: async (id: number) => {
-      await api.delete(`/api/admin/users/${id}`);
+  // Activate/Deactivate user mutation
+  const activateMutation = useMutation({
+    mutationFn: async ({ id, isActive }: { id: number; isActive: boolean }) => {
+      const response = await api.post(`/api/admin/users/${id}/activate`, { is_active: isActive });
+      return response.data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["admin-users"] });
-      toast.success("User deleted successfully");
+      toast.success(`User ${data.is_active ? 'activated' : 'deactivated'} successfully`);
       setDeletingUser(null);
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.detail || "Failed to delete user");
+      toast.error(error.response?.data?.detail || "Failed to update user status");
     },
   });
 
@@ -139,9 +140,14 @@ export default function AdminUsersPage() {
     }
   };
 
-  const handleConfirmDelete = () => {
-    if (deletingUser) {
-      deleteMutation.mutate(deletingUser.id);
+  const handleToggleUserStatus = (user: User) => {
+    setActionUser(user);
+  };
+
+  const handleConfirmStatusChange = () => {
+    if (actionUser) {
+      const isDeactivating = actionUser.is_active;
+      activateMutation.mutate({ id: actionUser.id, isActive: !isDeactivating });
     }
   };
 
@@ -319,10 +325,14 @@ export default function AdminUsersPage() {
                             Edit
                           </button>
                           <button
-                            onClick={() => setDeletingUser(user)}
-                            className="px-3 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 dark:bg-red-900 dark:text-red-200 dark:hover:bg-red-800 transition"
+                            onClick={() => handleToggleUserStatus(user)}
+                            className={`px-3 py-1 rounded transition ${
+                              user.is_active
+                                ? "bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900 dark:text-red-200 dark:hover:bg-red-800"
+                                : "bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900 dark:text-green-200 dark:hover:bg-green-800"
+                            }`}
                           >
-                            Delete
+                            {user.is_active ? "Disable" : "Enable"}
                           </button>
                         </div>
                       </td>
@@ -580,33 +590,45 @@ export default function AdminUsersPage() {
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
-      {deletingUser && (
+      {/* Disable/Enable Confirmation Modal */}
+      {actionUser && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="card rounded-xl p-6 w-full max-w-md">
             <h2
               className="text-2xl font-bold mb-4"
               style={{ color: "var(--text-primary)" }}
             >
-              Delete User
+              {actionUser.is_active ? "Disable User" : "Enable User"}
             </h2>
             <p className="mb-6" style={{ color: "var(--text-secondary)" }}>
-              Are you sure you want to delete{" "}
+              Are you sure you want to {actionUser.is_active ? "disable" : "enable"}{" "}
               <span className="font-semibold" style={{ color: "var(--text-primary)" }}>
-                {deletingUser.email}
+                {actionUser.email}
               </span>
-              ? This action cannot be undone.
+              ? {actionUser.is_active
+                ? "Disabled users cannot log in to the platform."
+                : "The user will be able to log in again."}
             </p>
             <div className="flex gap-2">
               <button
-                onClick={handleConfirmDelete}
-                disabled={deleteMutation.isPending}
-                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition disabled:opacity-50"
+                onClick={handleConfirmStatusChange}
+                disabled={activateMutation.isPending}
+                className={`flex-1 px-4 py-2 text-white rounded-lg transition disabled:opacity-50 ${
+                  actionUser.is_active
+                    ? "bg-red-600 hover:bg-red-700"
+                    : "bg-green-600 hover:bg-green-700"
+                }`}
               >
-                {deleteMutation.isPending ? "Deleting..." : "Delete User"}
+                {activateMutation.isPending
+                  ? actionUser.is_active
+                    ? "Disabling..."
+                    : "Enabling..."
+                  : actionUser.is_active
+                  ? "Disable User"
+                  : "Enable User"}
               </button>
               <button
-                onClick={() => setDeletingUser(null)}
+                onClick={() => setActionUser(null)}
                 className="px-4 py-2 border rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition"
                 style={{ borderColor: "var(--card-border)" }}
               >
