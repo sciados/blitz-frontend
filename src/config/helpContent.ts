@@ -1668,6 +1668,146 @@ export const helpContent: Record<string, HelpContent> = {
       "View tracking code in Product Library → Your Product → Conversion Tracking Code",
     ],
   },
+
+  // Google Business Profile Help
+  "/help/google-business": {
+    title: "Google Business Profile Setup",
+    description: "Complete guide to claiming your Google Business Profile and creating content to attract local customers. Essential for local SEO and visibility.",
+    steps: [
+      {
+        number: 1,
+        title: "Search for Your Business",
+        description: "Go to google.com/business and search for your business name. If it exists, click 'Claim this business'. If not, click 'Add your business'.",
+      },
+      {
+        number: 2,
+        title: "Enter Business Information",
+        description: "Fill in your business name, category (e.g., 'Plumber', 'Restaurant'), and address. Choose whether customers visit your location or you visit them.",
+      },
+      {
+        number: 3,
+        title: "Verify Your Business",
+        description: "Google will verify you own the business. Most common methods: postcard with code (mail), phone call, email, or instant verification for some businesses.",
+      },
+      {
+        number: 4,
+        title: "Complete Your Profile",
+        description: "Add business hours, phone number, website, description, and services. Upload a logo and cover photo. The more complete, the better your visibility.",
+      },
+      {
+        number: 5,
+        title: "Add High-Quality Photos",
+        description: "Upload photos of your team, work examples, storefront, or services. Businesses with photos get 42% more requests for directions and 35% more website clicks.",
+      },
+      {
+        number: 6,
+        title: "Create Your First Post",
+        description: "Click 'Posts' → 'Create Post' → 'What's New'. Share an update, offer, event, or service highlight. Posts appear for 7 days and boost engagement.",
+      },
+      {
+        number: 7,
+        title: "Set Up Messaging",
+        description: "Enable messaging so customers can text you directly. Add common questions to Auto-replies for faster response times.",
+      },
+      {
+        number: 8,
+        title: "Add Products/Services",
+        description: "List your main services with descriptions and pricing. This helps customers understand what you offer and improves search relevance.",
+      },
+      {
+        number: 9,
+        title: "Monitor and Respond to Reviews",
+        description: "Check for new reviews regularly. Respond to ALL reviews (positive and negative) within 24-48 hours. Thank customers and address concerns professionally.",
+      },
+      {
+        number: 10,
+        title: "Post Regularly",
+        description: "Share updates 1-2 times per week. Use Blitz to generate posts about services, tips, customer testimonials, or seasonal promotions.",
+      },
+    ],
+    tips: [
+      "Choose the most specific category possible (e.g., 'Emergency Plumbing Service' instead of just 'Plumber')",
+      "Keep business hours updated, especially during holidays",
+      "Add photos weekly - before/after shots work great for service businesses",
+      "Use posts to promote seasonal services (e.g., 'Winter pipe prep' for plumbers)",
+      "Respond to negative reviews with empathy and offer to make it right",
+      "Add your website URL to drive traffic to your main site",
+      "Use Google Posts to share tips that showcase your expertise",
+      "Pin your best review to the top of your profile",
+      "Add all your services with detailed descriptions for better SEO",
+      "Enable messaging during business hours for best response rates",
+    ],
+    links: [
+      {
+        label: "Google Business Profile Help Center",
+        href: "https://support.google.com/business/",
+      },
+      {
+        label: "Best Practices for Local SEO",
+        href: "https://moz.com/learn/seo/local",
+      },
+    ],
+  },
+
+  // Google Business Content Strategy
+  "/help/google-content": {
+    title: "Google Business Content Strategy",
+    description: "Create engaging content for your Google Business Profile using Blitz's AI-generated posts, photos, and updates to attract and convert local customers.",
+    steps: [
+      {
+        number: 1,
+        title: "Generate Service-Focused Posts",
+        description: "Use Blitz to create posts about your services. Focus on specific services like emergency repairs, maintenance tips, or before/after showcases.",
+      },
+      {
+        number: 2,
+        title: "Create Seasonal Campaigns",
+        description: "Generate seasonal content for relevant services (e.g., 'Winter plumbing prep' for plumbers, 'Tax season reminders' for accountants).",
+      },
+      {
+        number: 3,
+        title: "Share Customer Success Stories",
+        description: "Use generated testimonials and success stories. Create posts highlighting specific customer outcomes and results.",
+      },
+      {
+        number: 4,
+        title: "Generate Educational Tips",
+        description: "Create posts with maintenance tips, how-to advice, or warning signs customers should watch for. Establishes you as a local expert.",
+      },
+      {
+        number: 5,
+        title: "Create Promotional Posts",
+        description: "Generate seasonal promotions, new service announcements, or limited-time offers to drive bookings and inquiries.",
+      },
+      {
+        number: 6,
+        title: "Add Service-Specific Photos",
+        description: "Upload generated images of your work: before/after shots, team at work, equipment, or happy customers (with permission).",
+      },
+      {
+        number: 7,
+        title: "Update Services Regularly",
+        description: "Keep your services list current. Generate new service descriptions when you add offerings or change pricing.",
+      },
+      {
+        number: 8,
+        title: "Monitor Post Performance",
+        description: "Check Google Business Profile insights to see which posts get the most views, clicks, and engagement.",
+      },
+    ],
+    tips: [
+      "Post 1-2 times per week for best results",
+      "Use generated images with posts for 3x more engagement",
+      "Time posts for peak customer browsing (lunch hours, evenings, weekends)",
+      "Create a content calendar: rotate between services, tips, testimonials, and promotions",
+      "Use location-specific keywords in your posts ('Austin', 'Downtown', 'Northside')",
+      "Include clear CTAs in posts ('Call now', 'Book online', 'Get a quote')",
+      "Cross-post Google content to your other social media (Facebook, Instagram)",
+      "Track which services get the most engagement and feature them more",
+      "Share seasonal content 2-4 weeks before peak season",
+      "Use Blitz's service-focused content for authentic, relevant posts",
+    ],
+  },
 };
 
 // Helper function to get help content by pathname
