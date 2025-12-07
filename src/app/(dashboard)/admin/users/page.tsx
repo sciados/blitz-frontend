@@ -46,7 +46,13 @@ export default function AdminUsersPage() {
 
   // Create user mutation
   const createMutation = useMutation({
-    mutationFn: async (data: typeof formData) => {
+    mutationFn: async (data: {
+      email: string;
+      full_name: string;
+      password: string;
+      role: string;
+      user_type: string;
+    }) => {
       const response = await api.post("/api/admin/users", data);
       return response.data;
     },
@@ -113,7 +119,7 @@ export default function AdminUsersPage() {
     e.preventDefault();
     const createData = {
       ...formData,
-      user_type: formData.user_type || null, // Convert empty string to null
+      user_type: formData.user_type || "", // Ensure user_type is never null
     };
     createMutation.mutate(createData);
   };
@@ -124,7 +130,7 @@ export default function AdminUsersPage() {
       const updateData = {
         full_name: formData.full_name,
         role: formData.role || "user", // Ensure role is never empty
-        user_type: formData.user_type || null, // Convert empty string to null
+        user_type: formData.user_type || "", // Ensure user_type is never null
       };
       console.log("[DEBUG] Submitting update data:", updateData);
       updateMutation.mutate({
