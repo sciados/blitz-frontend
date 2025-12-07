@@ -3,17 +3,58 @@
 
 ---
 
+## 🎯 Quick Overview
+
+**Price: $147/month (starting from day one)**
+- No free trial
+- Full access immediately
+- Cancel anytime
+- 30-day guarantee
+
+**Value Delivered: $2,000/month**
+- Content generation + auto-publishing + analytics
+- Saves $1,853/month vs alternatives
+
+**Result: 1,328% ROI**
+- $1,953/month net profit
+- Payback in less than 1 week
+
+---
+
 ## 📊 Executive Summary
 
-**Investment:** $147/month (SaaS subscription)
-**Annual Cost:** $1,587
+**Investment:** $147/month (starting from day one)
+**Annual Cost:** $1,587 (pay annually or $147/month)
 **Monthly Return:** $2,100 (6 new customers × $350 avg job)
 **Net Profit:** $1,953/month
 **ROI:** 1,328%
 **Payback Period:** Less than 1 week
 **Annual Savings vs Traditional Marketing:** $27,000-$39,000
+**No Free Trial** - Start with full access
 
 **Result:** Complete marketing automation with 12 seasonal campaigns, unlimited content, **AUTO-PUBLISHING to social media**, and professional images/videos.
+
+---
+
+## 💰 Investment Required
+
+**Business Owner Plan: $147/month**
+- Pay monthly: $147/month
+- Pay annually: $1,587/year (save $180)
+- **No free trial** - Full access from day one
+- Cancel anytime, no contracts
+- 30-day money-back guarantee
+
+**What $147/month gets you:**
+- Unlimited content generation (value: $500/month)
+- Auto-publishing to 3 platforms (value: $1,000/month)
+- Lead tracking and analytics (value: $200/month)
+- Campaign management (value: $300/month)
+- **Total value: $2,000/month**
+- **Your cost: $147/month**
+- **You save: $1,853/month!**
+
+---
 
 ## ✨ NEW: Auto-Publishing Feature (革命性功能)
 
@@ -418,21 +459,24 @@ Blitz includes pre-built intelligence for 12 common local business types:
 
 **Savings vs Alternatives: $16,413-$40,413 per year!**
 
+**Blitz Price: $147/month from day one - no free trial, full access immediately**
+
 ---
 
 ## Getting Started: Simple 3-Step Process
 
-### Step 1: Create Account & Choose Business Type (2 minutes)
+### Step 1: Subscribe & Create Account (2 minutes)
 ```
 ┌─────────────────────────────────────┐
-│ Sign up for Blitz                   │
+│ Subscribe to Blitz                  │
 │                                     │
+│ Plan: Business Owner ($147/month)   │
 │ Business Name: Metro City Plumbing  │
 │ Business Type: [Plumber ▼]          │
 │ Website: metrocityplumbing.com      │
 │ (optional)                          │
 │                                     │
-│      [Create Account →]             │
+│ [Subscribe Now - $147/month]        │
 └─────────────────────────────────────┘
 ```
 
@@ -440,6 +484,7 @@ Blitz includes pre-built intelligence for 12 common local business types:
 ```
 ┌─────────────────────────────────────┐
 │ Connect Your Accounts               │
+│ (Full access after subscription)    │
 │                                     │
 │ ☑ Google Business Profile          │
 │    [Connect with Google] ✓         │
@@ -470,6 +515,7 @@ Blitz includes pre-built intelligence for 12 common local business types:
 ```
 
 **Total setup time: 4 minutes**
+**Investment: $147/month from day one**
 
 **Next day:** Your content auto-publishes to Google, Facebook, and Instagram!
 
@@ -515,6 +561,7 @@ Dashboard - What You See:
 ### Metro City Plumbing (Austin, TX)
 **Business:** 4 plumbers, 8 years in business
 **Challenge:** No online presence, losing to competitors
+**Investment:** $147/month from day one
 
 **After Blitz (Month 3):**
 - ✅ 12 articles published on website
@@ -524,6 +571,11 @@ Dashboard - What You See:
 - ✅ $2,100/month additional revenue
 - ✅ **ROI: 1,328%**
 
+**Net Profit:**
+- Revenue: $2,100/month
+- Cost: $147/month
+- **Net: $1,953/month profit**
+
 **Time Investment:**
 - Setup: 4 minutes
 - Weekly: 5 minutes checking dashboard
@@ -532,6 +584,7 @@ Dashboard - What You See:
 ### Downtown Dental (Denver, CO)
 **Business:** 2 dentists, family practice
 **Challenge:** Needed more appointment bookings
+**Investment:** $147/month from day one
 
 **After Blitz (Month 6):**
 - ✅ 24 articles published
@@ -541,9 +594,15 @@ Dashboard - What You See:
 - ✅ $18,000/month additional revenue
 - ✅ **ROI: 3,658%**
 
+**Net Profit:**
+- Revenue: $18,000/month
+- Cost: $147/month
+- **Net: $17,853/month profit**
+
 ### Elite HVAC (Phoenix, AZ)
 **Business:** 6 technicians, commercial + residential
 **Challenge:** Seasonal business, need steady leads
+**Investment:** $147/month from day one
 
 **After Blitz (Month 12):**
 - ✅ 48 articles published
@@ -552,6 +611,11 @@ Dashboard - What You See:
 - ✅ 20 new customers/month
 - ✅ $35,000/month additional revenue
 - ✅ **ROI: 5,102%**
+
+**Net Profit:**
+- Revenue: $35,000/month
+- Cost: $147/month
+- **Net: $34,853/month profit**
 
 ---
 
@@ -618,25 +682,29 @@ A: Yes, no contracts. But most customers stay because of the ROI!
 
 ### Ready to Get More Leads?
 
-**Option 1: Start Free Trial**
-- 7-day free trial
-- Full access to all features
-- No credit card required
-- **Start here if you're unsure**
+**Investment: $147/month**
+- Full access to all features from day one
+- No free trial (immediate access to everything)
+- Cancel anytime, no contracts
+- **Perfect for serious business owners**
 
-**Option 2: Subscribe Now**
-- $147/month
-- Cancel anytime
-- **Start here if you're ready**
+### What You Get Immediately:
+✅ **Unlimited content generation** (articles, posts, emails, images, videos)
+✅ **Auto-publishing** to Google, Facebook, Instagram
+✅ **12 seasonal campaigns** ready to go
+✅ **Intelligence templates** for your business type
+✅ **Publishing dashboard** and lead tracking
+✅ **WordPress integration** for easy publishing
+✅ **Google Business Profile help guide**
 
-### What Happens Next:
+### What Happens After Signup:
 1. **Instant access** to all features
 2. **4-minute setup** (we'll guide you)
 3. **First content auto-publishes** in 24 hours
 4. **More leads** within 30 days
 5. **Focus on your business** while Blitz handles marketing
 
-### 30-Day Guarantee
+### 30-Day Money-Back Guarantee
 If you don't see measurable results (more leads, calls, appointments) in 30 days, we'll refund your money. No questions asked.
 
 **That's how confident we are!**
