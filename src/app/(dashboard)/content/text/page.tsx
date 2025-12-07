@@ -13,6 +13,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { api } from "src/lib/appClient";
 import { toast } from "sonner";
 import { GeneratedContent, ContentType, MarketingAngle, Campaign, GeneratedImage } from "src/lib/types";
+import { getUserFromToken } from "src/lib/auth";
 
 const CONTENT_TYPES = [
   { value: "article", label: "Article / Blog Post", icon: "📝" },
@@ -43,76 +44,51 @@ const TONES = [
   { value: "educational", label: "Educational" },
 ];
 
-// Video-specific options
-const VIDEO_TYPES = [
-  { value: "review", label: "Review" },
-  { value: "tutorial", label: "Tutorial" },
-  { value: "testimonial", label: "Testimonial" },
-  { value: "product_demo", label: "Product Demo" },
-  { value: "explainer", label: "Explainer" },
-  { value: "commercial", label: "Commercial" },
-  { value: "interview", label: "Interview" },
-  { value: "storytelling", label: "Storytelling" },
-  { value: "unboxing", label: "Unboxing" },
-  { value: "comparison", label: "Comparison" },
+// Video-specific options - LOCAL BUSINESS
+const VIDEO_TYPES_BUSINESS = [
+  { value: "testimonial", label: "Customer Testimonial" },
+  { value: "problem_solution", label: "Problem/Solution" },
+  { value: "tutorial", label: "Quick How-To" },
+  { value: "before_after", label: "Before/After" },
+  { value: "behind_scenes", label: "Behind-the-Scenes" },
+  { value: "owner_intro", label: "Meet the Owner" },
+  { value: "explainer", label: "Service Explainer" },
+  { value: "faq", label: "FAQ / Common Questions" },
 ];
+
+// Video-specific options - AFFILIATE MARKETERS
+const VIDEO_TYPES_AFFILIATE = [
+  { value: "product_demo", label: "Product Demo / Review" },
+  { value: "comparison", label: "Product Comparison" },
+  { value: "unboxing", label: "Unboxing / First Impressions" },
+  { value: "transformation", label: "Transformation Story" },
+  { value: "testimonial", label: "Customer Testimonial" },
+  { value: "problem_agitation", label: "Problem/Pain Point" },
+  { value: "solution_pitch", label: "Solution / Product Pitch" },
+  { value: "urgency", label: "Urgency / Limited Offer" },
+  { value: "storytelling", label: "Story / Case Study" },
+  { value: "explainer", label: "Explainer / Tutorial" },
+];
+
+// Get appropriate video types based on user role
+const getVideoTypesForUser = () => {
+  const user = getUserFromToken();
+  const userRole = user?.role?.toLowerCase();
+
+  if (userRole === 'affiliate' || userRole === 'creator') {
+    return VIDEO_TYPES_AFFILIATE;
+  } else if (userRole === 'business') {
+    return VIDEO_TYPES_BUSINESS;
+  } else {
+    // Default for 'user' role or unknown - show business types as default
+    return VIDEO_TYPES_BUSINESS;
+  }
+};
 
 const VIDEO_FORMATS = [
   { value: "short_form", label: "Short Form (15-20s) - TikTok, Reels, Shorts" },
-  { value: "long_form", label: "Long Form (1+ min) - YouTube, Facebook" },
+  { value: "long_form", label: "Long Form (60-90s) - YouTube, Facebook" },
   { value: "story", label: "Story (15s) - Instagram/Snapchat Stories" },
-];
-
-const VIDEO_ATMOSPHERES = [
-  { value: "professional", label: "Professional" },
-  { value: "casual", label: "Casual" },
-  { value: "energetic", label: "Energetic" },
-  { value: "calm", label: "Calm" },
-  { value: "dramatic", label: "Dramatic" },
-  { value: "friendly", label: "Friendly" },
-  { value: "authoritative", label: "Authoritative" },
-  { value: "uplifting", label: "Uplifting" },
-  { value: "intimate", label: "Intimate" },
-  { value: "mysterious", label: "Mysterious" },
-];
-
-const VIDEO_LIGHTING = [
-  { value: "bright", label: "Bright" },
-  { value: "soft", label: "Soft" },
-  { value: "warm", label: "Warm" },
-  { value: "cool", label: "Cool" },
-  { value: "dramatic", label: "Dramatic" },
-  { value: "natural", label: "Natural" },
-  { value: "cinematic", label: "Cinematic" },
-  { value: "high_contrast", label: "High Contrast" },
-  { value: "mood", label: "Mood Lighting" },
-];
-
-const VIDEO_STYLES = [
-  { value: "corporate", label: "Corporate" },
-  { value: "lifestyle", label: "Lifestyle" },
-  { value: "minimalist", label: "Minimalist" },
-  { value: "bold", label: "Bold" },
-  { value: "rustic", label: "Rustic" },
-  { value: "modern", label: "Modern" },
-  { value: "vintage", label: "Vintage" },
-  { value: "gritty", label: "Gritty" },
-  { value: "clean", label: "Clean" },
-];
-
-const VIDEO_PACES = [
-  { value: "fast", label: "Fast" },
-  { value: "medium", label: "Medium" },
-  { value: "slow", label: "Slow" },
-  { value: "dynamic", label: "Dynamic" },
-];
-
-const TARGET_PLATFORMS = [
-  { value: "youtube", label: "YouTube" },
-  { value: "tiktok", label: "TikTok" },
-  { value: "instagram", label: "Instagram" },
-  { value: "facebook", label: "Facebook" },
-  { value: "linkedin", label: "LinkedIn" },
 ];
 
 // Get appropriate word counts based on content type
@@ -202,14 +178,21 @@ export default function ContentPage() {
   const [numEmails, setNumEmails] = useState(5);
   const [sequenceType, setSequenceType] = useState("cold_to_hot");
 
-  // Video script configuration
-  const [videoType, setVideoType] = useState("review");
+  // Video script configuration (simplified)
+  // Set default video type based on user role
+  const [videoType, setVideoType] = useState(() => {
+    const user = getUserFromToken();
+    const userRole = user?.role?.toLowerCase();
+
+    if (userRole === 'affiliate' || userRole === 'creator') {
+      return "product_demo";
+    } else if (userRole === 'business') {
+      return "testimonial";
+    }
+    return "testimonial"; // default
+  });
+
   const [videoFormat, setVideoFormat] = useState("short_form");
-  const [videoAtmosphere, setVideoAtmosphere] = useState("professional");
-  const [videoLighting, setVideoLighting] = useState("bright");
-  const [videoStyle, setVideoStyle] = useState("modern");
-  const [videoPace, setVideoPace] = useState("fast");
-  const [targetPlatform, setTargetPlatform] = useState("tiktok");
   const [includeCameraAngles, setIncludeCameraAngles] = useState(true);
   const [includeVisualCues, setIncludeVisualCues] = useState(true);
   const [includeTransitions, setIncludeTransitions] = useState(true);
@@ -228,15 +211,11 @@ export default function ContentPage() {
     }
   }, [videoFormat, contentType, length]);
 
-  // Set defaults when content type changes to video_script
-  // Only set defaults on first selection, don't override user's format choice
+  // Reset video defaults flag when switching away from video_script
   const [hasSetVideoDefaults, setHasSetVideoDefaults] = useState(false);
 
   useEffect(() => {
     if (contentType === "video_script" && !hasSetVideoDefaults) {
-      // Keep current videoFormat if already set by user, otherwise default to short_form
-      setVideoPace("fast");
-      setTargetPlatform("tiktok");
       setHasSetVideoDefaults(true);
     } else if (contentType !== "video_script") {
       setHasSetVideoDefaults(false);
@@ -535,11 +514,6 @@ IMPORTANT: The **Affiliate Disclosure** must be a separate, clearly labeled sect
       if (contentType === "video_script") {
         payload.video_type = videoType;
         payload.video_format = videoFormat;
-        payload.video_atmosphere = videoAtmosphere;
-        payload.video_lighting = videoLighting;
-        payload.video_style = videoStyle;
-        payload.video_pace = videoPace;
-        payload.target_platform = targetPlatform;
         payload.include_camera_angles = includeCameraAngles;
         payload.include_visual_cues = includeVisualCues;
         payload.include_transitions = includeTransitions;
@@ -931,9 +905,31 @@ IMPORTANT: The **Affiliate Disclosure** must be a separate, clearly labeled sect
 
                       {/* Video Type */}
                       <div>
-                        <label htmlFor="videoType" className="block text-sm font-medium mb-2" style={{ color: "var(--text-secondary)" }}>
-                          Video Type
-                        </label>
+                        <div className="flex items-center gap-2 mb-2">
+                          <label htmlFor="videoType" className="block text-sm font-medium" style={{ color: "var(--text-secondary)" }}>
+                            Video Type
+                          </label>
+                          {/* Show user type badge */}
+                          {(() => {
+                            const user = getUserFromToken();
+                            const userRole = user?.role?.toLowerCase();
+
+                            if (userRole === 'affiliate' || userRole === 'creator') {
+                              return (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                                  📊 Affiliate Marketing
+                                </span>
+                              );
+                            } else if (userRole === 'business') {
+                              return (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
+                                  🏢 Local Business
+                                </span>
+                              );
+                            }
+                            return null;
+                          })()}
+                        </div>
                         <select
                           id="videoType"
                           value={videoType}
@@ -945,7 +941,7 @@ IMPORTANT: The **Affiliate Disclosure** must be a separate, clearly labeled sect
                             color: "var(--text-primary)",
                           }}
                         >
-                          {VIDEO_TYPES.map((type) => (
+                          {getVideoTypesForUser().map((type) => (
                             <option key={type.value} value={type.value}>
                               {type.label}
                             </option>
@@ -953,130 +949,10 @@ IMPORTANT: The **Affiliate Disclosure** must be a separate, clearly labeled sect
                         </select>
                       </div>
 
-                      {/* Target Platform */}
-                      <div>
-                        <label htmlFor="targetPlatform" className="block text-sm font-medium mb-2" style={{ color: "var(--text-secondary)" }}>
-                          Target Platform
-                        </label>
-                        <select
-                          id="targetPlatform"
-                          value={targetPlatform}
-                          onChange={(e) => setTargetPlatform(e.target.value)}
-                          className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
-                          style={{
-                            borderColor: "var(--card-border)",
-                            background: "var(--card-bg)",
-                            color: "var(--text-primary)",
-                          }}
-                        >
-                          {TARGET_PLATFORMS.map((platform) => (
-                            <option key={platform.value} value={platform.value}>
-                              {platform.label}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-
-                      {/* Video Atmosphere */}
-                      <div>
-                        <label htmlFor="videoAtmosphere" className="block text-sm font-medium mb-2" style={{ color: "var(--text-secondary)" }}>
-                          Atmosphere / Mood
-                        </label>
-                        <select
-                          id="videoAtmosphere"
-                          value={videoAtmosphere}
-                          onChange={(e) => setVideoAtmosphere(e.target.value)}
-                          className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
-                          style={{
-                            borderColor: "var(--card-border)",
-                            background: "var(--card-bg)",
-                            color: "var(--text-primary)",
-                          }}
-                        >
-                          {VIDEO_ATMOSPHERES.map((atm) => (
-                            <option key={atm.value} value={atm.value}>
-                              {atm.label}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-
-                      {/* Video Lighting */}
-                      <div>
-                        <label htmlFor="videoLighting" className="block text-sm font-medium mb-2" style={{ color: "var(--text-secondary)" }}>
-                          Lighting Style
-                        </label>
-                        <select
-                          id="videoLighting"
-                          value={videoLighting}
-                          onChange={(e) => setVideoLighting(e.target.value)}
-                          className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
-                          style={{
-                            borderColor: "var(--card-border)",
-                            background: "var(--card-bg)",
-                            color: "var(--text-primary)",
-                          }}
-                        >
-                          {VIDEO_LIGHTING.map((light) => (
-                            <option key={light.value} value={light.value}>
-                              {light.label}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-
-                      {/* Video Style */}
-                      <div>
-                        <label htmlFor="videoStyle" className="block text-sm font-medium mb-2" style={{ color: "var(--text-secondary)" }}>
-                          Visual Style
-                        </label>
-                        <select
-                          id="videoStyle"
-                          value={videoStyle}
-                          onChange={(e) => setVideoStyle(e.target.value)}
-                          className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
-                          style={{
-                            borderColor: "var(--card-border)",
-                            background: "var(--card-bg)",
-                            color: "var(--text-primary)",
-                          }}
-                        >
-                          {VIDEO_STYLES.map((style) => (
-                            <option key={style.value} value={style.value}>
-                              {style.label}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-
-                      {/* Video Pace */}
-                      <div>
-                        <label htmlFor="videoPace" className="block text-sm font-medium mb-2" style={{ color: "var(--text-secondary)" }}>
-                          Pacing
-                        </label>
-                        <select
-                          id="videoPace"
-                          value={videoPace}
-                          onChange={(e) => setVideoPace(e.target.value)}
-                          className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
-                          style={{
-                            borderColor: "var(--card-border)",
-                            background: "var(--card-bg)",
-                            color: "var(--text-primary)",
-                          }}
-                        >
-                          {VIDEO_PACES.map((pace) => (
-                            <option key={pace.value} value={pace.value}>
-                              {pace.label}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-
-                      {/* Advanced Options */}
+                      {/* Production Options */}
                       <div className="space-y-3">
                         <h4 className="text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
-                          Advanced Options
+                          Production Notes
                         </h4>
 
                         <label className="flex items-center gap-2 cursor-pointer">
@@ -1123,35 +999,26 @@ IMPORTANT: The **Affiliate Disclosure** must be a separate, clearly labeled sect
                         <ul className="text-xs text-purple-700 dark:text-purple-400 space-y-1">
                           {videoFormat === "short_form" && (
                             <>
-                              <li>• Short-form script optimized for 15-20 seconds</li>
-                              <li>• Hook in first 3 seconds</li>
+                              <li>• 15-20 second script for TikTok, Reels, Shorts</li>
+                              <li>• Hook → Disclosure → Problem → Solution → CTA</li>
                               <li>• Fast-paced, high-energy delivery</li>
-                              <li>• Perfect for TikTok, Reels, and Shorts</li>
                             </>
                           )}
                           {videoFormat === "long_form" && (
                             <>
-                              <li>• Long-form script for 1+ minute videos</li>
-                              <li>• Detailed product demonstration</li>
-                              <li>• Storytelling and engagement techniques</li>
-                              <li>• Perfect for YouTube and Facebook</li>
+                              <li>• 60-90 second script for YouTube, Facebook</li>
+                              <li>• Hook → Disclosure → Problem → Solution → Benefits → Social Proof → CTA</li>
+                              <li>• Detailed storytelling and demonstration</li>
                             </>
                           )}
                           {videoFormat === "story" && (
                             <>
-                              <li>• Story format optimized for 15 seconds</li>
-                              <li>• Hook, showcase, CTA format</li>
-                              <li>• Quick and impactful</li>
-                              <li>• Perfect for Instagram/Snapchat Stories</li>
+                              <li>• 15 second script for Instagram/Snapchat Stories</li>
+                              <li>• Hook → Quick showcase → CTA</li>
+                              <li>• Ultra-focused, impactful message</li>
                             </>
                           )}
                         </ul>
-                        <div className="mt-3 pt-3 border-t border-purple-300/20">
-                          <p className="text-xs text-purple-600 dark:text-purple-400">
-                            💡 <strong>Defaults set:</strong> Short Form (15-20s), Fast pace, TikTok platform,
-                            with camera angles, visual cues, and transitions included.
-                          </p>
-                        </div>
                       </div>
                     </>
                   )}
