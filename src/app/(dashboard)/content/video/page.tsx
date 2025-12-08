@@ -18,6 +18,7 @@ interface Campaign {
 export default function VideoGenerationPage() {
   const searchParams = useSearchParams();
   const urlCampaignId = searchParams.get("campaign");
+  const urlScript = searchParams.get("script");
 
   const [selectedCampaign, setSelectedCampaign] = useState<string>("");
 
@@ -27,3 +28,9 @@ export default function VideoGenerationPage() {
       setSelectedCampaign(urlCampaignId);
     }
   }, [urlCampaignId]);
+  // Auto-fill script from URL parameter
+  useEffect(() => {
+    if (urlScript) {
+      setScript(decodeURIComponent(urlScript));
+    }
+  }, [urlScript]);
