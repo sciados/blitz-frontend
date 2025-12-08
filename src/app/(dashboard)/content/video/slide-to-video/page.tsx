@@ -150,13 +150,12 @@ export default function SlideToVideoPage() {
     }
   }, [intelligenceData]);
 
-  // Generate images mutation
+  // Generate images mutation (using previews for 4 free draft images)
   const generateImagesMutation = useMutation({
     mutationFn: async () => {
-      const response = await api.post("/api/images/generate", {
+      const response = await api.post("/api/images/previews", {
         campaign_id: selectedCampaign,
-        num_images: numImages,
-        prompt: generatedPrompt,
+        custom_prompt: generatedPrompt,
         style: style === "marketing" ? "photorealistic" : style === "educational" ? "minimalist" : style === "social" ? "lifestyle" : "photorealistic",
         aspect_ratio: aspectRatio,
         image_type: imageType,
@@ -164,8 +163,8 @@ export default function SlideToVideoPage() {
       return response.data;
     },
     onSuccess: (data) => {
-      setGeneratedImages(data.images || []);
-      toast.success(`Generated ${data.images?.length || 0} images successfully!`);
+      setGeneratedImages(data || []);
+      toast.success(`Generated ${data?.length || 0} draft images successfully!`);
     },
     onError: (error: any) => {
       toast.error(
@@ -270,7 +269,7 @@ export default function SlideToVideoPage() {
         {selectedCampaign && (
           <div className="card mb-6">
             <h2 className="text-xl font-semibold text-[var(--text-primary)] mb-4">
-              STEP 1: Generate Images
+              STEP 1: Generate 4 Draft Images (FREE)
             </h2>
 
             {/* Campaign Intelligence Display */}
@@ -524,15 +523,15 @@ export default function SlideToVideoPage() {
               className="w-full py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
             >
               {generateImagesMutation.isPending
-                ? "Generating Images..."
-                : "Generate Images"}
+                ? "Generating 4 Draft Images..."
+                : "Generate 4 Draft Images (FREE)"}
             </button>
 
             {/* Generated Images Grid */}
             {generatedImages.length > 0 && (
               <div className="mt-6">
                 <h3 className="font-semibold text-[var(--text-primary)] mb-3">
-                  Generated Images
+                  Draft Images (Select up to 2 for video)
                 </h3>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {generatedImages.map((image) => (
