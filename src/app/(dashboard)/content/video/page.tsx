@@ -37,6 +37,8 @@ export default function VideoGenerationPage() {
   const [selectedScriptId, setSelectedScriptId] = useState<string>("");
   const [useExistingImage, setUseExistingImage] = useState<boolean>(false);
   const [selectedImageId, setSelectedImageId] = useState<string>("");
+  const [useSlideImages, setUseSlideImages] = useState<boolean>(false);
+  const [selectedSlideImages, setSelectedSlideImages] = useState<string[]>([]);
 
   // Fetch campaigns
   const { data: campaignsData, isLoading: campaignsLoading } = useQuery({
@@ -157,6 +159,23 @@ export default function VideoGenerationPage() {
       return;
     }
 
+    if (generationMode === "slide_video" && selectedSlideImages.length === 0) {
+      toast.error("Please select at least one image for slide video");
+      return;
+    }
+
+    // Prepare slides data for slide_video mode
+    let slides = undefined;
+    if (generationMode === "slide_video" && selectedSlideImages.length > 0) {
+      slides = selectedSlideImages.map((id) => {
+        const imageItem = campaignImages.find((item: any) => item.data.id.toString() === id);
+        return {
+          image_url: imageItem?.data.image_url || "",
+          text: imageItem?.data.prompt || "",
+        };
+      });
+    }
+
     const requestData = {
       campaign_id: selectedCampaign.toString(),
       generation_mode: generationMode,
@@ -166,6 +185,7 @@ export default function VideoGenerationPage() {
       aspect_ratio: aspectRatio,
       image_url: imageUrl || undefined,
       motion_intensity: motionIntensity,
+      slides: slides,
     };
 
     generateVideoMutation.mutate(requestData);
@@ -177,7 +197,7 @@ export default function VideoGenerationPage() {
         "Generate videos directly from your script text with AI visuals",
       image_to_video: "Animate existing images into dynamic video content",
       slide_video:
-        "Create video slideshows from multiple slides with text and images",
+        "Create videos using 2 images as start and end key frames",
     };
     return descriptions[mode as keyof typeof descriptions] || "";
   };
@@ -243,12 +263,18 @@ export default function VideoGenerationPage() {
                   label: "Image-to-Video",
                   icon: "🖼️",
                 },
-                { value: "slide_video", label: "Slide Videos", icon: "🎞️" },
+                { value: "slide_video", label: "Slide-to-Video", icon: "🎞️" },
               ].map((mode) => (
                 <button
                   key={mode.value}
                   type="button"
-                  onClick={() => setGenerationMode(mode.value)}
+                  onClick={() => {
+                    setGenerationMode(mode.value);
+                    // Clear slide images when switching away from slide_video mode
+                    if (mode.value !== "slide_video") {
+                      setSelectedSlideImages([]);
+                    }
+                  }}
                   className={`p-4 rounded-lg border-2 transition-all ${
                     generationMode === mode.value
                       ? "border-red-500 bg-red-50 dark:bg-red-900/20"
@@ -422,6 +448,99 @@ export default function VideoGenerationPage() {
                       {script}
                     </pre>
                   </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Slide Images (for slide_video) */}
+          {generationMode === "slide_video" && (
+            <div className="card rounded-lg p-6">
+              <h2
+                className="text-xl font-semibold mb-4"
+                style={{ color: "var(--text-primary)" }}
+              >
+                Slide Images
+              </h2>
+              <p
+                className="text-sm mb-4"
+                style={{ color: "var(--text-secondary)" }}
+              >
+                Select up to 2 images from your library to create a video with key frames. First image = start frame, second image = end frame.
+              </p>
+
+              {selectedCampaign && campaignImages.length > 0 ? (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {campaignImages.map((item: any) => (
+                    <div
+                      key={item.data.id}
+                      onClick={() => {
+                        setSelectedSlideImages((prev) => {
+                          if (prev.includes(item.data.id.toString())) {
+                            return prev.filter((id) => id !== item.data.id.toString());
+                          } else if (prev.length < 2) {
+                            // Limit to 2 images (PiAPI supports frame0 and frame1)
+                            return [...prev, item.data.id.toString()];
+                          }
+                          return prev;
+                        });
+                      }}
+                      className={`relative cursor-pointer rounded-lg border-2 transition-all ${
+                        selectedSlideImages.includes(item.data.id.toString())
+                          ? "border-red-500 ring-2 ring-red-200 dark:ring-red-800"
+                          : "border-gray-200 dark:border-gray-700 hover:border-red-300"
+                      }`}
+                    >
+                      <img
+                        src={item.data.image_url}
+                        alt={`Slide ${item.data.id}`}
+                        className="w-full h-32 object-cover rounded-lg"
+                      />
+                      <div className="absolute top-2 right-2">
+                        {selectedSlideImages.includes(item.data.id.toString()) && (
+                          <div className="bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold">
+                            ✓
+                          </div>
+                        )}
+                      </div>
+                      <div className="p-2">
+                        <p
+                          className="text-xs truncate"
+                          style={{ color: "var(--text-primary)" }}
+                          title={item.data.prompt}
+                        >
+                          {item.data.prompt?.substring(0, 30) ||
+                            `${item.data.image_type} ${item.data.id}`}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-8 text-center border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg">
+                  <p
+                    className="text-sm"
+                    style={{ color: "var(--text-secondary)" }}
+                  >
+                    No images found in your content library for this campaign.
+                  </p>
+                </div>
+              )}
+
+              {selectedSlideImages.length > 0 && (
+                <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                  <p
+                    className="text-sm font-semibold"
+                    style={{ color: "var(--text-primary)" }}
+                  >
+                    {selectedSlideImages.length} image{selectedSlideImages.length > 1 ? "s" : ""} selected
+                  </p>
+                  <p
+                    className="text-xs mt-1"
+                    style={{ color: "var(--text-secondary)" }}
+                  >
+                    First selected image = start frame (frame0), second selected = end frame (frame1)
+                  </p>
                 </div>
               )}
             </div>
