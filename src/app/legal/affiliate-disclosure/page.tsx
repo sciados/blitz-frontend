@@ -214,7 +214,7 @@ export default function AffiliateDisclosurePage() {
                 <strong>Email:</strong> disclosure@blitz.app
               </p>
               <p className="mb-2" style={{ color: "var(--text-primary)" }}>
-                <strong>Website:</strong> https://blitz-frontend-three.vercel.app
+                <strong>Website:</strong> https://blitz.ws
               </p>
             </div>
           </section>

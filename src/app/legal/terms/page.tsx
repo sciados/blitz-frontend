@@ -472,7 +472,7 @@ export default function TermsPage() {
               </p>
               <p className="mb-2" style={{ color: "var(--text-primary)" }}>
                 <strong>Website:</strong>{" "}
-                https://blitz-frontend-three.vercel.app
+                https://blitz.ws
               </p>
             </div>
           </section>
