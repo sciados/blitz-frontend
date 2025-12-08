@@ -179,7 +179,7 @@ export default function ContentLibraryPage() {
     setSelectedContent(content);
     setShowVariationsModal(true);
   };
-n  const handleGenerateVideo = (content: GeneratedContent) => {
+  const handleGenerateVideo = (content: GeneratedContent) => {
     if (content.content_type !== "video_script") {
       toast.error("Video generation is only available for video scripts");
       return;
