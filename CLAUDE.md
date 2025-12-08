@@ -293,7 +293,7 @@ Key backend schemas (from `app/schemas.py`):
 ### CORS Configuration
 
 Backend CORS allows:
-- `https://blitz-frontend-three.vercel.app` (production)
+- `https://blitz.ws` (production)
 - `http://localhost:3000` (development)
 
 ### Authentication Flow
