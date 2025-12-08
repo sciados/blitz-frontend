@@ -25,12 +25,16 @@ export default function VideoGenerationPage() {
     urlCampaignId ? Number(urlCampaignId) : null
   );
   const [generationMode, setGenerationMode] = useState<string>("text_to_video");
-  const [script, setScript] = useState<string>(urlScript ? decodeURIComponent(urlScript) : "");
+  const [script, setScript] = useState<string>(
+    urlScript ? decodeURIComponent(urlScript) : ""
+  );
   const [style, setStyle] = useState<string>("marketing");
   const [duration, setDuration] = useState<number>(10);
   const [aspectRatio, setAspectRatio] = useState<string>("16:9");
   const [imageUrl, setImageUrl] = useState<string>("");
   const [motionIntensity, setMotionIntensity] = useState<string>("medium");
+  const [useExistingScript, setUseExistingScript] = useState<boolean>(false);
+  const [selectedScriptId, setSelectedScriptId] = useState<string>("");
 
   // Fetch campaigns
   const { data: campaignsData, isLoading: campaignsLoading } = useQuery({
@@ -42,6 +46,38 @@ export default function VideoGenerationPage() {
   });
 
   const campaigns = campaignsData?.campaigns || [];
+
+  // Fetch content library for video scripts when campaign is selected
+  const { data: contentData } = useQuery({
+    queryKey: ["content", "video-scripts", selectedCampaign],
+    queryFn: async () => {
+      if (!selectedCampaign) return { contents: [] };
+      const response = await api.get(
+        `/api/content/campaign/${selectedCampaign}/all`
+      );
+      return response.data;
+    },
+    enabled: !!selectedCampaign && useExistingScript,
+  });
+
+  // Filter video scripts from content
+  const videoScripts =
+    contentData?.contents?.filter(
+      (item: any) =>
+        item.type === "text" && item.data.content_type === "video_script"
+    ) || [];
+
+  // Auto-fill script when selecting from library
+  useEffect(() => {
+    if (useExistingScript && selectedScriptId) {
+      const selectedScript = videoScripts.find(
+        (item: any) => item.data.id.toString() === selectedScriptId
+      );
+      if (selectedScript) {
+        setScript(selectedScript.data.content_data.text);
+      }
+    }
+  }, [selectedScriptId, useExistingScript, videoScripts]);
 
   // Auto-select campaign from URL parameter
   useEffect(() => {
@@ -65,8 +101,10 @@ export default function VideoGenerationPage() {
       return response.data;
     },
     onSuccess: (data) => {
-      toast.success("Video generation started! You can check the status in your video library.");
-      router.push("/content/video/library");
+      toast.success(
+        "Video generation started! You can check the status in your video library."
+      );
+      router.push("/library");
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.detail || "Failed to generate video");
@@ -82,7 +120,11 @@ export default function VideoGenerationPage() {
     }
 
     if (generationMode === "text_to_video" && !script.trim()) {
-      toast.error("Script is required for text-to-video generation");
+      if (useExistingScript && !selectedScriptId) {
+        toast.error("Please select a video script from the library");
+      } else if (!useExistingScript) {
+        toast.error("Script is required for text-to-video generation");
+      }
       return;
     }
 
@@ -107,9 +149,11 @@ export default function VideoGenerationPage() {
 
   const getModeDescription = (mode: string) => {
     const descriptions = {
-      text_to_video: "Generate videos directly from your script text with AI visuals",
+      text_to_video:
+        "Generate videos directly from your script text with AI visuals",
       image_to_video: "Animate existing images into dynamic video content",
-      slide_video: "Create video slideshows from multiple slides with text and images",
+      slide_video:
+        "Create video slideshows from multiple slides with text and images",
     };
     return descriptions[mode as keyof typeof descriptions] || "";
   };
@@ -119,11 +163,15 @@ export default function VideoGenerationPage() {
       <div className="p-6 max-w-5xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2" style={{ color: "var(--text-primary)" }}>
+          <h1
+            className="text-3xl font-bold mb-2"
+            style={{ color: "var(--text-primary)" }}
+          >
             Generate Short-Form Videos
           </h1>
           <p style={{ color: "var(--text-secondary)" }}>
-            Create engaging 5-20 second videos using Luma AI. Perfect for social media marketing.
+            Create engaging 5-20 second videos using Luma AI. Perfect for social
+            media marketing.
           </p>
         </div>
 
@@ -131,7 +179,10 @@ export default function VideoGenerationPage() {
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Campaign Selection */}
           <div className="card rounded-lg p-6">
-            <h2 className="text-xl font-semibold mb-4" style={{ color: "var(--text-primary)" }}>
+            <h2
+              className="text-xl font-semibold mb-4"
+              style={{ color: "var(--text-primary)" }}
+            >
               Campaign Selection
             </h2>
             <CampaignSelector
@@ -144,7 +195,9 @@ export default function VideoGenerationPage() {
             {selectedCampaign && (
               <div className="mt-3 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
                 <p className="text-sm" style={{ color: "var(--text-primary)" }}>
-                  <span className="font-semibold">✓ Campaign selected!</span> Video will be generated using this campaign's intelligence data.
+                  <span className="font-semibold">✓ Campaign selected!</span>{" "}
+                  Video will be generated using this campaign's intelligence
+                  data.
                 </p>
               </div>
             )}
@@ -152,13 +205,20 @@ export default function VideoGenerationPage() {
 
           {/* Generation Mode */}
           <div className="card rounded-lg p-6">
-            <h2 className="text-xl font-semibold mb-4" style={{ color: "var(--text-primary)" }}>
+            <h2
+              className="text-xl font-semibold mb-4"
+              style={{ color: "var(--text-primary)" }}
+            >
               Generation Mode
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {[
                 { value: "text_to_video", label: "Text-to-Video", icon: "📝" },
-                { value: "image_to_video", label: "Image-to-Video", icon: "🖼️" },
+                {
+                  value: "image_to_video",
+                  label: "Image-to-Video",
+                  icon: "🖼️",
+                },
                 { value: "slide_video", label: "Slide Videos", icon: "🎞️" },
               ].map((mode) => (
                 <button
@@ -172,53 +232,190 @@ export default function VideoGenerationPage() {
                   }`}
                 >
                   <div className="text-3xl mb-2">{mode.icon}</div>
-                  <div className="font-semibold" style={{ color: "var(--text-primary)" }}>
+                  <div
+                    className="font-semibold"
+                    style={{ color: "var(--text-primary)" }}
+                  >
                     {mode.label}
                   </div>
                 </button>
               ))}
             </div>
-            <p className="mt-3 text-sm" style={{ color: "var(--text-secondary)" }}>
+            <p
+              className="mt-3 text-sm"
+              style={{ color: "var(--text-secondary)" }}
+            >
               {getModeDescription(generationMode)}
             </p>
           </div>
 
           {/* Script (for text_to_video and slide_video) */}
-          {(generationMode === "text_to_video" || generationMode === "slide_video") && (
+          {(generationMode === "text_to_video" ||
+            generationMode === "slide_video") && (
             <div className="card rounded-lg p-6">
-              <h2 className="text-xl font-semibold mb-4" style={{ color: "var(--text-primary)" }}>
+              <h2
+                className="text-xl font-semibold mb-4"
+                style={{ color: "var(--text-primary)" }}
+              >
                 Video Script {generationMode === "text_to_video" && "*"}
               </h2>
-              <p className="text-sm mb-3" style={{ color: "var(--text-secondary)" }}>
-                Enter your video script with timestamps. Include scene descriptions, narration, and visual cues.
-              </p>
-              <textarea
-                value={script}
-                onChange={(e) => setScript(e.target.value)}
-                placeholder="Example: [0-5s] Opening shot of product on desk
+
+              {/* Script Source Toggle */}
+              <div className="mb-4">
+                <div className="flex items-center space-x-4">
+                  <label className="flex items-center space-x-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      checked={!useExistingScript}
+                      onChange={() => {
+                        setUseExistingScript(false);
+                        setSelectedScriptId("");
+                      }}
+                      className="w-4 h-4"
+                    />
+                    <span
+                      className="text-sm"
+                      style={{ color: "var(--text-primary)" }}
+                    >
+                      Enter new script
+                    </span>
+                  </label>
+                  <label className="flex items-center space-x-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      checked={useExistingScript}
+                      onChange={() => setUseExistingScript(true)}
+                      className="w-4 h-4"
+                    />
+                    <span
+                      className="text-sm"
+                      style={{ color: "var(--text-primary)" }}
+                    >
+                      Use existing script from library
+                    </span>
+                  </label>
+                </div>
+              </div>
+
+              {/* Existing Script Selector */}
+              {useExistingScript && selectedCampaign && (
+                <div className="mb-4">
+                  <label
+                    className="block text-sm font-medium mb-2"
+                    style={{ color: "var(--text-primary)" }}
+                  >
+                    Select Video Script *
+                  </label>
+                  <select
+                    value={selectedScriptId}
+                    onChange={(e) => setSelectedScriptId(e.target.value)}
+                    className="w-full px-4 py-3 rounded-lg border"
+                    style={{
+                      borderColor: "var(--card-border)",
+                      background: "var(--bg-secondary)",
+                      color: "var(--text-primary)",
+                    }}
+                  >
+                    <option value="">Choose a video script...</option>
+                    {videoScripts.length > 0 ? (
+                      videoScripts.map((item: any) => (
+                        <option key={item.data.id} value={item.data.id}>
+                          {item.data.content_data.subject ||
+                            `Script ${item.data.id}`}{" "}
+                          -{" "}
+                          {new Date(item.data.created_at).toLocaleDateString()}
+                        </option>
+                      ))
+                    ) : (
+                      <option value="" disabled>
+                        No video scripts found for this campaign
+                      </option>
+                    )}
+                  </select>
+                  {videoScripts.length === 0 && (
+                    <p className="mt-2 text-sm text-yellow-600 dark:text-yellow-400">
+                      ⚠️ No video scripts found in your content library for this
+                      campaign.
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Manual Script Input */}
+              {!useExistingScript && (
+                <>
+                  <p
+                    className="text-sm mb-3"
+                    style={{ color: "var(--text-secondary)" }}
+                  >
+                    Enter your video script with timestamps. Include scene
+                    descriptions, narration, and visual cues.
+                  </p>
+                  <textarea
+                    value={script}
+                    onChange={(e) => setScript(e.target.value)}
+                    placeholder="Example: [0-5s] Opening shot of product on desk
 [5-10s] Show key features with text overlays
 [10-15s] Customer testimonial clip
 [15-20s] Call-to-action with logo"
-                className="w-full h-40 px-4 py-3 rounded-lg border"
-                style={{
-                  borderColor: "var(--card-border)",
-                  background: "var(--bg-secondary)",
-                  color: "var(--text-primary)",
-                }}
-              />
-              <div className="mt-2 text-xs" style={{ color: "var(--text-secondary)" }}>
-                Tip: Keep total duration between {duration} seconds. Use timestamps like [0-5s], [5-10s], etc.
-              </div>
+                    className="w-full h-40 px-4 py-3 rounded-lg border"
+                    style={{
+                      borderColor: "var(--card-border)",
+                      background: "var(--bg-secondary)",
+                      color: "var(--text-primary)",
+                    }}
+                  />
+                  <div
+                    className="mt-2 text-xs"
+                    style={{ color: "var(--text-secondary)" }}
+                  >
+                    Tip: Keep total duration between {duration} seconds. Use
+                    timestamps like [0-5s], [5-10s], etc.
+                  </div>
+                </>
+              )}
+
+              {/* Script Preview */}
+              {useExistingScript && script && (
+                <div className="mt-4">
+                  <label
+                    className="block text-sm font-medium mb-2"
+                    style={{ color: "var(--text-primary)" }}
+                  >
+                    Script Preview
+                  </label>
+                  <div
+                    className="w-full h-40 px-4 py-3 rounded-lg border overflow-y-auto"
+                    style={{
+                      borderColor: "var(--card-border)",
+                      background: "var(--bg-secondary)",
+                    }}
+                  >
+                    <pre
+                      className="text-sm whitespace-pre-wrap"
+                      style={{ color: "var(--text-primary)" }}
+                    >
+                      {script}
+                    </pre>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
           {/* Image URL (for image_to_video) */}
           {generationMode === "image_to_video" && (
             <div className="card rounded-lg p-6">
-              <h2 className="text-xl font-semibold mb-4" style={{ color: "var(--text-primary)" }}>
+              <h2
+                className="text-xl font-semibold mb-4"
+                style={{ color: "var(--text-primary)" }}
+              >
                 Source Image URL *
               </h2>
-              <p className="text-sm mb-3" style={{ color: "var(--text-secondary)" }}>
+              <p
+                className="text-sm mb-3"
+                style={{ color: "var(--text-secondary)" }}
+              >
                 Enter the URL of the image you want to animate into a video.
               </p>
               <input
@@ -238,14 +435,20 @@ export default function VideoGenerationPage() {
 
           {/* Video Settings */}
           <div className="card rounded-lg p-6">
-            <h2 className="text-xl font-semibold mb-4" style={{ color: "var(--text-primary)" }}>
+            <h2
+              className="text-xl font-semibold mb-4"
+              style={{ color: "var(--text-primary)" }}
+            >
               Video Settings
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Style */}
               <div>
-                <label className="block text-sm font-medium mb-2" style={{ color: "var(--text-primary)" }}>
+                <label
+                  className="block text-sm font-medium mb-2"
+                  style={{ color: "var(--text-primary)" }}
+                >
                   Style
                 </label>
                 <select
@@ -266,7 +469,10 @@ export default function VideoGenerationPage() {
 
               {/* Duration */}
               <div>
-                <label className="block text-sm font-medium mb-2" style={{ color: "var(--text-primary)" }}>
+                <label
+                  className="block text-sm font-medium mb-2"
+                  style={{ color: "var(--text-primary)" }}
+                >
                   Duration: {duration} seconds
                 </label>
                 <input
@@ -277,7 +483,10 @@ export default function VideoGenerationPage() {
                   onChange={(e) => setDuration(Number(e.target.value))}
                   className="w-full"
                 />
-                <div className="flex justify-between text-xs mt-1" style={{ color: "var(--text-secondary)" }}>
+                <div
+                  className="flex justify-between text-xs mt-1"
+                  style={{ color: "var(--text-secondary)" }}
+                >
                   <span>5s</span>
                   <span>20s</span>
                 </div>
@@ -285,7 +494,10 @@ export default function VideoGenerationPage() {
 
               {/* Aspect Ratio */}
               <div>
-                <label className="block text-sm font-medium mb-2" style={{ color: "var(--text-primary)" }}>
+                <label
+                  className="block text-sm font-medium mb-2"
+                  style={{ color: "var(--text-primary)" }}
+                >
                   Aspect Ratio
                 </label>
                 <select
@@ -306,7 +518,10 @@ export default function VideoGenerationPage() {
 
               {/* Motion Intensity */}
               <div>
-                <label className="block text-sm font-medium mb-2" style={{ color: "var(--text-primary)" }}>
+                <label
+                  className="block text-sm font-medium mb-2"
+                  style={{ color: "var(--text-primary)" }}
+                >
                   Motion Intensity
                 </label>
                 <select
@@ -327,16 +542,24 @@ export default function VideoGenerationPage() {
             </div>
           </div>
 
-          {/* Cost Estimate */}
+          {/* Credit Estimate */}
           <div className="card rounded-lg p-6 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
-            <h3 className="font-semibold mb-2" style={{ color: "var(--text-primary)" }}>
-              💰 Estimated Cost
+            <h3
+              className="font-semibold mb-2"
+              style={{ color: "var(--text-primary)" }}
+            >
+              💳 Credit Usage
             </h3>
             <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
-              Video generation costs approximately ${(duration * 0.05).toFixed(2)} (${0.05}/second × {duration} seconds)
+              Video generation will use approximately{" "}
+              {(duration * 0.2).toFixed(1)} credits (1 Credit = $0.25)
             </p>
-            <p className="text-xs mt-2" style={{ color: "var(--text-secondary)" }}>
+            <p
+              className="text-xs mt-2"
+              style={{ color: "var(--text-secondary)" }}
+            >
               Cost is based on Luma AI Ray Flash 2 pricing at 720p resolution
+              (~$0.05/second)
             </p>
           </div>
 
@@ -361,16 +584,41 @@ export default function VideoGenerationPage() {
             >
               {generateVideoMutation.isPending ? (
                 <>
-                  <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  <svg
+                    className="animate-spin w-5 h-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    />
                   </svg>
                   <span>Generating...</span>
                 </>
               ) : (
                 <>
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+                    />
                   </svg>
                   <span>Generate Video</span>
                 </>

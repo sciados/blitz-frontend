@@ -20,7 +20,7 @@ export default function ContentHubPage() {
       toast.error("Please select a campaign first");
       return;
     }
-    router.push(`/content/${type}?campaign=${campaignId}`);
+    router.push(`/content/${type}?campaign=${campaignId}` as any);
   };
 
   return (
@@ -29,17 +29,24 @@ export default function ContentHubPage() {
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold mb-2" style={{ color: "var(--text-primary)" }}>
+            <h1
+              className="text-3xl font-bold mb-2"
+              style={{ color: "var(--text-primary)" }}
+            >
               Content Generation Hub
             </h1>
             <p style={{ color: "var(--text-secondary)" }}>
-              Generate AI-powered marketing content using your campaign intelligence data.
+              Generate AI-powered marketing content using your campaign
+              intelligence data.
             </p>
           </div>
 
           {/* Campaign Selector */}
           <div className="card rounded-lg p-6 mb-8">
-            <h2 className="text-xl font-semibold mb-4" style={{ color: "var(--text-primary)" }}>
+            <h2
+              className="text-xl font-semibold mb-4"
+              style={{ color: "var(--text-primary)" }}
+            >
               1. Select Your Campaign
             </h2>
             <CampaignSelector
@@ -47,7 +54,9 @@ export default function ContentHubPage() {
               onSelect={(id) => {
                 setCampaignId(id);
                 if (id) {
-                  toast.success("Campaign selected - now choose content type below");
+                  toast.success(
+                    "Campaign selected - now choose content type below"
+                  );
                 }
               }}
               label="Campaign *"
@@ -57,7 +66,9 @@ export default function ContentHubPage() {
             {campaignId && (
               <div className="mt-3 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
                 <p className="text-sm" style={{ color: "var(--text-primary)" }}>
-                  <span className="font-semibold">✓ Campaign selected!</span> Your content will be generated using this campaign's intelligence data.
+                  <span className="font-semibold">✓ Campaign selected!</span>{" "}
+                  Your content will be generated using this campaign's
+                  intelligence data.
                 </p>
               </div>
             )}
@@ -65,7 +76,10 @@ export default function ContentHubPage() {
 
           {/* Content Type Selection */}
           <div className="mb-8">
-            <h2 className="text-xl font-semibold mb-4" style={{ color: "var(--text-primary)" }}>
+            <h2
+              className="text-xl font-semibold mb-4"
+              style={{ color: "var(--text-primary)" }}
+            >
               2. Choose Content Type
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -83,15 +97,32 @@ export default function ContentHubPage() {
                   <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
                     <span className="text-3xl">✍️</span>
                   </div>
-                  <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  <svg
+                    className="w-6 h-6 text-blue-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 5l7 7-7 7"
+                    />
                   </svg>
                 </div>
-                <h3 className="text-xl font-semibold mb-2" style={{ color: "var(--text-primary)" }}>
+                <h3
+                  className="text-xl font-semibold mb-2"
+                  style={{ color: "var(--text-primary)" }}
+                >
                   Text Content
                 </h3>
-                <p className="text-sm mb-4" style={{ color: "var(--text-secondary)" }}>
-                  Generate articles, emails, video scripts, social posts, landing pages, and ad copy with automatic compliance checking.
+                <p
+                  className="text-sm mb-4"
+                  style={{ color: "var(--text-secondary)" }}
+                >
+                  Generate articles, emails, video scripts, social posts,
+                  landing pages, and ad copy with automatic compliance checking.
                 </p>
                 <div className="flex flex-wrap gap-2">
                   <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 rounded text-xs">
@@ -114,7 +145,6 @@ export default function ContentHubPage() {
                   </span>
                 </div>
               </button>
-
               {/* Image Content Card */}
               <button
                 onClick={() => handleNavigate("images")}
@@ -129,15 +159,32 @@ export default function ContentHubPage() {
                   <div className="w-16 h-16 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center">
                     <span className="text-3xl">🖼️</span>
                   </div>
-                  <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  <svg
+                    className="w-6 h-6 text-purple-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 5l7 7-7 7"
+                    />
                   </svg>
                 </div>
-                <h3 className="text-xl font-semibold mb-2" style={{ color: "var(--text-primary)" }}>
+                <h3
+                  className="text-xl font-semibold mb-2"
+                  style={{ color: "var(--text-primary)" }}
+                >
                   Image Content
                 </h3>
-                <p className="text-sm mb-4" style={{ color: "var(--text-secondary)" }}>
-                  Generate marketing images using rotating AI platforms with various styles and aspect ratios.
+                <p
+                  className="text-sm mb-4"
+                  style={{ color: "var(--text-secondary)" }}
+                >
+                  Generate marketing images using rotating AI platforms with
+                  various styles and aspect ratios.
                 </p>
                 <div className="flex flex-wrap gap-2">
                   <span className="px-2 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 rounded text-xs">
@@ -160,7 +207,7 @@ export default function ContentHubPage() {
                   </span>
                 </div>
               </button>
-n              {/* Video Content Card */}
+              {/* Video Content Card */}
               <button
                 onClick={() => handleNavigate("video")}
                 disabled={!campaignId}
@@ -174,15 +221,32 @@ n              {/* Video Content Card */}
                   <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-xl flex items-center justify-center">
                     <span className="text-3xl">🎬</span>
                   </div>
-                  <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  <svg
+                    className="w-6 h-6 text-red-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 5l7 7-7 7"
+                    />
                   </svg>
                 </div>
-                <h3 className="text-xl font-semibold mb-2" style={{ color: "var(--text-primary)" }}>
+                <h3
+                  className="text-xl font-semibold mb-2"
+                  style={{ color: "var(--text-primary)" }}
+                >
                   Video Content
                 </h3>
-                <p className="text-sm mb-4" style={{ color: "var(--text-secondary)" }}>
-                  Generate short-form videos (5-20s) from scripts, images, or slides using Luma AI for social media marketing.
+                <p
+                  className="text-sm mb-4"
+                  style={{ color: "var(--text-secondary)" }}
+                >
+                  Generate short-form videos (5-20s) from scripts, images, or
+                  slides using Luma AI for social media marketing.
                 </p>
                 <div className="flex flex-wrap gap-2">
                   <span className="px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 rounded text-xs">
@@ -205,13 +269,15 @@ n              {/* Video Content Card */}
                   </span>
                 </div>
               </button>
-
             </div>
           </div>
 
           {/* Info Card */}
           <div className="card rounded-lg p-6 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20">
-            <h3 className="text-lg font-semibold mb-3" style={{ color: "var(--text-primary)" }}>
+            <h3
+              className="text-lg font-semibold mb-3"
+              style={{ color: "var(--text-primary)" }}
+            >
               How It Works
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -220,10 +286,16 @@ n              {/* Video Content Card */}
                   1
                 </div>
                 <div>
-                  <p className="font-medium text-sm" style={{ color: "var(--text-primary)" }}>
+                  <p
+                    className="font-medium text-sm"
+                    style={{ color: "var(--text-primary)" }}
+                  >
                     Select Campaign
                   </p>
-                  <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
+                  <p
+                    className="text-xs"
+                    style={{ color: "var(--text-secondary)" }}
+                  >
                     Content is generated using your campaign's intelligence data
                   </p>
                 </div>
@@ -233,11 +305,18 @@ n              {/* Video Content Card */}
                   2
                 </div>
                 <div>
-                  <p className="font-medium text-sm" style={{ color: "var(--text-primary)" }}>
+                  <p
+                    className="font-medium text-sm"
+                    style={{ color: "var(--text-primary)" }}
+                  >
                     Choose Type
                   </p>
-                  <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
-                    Text for copy, Images for visuals, or Videos for social media
+                  <p
+                    className="text-xs"
+                    style={{ color: "var(--text-secondary)" }}
+                  >
+                    Text for copy, Images for visuals, or Videos for social
+                    media
                   </p>
                 </div>
               </div>
@@ -246,10 +325,16 @@ n              {/* Video Content Card */}
                   3
                 </div>
                 <div>
-                  <p className="font-medium text-sm" style={{ color: "var(--text-primary)" }}>
+                  <p
+                    className="font-medium text-sm"
+                    style={{ color: "var(--text-primary)" }}
+                  >
                     Generate & Refine
                   </p>
-                  <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
+                  <p
+                    className="text-xs"
+                    style={{ color: "var(--text-secondary)" }}
+                  >
                     AI creates content based on your settings
                   </p>
                 </div>
