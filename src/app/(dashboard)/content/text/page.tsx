@@ -342,6 +342,12 @@ export default function ContentPage() {
     setShowVariationsModal(true);
   };
 
+  const handleGenerateVideoFromScript = (content: GeneratedContent) => {
+    // Navigate to video generation page with the script ID
+    // The video page will fetch the script content by ID
+    router.push(`/content/video?campaign=${content.campaign_id}&scriptId=${content.id}` as any);
+  };
+
   const handleDeleteContent = async (contentId: number) => {
     if (!confirm("Are you sure you want to delete this content?")) return;
 
@@ -1636,6 +1642,7 @@ IMPORTANT: The **Affiliate Disclosure** must be a separate, clearly labeled sect
         content={selectedContent}
         onRefine={handleEditContent}
         onCreateVariations={handleCreateVariations}
+        onGenerateVideo={handleGenerateVideoFromScript}
       />
 
       {/* Content Refinement Modal */}

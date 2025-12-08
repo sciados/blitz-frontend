@@ -330,7 +330,7 @@ export function ContentViewModal({
                 <span>Create Variations</span>
               </button>
             )}
-n            {content.content_type === "video_script" && onGenerateVideo && (
+            {content.content_type === "video_script" && onGenerateVideo && (
               <button
                 onClick={() => onGenerateVideo(content)}
                 className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition flex items-center space-x-2"

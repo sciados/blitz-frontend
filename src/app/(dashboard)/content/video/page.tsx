@@ -20,6 +20,7 @@ export default function VideoGenerationPage() {
   const router = useRouter();
   const urlCampaignId = searchParams.get("campaign");
   const urlScript = searchParams.get("script");
+  const urlScriptId = searchParams.get("scriptId");
 
   const [selectedCampaign, setSelectedCampaign] = useState<number | null>(
     urlCampaignId ? Number(urlCampaignId) : null
@@ -115,6 +116,26 @@ export default function VideoGenerationPage() {
       setGenerationMode("text_to_video");
     }
   }, [urlScript]);
+
+  // Auto-fill script from script ID parameter (from Content Library "Generate Video" button)
+  useEffect(() => {
+    const fetchScriptById = async () => {
+      if (urlScriptId && selectedCampaign) {
+        try {
+          const response = await api.get(`/api/content/${urlScriptId}`);
+          if (response.data && response.data.content_data?.text) {
+            setScript(response.data.content_data.text);
+            setGenerationMode("text_to_video");
+            toast.success("Video script loaded from Content Library");
+          }
+        } catch (error) {
+          console.error("Failed to fetch script:", error);
+          toast.error("Failed to load video script");
+        }
+      }
+    };
+    fetchScriptById();
+  }, [urlScriptId, selectedCampaign]);
 
   // Generate video mutation
   const generateVideoMutation = useMutation({
