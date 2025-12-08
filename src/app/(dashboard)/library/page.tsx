@@ -179,6 +179,15 @@ export default function ContentLibraryPage() {
     setSelectedContent(content);
     setShowVariationsModal(true);
   };
+n  const handleGenerateVideo = (content: GeneratedContent) => {
+    if (content.content_type !== "video_script") {
+      toast.error("Video generation is only available for video scripts");
+      return;
+    }
+    // Navigate to video generation page with campaign and script
+    const campaignId = content.campaign_id;
+    router.push(`/content/video?campaign=${campaignId}&script=${encodeURIComponent(content.content_data.text)}`);
+  };
 
   const handleDeleteContent = async (contentId: number) => {
     setContentToDelete(contentId);
@@ -688,6 +697,7 @@ export default function ContentLibraryPage() {
         content={selectedContent}
         onRefine={handleEditContent}
         onCreateVariations={handleCreateVariations}
+        onGenerateVideo={handleGenerateVideo}
       />
 
       {/* Content Refinement Modal */}
