@@ -55,7 +55,7 @@ export default function VideoGenerationPage() {
     queryFn: async () => {
       if (!selectedCampaign) return { contents: [] };
       const response = await api.get(
-        `/api/content/campaign/${selectedCampaign}/all`
+        `/api/content/unified/campaign/${selectedCampaign}/all`
       );
       return response.data;
     },
