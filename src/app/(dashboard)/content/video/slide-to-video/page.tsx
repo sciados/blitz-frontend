@@ -73,44 +73,6 @@ export default function SlideToVideoPage() {
   const [selectedImageIds, setSelectedImageIds] = useState<string[]>([]);
   const [videoDuration, setVideoDuration] = useState<number>(10);
 
-  // Fetch campaigns
-  const { data: campaignsData, isLoading: campaignsLoading } = useQuery({
-    queryKey: ["campaigns"],
-    queryFn: async () => {
-      const response = await api.get("/api/campaigns");
-      return response.data;
-    },
-  });
-
-  // Fetch campaign intelligence when campaign is selected
-  const { data: intelligenceData, isLoading: intelligenceLoading } = useQuery({
-    queryKey: ["campaign-intelligence", selectedCampaign],
-    queryFn: async () => {
-      if (!selectedCampaign) return null;
-      const response = await api.get(
-        `/api/intelligence/campaigns/${selectedCampaign}/intelligence`
-      );
-      return response.data;
-    },
-    enabled: !!selectedCampaign,
-  });
-
-  // Extract intelligence data when loaded
-  useEffect(() => {
-    if (intelligenceData?.intelligence_data?.product) {
-      const product = intelligenceData.intelligence_data.product;
-      setCampaignIntelligence({
-        productName: product.product_name || "",
-        productCategory: product.category || "",
-        description: product.description || "",
-        ingredients: product.ingredients || [],
-        features: product.features || [],
-        benefits: product.benefits || [],
-        marketing_angles: product.marketing_angles || [],
-      });
-    }
-  }, [intelligenceData]);
-
   // Generate prompt based on intelligence and keywords
   const generatePrompt = () => {
     if (!campaignIntelligence) return "";
@@ -158,6 +120,35 @@ export default function SlideToVideoPage() {
     style,
     numImages,
   ]);
+
+  // Fetch campaign intelligence when campaign is selected
+  const { data: intelligenceData, isLoading: intelligenceLoading } = useQuery({
+    queryKey: ["campaign-intelligence", selectedCampaign],
+    queryFn: async () => {
+      if (!selectedCampaign) return null;
+      const response = await api.get(
+        `/api/intelligence/campaigns/${selectedCampaign}/intelligence`
+      );
+      return response.data;
+    },
+    enabled: !!selectedCampaign,
+  });
+
+  // Extract intelligence data when loaded
+  useEffect(() => {
+    if (intelligenceData?.intelligence_data?.product) {
+      const product = intelligenceData.intelligence_data.product;
+      setCampaignIntelligence({
+        productName: product.product_name || "",
+        productCategory: product.category || "",
+        description: product.description || "",
+        ingredients: product.ingredients || [],
+        features: product.features || [],
+        benefits: product.benefits || [],
+        marketing_angles: product.marketing_angles || [],
+      });
+    }
+  }, [intelligenceData]);
 
   // Generate images mutation
   const generateImagesMutation = useMutation({
@@ -251,8 +242,6 @@ export default function SlideToVideoPage() {
     });
   };
 
-  const campaigns = campaignsData?.campaigns || [];
-
   return (
     <AuthGate requiredRole="user">
       <div className="p-6 max-w-7xl mx-auto">
@@ -272,10 +261,8 @@ export default function SlideToVideoPage() {
             Select Campaign
           </h2>
           <CampaignSelector
-            campaigns={campaigns}
-            selectedCampaign={selectedCampaign}
-            onCampaignChange={setSelectedCampaign}
-            loading={campaignsLoading}
+            selectedCampaignId={selectedCampaign}
+            onSelect={setSelectedCampaign}
           />
         </div>
 
@@ -360,7 +347,7 @@ export default function SlideToVideoPage() {
                 <select
                   value={aspectRatio}
                   onChange={(e) => setAspectRatio(e.target.value)}
-                  className="w-full px-3 py-2 bg-[var(--bg-secondary)] border border-[var rounded-lg text-[(--border-color)]var(--text-primary)]"
+                  className="w-full px-3 py-2 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)]"
                 >
                   <option value="16:9">16:9 (Landscape)</option>
                   <option value="9:16">9:16 (Portrait)</option>
