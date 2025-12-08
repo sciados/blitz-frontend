@@ -329,10 +329,16 @@ export default function IntelligencePage() {
                     </div>
                   )}
 
-                  {/* Ingredients/Components - check both field names */}
+                  {/* Ingredients/Components - only show if NO technical_specs */}
                   {(() => {
                     const ingredients = intelligenceData.product.ingredients || intelligenceData.product.ingredients_or_components || [];
-                    return Array.isArray(ingredients) && ingredients.length > 0 ? (
+                    const hasIngredients = Array.isArray(ingredients) && ingredients.length > 0;
+                    const hasTechSpecs = !!intelligenceData.product.technical_specs;
+
+                    // Show ingredients only if we have them AND no technical specs
+                    if (!hasIngredients || hasTechSpecs) return null;
+
+                    return (
                       <div>
                         <h3 className="text-lg font-semibold mb-3 flex items-center" style={{ color: 'var(--text-primary)' }}>
                           <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -349,7 +355,7 @@ export default function IntelligencePage() {
                           ))}
                         </ul>
                       </div>
-                    ) : null;
+                    );
                   })()}
 
                   {/* Solutions */}
@@ -373,19 +379,28 @@ export default function IntelligencePage() {
                   )}
                 </div>
 
-                {/* Technical Specs */}
-                {intelligenceData.product.technical_specs && (
-                  <div className="mt-6">
-                    <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>
-                      Technical Specifications
-                    </h3>
-                    <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-                      {typeof intelligenceData.product.technical_specs === 'string'
-                        ? intelligenceData.product.technical_specs
-                        : JSON.stringify(intelligenceData.product.technical_specs, null, 2)}
-                    </p>
-                  </div>
-                )}
+                {/* Technical Specs - only show if NO ingredients */}
+                {(() => {
+                  const ingredients = intelligenceData.product.ingredients || intelligenceData.product.ingredients_or_components || [];
+                  const hasIngredients = Array.isArray(ingredients) && ingredients.length > 0;
+                  const hasTechSpecs = !!intelligenceData.product.technical_specs;
+
+                  // Show tech specs only if we have them AND no ingredients
+                  if (!hasTechSpecs || hasIngredients) return null;
+
+                  return (
+                    <div className="mt-6">
+                      <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>
+                        Technical Specifications
+                      </h3>
+                      <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                        {typeof intelligenceData.product.technical_specs === 'string'
+                          ? intelligenceData.product.technical_specs
+                          : JSON.stringify(intelligenceData.product.technical_specs, null, 2)}
+                      </p>
+                    </div>
+                  );
+                })()}
               </div>
             )}
 
