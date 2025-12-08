@@ -31,6 +31,7 @@ export default function VideoGenerationPage() {
   );
   const [style, setStyle] = useState<string>("marketing");
   const [duration, setDuration] = useState<number>(10);
+  const [userTier, setUserTier] = useState<string>("free"); // TODO: Get from user profile
   const [aspectRatio, setAspectRatio] = useState<string>("16:9");
   const [imageUrl, setImageUrl] = useState<string>("");
   const [motionIntensity, setMotionIntensity] = useState<string>("medium");
@@ -150,7 +151,21 @@ export default function VideoGenerationPage() {
       router.push("/content/video/library");
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.detail || "Failed to generate video");
+      const errorData = error.response?.data?.detail;
+      if (errorData?.error === 'TIER_LIMIT_EXCEEDED') {
+        toast.error(
+          `${errorData.message}`,
+          {
+            description: "Upgrade your plan to unlock longer videos",
+            action: {
+              label: "Upgrade",
+              onClick: () => router.push('/settings' as any)
+            }
+          }
+        );
+      } else {
+        toast.error(errorData?.message || errorData || "Failed to generate video");
+      }
     },
   });
 
@@ -751,23 +766,41 @@ export default function VideoGenerationPage() {
                   className="block text-sm font-medium mb-2"
                   style={{ color: "var(--text-primary)" }}
                 >
-                  Duration: {duration} seconds
+                  Duration
                 </label>
-                <input
-                  type="range"
-                  min="5"
-                  max="20"
+                <select
                   value={duration}
                   onChange={(e) => setDuration(Number(e.target.value))}
-                  className="w-full"
-                />
-                <div
-                  className="flex justify-between text-xs mt-1"
+                  className="w-full px-4 py-3 rounded-lg border"
+                  style={{
+                    borderColor: "var(--card-border)",
+                    background: "var(--bg-secondary)",
+                    color: "var(--text-primary)",
+                  }}
+                >
+                  <option value={5}>5 seconds - Quick Hook</option>
+                  <option value={10}>10 seconds - Short Promo</option>
+                  <option value={15} disabled={userTier === 'free' || userTier === 'starter'}>
+                    15 seconds - Extended Story {userTier === 'free' || userTier === 'starter' ? '🔒 Pro+' : ''}
+                  </option>
+                  <option value={20} disabled={userTier === 'free' || userTier === 'starter'}>
+                    20 seconds - Full Promo {userTier === 'free' || userTier === 'starter' ? '🔒 Pro+' : ''}
+                  </option>
+                </select>
+                <p
+                  className="text-xs mt-2"
                   style={{ color: "var(--text-secondary)" }}
                 >
-                  <span>5s</span>
-                  <span>20s</span>
-                </div>
+                  {userTier === 'free' || userTier === 'starter' ? (
+                    <span>
+                      ⚠️ Your {userTier} tier supports up to 10s. Upgrade to Pro/Enterprise for 15-20s videos.
+                    </span>
+                  ) : (
+                    <span>
+                      Luma AI (5-10s) or Veo AI (15-20s) based on duration
+                    </span>
+                  )}
+                </p>
               </div>
 
               {/* Aspect Ratio */}
@@ -826,19 +859,31 @@ export default function VideoGenerationPage() {
               className="font-semibold mb-2"
               style={{ color: "var(--text-primary)" }}
             >
-              💳 Credit Usage
+              Credit Usage
             </h3>
             <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
               Video generation will use approximately{" "}
-              {(duration * 0.2).toFixed(1)} credits
+              {duration <= 10
+                ? (duration * 0.05).toFixed(2)
+                : (duration * 0.10).toFixed(2)
+              } credits
             </p>
             <p
               className="text-xs mt-2"
               style={{ color: "var(--text-secondary)" }}
             >
-              Cost is based on Luma AI Ray Flash 2 pricing at 720p resolution
-              (~$0.05/second)
+              {duration <= 10
+                ? "Luma AI Ray 2 (5-10s): ~$0.05/second"
+                : "Veo AI (15-20s): ~$0.10/second"
+              }
             </p>
+            {duration > 10 && (userTier === 'free' || userTier === 'starter') && (
+              <p
+                className="text-xs mt-2 text-yellow-600 dark:text-yellow-400"
+              >
+                🔒 15-20s videos require Pro or Enterprise tier
+              </p>
+            )}
           </div>
 
           {/* Submit Button */}
