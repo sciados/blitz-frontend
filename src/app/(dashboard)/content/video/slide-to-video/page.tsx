@@ -157,7 +157,7 @@ export default function SlideToVideoPage() {
         campaign_id: selectedCampaign,
         num_images: numImages,
         prompt: generatedPrompt,
-        style: style,
+        style: style === "marketing" ? "photorealistic" : style === "educational" ? "minimalist" : style === "social" ? "lifestyle" : "photorealistic",
         aspect_ratio: aspectRatio,
         image_type: imageType,
       });
@@ -189,7 +189,7 @@ export default function SlideToVideoPage() {
         campaign_id: selectedCampaign,
         generation_mode: "slide_video",
         slides: slides,
-        style: style,
+        style: style === "marketing" ? "photorealistic" : style === "educational" ? "minimalist" : style === "social" ? "lifestyle" : "photorealistic",
         duration: videoDuration,
         aspect_ratio: aspectRatio,
       });
@@ -318,10 +318,10 @@ export default function SlideToVideoPage() {
                   onChange={(e) => setImageType(e.target.value)}
                   className="w-full px-3 py-2 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)]"
                 >
-                  <option value="Hero">Hero Image</option>
-                  <option value="Social">Social Media</option>
-                  <option value="Ad">Advertisement</option>
-                  <option value="Product Shot">Product Shot</option>
+                  <option value="hero">Hero Image</option>
+                  <option value="social">Social Media</option>
+                  <option value="ad">Advertisement</option>
+                  <option value="product">Product Shot</option>
                 </select>
               </div>
 
