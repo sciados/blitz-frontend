@@ -109,19 +109,38 @@ export default function SlideToVideoPage() {
     }. ${stylePrompt}. High quality, professional photography style.`;
   };
 
-  // Update prompt when dependencies change
+  // Update prompt when dependencies change (use PromptGeneratorService)
   useEffect(() => {
-    const prompt = generatePrompt();
-    setGeneratedPrompt(prompt);
+    if (selectedCampaign && campaignIntelligence) {
+      regeneratePrompt();
+    } else {
+      const prompt = generatePrompt();
+      setGeneratedPrompt(prompt);
+    }
   }, [
+    selectedCampaign,
     campaignIntelligence,
     selectedKeywords,
     imageType,
     style,
-    numImages,
+    aspectRatio,
+    regeneratePrompt,
   ]);
 
-  // Fetch campaign intelligence when campaign is selected
+  // Fetch available keywords when campaign is selected
+  const { data: keywordsData, isLoading: keywordsLoading } = useQuery({
+    queryKey: ["campaign-keywords", selectedCampaign],
+    queryFn: async () => {
+      if (!selectedCampaign) return null;
+      const response = await api.post("/api/prompt/keywords", {
+        campaign_id: selectedCampaign,
+      });
+      return response.data;
+    },
+    enabled: !!selectedCampaign,
+  });
+
+  // Fetch campaign intelligence for display
   const { data: intelligenceData, isLoading: intelligenceLoading } = useQuery({
     queryKey: ["campaign-intelligence", selectedCampaign],
     queryFn: async () => {
@@ -149,6 +168,39 @@ export default function SlideToVideoPage() {
       });
     }
   }, [intelligenceData]);
+
+  // Generate prompt using PromptGeneratorService
+  const { data: generatedPromptData, mutate: regeneratePrompt } = useMutation({
+    mutationFn: async () => {
+      const allKeywords = [
+        ...selectedKeywords.ingredients,
+        ...selectedKeywords.features,
+        ...selectedKeywords.benefits,
+        ...selectedKeywords.custom,
+      ].filter(Boolean);
+
+      const keywordString = allKeywords.join(", ");
+
+      const response = await api.post("/api/prompt/generate", {
+        campaign_id: selectedCampaign,
+        content_type: "image",
+        image_type: imageType,
+        style: style === "marketing" ? "photorealistic" : style === "educational" ? "minimalist" : style === "social" ? "lifestyle" : "photorealistic",
+        aspect_ratio: aspectRatio,
+        user_prompt: keywordString || undefined,
+      });
+      return response.data;
+    },
+    onSuccess: (data) => {
+      setGeneratedPrompt(data.prompt);
+    },
+    onError: (error: any) => {
+      console.error("Failed to generate prompt:", error);
+      // Fall back to manual prompt generation
+      const prompt = generatePrompt();
+      setGeneratedPrompt(prompt);
+    },
+  });
 
   // Generate images mutation (using previews for 4 free draft images)
   const generateImagesMutation = useMutation({
@@ -363,15 +415,14 @@ export default function SlideToVideoPage() {
                 </h3>
 
                 {/* Ingredients */}
-                {campaignIntelligence.ingredients &&
-                  campaignIntelligence.ingredients.length > 0 && (
-                    <div className="mb-3">
-                      <p className="text-sm font-medium text-[var(--text-secondary)] mb-2">
-                        Ingredients:
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        {campaignIntelligence.ingredients.map((ingredient) => (
-                          <button
+                {keywordsData?.ingredients && keywordsData.ingredients.length > 0 && (
+                  <div className="mb-3">
+                    <p className="text-sm font-medium text-[var(--text-secondary)] mb-2">
+                      Ingredients:
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {keywordsData.ingredients.map((ingredient) => (
+                        <button
                             key={ingredient}
                             onClick={() => {
                               setSelectedKeywords((prev) => ({
@@ -399,15 +450,14 @@ export default function SlideToVideoPage() {
                   )}
 
                 {/* Features */}
-                {campaignIntelligence.features &&
-                  campaignIntelligence.features.length > 0 && (
-                    <div className="mb-3">
-                      <p className="text-sm font-medium text-[var(--text-secondary)] mb-2">
-                        Features:
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        {campaignIntelligence.features.map((feature) => (
-                          <button
+                {keywordsData?.features && keywordsData.features.length > 0 && (
+                  <div className="mb-3">
+                    <p className="text-sm font-medium text-[var(--text-secondary)] mb-2">
+                      Features:
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {keywordsData.features.map((feature) => (
+                        <button
                             key={feature}
                             onClick={() => {
                               setSelectedKeywords((prev) => ({
@@ -431,15 +481,14 @@ export default function SlideToVideoPage() {
                   )}
 
                 {/* Benefits */}
-                {campaignIntelligence.benefits &&
-                  campaignIntelligence.benefits.length > 0 && (
-                    <div className="mb-3">
-                      <p className="text-sm font-medium text-[var(--text-secondary)] mb-2">
-                        Benefits:
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        {campaignIntelligence.benefits.map((benefit) => (
-                          <button
+                {keywordsData?.benefits && keywordsData.benefits.length > 0 && (
+                  <div className="mb-3">
+                    <p className="text-sm font-medium text-[var(--text-secondary)] mb-2">
+                      Benefits:
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {keywordsData.benefits.map((benefit) => (
+                        <button
                             key={benefit}
                             onClick={() => {
                               setSelectedKeywords((prev) => ({

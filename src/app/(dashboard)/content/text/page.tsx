@@ -194,6 +194,22 @@ export default function ContentPage() {
     return "long_form";
   });
 
+  // Keywords state
+  const [selectedKeywords, setSelectedKeywords] = useState<{
+    ingredients: string[];
+    features: string[];
+    benefits: string[];
+    pain_points: string[];
+    custom: string[];
+  }>({
+    ingredients: [],
+    features: [],
+    benefits: [],
+    pain_points: [],
+    custom: [],
+  });
+  const [customKeyword, setCustomKeyword] = useState("");
+
   // Debug: Log videoFormat changes
   useEffect(() => {
     console.log("[DEBUG] videoFormat state changed to:", videoFormat);
@@ -279,6 +295,19 @@ export default function ContentPage() {
       return [];
     },
     // Remove enabled condition so images load immediately with text content
+  });
+
+  // Fetch available keywords when campaign is selected
+  const { data: keywordsData } = useQuery({
+    queryKey: ["campaign-keywords", campaignId],
+    queryFn: async () => {
+      if (!campaignId) return null;
+      const response = await api.post("/api/prompt/keywords", {
+        campaign_id: campaignId,
+      });
+      return response.data;
+    },
+    enabled: !!campaignId,
   });
 
   // Refetch content when tab changes
@@ -491,12 +520,36 @@ IMPORTANT: The **Affiliate Disclosure** must be a separate, clearly labeled sect
     setComplianceJustFixed(null); // Clear compliance success message
 
     try {
-      // Build request payload
+      // Build keyword string from selected keywords
+      const allKeywords = [
+        ...selectedKeywords.ingredients,
+        ...selectedKeywords.features,
+        ...selectedKeywords.benefits,
+        ...selectedKeywords.pain_points,
+        ...selectedKeywords.custom,
+      ].filter(Boolean);
+
+      const keywordString = allKeywords.join(", ");
+
+      // First generate an intelligent prompt using PromptGeneratorService
+      const promptResponse = await api.post("/api/prompt/generate", {
+        campaign_id: campaignId,
+        content_type: contentType,
+        user_prompt: keywordString || undefined,
+        // Pass content-type specific parameters
+        article_type: contentType === "article" ? "review_article" : undefined,
+        video_type: contentType === "video_script" ? videoType : undefined,
+      });
+
+      const generatedPrompt = promptResponse.data.prompt;
+
+      // Build request payload with the generated prompt
       const payload: any = {
         campaign_id: campaignId,
         content_type: contentType,
         marketing_angle: marketingAngle,
         tone,
+        user_prompt: generatedPrompt, // Pass the intelligent prompt
       };
 
       // Add length for non-video content (video scripts use video_format for duration)
@@ -765,6 +818,240 @@ IMPORTANT: The **Affiliate Disclosure** must be a separate, clearly labeled sect
                         </option>
                       ))}
                     </select>
+                  </div>
+
+                  {/* Keyword Selection */}
+                  <div>
+                    <h3 className="font-semibold text-[var(--text-primary)] mb-3">
+                      Select Keywords (Optional)
+                    </h3>
+
+                    {/* Ingredients */}
+                    {keywordsData?.ingredients && keywordsData.ingredients.length > 0 && (
+                      <div className="mb-3">
+                        <p className="text-sm font-medium text-[var(--text-secondary)] mb-2">
+                          Ingredients:
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {keywordsData.ingredients.map((ingredient) => (
+                            <button
+                              key={ingredient}
+                              type="button"
+                              onClick={() => {
+                                setSelectedKeywords((prev) => {
+                                  const isSelected = prev.ingredients.includes(ingredient);
+                                  return {
+                                    ...prev,
+                                    ingredients: isSelected
+                                      ? prev.ingredients.filter((i) => i !== ingredient)
+                                      : [...prev.ingredients, ingredient],
+                                  };
+                                });
+                              }}
+                              className={`px-3 py-1 rounded-full text-xs transition ${
+                                selectedKeywords.ingredients.includes(ingredient)
+                                  ? "bg-blue-600 text-white"
+                                  : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
+                              }`}
+                            >
+                              {ingredient}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Features */}
+                    {keywordsData?.features && keywordsData.features.length > 0 && (
+                      <div className="mb-3">
+                        <p className="text-sm font-medium text-[var(--text-secondary)] mb-2">
+                          Features:
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {keywordsData.features.map((feature) => (
+                            <button
+                              key={feature}
+                              type="button"
+                              onClick={() => {
+                                setSelectedKeywords((prev) => {
+                                  const isSelected = prev.features.includes(feature);
+                                  return {
+                                    ...prev,
+                                    features: isSelected
+                                      ? prev.features.filter((f) => f !== feature)
+                                      : [...prev.features, feature],
+                                  };
+                                });
+                              }}
+                              className={`px-3 py-1 rounded-full text-xs transition ${
+                                selectedKeywords.features.includes(feature)
+                                  ? "bg-blue-600 text-white"
+                                  : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
+                              }`}
+                            >
+                              {feature}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Benefits */}
+                    {keywordsData?.benefits && keywordsData.benefits.length > 0 && (
+                      <div className="mb-3">
+                        <p className="text-sm font-medium text-[var(--text-secondary)] mb-2">
+                          Benefits:
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {keywordsData.benefits.map((benefit) => (
+                            <button
+                              key={benefit}
+                              type="button"
+                              onClick={() => {
+                                setSelectedKeywords((prev) => {
+                                  const isSelected = prev.benefits.includes(benefit);
+                                  return {
+                                    ...prev,
+                                    benefits: isSelected
+                                      ? prev.benefits.filter((b) => b !== benefit)
+                                      : [...prev.benefits, benefit],
+                                  };
+                                });
+                              }}
+                              className={`px-3 py-1 rounded-full text-xs transition ${
+                                selectedKeywords.benefits.includes(benefit)
+                                  ? "bg-blue-600 text-white"
+                                  : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
+                              }`}
+                            >
+                              {benefit}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Pain Points */}
+                    {keywordsData?.pain_points && keywordsData.pain_points.length > 0 && (
+                      <div className="mb-3">
+                        <p className="text-sm font-medium text-[var(--text-secondary)] mb-2">
+                          Pain Points:
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {keywordsData.pain_points.map((painPoint) => (
+                            <button
+                              key={painPoint}
+                              type="button"
+                              onClick={() => {
+                                setSelectedKeywords((prev) => {
+                                  const isSelected = prev.pain_points.includes(painPoint);
+                                  return {
+                                    ...prev,
+                                    pain_points: isSelected
+                                      ? prev.pain_points.filter((p) => p !== painPoint)
+                                      : [...prev.pain_points, painPoint],
+                                  };
+                                });
+                              }}
+                              className={`px-3 py-1 rounded-full text-xs transition ${
+                                selectedKeywords.pain_points.includes(painPoint)
+                                  ? "bg-blue-600 text-white"
+                                  : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
+                              }`}
+                            >
+                              {painPoint}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Custom Keyword */}
+                    <div className="mb-3">
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={customKeyword}
+                          onChange={(e) => setCustomKeyword(e.target.value)}
+                          placeholder="Add custom keyword..."
+                          className="flex-1 px-3 py-1 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500"
+                          style={{
+                            borderColor: "var(--card-border)",
+                            background: "var(--card-bg)",
+                            color: "var(--text-primary)",
+                          }}
+                          onKeyPress={(e) => {
+                            if (e.key === "Enter" && customKeyword.trim()) {
+                              e.preventDefault();
+                              setSelectedKeywords((prev) => ({
+                                ...prev,
+                                custom: [...prev.custom, customKeyword.trim()],
+                              }));
+                              setCustomKeyword("");
+                            }
+                          }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (customKeyword.trim()) {
+                              setSelectedKeywords((prev) => ({
+                                ...prev,
+                                custom: [...prev.custom, customKeyword.trim()],
+                              }));
+                              setCustomKeyword("");
+                            }
+                          }}
+                          className="px-4 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
+                        >
+                          Add
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Selected Keywords Display */}
+                    {(selectedKeywords.ingredients.length > 0 ||
+                      selectedKeywords.features.length > 0 ||
+                      selectedKeywords.benefits.length > 0 ||
+                      selectedKeywords.pain_points.length > 0 ||
+                      selectedKeywords.custom.length > 0) && (
+                      <div className="mb-3">
+                        <p className="text-sm font-medium text-[var(--text-secondary)] mb-2">
+                          Selected Keywords:
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {[
+                            ...selectedKeywords.ingredients,
+                            ...selectedKeywords.features,
+                            ...selectedKeywords.benefits,
+                            ...selectedKeywords.pain_points,
+                            ...selectedKeywords.custom,
+                          ].map((keyword, idx) => (
+                            <span
+                              key={idx}
+                              className="px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full text-xs flex items-center gap-1"
+                            >
+                              {keyword}
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setSelectedKeywords((prev) => ({
+                                    ingredients: prev.ingredients.filter((k) => k !== keyword),
+                                    features: prev.features.filter((k) => k !== keyword),
+                                    benefits: prev.benefits.filter((k) => k !== keyword),
+                                    pain_points: prev.pain_points.filter((k) => k !== keyword),
+                                    custom: prev.custom.filter((k) => k !== keyword),
+                                  }));
+                                }}
+                                className="hover:text-blue-600"
+                              >
+                                ×
+                              </button>
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Tone */}
