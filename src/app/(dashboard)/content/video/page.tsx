@@ -31,7 +31,7 @@ export default function VideoGenerationPage() {
   );
   const [style, setStyle] = useState<string>("marketing");
   const [duration, setDuration] = useState<number>(10);
-  const [userTier, setUserTier] = useState<string>("free"); // TODO: Get from user profile
+  const [userTier, setUserTier] = useState<string>("starter"); // TODO: Get from user profile
   const [aspectRatio, setAspectRatio] = useState<string>("16:9");
   const [imageUrl, setImageUrl] = useState<string>("");
   const [motionIntensity, setMotionIntensity] = useState<string>("medium");
@@ -779,25 +779,24 @@ export default function VideoGenerationPage() {
                   }}
                 >
                   <option value={5}>5 seconds - Quick Hook</option>
-                  <option value={10}>10 seconds - Short Promo</option>
-                  <option value={15} disabled={userTier === 'free' || userTier === 'starter'}>
-                    15 seconds - Extended Story {userTier === 'free' || userTier === 'starter' ? '🔒 Pro+' : ''}
+                  <option value={15} disabled={userTier === 'starter'}>
+                    15 seconds - Extended Story {userTier === 'starter' ? '🔒 Pro+' : ''}
                   </option>
-                  <option value={20} disabled={userTier === 'free' || userTier === 'starter'}>
-                    20 seconds - Full Promo {userTier === 'free' || userTier === 'starter' ? '🔒 Pro+' : ''}
+                  <option value={20} disabled={userTier === 'starter'}>
+                    20 seconds - Full Promo {userTier === 'starter' ? '🔒 Pro+' : ''}
                   </option>
                 </select>
                 <p
                   className="text-xs mt-2"
                   style={{ color: "var(--text-secondary)" }}
                 >
-                  {userTier === 'free' || userTier === 'starter' ? (
+                  {userTier === 'starter' ? (
                     <span>
-                      ⚠️ Your {userTier} tier supports up to 10s. Upgrade to Pro/Enterprise for 15-20s videos.
+                      ⚠️ Your Starter plan ($7/month) supports 5s videos. Upgrade to Pro/Enterprise for 15-20s videos.
                     </span>
                   ) : (
                     <span>
-                      Luma AI (5-10s) or Veo AI (15-20s) based on duration
+                      Luma AI Ray v1 (5s) or Veo AI (15-20s) based on duration
                     </span>
                   )}
                 </p>
@@ -863,21 +862,25 @@ export default function VideoGenerationPage() {
             </h3>
             <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
               Video generation will use approximately{" "}
-              {duration <= 10
-                ? (duration * 0.05).toFixed(2)
-                : (duration * 0.10).toFixed(2)
+              {duration === 5
+                ? (5 * 0.05).toFixed(2)
+                : duration >= 15
+                ? (duration * 0.10).toFixed(2)
+                : (duration * 0.05).toFixed(2)
               } credits
             </p>
             <p
               className="text-xs mt-2"
               style={{ color: "var(--text-secondary)" }}
             >
-              {duration <= 10
-                ? "Luma AI Ray 2 (5-10s): ~$0.05/second"
-                : "Veo AI (15-20s): ~$0.10/second"
+              {duration === 5
+                ? "Luma AI Ray v1 (5s): ~$0.05/second"
+                : duration >= 15
+                ? "Veo AI (15-20s): ~$0.10/second"
+                : "Luma AI Ray v1 (5s): ~$0.05/second"
               }
             </p>
-            {duration > 10 && (userTier === 'free' || userTier === 'starter') && (
+            {duration > 10 && userTier === 'starter' && (
               <p
                 className="text-xs mt-2 text-yellow-600 dark:text-yellow-400"
               >
