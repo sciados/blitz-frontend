@@ -174,7 +174,10 @@
       "Bash(alembic:*)",
       "Bash(head:*)",
       "Bash(tail:*)",
-      "Bash(wc:*)"
+      "Bash(wc:*)",
+      "Bash(git show:*)",
+      "Bash(/tmp/video_current.tsx:*)",
+      "Bash(/tmp/video_prev.tsx:*)"
     ],
     "deny": [],
     "ask": []
