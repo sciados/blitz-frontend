@@ -109,24 +109,6 @@ export default function SlideToVideoPage() {
     }. ${stylePrompt}. High quality, professional photography style.`;
   };
 
-  // Update prompt when dependencies change (use PromptGeneratorService)
-  useEffect(() => {
-    if (selectedCampaign && campaignIntelligence) {
-      regeneratePrompt();
-    } else {
-      const prompt = generatePrompt();
-      setGeneratedPrompt(prompt);
-    }
-  }, [
-    selectedCampaign,
-    campaignIntelligence,
-    selectedKeywords,
-    imageType,
-    style,
-    aspectRatio,
-    regeneratePrompt,
-  ]);
-
   // Fetch available keywords when campaign is selected
   const { data: keywordsData, isLoading: keywordsLoading } = useQuery({
     queryKey: ["campaign-keywords", selectedCampaign],
@@ -256,6 +238,24 @@ export default function SlideToVideoPage() {
       );
     },
   });
+
+  // Update prompt when dependencies change (use PromptGeneratorService)
+  useEffect(() => {
+    if (selectedCampaign && campaignIntelligence) {
+      regeneratePrompt();
+    } else {
+      const prompt = generatePrompt();
+      setGeneratedPrompt(prompt);
+    }
+  }, [
+    selectedCampaign,
+    campaignIntelligence,
+    selectedKeywords,
+    imageType,
+    style,
+    aspectRatio,
+    regeneratePrompt,
+  ]);
 
   // Add custom keyword
   const addCustomKeyword = () => {
@@ -421,7 +421,7 @@ export default function SlideToVideoPage() {
                       Ingredients:
                     </p>
                     <div className="flex flex-wrap gap-2">
-                      {keywordsData.ingredients.map((ingredient) => (
+                      {keywordsData.ingredients.map((ingredient: string) => (
                         <button
                             key={ingredient}
                             onClick={() => {
@@ -456,7 +456,7 @@ export default function SlideToVideoPage() {
                       Features:
                     </p>
                     <div className="flex flex-wrap gap-2">
-                      {keywordsData.features.map((feature) => (
+                      {keywordsData.features.map((feature: string) => (
                         <button
                             key={feature}
                             onClick={() => {
@@ -487,7 +487,7 @@ export default function SlideToVideoPage() {
                       Benefits:
                     </p>
                     <div className="flex flex-wrap gap-2">
-                      {keywordsData.benefits.map((benefit) => (
+                      {keywordsData.benefits.map((benefit: string) => (
                         <button
                             key={benefit}
                             onClick={() => {

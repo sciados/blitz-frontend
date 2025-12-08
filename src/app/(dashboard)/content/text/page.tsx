@@ -833,7 +833,7 @@ IMPORTANT: The **Affiliate Disclosure** must be a separate, clearly labeled sect
                           Ingredients:
                         </p>
                         <div className="flex flex-wrap gap-2">
-                          {keywordsData.ingredients.map((ingredient) => (
+                          {keywordsData.ingredients.map((ingredient: string) => (
                             <button
                               key={ingredient}
                               type="button"
@@ -868,7 +868,7 @@ IMPORTANT: The **Affiliate Disclosure** must be a separate, clearly labeled sect
                           Features:
                         </p>
                         <div className="flex flex-wrap gap-2">
-                          {keywordsData.features.map((feature) => (
+                          {keywordsData.features.map((feature: string) => (
                             <button
                               key={feature}
                               type="button"
@@ -903,7 +903,7 @@ IMPORTANT: The **Affiliate Disclosure** must be a separate, clearly labeled sect
                           Benefits:
                         </p>
                         <div className="flex flex-wrap gap-2">
-                          {keywordsData.benefits.map((benefit) => (
+                          {keywordsData.benefits.map((benefit: string) => (
                             <button
                               key={benefit}
                               type="button"
@@ -938,7 +938,7 @@ IMPORTANT: The **Affiliate Disclosure** must be a separate, clearly labeled sect
                           Pain Points:
                         </p>
                         <div className="flex flex-wrap gap-2">
-                          {keywordsData.pain_points.map((painPoint) => (
+                          {keywordsData.pain_points.map((painPoint: string) => (
                             <button
                               key={painPoint}
                               type="button"

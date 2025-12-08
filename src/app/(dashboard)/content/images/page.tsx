@@ -707,7 +707,7 @@ export default function ImagesPage() {
                           Ingredients:
                         </p>
                         <div className="flex flex-wrap gap-2">
-                          {keywordsData.ingredients.map((ingredient) => (
+                          {keywordsData.ingredients.map((ingredient: string) => (
                             <button
                               key={ingredient}
                               type="button"
@@ -742,7 +742,7 @@ export default function ImagesPage() {
                           Features:
                         </p>
                         <div className="flex flex-wrap gap-2">
-                          {keywordsData.features.map((feature) => (
+                          {keywordsData.features.map((feature: string) => (
                             <button
                               key={feature}
                               type="button"
@@ -777,7 +777,7 @@ export default function ImagesPage() {
                           Benefits:
                         </p>
                         <div className="flex flex-wrap gap-2">
-                          {keywordsData.benefits.map((benefit) => (
+                          {keywordsData.benefits.map((benefit: string) => (
                             <button
                               key={benefit}
                               type="button"
