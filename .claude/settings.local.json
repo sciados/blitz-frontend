@@ -177,7 +177,8 @@
       "Bash(wc:*)",
       "Bash(git show:*)",
       "Bash(/tmp/video_current.tsx:*)",
-      "Bash(/tmp/video_prev.tsx:*)"
+      "Bash(/tmp/video_prev.tsx:*)",
+      "WebFetch(domain:piapi.ai)"
     ],
     "deny": [],
     "ask": []
