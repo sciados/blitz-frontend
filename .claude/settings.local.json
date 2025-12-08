@@ -171,7 +171,8 @@
       "WebFetch(domain:blog.ycombinator.com)",
       "WebFetch(domain:ycombinator.com)",
       "Bash(git -C /c/Users/shaun/OneDrive/Documents/GitHub/blitz-backend diff app/services/prompt_builder.py)",
-      "Bash(alembic:*)"
+      "Bash(alembic:*)",
+      "Bash(head:*)"
     ],
     "deny": [],
     "ask": []

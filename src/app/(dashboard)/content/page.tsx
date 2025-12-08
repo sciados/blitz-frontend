@@ -15,7 +15,7 @@ export default function ContentHubPage() {
     urlCampaignId ? Number(urlCampaignId) : null
   );
 
-  const handleNavigate = (type: "text" | "images") => {
+  const handleNavigate = (type: "text" | "images" | "video") => {
     if (!campaignId) {
       toast.error("Please select a campaign first");
       return;
@@ -68,7 +68,7 @@ export default function ContentHubPage() {
             <h2 className="text-xl font-semibold mb-4" style={{ color: "var(--text-primary)" }}>
               2. Choose Content Type
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {/* Text Content Card */}
               <button
                 onClick={() => handleNavigate("text")}
@@ -160,6 +160,52 @@ export default function ContentHubPage() {
                   </span>
                 </div>
               </button>
+n              {/* Video Content Card */}
+              <button
+                onClick={() => handleNavigate("video")}
+                disabled={!campaignId}
+                className={`card rounded-lg p-6 text-left transition-all hover:shadow-lg ${
+                  campaignId
+                    ? "hover:border-red-500 cursor-pointer"
+                    : "opacity-50 cursor-not-allowed"
+                }`}
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-xl flex items-center justify-center">
+                    <span className="text-3xl">🎬</span>
+                  </div>
+                  <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold mb-2" style={{ color: "var(--text-primary)" }}>
+                  Video Content
+                </h3>
+                <p className="text-sm mb-4" style={{ color: "var(--text-secondary)" }}>
+                  Generate short-form videos (5-20s) from scripts, images, or slides using Luma AI for social media marketing.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <span className="px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 rounded text-xs">
+                    Text-to-Video
+                  </span>
+                  <span className="px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 rounded text-xs">
+                    Image-to-Video
+                  </span>
+                  <span className="px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 rounded text-xs">
+                    Slide Videos
+                  </span>
+                  <span className="px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 rounded text-xs">
+                    Marketing
+                  </span>
+                  <span className="px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 rounded text-xs">
+                    Educational
+                  </span>
+                  <span className="px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 rounded text-xs">
+                    Social Media
+                  </span>
+                </div>
+              </button>
+
             </div>
           </div>
 
@@ -191,7 +237,7 @@ export default function ContentHubPage() {
                     Choose Type
                   </p>
                   <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
-                    Text for copy or Images for visuals
+                    Text for copy, Images for visuals, or Videos for social media
                   </p>
                 </div>
               </div>
