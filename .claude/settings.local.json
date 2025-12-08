@@ -162,7 +162,16 @@
       "Bash(GIT_DIR=/c/Users/shaun/OneDrive/Documents/GitHub/blitz-backend/.git git push:*)",
       "Bash(grep:*)",
       "Bash(ls:*)",
-      "WebFetch(domain:blog.hootsuite.com)"
+      "WebFetch(domain:blog.hootsuite.com)",
+      "WebFetch(domain:lumalabs.ai)",
+      "WebFetch(domain:haiper.ai)",
+      "WebFetch(domain:runwayml.com)",
+      "WebFetch(domain:pika.art)",
+      "WebFetch(domain:www.cursor-ide.com)",
+      "WebFetch(domain:blog.ycombinator.com)",
+      "WebFetch(domain:ycombinator.com)",
+      "Bash(git -C /c/Users/shaun/OneDrive/Documents/GitHub/blitz-backend diff app/services/prompt_builder.py)",
+      "Bash(alembic:*)"
     ],
     "deny": [],
     "ask": []

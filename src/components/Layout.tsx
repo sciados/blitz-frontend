@@ -217,6 +217,7 @@ export default function Layout({ children }: LayoutProps) {
         { href: "/admin/tools", label: "Admin Tools", icon: "🔧" },
         { href: "/admin/images", label: "Image Management", icon: "🖼️" },
         { href: "/admin/config", label: "Configuration", icon: "🎛️" },
+        { href: "/admin/limits", label: "Usage Limits", icon: "📈" },
         { href: "/admin/ai_router", label: "AI Router", icon: "🤖" },
         { href: "/admin/credits", label: "AI Credits", icon: "💳" },
         { href: "/admin/users", label: "Users", icon: "👥" },
@@ -271,6 +272,8 @@ export default function Layout({ children }: LayoutProps) {
           children: [
             { href: "/content", label: "Generate Content", icon: "⚡" },
             { href: "/library", label: "Content Library", icon: "📚" },
+            { href: "/content/video", label: "Generate Videos", icon: "🎬" },
+            { href: "/content/video/library", label: "Video Library", icon: "📹" },
           ],
         },
         { href: "/intelligence", label: "Intelligence", icon: "🧠" },
@@ -308,6 +311,8 @@ export default function Layout({ children }: LayoutProps) {
         label: "Content",
         icon: "✍️",
         children: [
+            { href: "/content/video", label: "Generate Videos", icon: "🎬" },
+            { href: "/content/video/library", label: "Video Library", icon: "📹" },
           { href: "/content", label: "Generate Content", icon: "⚡" },
           { href: "/library", label: "Content Library", icon: "📚" },
         ],
