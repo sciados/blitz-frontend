@@ -329,14 +329,13 @@ export default function IntelligencePage() {
                     </div>
                   )}
 
-                  {/* Ingredients/Components - only show if NO technical_specs */}
+                  {/* Ingredients/Components - show if has ingredients (takes priority over tech specs) */}
                   {(() => {
                     const ingredients = intelligenceData.product.ingredients || intelligenceData.product.ingredients_or_components || [];
                     const hasIngredients = Array.isArray(ingredients) && ingredients.length > 0;
-                    const hasTechSpecs = !!intelligenceData.product.technical_specs;
 
-                    // Show ingredients only if we have them AND no technical specs
-                    if (!hasIngredients || hasTechSpecs) return null;
+                    // Show ingredients if we have them (ingredients take priority over tech specs)
+                    if (!hasIngredients) return null;
 
                     return (
                       <div>
