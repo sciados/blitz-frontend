@@ -35,6 +35,8 @@ export default function VideoGenerationPage() {
   const [motionIntensity, setMotionIntensity] = useState<string>("medium");
   const [useExistingScript, setUseExistingScript] = useState<boolean>(false);
   const [selectedScriptId, setSelectedScriptId] = useState<string>("");
+  const [useExistingImage, setUseExistingImage] = useState<boolean>(false);
+  const [selectedImageId, setSelectedImageId] = useState<string>("");
 
   // Fetch campaigns
   const { data: campaignsData, isLoading: campaignsLoading } = useQuery({
@@ -47,9 +49,9 @@ export default function VideoGenerationPage() {
 
   const campaigns = campaignsData?.campaigns || [];
 
-  // Fetch content library for video scripts when campaign is selected
+  // Fetch content library when campaign is selected
   const { data: contentData } = useQuery({
-    queryKey: ["content", "video-scripts", selectedCampaign],
+    queryKey: ["content", "unified", selectedCampaign],
     queryFn: async () => {
       if (!selectedCampaign) return { contents: [] };
       const response = await api.get(
@@ -57,7 +59,7 @@ export default function VideoGenerationPage() {
       );
       return response.data;
     },
-    enabled: !!selectedCampaign && useExistingScript,
+    enabled: !!selectedCampaign && (useExistingScript || useExistingImage),
   });
 
   // Filter video scripts from content
@@ -65,6 +67,12 @@ export default function VideoGenerationPage() {
     contentData?.contents?.filter(
       (item: any) =>
         item.type === "text" && item.data.content_type === "video_script"
+    ) || [];
+
+  // Filter images from content
+  const campaignImages =
+    contentData?.contents?.filter(
+      (item: any) => item.type === "image"
     ) || [];
 
   // Auto-fill script when selecting from library
@@ -78,6 +86,18 @@ export default function VideoGenerationPage() {
       }
     }
   }, [selectedScriptId, useExistingScript, videoScripts]);
+
+  // Auto-fill image URL when selecting from library
+  useEffect(() => {
+    if (useExistingImage && selectedImageId) {
+      const selectedImage = campaignImages.find(
+        (item: any) => item.data.id.toString() === selectedImageId
+      );
+      if (selectedImage) {
+        setImageUrl(selectedImage.data.image_url);
+      }
+    }
+  }, [selectedImageId, useExistingImage, campaignImages]);
 
   // Auto-select campaign from URL parameter
   useEffect(() => {
@@ -104,7 +124,7 @@ export default function VideoGenerationPage() {
       toast.success(
         "Video generation started! You can check the status in your video library."
       );
-      router.push("/library");
+      router.push("/content/video/library");
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.detail || "Failed to generate video");
@@ -129,7 +149,11 @@ export default function VideoGenerationPage() {
     }
 
     if (generationMode === "image_to_video" && !imageUrl.trim()) {
-      toast.error("Image URL is required for image-to-video generation");
+      if (useExistingImage && !selectedImageId) {
+        toast.error("Please select an image from the library");
+      } else if (!useExistingImage) {
+        toast.error("Image URL is required for image-to-video generation");
+      }
       return;
     }
 
@@ -403,33 +427,147 @@ export default function VideoGenerationPage() {
             </div>
           )}
 
-          {/* Image URL (for image_to_video) */}
+          {/* Image Source (for image_to_video) */}
           {generationMode === "image_to_video" && (
             <div className="card rounded-lg p-6">
               <h2
                 className="text-xl font-semibold mb-4"
                 style={{ color: "var(--text-primary)" }}
               >
-                Source Image URL *
+                Source Image *
               </h2>
-              <p
-                className="text-sm mb-3"
-                style={{ color: "var(--text-secondary)" }}
-              >
-                Enter the URL of the image you want to animate into a video.
-              </p>
-              <input
-                type="url"
-                value={imageUrl}
-                onChange={(e) => setImageUrl(e.target.value)}
-                placeholder="https://example.com/image.jpg"
-                className="w-full px-4 py-3 rounded-lg border"
-                style={{
-                  borderColor: "var(--card-border)",
-                  background: "var(--bg-secondary)",
-                  color: "var(--text-primary)",
-                }}
-              />
+
+              {/* Image Source Toggle */}
+              <div className="mb-4">
+                <div className="flex items-center space-x-4">
+                  <label className="flex items-center space-x-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      checked={!useExistingImage}
+                      onChange={() => {
+                        setUseExistingImage(false);
+                        setSelectedImageId("");
+                        setImageUrl("");
+                      }}
+                      className="w-4 h-4"
+                    />
+                    <span
+                      className="text-sm"
+                      style={{ color: "var(--text-primary)" }}
+                    >
+                      Enter image URL
+                    </span>
+                  </label>
+                  <label className="flex items-center space-x-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      checked={useExistingImage}
+                      onChange={() => setUseExistingImage(true)}
+                      className="w-4 h-4"
+                    />
+                    <span
+                      className="text-sm"
+                      style={{ color: "var(--text-primary)" }}
+                    >
+                      Use existing image from library
+                    </span>
+                  </label>
+                </div>
+              </div>
+
+              {/* Existing Image Selector */}
+              {useExistingImage && selectedCampaign && (
+                <div className="mb-4">
+                  <label
+                    className="block text-sm font-medium mb-2"
+                    style={{ color: "var(--text-primary)" }}
+                  >
+                    Select Image *
+                  </label>
+                  <select
+                    value={selectedImageId}
+                    onChange={(e) => setSelectedImageId(e.target.value)}
+                    className="w-full px-4 py-3 rounded-lg border"
+                    style={{
+                      borderColor: "var(--card-border)",
+                      background: "var(--bg-secondary)",
+                      color: "var(--text-primary)",
+                    }}
+                  >
+                    <option value="">Choose an image...</option>
+                    {campaignImages.length > 0 ? (
+                      campaignImages.map((item: any) => (
+                        <option key={item.data.id} value={item.data.id}>
+                          {item.data.prompt?.substring(0, 50) ||
+                            `${item.data.image_type} ${item.data.id}`}{" "}
+                          - {new Date(item.data.created_at).toLocaleDateString()}
+                        </option>
+                      ))
+                    ) : (
+                      <option value="" disabled>
+                        No images found for this campaign
+                      </option>
+                    )}
+                  </select>
+                  {campaignImages.length === 0 && (
+                    <p className="mt-2 text-sm text-yellow-600 dark:text-yellow-400">
+                      ⚠️ No images found in your content library for this campaign.
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Manual Image URL Input */}
+              {!useExistingImage && (
+                <>
+                  <p
+                    className="text-sm mb-3"
+                    style={{ color: "var(--text-secondary)" }}
+                  >
+                    Enter the URL of the image you want to animate into a video.
+                  </p>
+                  <input
+                    type="url"
+                    value={imageUrl}
+                    onChange={(e) => setImageUrl(e.target.value)}
+                    placeholder="https://example.com/image.jpg"
+                    className="w-full px-4 py-3 rounded-lg border"
+                    style={{
+                      borderColor: "var(--card-border)",
+                      background: "var(--bg-secondary)",
+                      color: "var(--text-primary)",
+                    }}
+                  />
+                </>
+              )}
+
+              {/* Image Preview */}
+              {useExistingImage && imageUrl && (
+                <div className="mt-4">
+                  <label
+                    className="block text-sm font-medium mb-2"
+                    style={{ color: "var(--text-primary)" }}
+                  >
+                    Image Preview
+                  </label>
+                  <div
+                    className="w-full h-64 rounded-lg border overflow-hidden"
+                    style={{
+                      borderColor: "var(--card-border)",
+                      background: "var(--bg-secondary)",
+                    }}
+                  >
+                    <img
+                      src={imageUrl}
+                      alt="Selected image"
+                      className="w-full h-full object-contain"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = "none";
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -552,7 +690,7 @@ export default function VideoGenerationPage() {
             </h3>
             <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
               Video generation will use approximately{" "}
-              {(duration * 0.2).toFixed(1)} credits (1 Credit = $0.25)
+              {(duration * 0.2).toFixed(1)} credits
             </p>
             <p
               className="text-xs mt-2"
