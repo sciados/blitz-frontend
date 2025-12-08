@@ -685,8 +685,10 @@ export default function SlideToVideoPage() {
                   onChange={(e) => setVideoDuration(Number(e.target.value))}
                   className="w-full px-3 py-2 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)]"
                 >
-                  <option value={5}>5 seconds</option>
-                  <option value={10}>10 seconds</option>
+                  <option value={5}>5 seconds - Quick Hook</option>
+                  <option value={10}>10 seconds - Short Promo</option>
+                  <option value={15}>15 seconds - Story/Reel</option>
+                  <option value={20}>20 seconds - Extended Short</option>
                 </select>
               </div>
 

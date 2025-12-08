@@ -329,25 +329,28 @@ export default function IntelligencePage() {
                     </div>
                   )}
 
-                  {/* Ingredients/Components */}
-                  {intelligenceData.product.ingredients_or_components && Array.isArray(intelligenceData.product.ingredients_or_components) && intelligenceData.product.ingredients_or_components.length > 0 && (
-                    <div>
-                      <h3 className="text-lg font-semibold mb-3 flex items-center" style={{ color: 'var(--text-primary)' }}>
-                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-                        </svg>
-                        Ingredients/Components
-                      </h3>
-                      <ul className="space-y-2">
-                        {intelligenceData.product.ingredients_or_components.map((ingredient: any, idx: number) => (
-                          <li key={idx} className="flex items-start text-sm">
-                            <span className="inline-block w-2 h-2 rounded-full bg-purple-500 mt-1.5 mr-3 flex-shrink-0"></span>
-                            <span style={{ color: 'var(--text-secondary)' }}>{renderValue(ingredient)}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
+                  {/* Ingredients/Components - check both field names */}
+                  {(() => {
+                    const ingredients = intelligenceData.product.ingredients || intelligenceData.product.ingredients_or_components || [];
+                    return Array.isArray(ingredients) && ingredients.length > 0 ? (
+                      <div>
+                        <h3 className="text-lg font-semibold mb-3 flex items-center" style={{ color: 'var(--text-primary)' }}>
+                          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                          </svg>
+                          Ingredients ({ingredients.length})
+                        </h3>
+                        <ul className="space-y-2">
+                          {ingredients.map((ingredient: any, idx: number) => (
+                            <li key={idx} className="flex items-start text-sm">
+                              <span className="inline-block w-2 h-2 rounded-full bg-purple-500 mt-1.5 mr-3 flex-shrink-0"></span>
+                              <span style={{ color: 'var(--text-secondary)' }}>{renderValue(ingredient)}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ) : null;
+                  })()}
 
                   {/* Solutions */}
                   {intelligenceData.product.solutions && Array.isArray(intelligenceData.product.solutions) && intelligenceData.product.solutions.length > 0 && (

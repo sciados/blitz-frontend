@@ -86,9 +86,10 @@ const getVideoTypesForUser = () => {
 };
 
 const VIDEO_FORMATS = [
-  { value: "short_form", label: "Short Form (15-20s) - TikTok, Reels, Shorts" },
-  { value: "long_form", label: "Long Form (60-90s) - YouTube, Facebook" },
-  { value: "story", label: "Story (15s) - Instagram/Snapchat Stories" },
+  { value: "5s", label: "5 seconds - Quick Hook" },
+  { value: "10s", label: "10 seconds - Short Promo" },
+  { value: "15s", label: "15 seconds - Story/Reel" },
+  { value: "20s", label: "20 seconds - Extended Short" },
 ];
 
 // Get appropriate word counts based on content type
