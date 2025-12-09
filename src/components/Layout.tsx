@@ -724,7 +724,7 @@ export default function Layout({ children }: LayoutProps) {
           </aside>
 
           {/* Main Content */}
-          <main className="flex-1 overflow-y-auto bg-[var(--bg-secondary)] flex flex-col">
+          <main className={`flex-1 overflow-y-auto bg-[var(--bg-secondary)] flex flex-col transition-all duration-300 ${leftSidebarOpen ? 'ml-64' : 'ml-16'}`}>
             <div className="flex-1">{children}</div>
             <Footer />
           </main>
