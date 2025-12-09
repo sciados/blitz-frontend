@@ -555,11 +555,11 @@ export default function Layout({ children }: LayoutProps) {
         </header>
 
         <div className="flex flex-1 overflow-hidden">
-          {/* Left Sidebar */}
+          {/* Left Sidebar - Fixed position so it stays visible while scrolling */}
           <aside
             className={`${
               leftSidebarOpen ? "w-64" : "w-16"
-            } transition-all duration-300 border-r border-[var(--border-color)] bg-[var(--bg-primary)] overflow-y-auto`}
+            } fixed left-0 top-16 bottom-0 transition-all duration-300 border-r border-[var(--border-color)] bg-[var(--bg-primary)] overflow-y-auto z-40`}
           >
             {/* User Type Badge */}
             {leftSidebarOpen && userInfo && !isAdmin && (
