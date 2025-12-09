@@ -148,9 +148,11 @@ All existing API endpoints preserved:
 - `POST /api/content/generate` (text)
 - `POST /api/content/images/generate` (images)
 - `POST /api/video/generate` (videos)
-- `GET /api/content/campaign/{id}` (content list)
-- `GET /api/content/campaign/{id}/images` (images list)
-- `GET /api/video/library` (videos list)
+- `GET /api/content/campaign/{id}` (content list for library)
+- `GET /api/content/campaign/{id}/images` (images list for library)
+- `GET /api/video/library?campaign_id={id}` (videos list for library)
+
+**Note:** The `/api/content/campaign/{id}/all` endpoint mentioned in the Unified Content Library design is not yet implemented. The Content Library tab uses the three individual endpoints above to fetch and combine data.
 
 ## Build Status
 
@@ -261,3 +263,29 @@ Verify these URLs work correctly:
 The implementation maintains full backward compatibility while providing a dramatically improved user experience. All existing APIs and functionality are preserved, just reorganized into a more intuitive structure.
 
 **Status**: ✅ **Complete and Ready for Testing!**
+
+---
+
+## Bug Fixes & Updates
+
+### Fixed: Content Library Showing Zero Counts
+
+**Issue (2025-12-09):**
+The Content Library tab was displaying "Text=0, Images=0, Videos=0" even though the campaign had existing content (29 text items, 13 images).
+
+**Root Cause:**
+The `ContentStudioLibraryTab` component was attempting to fetch from a non-existent API endpoint `/api/content/campaign/${campaignId}/all`. This endpoint was referenced in the future Unified Content Library design but was never implemented.
+
+**Solution:**
+Changed the query to use the existing endpoint `/api/content/campaign/${campaignId}` which correctly returns the text content list. The component now uses three separate API calls to fetch and combine data:
+1. `/api/content/campaign/${campaignId}` - Text content
+2. `/api/content/campaign/${campaignId}/images` - Images
+3. `/api/video/library?campaign_id=${campaignId}` - Videos
+
+**Files Modified:**
+- `src/components/content-studio/ContentStudioLibraryTab.tsx` (line 24)
+
+**Result:**
+Content Library now correctly displays the actual counts and content from the selected campaign.
+
+---

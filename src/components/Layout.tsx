@@ -272,8 +272,6 @@ export default function Layout({ children }: LayoutProps) {
           children: [
             { href: "/content", label: "Generate Content", icon: "⚡" },
             { href: "/library", label: "Content Library", icon: "📚" },
-            { href: "/content/video", label: "Generate Videos", icon: "🎬" },
-            { href: "/content/video/library", label: "Video Library", icon: "📹" },
           ],
         },
         { href: "/intelligence", label: "Intelligence", icon: "🧠" },
@@ -311,8 +309,6 @@ export default function Layout({ children }: LayoutProps) {
         label: "Content",
         icon: "✍️",
         children: [
-            { href: "/content/video", label: "Generate Videos", icon: "🎬" },
-            { href: "/content/video/library", label: "Video Library", icon: "📹" },
           { href: "/content", label: "Generate Content", icon: "⚡" },
           { href: "/library", label: "Content Library", icon: "📚" },
         ],

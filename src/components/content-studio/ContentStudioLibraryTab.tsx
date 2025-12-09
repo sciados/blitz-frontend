@@ -21,7 +21,7 @@ export function ContentStudioLibraryTab({ campaignId, onGenerateFromContent }: C
     queryKey: ["content-all", campaignId],
     queryFn: async () => {
       if (!campaignId) return { contents: [] };
-      const response = await api.get(`/api/content/campaign/${campaignId}/all`);
+      const response = await api.get(`/api/content/campaign/${campaignId}`);
       return response.data;
     },
     enabled: !!campaignId,
