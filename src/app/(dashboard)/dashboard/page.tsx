@@ -1317,26 +1317,10 @@ function GettingStartedJourney() {
     {
       id: 1,
       title: "Browse Product Library",
-      description: "Explore our curated collection of products",
+      description: "Explore products, get affiliate links & create campaigns",
       icon: "📦",
       href: "/products" as const,
       color: "purple"
-    },
-    {
-      id: 2,
-      title: "Choose Product",
-      description: "Select a product that fits your niche",
-      icon: "✅",
-      href: "/products" as const,
-      color: "blue"
-    },
-    {
-      id: 3,
-      title: "Create Campaign",
-      description: "Set up your marketing campaign",
-      icon: "📢",
-      href: "/campaigns" as const,
-      color: "green"
     },
     {
       id: 4,
@@ -1349,10 +1333,11 @@ function GettingStartedJourney() {
     {
       id: 5,
       title: "Publish Content",
-      description: "Deploy your content across channels",
-      icon: "🚀",
-      href: "/content" as const,
-      color: "orange"
+      description: "Connect your social media accounts (Coming Soon)",
+      icon: "🔗",
+      href: "#" as const,
+      color: "orange",
+      disabled: true
     },
     {
       id: 6,
@@ -1416,7 +1401,7 @@ function GettingStartedJourney() {
           🚀 Getting Started - Your Journey to Success
         </h3>
         <p className="text-sm text-[var(--text-secondary)] mb-6">
-          Follow these 6 steps to create and launch your first successful campaign
+          Follow these steps to create and launch your first successful campaign
         </p>
 
         {/* Journey Timeline */}
@@ -1431,7 +1416,39 @@ function GettingStartedJourney() {
               const isLast = index === steps.length - 1;
               const isMiddle = index === 2;
 
-              return (
+              return step.disabled ? (
+                <div
+                  key={step.id}
+                  className="group block"
+                >
+                  <div className={`card p-6 transition-all duration-300 border-2 ${colors.border} opacity-60 cursor-not-allowed`}>
+                    {/* Step Number & Icon */}
+                    <div className="flex items-start space-x-4">
+                      {/* Step Circle */}
+                      <div className="flex-shrink-0">
+                        <div className={`w-16 h-16 ${colors.bg} rounded-full flex items-center justify-center border-4 ${colors.border} group-hover:scale-110 transition-transform duration-300`}>
+                          <span className="text-2xl">{step.icon}</span>
+                        </div>
+                      </div>
+
+                      {/* Content */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center space-x-2 mb-1">
+                          <span className={`text-xs font-bold px-2 py-1 rounded ${colors.bg} ${colors.text}`}>
+                            Step {step.id}
+                          </span>
+                        </div>
+                        <h4 className="text-lg font-semibold text-[var(--text-primary)] mb-1 group-hover:text-[var(--text-primary)]">
+                          {step.title}
+                        </h4>
+                        <p className="text-sm text-[var(--text-secondary)]">
+                          {step.description}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
                 <Link
                   key={step.id}
                   href={step.href}
@@ -1499,7 +1516,7 @@ function GettingStartedJourney() {
                 Ready to Start Your Journey? 🎯
               </h4>
               <p className="text-sm text-[var(--text-secondary)]">
-                Begin with Step 1 - Browse our Product Library to find the perfect product for your niche
+                Begin with Step 1 - Browse our Product Library to explore products, get affiliate links & create campaigns
               </p>
             </div>
             <Link
