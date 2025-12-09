@@ -2,393 +2,265 @@
 
 import { AuthGate } from "src/components/AuthGate";
 import { CampaignSelector } from "src/components/CampaignSelector";
-import { useState } from "react";
+import { ContentStudioTextTab } from "src/components/content-studio/ContentStudioTextTab";
+import { ContentStudioImagesTab } from "src/components/content-studio/ContentStudioImagesTab";
+import { ContentStudioVideoTab } from "src/components/content-studio/ContentStudioVideoTab";
+import { ContentStudioLibraryTab } from "src/components/content-studio/ContentStudioLibraryTab";
+import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 
-export default function ContentHubPage() {
+export type TabType = "generate" | "library";
+export type ContentType = "text" | "images" | "video";
+
+interface CampaignSelectorBarProps {
+  campaignId: number | null;
+  onSelectCampaign: (id: number | null) => void;
+}
+
+function CampaignSelectorBar({ campaignId, onSelectCampaign }: CampaignSelectorBarProps) {
+  return (
+    <div className="card rounded-lg p-6 mb-6">
+      <h2
+        className="text-xl font-semibold mb-4"
+        style={{ color: "var(--text-primary)" }}
+      >
+        Campaign Selection
+      </h2>
+      <CampaignSelector
+        selectedCampaignId={campaignId}
+        onSelect={(id) => {
+          onSelectCampaign(id);
+          if (id) {
+            toast.success("Campaign selected!");
+          }
+        }}
+        label="Campaign *"
+        placeholder="Select a campaign..."
+        showAllOption={false}
+      />
+      {campaignId && (
+        <div className="mt-3 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+          <p className="text-sm" style={{ color: "var(--text-primary)" }}>
+            <span className="font-semibold">✓ Campaign selected!</span>{" "}
+            Your content will be generated using this campaign's intelligence data.
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function ContentStudio() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const urlCampaignId = searchParams.get("campaign");
 
+  // Parse URL parameters
+  const urlCampaignId = searchParams.get("campaign");
+  const urlTab = (searchParams.get("tab") as TabType) || "generate";
+  const urlType = (searchParams.get("type") as ContentType) || "text";
+
+  // State
   const [campaignId, setCampaignId] = useState<number | null>(
     urlCampaignId ? Number(urlCampaignId) : null
   );
+  const [activeTab, setActiveTab] = useState<TabType>(urlTab);
+  const [activeContentType, setActiveContentType] = useState<ContentType>(urlType);
 
-const handleNavigate = (type: "text" | "images" | "video" | "slide-video") => {    if (!campaignId) {      toast.error("Please select a campaign first");      return;    }    if (type === "slide-video") {      router.push(`/content/video/slide-to-video?campaign=${campaignId}` as any);    } else {      router.push(`/content/${type}?campaign=${campaignId}` as any);    }  };
+  // Restore last campaign from localStorage on mount
+  useEffect(() => {
+    const lastCampaignId = localStorage.getItem("lastSelectedCampaign");
+    if (!campaignId && lastCampaignId) {
+      setCampaignId(Number(lastCampaignId));
+      // Update URL with restored campaign
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("campaign", lastCampaignId);
+      router.replace(`/content?${params.toString()}`, { scroll: false });
+    }
+  }, []);
+
+  // Update localStorage when campaign changes
+  useEffect(() => {
+    if (campaignId) {
+      localStorage.setItem("lastSelectedCampaign", campaignId.toString());
+    }
+  }, [campaignId]);
+
+  // Update URL when state changes
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (campaignId) params.set("campaign", campaignId.toString());
+    params.set("tab", activeTab);
+    params.set("type", activeContentType);
+    router.replace(`/content?${params.toString()}`, { scroll: false });
+  }, [campaignId, activeTab, activeContentType]);
+
+  const handleTabChange = (tab: TabType) => {
+    setActiveTab(tab);
+  };
+
+  const handleContentTypeChange = (type: ContentType) => {
+    setActiveContentType(type);
+  };
+
+  const handleSelectCampaign = (id: number | null) => {
+    setCampaignId(id);
+  };
+
+  const handleGenerateFromLibrary = (type: ContentType) => {
+    setActiveTab("generate");
+    setActiveContentType(type);
+  };
 
   return (
     <AuthGate requiredRole="user">
       <div className="p-6 h-full overflow-y-auto">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-7xl mx-auto">
           {/* Header */}
-          <div className="mb-8">
-            <h1
-              className="text-3xl font-bold mb-2"
-              style={{ color: "var(--text-primary)" }}
-            >
-              Content Generation Hub
-            </h1>
-            <p style={{ color: "var(--text-secondary)" }}>
-              Generate AI-powered marketing content using your campaign
-              intelligence data.
-            </p>
-          </div>
-
-          {/* Campaign Selector */}
-          <div className="card rounded-lg p-6 mb-8">
-            <h2
-              className="text-xl font-semibold mb-4"
-              style={{ color: "var(--text-primary)" }}
-            >
-              1. Select Your Campaign
-            </h2>
-            <CampaignSelector
-              selectedCampaignId={campaignId}
-              onSelect={(id) => {
-                setCampaignId(id);
-                if (id) {
-                  toast.success(
-                    "Campaign selected - now choose content type below"
-                  );
-                }
-              }}
-              label="Campaign *"
-              placeholder="Select a campaign..."
-              showAllOption={false}
-            />
+          <div className="mb-6 flex items-center justify-between">
+            <div>
+              <h1
+                className="text-3xl font-bold mb-2"
+                style={{ color: "var(--text-primary)" }}
+              >
+                Content Studio
+              </h1>
+              <p style={{ color: "var(--text-secondary)" }}>
+                Generate and manage all your campaign content in one place
+              </p>
+            </div>
             {campaignId && (
-              <div className="mt-3 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-                <p className="text-sm" style={{ color: "var(--text-primary)" }}>
-                  <span className="font-semibold">✓ Campaign selected!</span>{" "}
-                  Your content will be generated using this campaign's
-                  intelligence data.
+              <div className="text-right">
+                <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+                  Active Campaign
+                </p>
+                <p className="font-semibold" style={{ color: "var(--text-primary)" }}>
+                  ID: {campaignId}
                 </p>
               </div>
             )}
           </div>
 
-          {/* Content Type Selection */}
-          <div className="mb-8">
-            <h2
-              className="text-xl font-semibold mb-4"
-              style={{ color: "var(--text-primary)" }}
-            >
-              2. Choose Content Type
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {/* Text Content Card */}
-              <button
-                onClick={() => handleNavigate("text")}
-                disabled={!campaignId}
-                className={`card rounded-lg p-6 text-left transition-all hover:shadow-lg ${
-                  campaignId
-                    ? "hover:border-blue-500 cursor-pointer"
-                    : "opacity-50 cursor-not-allowed"
-                }`}
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
-                    <span className="text-3xl">✍️</span>
-                  </div>
-                  <svg
-                    className="w-6 h-6 text-blue-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
-                </div>
-                <h3
-                  className="text-xl font-semibold mb-2"
-                  style={{ color: "var(--text-primary)" }}
-                >
-                  Text Content
-                </h3>
-                <p
-                  className="text-sm mb-4"
-                  style={{ color: "var(--text-secondary)" }}
-                >
-                  Generate articles, emails, video scripts, social posts,
-                  landing pages, and ad copy with automatic compliance checking.
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 rounded text-xs">
-                    Articles
-                  </span>
-                  <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 rounded text-xs">
-                    Emails
-                  </span>
-                  <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 rounded text-xs">
-                    Video Scripts
-                  </span>
-                  <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 rounded text-xs">
-                    Social Posts
-                  </span>
-                  <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 rounded text-xs">
-                    Landing Pages
-                  </span>
-                  <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 rounded text-xs">
-                    Ad Copy
-                  </span>
-                </div>
-              </button>
-              {/* Image Content Card */}
-              <button
-                onClick={() => handleNavigate("images")}
-                disabled={!campaignId}
-                className={`card rounded-lg p-6 text-left transition-all hover:shadow-lg ${
-                  campaignId
-                    ? "hover:border-purple-500 cursor-pointer"
-                    : "opacity-50 cursor-not-allowed"
-                }`}
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-16 h-16 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center">
-                    <span className="text-3xl">🖼️</span>
-                  </div>
-                  <svg
-                    className="w-6 h-6 text-purple-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
-                </div>
-                <h3
-                  className="text-xl font-semibold mb-2"
-                  style={{ color: "var(--text-primary)" }}
-                >
-                  Image Content
-                </h3>
-                <p
-                  className="text-sm mb-4"
-                  style={{ color: "var(--text-secondary)" }}
-                >
-                  Generate marketing images using rotating AI platforms with
-                  various styles and aspect ratios.
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  <span className="px-2 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 rounded text-xs">
-                    Hero Images
-                  </span>
-                  <span className="px-2 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 rounded text-xs">
-                    Product Shots
-                  </span>
-                  <span className="px-2 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 rounded text-xs">
-                    Social Media
-                  </span>
-                  <span className="px-2 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 rounded text-xs">
-                    Ad Creatives
-                  </span>
-                  <span className="px-2 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 rounded text-xs">
-                    Infographics
-                  </span>
-                  <span className="px-2 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 rounded text-xs">
-                    Blog Features
-                  </span>
-                </div>
-              </button>
-              {/* Video Content Card */}
-              <button
-                onClick={() => handleNavigate("video")}
-                disabled={!campaignId}
-                className={`card rounded-lg p-6 text-left transition-all hover:shadow-lg ${
-                  campaignId
-                    ? "hover:border-red-500 cursor-pointer"
-                    : "opacity-50 cursor-not-allowed"
-                }`}
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-xl flex items-center justify-center">
-                    <span className="text-3xl">🎬</span>
-                  </div>
-                  <svg
-                    className="w-6 h-6 text-red-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
-                </div>
-                <h3
-                  className="text-xl font-semibold mb-2"
-                  style={{ color: "var(--text-primary)" }}
-                >
-                  Video Content
-                </h3>
-                <p
-                  className="text-sm mb-4"
-                  style={{ color: "var(--text-secondary)" }}
-                >
-                  Generate short-form videos (5-20s) from scripts, images, or
-                  slides using Luma AI for social media marketing.
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  <span className="px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 rounded text-xs">
-                    Text-to-Video
-                  </span>
-                  <span className="px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 rounded text-xs">
-                    Image-to-Video
-                  </span>
-                  <span className="px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 rounded text-xs">
-                    Slide Videos
-                  </span>
-                  <span className="px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 rounded text-xs">
-                    Marketing
-                  </span>
-                  <span className="px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 rounded text-xs">
-                    Educational
-                  </span>
-                  <span className="px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 rounded text-xs">
-                    Social Media
-                  </span>
-                </div>
-              </button>
-            </div>
-              {/* Slide-to-Video Card */}
-              <button
-                onClick={() => handleNavigate("slide-video")}
-                disabled={!campaignId}
-                className={`card rounded-lg p-6 text-left transition-all hover:shadow-lg ${
-                  campaignId
-                    ? "hover:border-green-500 cursor-pointer"
-                    : "opacity-50 cursor-not-allowed"
-                }`}
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center">
-                    <span className="text-3xl">🎞️</span>
-                  </div>
-                  <svg
-                    className="w-6 h-6 text-green-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
-                </div>
-                <h3
-                  className="text-xl font-semibold mb-2"
-                  style={{ color: "var(--text-primary)" }}
-                >
-                  Slide-to-Video
-                </h3>
-                <p
-                  className="text-sm mb-4"
-                  style={{ color: "var(--text-secondary)" }}
-                >
-                  Generate images from campaign intelligence, edit them, and create slide videos in a 3-step workflow.
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  <span className="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 rounded text-xs">
-                    Campaign Intelligence
-                  </span>
-                  <span className="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 rounded text-xs">
-                    Keyword Selection
-                  </span>
-                  <span className="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 rounded text-xs">
-                    Image Editor
-                  </span>
-                  <span className="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 rounded text-xs">
-                    Auto Video
-                  </span>
-                </div>
-              </button>
-          </div>
+          {/* Campaign Selector */}
+          <CampaignSelectorBar
+            campaignId={campaignId}
+            onSelectCampaign={handleSelectCampaign}
+          />
 
-          {/* Info Card */}
-          <div className="card rounded-lg p-6 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20">
-            <h3
-              className="text-lg font-semibold mb-3"
-              style={{ color: "var(--text-primary)" }}
-            >
-              How It Works
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="flex items-start space-x-3">
-                <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center flex-shrink-0 text-sm font-bold">
-                  1
-                </div>
-                <div>
-                  <p
-                    className="font-medium text-sm"
-                    style={{ color: "var(--text-primary)" }}
-                  >
-                    Select Campaign
-                  </p>
-                  <p
-                    className="text-xs"
-                    style={{ color: "var(--text-secondary)" }}
-                  >
-                    Content is generated using your campaign's intelligence data
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start space-x-3">
-                <div className="w-8 h-8 bg-purple-600 text-white rounded-full flex items-center justify-center flex-shrink-0 text-sm font-bold">
-                  2
-                </div>
-                <div>
-                  <p
-                    className="font-medium text-sm"
-                    style={{ color: "var(--text-primary)" }}
-                  >
-                    Choose Type
-                  </p>
-                  <p
-                    className="text-xs"
-                    style={{ color: "var(--text-secondary)" }}
-                  >
-                    Text for copy, Images for visuals, or Videos for social
-                    media
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start space-x-3">
-                <div className="w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center flex-shrink-0 text-sm font-bold">
-                  3
-                </div>
-                <div>
-                  <p
-                    className="font-medium text-sm"
-                    style={{ color: "var(--text-primary)" }}
-                  >
-                    Generate & Refine
-                  </p>
-                  <p
-                    className="text-xs"
-                    style={{ color: "var(--text-secondary)" }}
-                  >
-                    AI creates content based on your settings
-                  </p>
-                </div>
+          {/* Main Content */}
+          <div className="card rounded-lg overflow-hidden">
+            {/* Tab Navigation */}
+            <div className="border-b" style={{ borderColor: "var(--card-border)" }}>
+              <div className="flex">
+                <button
+                  onClick={() => handleTabChange("generate")}
+                  className={`px-6 py-4 font-medium transition ${
+                    activeTab === "generate"
+                      ? "border-b-2 border-blue-600"
+                      : ""
+                  }`}
+                  style={{
+                    color: activeTab === "generate"
+                      ? "var(--text-primary)"
+                      : "var(--text-secondary)",
+                  }}
+                >
+                  Generate Content
+                </button>
+                <button
+                  onClick={() => handleTabChange("library")}
+                  className={`px-6 py-4 font-medium transition ${
+                    activeTab === "library"
+                      ? "border-b-2 border-blue-600"
+                      : ""
+                  }`}
+                  style={{
+                    color: activeTab === "library"
+                      ? "var(--text-primary)"
+                      : "var(--text-secondary)",
+                  }}
+                >
+                  Content Library
+                </button>
               </div>
             </div>
+
+            {/* Tab Content */}
+            {activeTab === "generate" ? (
+              <div>
+                {/* Content Type Tabs */}
+                <div className="border-b" style={{ borderColor: "var(--card-border)" }}>
+                  <div className="flex space-x-1 p-2">
+                    <button
+                      onClick={() => handleContentTypeChange("text")}
+                      className={`px-4 py-2 rounded-lg font-medium transition flex items-center space-x-2 ${
+                        activeContentType === "text"
+                          ? "bg-blue-600 text-white"
+                          : "hover:bg-gray-100 dark:hover:bg-gray-800"
+                      }`}
+                      style={{
+                        color: activeContentType === "text" ? "white" : "var(--text-primary)",
+                      }}
+                    >
+                      <span>✍️</span>
+                      <span>Text</span>
+                    </button>
+                    <button
+                      onClick={() => handleContentTypeChange("images")}
+                      className={`px-4 py-2 rounded-lg font-medium transition flex items-center space-x-2 ${
+                        activeContentType === "images"
+                          ? "bg-purple-600 text-white"
+                          : "hover:bg-gray-100 dark:hover:bg-gray-800"
+                      }`}
+                      style={{
+                        color: activeContentType === "images" ? "white" : "var(--text-primary)",
+                      }}
+                    >
+                      <span>🖼️</span>
+                      <span>Images</span>
+                    </button>
+                    <button
+                      onClick={() => handleContentTypeChange("video")}
+                      className={`px-4 py-2 rounded-lg font-medium transition flex items-center space-x-2 ${
+                        activeContentType === "video"
+                          ? "bg-red-600 text-white"
+                          : "hover:bg-gray-100 dark:hover:bg-gray-800"
+                      }`}
+                      style={{
+                        color: activeContentType === "video" ? "white" : "var(--text-primary)",
+                      }}
+                    >
+                      <span>🎬</span>
+                      <span>Video</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Content Type Panels */}
+                <div className="p-6">
+                  {!campaignId ? (
+                    <div className="text-center py-12">
+                      <p style={{ color: "var(--text-secondary)" }}>
+                        Please select a campaign above to generate content
+                      </p>
+                    </div>
+                  ) : activeContentType === "text" ? (
+                    <ContentStudioTextTab campaignId={campaignId} />
+                  ) : activeContentType === "images" ? (
+                    <ContentStudioImagesTab campaignId={campaignId} />
+                  ) : (
+                    <ContentStudioVideoTab campaignId={campaignId} />
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="p-6">
+                <ContentStudioLibraryTab
+                  campaignId={campaignId}
+                  onGenerateFromContent={handleGenerateFromLibrary}
+                />
+              </div>
+            )}
           </div>
         </div>
       </div>
