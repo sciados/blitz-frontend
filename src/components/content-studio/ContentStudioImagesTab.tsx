@@ -42,6 +42,17 @@ export function ContentStudioImagesTab({ campaignId }: ContentStudioImagesTabPro
   const [imageStyle, setImageStyle] = useState<ImageStyle>("photorealistic");
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>("1:1");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [selectedKeywords, setSelectedKeywords] = useState<{
+    ingredients: string[];
+    features: string[];
+    benefits: string[];
+    pain_points: string[];
+  }>({
+    ingredients: [],
+    features: [],
+    benefits: [],
+    pain_points: [],
+  });
 
   // Fetch images for this campaign
   const { data, refetch } = useQuery({
@@ -53,6 +64,17 @@ export function ContentStudioImagesTab({ campaignId }: ContentStudioImagesTabPro
   });
 
   const images = data?.images || [];
+
+  // Fetch available keywords from campaign intelligence
+  const { data: keywordsData, isLoading: keywordsLoading } = useQuery({
+    queryKey: ["campaign-keywords", campaignId],
+    queryFn: async () => {
+      const response = await api.post("/api/prompt/keywords", {
+        campaign_id: campaignId,
+      });
+      return response.data;
+    },
+  });
 
   const handleGenerate = async () => {
     try {
@@ -161,6 +183,160 @@ export function ContentStudioImagesTab({ campaignId }: ContentStudioImagesTabPro
                 </option>
               ))}
             </select>
+          </div>
+
+          {/* Keywords Selection */}
+          <div className="mb-6">
+            <label
+              className="block text-sm font-medium mb-2"
+              style={{ color: "var(--text-primary)" }}
+            >
+              Keywords (Optional)
+            </label>
+            {keywordsLoading ? (
+              <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+                Loading keywords...
+              </p>
+            ) : keywordsData ? (
+              <div className="space-y-4">
+                {/* Ingredients */}
+                {keywordsData.ingredients && keywordsData.ingredients.length > 0 && (
+                  <div>
+                    <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-secondary)" }}>
+                      Ingredients
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {keywordsData.ingredients.map((ingredient: string) => (
+                        <button
+                          key={ingredient}
+                          onClick={() => {
+                            setSelectedKeywords((prev) => ({
+                              ...prev,
+                              ingredients: prev.ingredients.includes(ingredient)
+                                ? prev.ingredients.filter((i) => i !== ingredient)
+                                : [...prev.ingredients, ingredient],
+                            }));
+                          }}
+                          className={`px-3 py-1 rounded-full text-sm border ${
+                            selectedKeywords.ingredients.includes(ingredient)
+                              ? "bg-purple-500 text-white border-purple-500"
+                              : "bg-[var(--bg-secondary)] text-[var(--text-primary)] border-[var(--border-color)] hover:border-purple-500"
+                          }`}
+                        >
+                          {ingredient}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Features */}
+                {keywordsData.features && keywordsData.features.length > 0 && (
+                  <div>
+                    <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-secondary)" }}>
+                      Features
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {keywordsData.features.map((feature: string) => (
+                        <button
+                          key={feature}
+                          onClick={() => {
+                            setSelectedKeywords((prev) => ({
+                              ...prev,
+                              features: prev.features.includes(feature)
+                                ? prev.features.filter((f) => f !== feature)
+                                : [...prev.features, feature],
+                            }));
+                          }}
+                          className={`px-3 py-1 rounded-full text-sm border ${
+                            selectedKeywords.features.includes(feature)
+                              ? "bg-purple-500 text-white border-purple-500"
+                              : "bg-[var(--bg-secondary)] text-[var(--text-primary)] border-[var(--border-color)] hover:border-purple-500"
+                          }`}
+                        >
+                          {feature}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Benefits */}
+                {keywordsData.benefits && keywordsData.benefits.length > 0 && (
+                  <div>
+                    <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-secondary)" }}>
+                      Benefits
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {keywordsData.benefits.map((benefit: string) => (
+                        <button
+                          key={benefit}
+                          onClick={() => {
+                            setSelectedKeywords((prev) => ({
+                              ...prev,
+                              benefits: prev.benefits.includes(benefit)
+                                ? prev.benefits.filter((b) => b !== benefit)
+                                : [...prev.benefits, benefit],
+                            }));
+                          }}
+                          className={`px-3 py-1 rounded-full text-sm border ${
+                            selectedKeywords.benefits.includes(benefit)
+                              ? "bg-purple-500 text-white border-purple-500"
+                              : "bg-[var(--bg-secondary)] text-[var(--text-primary)] border-[var(--border-color)] hover:border-purple-500"
+                          }`}
+                        >
+                          {benefit}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Pain Points */}
+                {keywordsData.pain_points && keywordsData.pain_points.length > 0 && (
+                  <div>
+                    <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-secondary)" }}>
+                      Pain Points
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {keywordsData.pain_points.map((pain: string) => (
+                        <button
+                          key={pain}
+                          onClick={() => {
+                            setSelectedKeywords((prev) => ({
+                              ...prev,
+                              pain_points: prev.pain_points.includes(pain)
+                                ? prev.pain_points.filter((p) => p !== pain)
+                                : [...prev.pain_points, pain],
+                            }));
+                          }}
+                          className={`px-3 py-1 rounded-full text-sm border ${
+                            selectedKeywords.pain_points.includes(pain)
+                              ? "bg-purple-500 text-white border-purple-500"
+                              : "bg-[var(--bg-secondary)] text-[var(--text-primary)] border-[var(--border-color)] hover:border-purple-500"
+                          }`}
+                        >
+                          {pain}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {!keywordsData.ingredients?.length &&
+                 !keywordsData.features?.length &&
+                 !keywordsData.benefits?.length &&
+                 !keywordsData.pain_points?.length && (
+                  <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
+                    No keywords available. Compile campaign intelligence to get keyword suggestions.
+                  </p>
+                )}
+              </div>
+            ) : (
+              <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+                Compile campaign intelligence to enable keyword selection.
+              </p>
+            )}
           </div>
 
           {/* Generate Button */}

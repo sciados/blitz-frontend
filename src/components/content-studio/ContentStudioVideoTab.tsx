@@ -78,6 +78,20 @@ export function ContentStudioVideoTab({ campaignId }: ContentStudioVideoTabProps
   const videoScripts = scriptData || [];
   const campaignImages = imagesData?.images || [];
 
+  // Filter video scripts by the selected duration
+  const filteredVideoScripts = videoScripts.filter((script: any) => {
+    // Try to match the script's length with the selected duration
+    // The script content_data might have length information
+    if (script.content_data && script.content_data.length) {
+      const scriptLength = script.content_data.length;
+      // Check if the script length matches the selected duration (within a reasonable range)
+      const targetDuration = duration * 10; // rough word count estimate
+      return Math.abs(scriptLength - targetDuration) < targetDuration * 0.5;
+    }
+    // If no length data, include all scripts
+    return true;
+  });
+
   // Handle script selection
   const handleScriptSelect = (scriptId: number, scriptText: string) => {
     setSelectedScriptId(scriptId);
@@ -386,7 +400,7 @@ export function ContentStudioVideoTab({ campaignId }: ContentStudioVideoTabProps
           </div>
 
           {/* Video Script Selection */}
-          {videoScripts.length > 0 && (
+          {filteredVideoScripts.length > 0 && (
             <div className="mb-4">
               <div className="flex items-center justify-between mb-2">
                 <label
@@ -409,7 +423,7 @@ export function ContentStudioVideoTab({ campaignId }: ContentStudioVideoTabProps
                 onChange={(e) => {
                   const scriptId = Number(e.target.value);
                   if (scriptId) {
-                    const selectedScript = videoScripts.find((s: any) => s.id === scriptId);
+                    const selectedScript = filteredVideoScripts.find((s: any) => s.id === scriptId);
                     if (selectedScript) {
                       handleScriptSelect(scriptId, selectedScript.content_data.text);
                     }
@@ -423,13 +437,31 @@ export function ContentStudioVideoTab({ campaignId }: ContentStudioVideoTabProps
                 }}
               >
                 <option value="">Choose a video script...</option>
-                {videoScripts.map((script: any) => (
+                {filteredVideoScripts.map((script: any) => (
                   <option key={script.id} value={script.id}>
                     {script.content_data.text.substring(0, 60)}
                     {script.content_data.text.length > 60 ? "..." : ""}
                   </option>
                 ))}
               </select>
+            </div>
+          )}
+
+          {/* No matching scripts message */}
+          {videoScripts.length > 0 && filteredVideoScripts.length === 0 && (
+            <div className="mb-4 p-3 rounded-lg" style={{ backgroundColor: "var(--bg-secondary)" }}>
+              <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+                No {duration}s video scripts found.{" "}
+                <button
+                  onClick={() => {
+                    setDuration(duration === 5 ? 10 : duration === 10 ? 15 : 20);
+                  }}
+                  className="text-blue-600 hover:underline"
+                >
+                  Try {duration === 5 ? 10 : duration === 10 ? 15 : 20}s
+                </button>{" "}
+                or write a custom script below.
+              </p>
             </div>
           )}
 
