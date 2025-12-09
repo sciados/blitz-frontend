@@ -84,6 +84,7 @@ export function ContentStudioImagesTab({ campaignId }: ContentStudioImagesTabPro
         image_type: imageType,
         style: imageStyle,
         aspect_ratio: aspectRatio,
+        keywords: selectedKeywords,
       });
 
       toast.success("Image generated successfully!");

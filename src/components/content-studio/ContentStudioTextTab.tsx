@@ -172,6 +172,7 @@ export function ContentStudioTextTab({ campaignId }: ContentStudioTextTabProps) 
         content_type: contentType,
         marketing_angle: marketingAngle,
         length,
+        keywords: selectedKeywords,
       });
 
       setGeneratedContent(response.data);

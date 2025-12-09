@@ -1324,7 +1324,9 @@ function GettingStartedJourney() {
   const { data: contentData } = useQuery({
     queryKey: ["content-count"],
     queryFn: async () => {
-      const response = await api.get("/api/content").catch(() => ({ data: [] }));
+      const response = await api
+        .get("/api/content")
+        .catch(() => ({ data: [] }));
       return { contents: response.data || [] };
     },
   });
@@ -1335,8 +1337,8 @@ function GettingStartedJourney() {
   const steps = [
     {
       id: 1,
-      title: "Browse Product Library",
-      description: "Explore products, get affiliate links & create campaigns",
+      title: "Browse Products",
+      description: "Explore products, get links & create campaigns",
       icon: "📦",
       href: "/products" as const,
       color: "purple",
@@ -1353,7 +1355,9 @@ function GettingStartedJourney() {
       color: "indigo",
       disabled: campaigns.length === 0,
       active: campaigns.length > 0,
-      requirement: `${campaigns.length} campaign${campaigns.length !== 1 ? 's' : ''} created`,
+      requirement: `${campaigns.length} campaign${
+        campaigns.length !== 1 ? "s" : ""
+      } created`,
     },
     {
       id: 3,
@@ -1375,7 +1379,9 @@ function GettingStartedJourney() {
       color: "pink",
       disabled: contents.length === 0,
       active: contents.length > 0,
-      requirement: `${contents.length} content piece${contents.length !== 1 ? 's' : ''} generated`,
+      requirement: `${contents.length} content piece${
+        contents.length !== 1 ? "s" : ""
+      } generated`,
     },
   ];
 
@@ -1495,7 +1501,8 @@ function GettingStartedJourney() {
                         </p>
                         {step.requirement && (
                           <p className="text-xs text-orange-600 dark:text-orange-400 font-medium">
-                            🔒 Complete Step {step.id - 1} first: {step.requirement}
+                            🔒 Complete Step {step.id - 1} first:{" "}
+                            {step.requirement}
                           </p>
                         )}
                       </div>

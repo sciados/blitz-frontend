@@ -135,7 +135,7 @@ export default function AffiliateMarketersPage() {
     {
       step: 2,
       icon: "📚",
-      title: "Browse Product Library",
+      title: "Browse Products",
       time: "10 minutes",
       description: "Find products with great commission rates",
       details: [
@@ -380,7 +380,9 @@ export default function AffiliateMarketersPage() {
 
               <div className="p-6">
                 <div className="mb-4">
-                  <h4 className="font-semibold text-white mb-3">What you'll do:</h4>
+                  <h4 className="font-semibold text-white mb-3">
+                    What you'll do:
+                  </h4>
                   <ul className="space-y-2">
                     {item.details.map((detail, i) => (
                       <li
