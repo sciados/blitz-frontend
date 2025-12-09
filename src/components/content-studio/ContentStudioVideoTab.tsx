@@ -589,7 +589,7 @@ export function ContentStudioVideoTab({ campaignId }: ContentStudioVideoTabProps
                           View Video
                         </a>
                       )}
-                      {video.status === "completed" && !video.saved_to_r2 && (
+                      {!video.saved_to_r2 && (
                         <button
                           onClick={() => {
                             api.post("/api/video/save-to-library", { video_id: video.id })
@@ -601,7 +601,7 @@ export function ContentStudioVideoTab({ campaignId }: ContentStudioVideoTabProps
                           }}
                           className="text-sm px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded transition"
                         >
-                          Save to Library
+                          {video.status === "completed" ? "Save to Library" : "Refresh & Save"}
                         </button>
                       )}
                       {video.saved_to_r2 && (
