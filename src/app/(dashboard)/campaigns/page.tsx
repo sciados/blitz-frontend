@@ -5,6 +5,7 @@ import { CreateCampaignModal } from "src/components/CreateCampaignModal";
 import { useState, useEffect, useMemo } from "react";
 import { api } from "src/lib/appClient";
 import { Campaign } from "src/lib/types";
+import { getRoleFromToken } from "src/lib/auth";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Search, Filter, SortAsc, SortDesc, ChevronDown, Grid, List } from "lucide-react";
@@ -20,6 +21,10 @@ export default function CampaignsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [preselectedProductId, setPreselectedProductId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // Check if user is Pro Marketer (affiliate with pro tier)
+  const userRole = getRoleFromToken();
+  const isProMarketer = userRole === "affiliate"; // TODO: Check affiliate_tier when available
 
   // Sorting, filtering, and search state
   const [searchQuery, setSearchQuery] = useState("");
@@ -145,25 +150,27 @@ export default function CampaignsPage() {
           <h1 className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>
             Campaigns
           </h1>
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition flex items-center space-x-2"
-          >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+          {isProMarketer && (
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition flex items-center space-x-2"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 4v16m8-8H4"
-              />
-            </svg>
-            <span>Create Campaign</span>
-          </button>
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 4v16m8-8H4"
+                />
+              </svg>
+              <span>Create Campaign</span>
+            </button>
+          )}
         </div>
 
         {/* Search, Filter, and Sort Controls */}
@@ -310,12 +317,14 @@ export default function CampaignsPage() {
             <p className="mb-4" style={{ color: 'var(--text-secondary)' }}>
               Create your first campaign to get started
             </p>
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition"
-            >
-              Create Your First Campaign
-            </button>
+            {isProMarketer && (
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition"
+              >
+                Create Your First Campaign
+              </button>
+            )}
           </div>
         ) : filteredAndSortedCampaigns.length === 0 ? (
           <div className="card rounded-lg p-12 text-center">
