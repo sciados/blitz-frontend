@@ -33,6 +33,9 @@ export function ContentStudioVideoTab({ campaignId }: ContentStudioVideoTabProps
   const [duration, setDuration] = useState(5);
   const [script, setScript] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [selectedScriptId, setSelectedScriptId] = useState<number | null>(null);
+  const [selectedImageId, setSelectedImageId] = useState<number | null>(null);
+  const [selectedImageUrl, setSelectedImageUrl] = useState<string>("");
 
   // Fetch videos for this campaign
   const { data, refetch } = useQuery({
@@ -43,22 +46,85 @@ export function ContentStudioVideoTab({ campaignId }: ContentStudioVideoTabProps
     },
   });
 
+  // Fetch video scripts for this campaign
+  const { data: scriptData } = useQuery({
+    queryKey: ["video-scripts", campaignId],
+    queryFn: async () => {
+      const response = await api.get(`/api/content/campaign/${campaignId}`);
+      // Filter for video scripts only
+      const scripts = response.data.filter((content: any) => content.content_type === "video_script");
+      return scripts;
+    },
+  });
+
+  // Fetch images for this campaign
+  const { data: imagesData } = useQuery({
+    queryKey: ["campaign-images", campaignId],
+    queryFn: async () => {
+      const response = await api.get(`/api/images/campaign/${campaignId}`);
+      return response.data;
+    },
+  });
+
   const videos = data?.videos || [];
+  const videoScripts = scriptData || [];
+  const campaignImages = imagesData?.images || [];
+
+  // Handle script selection
+  const handleScriptSelect = (scriptId: number, scriptText: string) => {
+    setSelectedScriptId(scriptId);
+    setScript(scriptText);
+  };
+
+  // Clear script selection
+  const handleClearScript = () => {
+    setSelectedScriptId(null);
+    setScript("");
+  };
+
+  // Handle image selection
+  const handleImageSelect = (imageId: number, imageUrl: string) => {
+    setSelectedImageId(imageId);
+    setSelectedImageUrl(imageUrl);
+  };
+
+  // Clear image selection
+  const handleClearImage = () => {
+    setSelectedImageId(null);
+    setSelectedImageUrl("");
+  };
+
+  // Reset form when generation mode changes
+  const handleGenerationModeChange = (mode: "text_to_video" | "image_to_video") => {
+    setGenerationMode(mode);
+    handleClearScript();
+    handleClearImage();
+    setScript("");
+  };
 
   const handleGenerate = async () => {
     try {
       setIsGenerating(true);
-      const response = await api.post("/api/video/generate", {
+      const requestBody: any = {
         campaign_id: campaignId,
         generation_mode: generationMode,
         style,
         aspect_ratio: aspectRatio,
         duration,
         script,
-      });
+      };
+
+      // Add image URL for image-to-video generation
+      if (generationMode === "image_to_video" && selectedImageUrl) {
+        requestBody.image_url = selectedImageUrl;
+      }
+
+      const response = await api.post("/api/video/generate", requestBody);
 
       toast.success("Video generation started!");
       setScript("");
+      handleClearScript();
+      handleClearImage();
       refetch();
     } catch (error: any) {
       toast.error(error?.response?.data?.detail || "Failed to generate video");
@@ -89,7 +155,7 @@ export function ContentStudioVideoTab({ campaignId }: ContentStudioVideoTabProps
             </label>
             <select
               value={generationMode}
-              onChange={(e) => setGenerationMode(e.target.value as "text_to_video" | "image_to_video")}
+              onChange={(e) => handleGenerationModeChange(e.target.value as "text_to_video" | "image_to_video")}
               className="w-full px-3 py-2 rounded-lg border"
               style={{
                 borderColor: "var(--card-border)",
@@ -101,6 +167,137 @@ export function ContentStudioVideoTab({ campaignId }: ContentStudioVideoTabProps
               <option value="image_to_video">Image to Video</option>
             </select>
           </div>
+
+          {/* Image Selection - Only show for Image to Video mode */}
+          {generationMode === "image_to_video" && (
+            <div className="mb-4">
+              <div className="flex items-center justify-between mb-2">
+                <label
+                  className="block text-sm font-medium"
+                  style={{ color: "var(--text-primary)" }}
+                >
+                  Select Source Image
+                </label>
+                {selectedImageId && (
+                  <button
+                    onClick={handleClearImage}
+                    className="text-xs text-blue-600 hover:text-blue-800"
+                  >
+                    Clear Selection
+                  </button>
+                )}
+              </div>
+
+              {/* Campaign Images Grid */}
+              {campaignImages.length > 0 ? (
+                <div className="grid grid-cols-3 gap-2 mb-3 max-h-48 overflow-y-auto">
+                  {campaignImages.map((image: any) => (
+                    <div
+                      key={image.id}
+                      onClick={() => handleImageSelect(image.id, image.image_url)}
+                      className={`relative aspect-square rounded-lg overflow-hidden cursor-pointer border-2 transition ${
+                        selectedImageId === image.id
+                          ? "border-blue-500 ring-2 ring-blue-200"
+                          : "border-gray-300 dark:border-gray-600 hover:border-blue-400"
+                      }`}
+                    >
+                      <img
+                        src={image.image_url}
+                        alt={image.prompt}
+                        className="w-full h-full object-cover"
+                      />
+                      {selectedImageId === image.id && (
+                        <div className="absolute inset-0 bg-blue-600/30 flex items-center justify-center">
+                          <svg
+                            className="w-6 h-6 text-white"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M5 13l4 4L19 7"
+                            />
+                          </svg>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="mb-3 p-3 bg-gray-100 dark:bg-gray-800 rounded-lg text-center">
+                  <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
+                    No campaign images found
+                  </p>
+                </div>
+              )}
+
+              {/* Upload Image Option */}
+              <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 text-center hover:border-blue-400 transition">
+                <input
+                  type="file"
+                  id="image-upload"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      // Create a temporary URL for preview
+                      const imageUrl = URL.createObjectURL(file);
+                      setSelectedImageId(-1); // Use -1 to indicate uploaded image
+                      setSelectedImageUrl(imageUrl);
+                      toast.success("Image selected for upload!");
+                    }
+                  }}
+                />
+                <label htmlFor="image-upload" className="cursor-pointer">
+                  <svg
+                    className="w-6 h-6 mx-auto mb-2"
+                    style={{ color: "var(--text-secondary)" }}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                    />
+                  </svg>
+                  <p className="text-sm" style={{ color: "var(--text-primary)" }}>
+                    Click to upload an image
+                  </p>
+                  <p className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>
+                    PNG, JPG, or GIF
+                  </p>
+                </label>
+              </div>
+
+              {/* Selected Image Preview */}
+              {selectedImageUrl && (
+                <div className="mt-3">
+                  <p className="text-xs mb-1" style={{ color: "var(--text-secondary)" }}>
+                    Selected Image:
+                  </p>
+                  <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800">
+                    <img
+                      src={selectedImageUrl}
+                      alt="Selected"
+                      className="w-full h-full object-cover"
+                    />
+                    {selectedImageId === -1 && (
+                      <div className="absolute top-2 right-2 bg-blue-600 text-white px-2 py-1 rounded text-xs">
+                        Uploaded
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Style */}
           <div className="mb-4">
@@ -180,6 +377,54 @@ export function ContentStudioVideoTab({ campaignId }: ContentStudioVideoTabProps
             </select>
           </div>
 
+          {/* Video Script Selection */}
+          {videoScripts.length > 0 && (
+            <div className="mb-4">
+              <div className="flex items-center justify-between mb-2">
+                <label
+                  className="block text-sm font-medium"
+                  style={{ color: "var(--text-primary)" }}
+                >
+                  Or Select an Existing Video Script
+                </label>
+                {selectedScriptId && (
+                  <button
+                    onClick={handleClearScript}
+                    className="text-xs text-blue-600 hover:text-blue-800"
+                  >
+                    Clear Selection
+                  </button>
+                )}
+              </div>
+              <select
+                value={selectedScriptId || ""}
+                onChange={(e) => {
+                  const scriptId = Number(e.target.value);
+                  if (scriptId) {
+                    const selectedScript = videoScripts.find((s: any) => s.id === scriptId);
+                    if (selectedScript) {
+                      handleScriptSelect(scriptId, selectedScript.content_data.text);
+                    }
+                  }
+                }}
+                className="w-full px-3 py-2 rounded-lg border text-sm"
+                style={{
+                  borderColor: "var(--card-border)",
+                  backgroundColor: "var(--bg-primary)",
+                  color: "var(--text-primary)",
+                }}
+              >
+                <option value="">Choose a video script...</option>
+                {videoScripts.map((script: any) => (
+                  <option key={script.id} value={script.id}>
+                    {script.content_data.text.substring(0, 60)}
+                    {script.content_data.text.length > 60 ? "..." : ""}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
           {/* Script */}
           <div className="mb-6">
             <label
@@ -190,7 +435,13 @@ export function ContentStudioVideoTab({ campaignId }: ContentStudioVideoTabProps
             </label>
             <textarea
               value={script}
-              onChange={(e) => setScript(e.target.value)}
+              onChange={(e) => {
+                setScript(e.target.value);
+                // Clear selection if user manually edits
+                if (selectedScriptId) {
+                  setSelectedScriptId(null);
+                }
+              }}
               placeholder="Describe the video you want to create..."
               className="w-full px-3 py-2 rounded-lg border h-32 resize-none"
               style={{
@@ -199,12 +450,21 @@ export function ContentStudioVideoTab({ campaignId }: ContentStudioVideoTabProps
                 color: "var(--text-primary)",
               }}
             />
+            {selectedScriptId && (
+              <p className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>
+                ✓ Using selected video script. You can edit above or select a different one.
+              </p>
+            )}
           </div>
 
           {/* Generate Button */}
           <button
             onClick={handleGenerate}
-            disabled={isGenerating || !script.trim()}
+            disabled={
+              isGenerating ||
+              (generationMode === "text_to_video" && !script.trim()) ||
+              (generationMode === "image_to_video" && !selectedImageUrl)
+            }
             className="w-full px-4 py-3 bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white rounded-lg font-medium transition"
           >
             {isGenerating ? "Generating..." : "Generate Video"}
