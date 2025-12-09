@@ -523,13 +523,27 @@ export function ContentStudioVideoTab({ campaignId }: ContentStudioVideoTabProps
                 className="card rounded-lg p-6 hover:border-red-500 transition"
               >
                 <div className="flex items-start space-x-4">
-                  <div className="w-48 h-28 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
+                  <div className="w-48 h-28 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden relative">
                     {video.thumbnail_url ? (
                       <img
                         src={video.thumbnail_url}
                         alt="Video thumbnail"
                         className="w-full h-full object-cover"
                       />
+                    ) : video.video_url ? (
+                      <div className="flex flex-col items-center justify-center">
+                        <svg
+                          className="w-12 h-12 mb-2"
+                          style={{ color: "var(--text-secondary)" }}
+                          fill="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path d="M8 5v14l11-7z" />
+                        </svg>
+                        <span className="text-xs" style={{ color: "var(--text-secondary)" }}>
+                          Video Ready
+                        </span>
+                      </div>
                     ) : (
                       <span style={{ color: "var(--text-secondary)" }}>
                         No preview
@@ -578,7 +592,7 @@ export function ContentStudioVideoTab({ campaignId }: ContentStudioVideoTabProps
                       {video.prompt}
                     </p>
 
-                    <div className="flex items-center space-x-3">
+                    <div className="flex items-center space-x-3 flex-wrap">
                       {video.status === "completed" && video.video_url && (
                         <a
                           href={video.video_url}
@@ -587,6 +601,15 @@ export function ContentStudioVideoTab({ campaignId }: ContentStudioVideoTabProps
                           className="text-sm px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded transition"
                         >
                           View Video
+                        </a>
+                      )}
+                      {video.saved_to_r2 && (
+                        <a
+                          href={video.video_url}
+                          download
+                          className="text-sm px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded transition"
+                        >
+                          Download
                         </a>
                       )}
                       {!video.saved_to_r2 && (
@@ -605,9 +628,21 @@ export function ContentStudioVideoTab({ campaignId }: ContentStudioVideoTabProps
                         </button>
                       )}
                       {video.saved_to_r2 && (
-                        <span className="text-sm px-3 py-1 bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 rounded">
-                          ✓ Saved
-                        </span>
+                        <button
+                          onClick={() => {
+                            if (confirm("Are you sure you want to delete this video? This action cannot be undone.")) {
+                              api.delete(`/api/video/${video.id}`)
+                                .then(() => {
+                                  toast.success("Video deleted successfully!");
+                                  refetch();
+                                })
+                                .catch(() => toast.error("Failed to delete video"));
+                            }
+                          }}
+                          className="text-sm px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded transition"
+                        >
+                          Delete
+                        </button>
                       )}
                     </div>
                   </div>
