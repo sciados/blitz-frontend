@@ -238,6 +238,63 @@ export function ContentStudioLibraryTab({ campaignId, onGenerateFromContent }: C
                           View Full Size →
                         </a>
                       )}
+                      {/* Action Buttons */}
+                      <div className="flex items-center gap-2 mt-3">
+                        <button
+                          onClick={() => {
+                            const link = document.createElement('a');
+                            link.href = item.data.image_url;
+                            link.download = `blitz-${item.data.image_type}-${item.data.id}.png`;
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                          }}
+                          className="text-xs px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg transition flex items-center gap-1"
+                        >
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                          </svg>
+                          Download
+                        </button>
+                        <button
+                          onClick={() => {
+                            // Generate similar image using the same prompt
+                            onGenerateFromContent("images");
+                          }}
+                          className="text-xs px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition flex items-center gap-1"
+                        >
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                          </svg>
+                          Similar
+                        </button>
+                        <button
+                          onClick={() => {
+                            // Generate video from this image
+                            onGenerateFromContent("video");
+                          }}
+                          className="text-xs px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg transition flex items-center gap-1"
+                        >
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                          </svg>
+                          Video
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (confirm("Are you sure you want to delete this image?")) {
+                              // TODO: Implement delete functionality
+                              console.log("Delete image:", item.data.id);
+                            }
+                          }}
+                          className="text-xs px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg transition flex items-center gap-1 ml-auto"
+                        >
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                          Delete
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
