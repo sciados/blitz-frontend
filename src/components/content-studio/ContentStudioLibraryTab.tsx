@@ -48,7 +48,7 @@ export function ContentStudioLibraryTab({ campaignId, onGenerateFromContent }: C
     enabled: true, // Always enabled, we'll filter client-side
   });
 
-  const allContent = contentData?.contents || [];
+  const allContent = contentData || [];
   const allImages = imagesData?.images || [];
   const allVideos = videosData?.videos || [];
 

@@ -55,10 +55,11 @@ export default function ContentLibraryPage() {
   const [allContent, setAllContent] = useState<GeneratedContent[]>([]);
 
   // Content Library Tab State
-  const [activeLibraryTab, setActiveLibraryTab] = useState<"text" | "images">(
+  const [activeLibraryTab, setActiveLibraryTab] = useState<"text" | "images" | "videos">(
     "text"
   );
   const [allImages, setAllImages] = useState<GeneratedImage[]>([]);
+  const [allVideos, setAllVideos] = useState<any[]>([]);
 
   // Modal state for library image viewer
   const [selectedLibraryImage, setSelectedLibraryImage] =
@@ -114,12 +115,29 @@ export default function ContentLibraryPage() {
     // Remove enabled condition so images load immediately with text content
   });
 
+  // Query to fetch videos for the library
+  const { refetch: refetchVideos } = useQuery({
+    queryKey: ["all-videos"],
+    queryFn: async () => {
+      const { data } = await api.get("/api/video/library");
+      setAllVideos(data.videos || []);
+      return data.videos || [];
+    },
+  });
+
   // Refetch images when tab changes to images (for manual refresh if needed)
   useEffect(() => {
     if (activeLibraryTab === "images") {
       refetchImages();
     }
   }, [activeLibraryTab, refetchImages]);
+
+  // Refetch videos when tab changes to videos (for manual refresh if needed)
+  useEffect(() => {
+    if (activeLibraryTab === "videos") {
+      refetchVideos();
+    }
+  }, [activeLibraryTab, refetchVideos]);
 
   // Filter content based on selected filters
   const filteredContent = allContent.filter((content) => {
@@ -151,6 +169,13 @@ export default function ContentLibraryPage() {
   // Filter images based on campaign
   const filteredImages = allImages.filter((image) => {
     if (filterCampaignId && image.campaign_id !== filterCampaignId)
+      return false;
+    return true;
+  });
+
+  // Filter videos based on campaign
+  const filteredVideos = allVideos.filter((video) => {
+    if (filterCampaignId && video.campaign_id !== filterCampaignId)
       return false;
     return true;
   });
@@ -359,6 +384,16 @@ export default function ContentLibraryPage() {
             >
               🖼️ Images ({allImages.length})
             </button>
+            <button
+              onClick={() => setActiveLibraryTab("videos")}
+              className={`px-4 py-2 rounded-lg transition font-medium ${
+                activeLibraryTab === "videos"
+                  ? "bg-red-600 text-white shadow-sm"
+                  : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+              }`}
+            >
+              🎬 Videos ({allVideos.length})
+            </button>
           </div>
 
           {/* Tab-Specific Filters and Stats */}
@@ -490,8 +525,30 @@ export default function ContentLibraryPage() {
                 </div>
               </div>
             </>
-          ) : (
+          ) : activeLibraryTab === "images" ? (
             /* Image Filters */
+            <div className="card rounded-lg p-6 mb-6">
+              <h2
+                className="text-lg font-semibold mb-4"
+                style={{ color: "var(--text-primary)" }}
+              >
+                Filters
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Campaign Filter */}
+                <div>
+                  <CampaignSelector
+                    selectedCampaignId={filterCampaignId}
+                    onSelect={setFilterCampaignId}
+                    label="Campaign"
+                    placeholder="All Campaigns"
+                    showAllOption={true}
+                  />
+                </div>
+              </div>
+            </div>
+          ) : (
+            /* Video Filters */
             <div className="card rounded-lg p-6 mb-6">
               <h2
                 className="text-lg font-semibold mb-4"
@@ -586,7 +643,7 @@ export default function ContentLibraryPage() {
                 </>
               )}
             </>
-          ) : (
+          ) : activeLibraryTab === "images" ? (
             /* Image Grid */
             <>
               {filteredImages.length > 0 ? (
@@ -682,6 +739,135 @@ export default function ContentLibraryPage() {
                     className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition"
                   >
                     Generate Images
+                  </button>
+                </div>
+              )}
+            </>
+          ) : (
+            /* Video Grid */
+            <>
+              {filteredVideos.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {filteredVideos.map((video, index) => (
+                    <div
+                      key={video.id}
+                      className="card rounded-lg overflow-hidden group cursor-pointer hover:shadow-lg transition-shadow"
+                    >
+                      {/* Video Thumbnail */}
+                      <div className="relative bg-gray-100 dark:bg-gray-800 aspect-video">
+                        {video.thumbnail_url ? (
+                          <img
+                            src={video.thumbnail_url}
+                            alt={video.prompt}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <svg
+                              className="w-16 h-16"
+                              style={{ color: "var(--text-secondary)" }}
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+                              />
+                            </svg>
+                          </div>
+                        )}
+                        {/* Status Badge */}
+                        <div className="absolute top-3 right-3 px-2 py-1 rounded-full text-xs font-medium bg-black/50 text-white">
+                          {video.status}
+                        </div>
+                        {/* Play Button Overlay */}
+                        {video.status === "completed" && video.video_url && (
+                          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/30">
+                            <div className="w-16 h-16 rounded-full bg-white/90 flex items-center justify-center">
+                              <svg
+                                className="w-8 h-8 ml-1"
+                                style={{ color: "var(--text-primary)" }}
+                                fill="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path d="M8 5v14l11-7z" />
+                              </svg>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Meta Info */}
+                      <div className="p-3">
+                        <div className="flex items-center justify-between mb-1">
+                          <span
+                            className="text-xs font-medium"
+                            style={{ color: "var(--text-primary)" }}
+                          >
+                            {video.generation_mode?.replace("_", " ").toUpperCase()}
+                          </span>
+                          <span
+                            className="text-xs"
+                            style={{ color: "var(--text-secondary)" }}
+                          >
+                            {video.aspect_ratio}
+                          </span>
+                        </div>
+                        <p
+                          className="text-xs line-clamp-2 mb-2"
+                          style={{ color: "var(--text-secondary)" }}
+                        >
+                          {video.prompt}
+                        </p>
+                        <div
+                          className="flex items-center justify-between text-xs"
+                          style={{ color: "var(--text-secondary)" }}
+                        >
+                          <span>{video.provider}</span>
+                          <span>
+                            {new Date(video.created_at).toLocaleDateString()}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="card rounded-lg p-12 text-center">
+                  <svg
+                    className="w-20 h-20 mx-auto mb-4 opacity-30"
+                    style={{ color: "var(--text-secondary)" }}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+                    />
+                  </svg>
+                  <h3
+                    className="text-xl font-medium mb-2"
+                    style={{ color: "var(--text-primary)" }}
+                  >
+                    No Videos Yet
+                  </h3>
+                  <p
+                    className="text-sm mb-6"
+                    style={{ color: "var(--text-secondary)" }}
+                  >
+                    Generate videos to see them here
+                  </p>
+                  <button
+                    onClick={() => router.push("/content/video")}
+                    className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition"
+                  >
+                    Generate Videos
                   </button>
                 </div>
               )}
