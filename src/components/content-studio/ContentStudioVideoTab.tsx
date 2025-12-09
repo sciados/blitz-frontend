@@ -78,17 +78,10 @@ export function ContentStudioVideoTab({ campaignId }: ContentStudioVideoTabProps
   const videoScripts = scriptData || [];
   const campaignImages = imagesData?.images || [];
 
-  // Filter video scripts by the selected duration
+  // Filter video scripts by the selected duration (show all scripts, but highlight matching ones)
   const filteredVideoScripts = videoScripts.filter((script: any) => {
-    // Try to match the script's length with the selected duration
-    // The script content_data might have length information
-    if (script.content_data && script.content_data.length) {
-      const scriptLength = script.content_data.length;
-      // Check if the script length matches the selected duration (within a reasonable range)
-      const targetDuration = duration * 10; // rough word count estimate
-      return Math.abs(scriptLength - targetDuration) < targetDuration * 0.5;
-    }
-    // If no length data, include all scripts
+    // Always include all scripts - no filtering
+    // The user can choose any script or write custom
     return true;
   });
 
@@ -444,24 +437,6 @@ export function ContentStudioVideoTab({ campaignId }: ContentStudioVideoTabProps
                   </option>
                 ))}
               </select>
-            </div>
-          )}
-
-          {/* No matching scripts message */}
-          {videoScripts.length > 0 && filteredVideoScripts.length === 0 && (
-            <div className="mb-4 p-3 rounded-lg" style={{ backgroundColor: "var(--bg-secondary)" }}>
-              <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
-                No {duration}s video scripts found.{" "}
-                <button
-                  onClick={() => {
-                    setDuration(duration === 5 ? 10 : duration === 10 ? 15 : 20);
-                  }}
-                  className="text-blue-600 hover:underline"
-                >
-                  Try {duration === 5 ? 10 : duration === 10 ? 15 : 20}s
-                </button>{" "}
-                or write a custom script below.
-              </p>
             </div>
           )}
 
