@@ -44,6 +44,14 @@ export function ContentStudioVideoTab({ campaignId }: ContentStudioVideoTabProps
       const response = await api.get(`/api/video/library?campaign_id=${campaignId}`);
       return response.data;
     },
+    // Auto-refresh every 5 seconds to check video generation progress
+    refetchInterval: (data) => {
+      // Only poll if there are videos and at least one is processing
+      const videos = data?.videos || [];
+      const hasProcessingVideos = videos.some((v: any) => v.status === "processing");
+      return hasProcessingVideos ? 5000 : false;
+    },
+    refetchIntervalInBackground: true,
   });
 
   // Fetch video scripts for this campaign
@@ -474,12 +482,33 @@ export function ContentStudioVideoTab({ campaignId }: ContentStudioVideoTabProps
 
       {/* Generated Videos */}
       <div className="lg:col-span-2">
-        <h3
-          className="text-lg font-semibold mb-4"
-          style={{ color: "var(--text-primary)" }}
-        >
-          Generated Videos ({videos.length})
-        </h3>
+        <div className="flex items-center justify-between mb-4">
+          <h3
+            className="text-lg font-semibold"
+            style={{ color: "var(--text-primary)" }}
+          >
+            Generated Videos ({videos.length})
+          </h3>
+          {videos.some((v: any) => v.status === "processing") && (
+            <div className="flex items-center space-x-2 text-sm" style={{ color: "var(--text-secondary)" }}>
+              <svg
+                className="w-4 h-4 animate-spin"
+                style={{ color: "var(--text-secondary)" }}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                />
+              </svg>
+              <span>Auto-refreshing...</span>
+            </div>
+          )}
+        </div>
         {videos.length === 0 ? (
           <div className="card rounded-lg p-8 text-center">
             <p style={{ color: "var(--text-secondary)" }}>
