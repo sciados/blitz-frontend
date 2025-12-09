@@ -45,7 +45,7 @@ export function ContentStudioVideoTab({ campaignId }: ContentStudioVideoTabProps
       return response.data;
     },
     // Auto-refresh every 5 seconds to check video generation progress
-    refetchInterval: (data) => {
+    refetchInterval: (data: any) => {
       // Only poll if there are videos and at least one is processing
       const videos = data?.videos || [];
       const hasProcessingVideos = videos.some((v: any) => v.status === "processing");
