@@ -13,18 +13,21 @@ export default function Home() {
       emoji: "🎯",
       title: "Product Developer",
       description: "I want affiliates to promote my products",
+      link: "https://blitz.ws/product-developers",
     },
     {
       id: "affiliate",
       emoji: "💰",
       title: "Marketer",
       description: "I want to earn promoting products",
+      link: "https://blitz.ws/affiliate",
     },
     {
       id: "business",
       emoji: "🚀",
       title: "Business Owner",
       description: "I need AI marketing automation",
+      link: "https://blitz.ws/business",
     },
   ];
 
@@ -71,34 +74,42 @@ export default function Home() {
           </p>
         </div>
 
-        {/* Three Columns - Who It's For */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-20">
-          <div className="bg-gradient-to-br from-purple-900/20 to-purple-800/20 rounded-2xl p-8 border border-purple-700/30 text-center">
+          <a
+            href="https://blitz.ws/product-developers"
+            className="bg-gradient-to-br from-purple-900/20 to-purple-800/20 rounded-2xl p-8 border border-purple-700/30 text-center hover:border-purple-500 transition-all duration-300 hover:scale-105"
+          >
             <div className="text-6xl mb-4">🎯</div>
             <h3 className="text-2xl font-bold mb-3">Product Developers</h3>
             <p className="text-gray-300">
               Get your products promoted by a network of affiliates. AI handles
               intelligence gathering and performance tracking.
             </p>
-          </div>
+          </a>
 
-          <div className="bg-gradient-to-br from-green-900/20 to-green-800/20 rounded-2xl p-8 border border-green-700/30 text-center">
+          <a
+            href="https://blitz.ws/affiliate"
+            className="bg-gradient-to-br from-green-900/20 to-green-800/20 rounded-2xl p-8 border border-green-700/30 text-center hover:border-green-500 transition-all duration-300 hover:scale-105"
+          >
             <div className="text-6xl mb-4">💰</div>
             <h3 className="text-2xl font-bold mb-3">Marketers</h3>
             <p className="text-gray-300">
               Create professional campaigns in minutes. AI generates articles,
               emails, videos, social posts, and images.
             </p>
-          </div>
+          </a>
 
-          <div className="bg-gradient-to-br from-blue-900/20 to-blue-800/20 rounded-2xl p-8 border border-blue-700/30 text-center">
+          <a
+            href="https://blitz.ws/business"
+            className="bg-gradient-to-br from-blue-900/20 to-blue-800/20 rounded-2xl p-8 border border-blue-700/30 text-center hover:border-blue-500 transition-all duration-300 hover:scale-105"
+          >
             <div className="text-6xl mb-4">🚀</div>
             <h3 className="text-2xl font-bold mb-3">Business Owners</h3>
             <p className="text-gray-300">
               Your AI marketing team. Generate content, manage campaigns, and
               grow—without the agency price tag.
             </p>
-          </div>
+          </a>
         </div>
 
         {/* Features Grid */}

@@ -1,9 +1,10 @@
 "use client";
 
 import { AuthGate } from "src/components/AuthGate";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "src/lib/appClient";
 import Link from "next/link";
+import { toast } from "sonner";
 
 interface GeneratedVideo {
   id: number;
@@ -30,9 +31,13 @@ interface GeneratedVideo {
   started_at?: string;
   completed_at?: string;
   error_message?: string;
+  saved_to_r2?: boolean;
+  r2_key?: string;
 }
 
 export default function VideoLibraryPage() {
+  const queryClient = useQueryClient();
+
   const { data, isLoading, error } = useQuery<{
     videos: GeneratedVideo[];
     total: number;
@@ -43,6 +48,28 @@ export default function VideoLibraryPage() {
     queryKey: ["video-library"],
     queryFn: async () => (await api.get("/api/video/library")).data,
   });
+
+  const saveVideoMutation = useMutation({
+    mutationFn: async (videoId: number) => {
+      const response = await api.post("/api/video/save-to-library", {
+        video_id: videoId,
+      });
+      return response.data;
+    },
+    onSuccess: () => {
+      toast.success("Video saved to library!");
+      queryClient.invalidateQueries({ queryKey: ["video-library"] });
+    },
+    onError: (error: any) => {
+      toast.error(
+        error?.response?.data?.detail || "Failed to save video to library"
+      );
+    },
+  });
+
+  const handleSaveToLibrary = (videoId: number) => {
+    saveVideoMutation.mutate(videoId);
+  };
 
   const videos = data?.videos || [];
   const total = data?.total || 0;
@@ -219,6 +246,33 @@ export default function VideoLibraryPage() {
                         >
                           Download
                         </a>
+                      )}
+                      {video.status === "completed" && !video.saved_to_r2 && (
+                        <button
+                          onClick={() => handleSaveToLibrary(video.id)}
+                          disabled={saveVideoMutation.isPending}
+                          className="text-sm px-3 py-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white rounded transition"
+                        >
+                          {saveVideoMutation.isPending ? "Saving..." : "Save to Library"}
+                        </button>
+                      )}
+                      {video.saved_to_r2 && (
+                        <span className="text-sm px-3 py-1 bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 rounded flex items-center">
+                          <svg
+                            className="w-4 h-4 mr-1"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M5 13l4 4L19 7"
+                            />
+                          </svg>
+                          Saved to Library
+                        </span>
                       )}
                       {video.status === "processing" && (
                         <span className="text-sm px-3 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 rounded">
