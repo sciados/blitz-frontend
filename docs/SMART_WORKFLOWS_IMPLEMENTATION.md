@@ -288,4 +288,28 @@ Changed the query to use the existing endpoint `/api/content/campaign/${campaign
 **Result:**
 Content Library now correctly displays the actual counts and content from the selected campaign.
 
+### Fixed: Removed Redundant Video Menu Items
+
+**Issue (2025-12-09):**
+The sidebar navigation showed redundant menu items 'Generate Videos' and 'Video Library' under the Content menu, even though these were now accessible through the unified Content Studio's tab interface.
+
+**Root Cause:**
+The sidebar menu structure in `Layout.tsx` still contained the old separate video generation and library links for both Business Owner and Marketer user types.
+
+**Solution:**
+Removed the following sub-menu items from the Content menu for all user types:
+- `{ href: "/content/video", label: "Generate Videos", icon: "🎬" }`
+- `{ href: "/content/video/library", label: "Video Library", icon: "📹" }`
+
+**Updated Menu Structure:**
+The Content menu now only contains:
+1. Generate Content - Routes to `/content` (unified Content Studio)
+2. Content Library - Routes to `/library` (content library)
+
+**Files Modified:**
+- `src/components/Layout.tsx` (lines 272-275 for Business Owner, lines 311-314 for Marketer)
+
+**Result:**
+The sidebar navigation is now cleaner and reflects the unified Content Studio architecture. Users access video generation through the Content Studio's Video sub-tab, maintaining a single source of truth for content creation.
+
 ---
