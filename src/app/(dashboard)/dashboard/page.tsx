@@ -1407,8 +1407,8 @@ function GettingStartedJourney() {
         {/* Journey Timeline */}
         <div className="relative">
           {/* Progress Line */}
-          <div className="absolute top-8 left-8 right-8 h-1 bg-gray-200 dark:bg-gray-700 z-0 hidden md:block" />
-
+          <div />{" "}
+          {/* className="absolute top-8 left-8 right-8 h-1 bg-gray-200 dark:bg-gray-700 z-0 hidden md:block" */}
           {/* Steps */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 relative z-10">
             {steps.map((step, index) => {
@@ -1419,7 +1419,7 @@ function GettingStartedJourney() {
               return step.disabled ? (
                 <div key={step.id} className="group block">
                   <div
-                    className={`card p-6 transition-all duration-300 border-2 ${colors.border} opacity-10 cursor-not-allowed`}
+                    className={`card p-6 transition-all duration-300 border-2 ${colors.border} opacity-60 cursor-not-allowed`}
                   >
                     {/* Step Number & Icon */}
                     <div className="flex items-start space-x-4">
