@@ -32,26 +32,30 @@ export function ContentStudioLibraryTab({ campaignId, onGenerateFromContent }: C
     queryKey: ["images", campaignId],
     queryFn: async () => {
       if (!campaignId) return { images: [] };
-      const response = await api.get(`/api/content/campaign/${campaignId}/images`);
+      const response = await api.get(`/api/images/campaign/${campaignId}`);
       return response.data;
     },
     enabled: !!campaignId,
   });
 
-  // Fetch videos
+  // Fetch videos - note: backend doesn't filter by campaign, so we fetch all and filter client-side
   const { data: videosData, refetch: refetchVideos } = useQuery({
     queryKey: ["videos", campaignId],
     queryFn: async () => {
-      if (!campaignId) return { videos: [] };
-      const response = await api.get(`/api/video/library?campaign_id=${campaignId}`);
+      const response = await api.get(`/api/video/library`);
       return response.data;
     },
-    enabled: !!campaignId,
+    enabled: true, // Always enabled, we'll filter client-side
   });
 
   const allContent = contentData?.contents || [];
   const allImages = imagesData?.images || [];
   const allVideos = videosData?.videos || [];
+
+  // Filter videos by campaign_id (client-side since backend doesn't support it)
+  const filteredVideos = campaignId
+    ? allVideos.filter((item: any) => item.campaign_id === campaignId)
+    : allVideos;
 
   // Filter content based on selected filter
   const getFilteredContent = () => {
@@ -70,7 +74,7 @@ export function ContentStudioLibraryTab({ campaignId, onGenerateFromContent }: C
     }
 
     if (filter === "all" || filter === "videos") {
-      allVideos.forEach((item: any) => {
+      filteredVideos.forEach((item: any) => {
         items.push({ type: "video", data: item });
       });
     }
@@ -105,7 +109,7 @@ export function ContentStudioLibraryTab({ campaignId, onGenerateFromContent }: C
             color: filter === "all" ? "white" : "var(--text-primary)",
           }}
         >
-          All ({allContent.length + allImages.length + allVideos.length})
+          All ({allContent.length + allImages.length + filteredVideos.length})
         </button>
         <button
           onClick={() => setFilter("text")}
@@ -144,7 +148,7 @@ export function ContentStudioLibraryTab({ campaignId, onGenerateFromContent }: C
             color: filter === "videos" ? "white" : "var(--text-primary)",
           }}
         >
-          🎬 Videos ({allVideos.length})
+          🎬 Videos ({filteredVideos.length})
         </button>
       </div>
 
