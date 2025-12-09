@@ -1312,39 +1312,70 @@ function AffiliateMarketerDashboard() {
 // ============================================================================
 
 function GettingStartedJourney() {
+  // Fetch user progress data
+  const { data: campaignsData } = useQuery({
+    queryKey: ["campaigns-count"],
+    queryFn: async () => {
+      const response = await api.get("/api/campaigns");
+      return { campaigns: response.data || [] };
+    },
+  });
+
+  const { data: contentData } = useQuery({
+    queryKey: ["content-count"],
+    queryFn: async () => {
+      const response = await api.get("/api/content").catch(() => ({ data: [] }));
+      return { contents: response.data || [] };
+    },
+  });
+
+  const campaigns = campaignsData?.campaigns || [];
+  const contents = contentData?.contents || [];
+
   const steps = [
     {
       id: 1,
-      title: "Select A Product",
-      description: "", // "Get affiliate links & create campaigns",
+      title: "Browse Product Library",
+      description: "Explore products, get affiliate links & create campaigns",
       icon: "📦",
       href: "/products" as const,
       color: "purple",
+      disabled: false,
+      active: true,
+      requirement: null,
     },
     {
       id: 2,
       title: "Generate Content",
-      description: "", // "Create AI-powered marketing content",
+      description: "Create AI-powered marketing content",
       icon: "✍️",
       href: "/content" as const,
       color: "indigo",
+      disabled: campaigns.length === 0,
+      active: campaigns.length > 0,
+      requirement: `${campaigns.length} campaign${campaigns.length !== 1 ? 's' : ''} created`,
     },
     {
-      id: 33,
+      id: 3,
       title: "Publish Content",
-      description: "", // "Connect your social media accounts",
+      description: "Connect your social media accounts (Coming Soon)",
       icon: "🔗",
       href: "#" as const,
       color: "orange",
       disabled: true,
+      active: false,
+      requirement: null,
     },
     {
       id: 4,
       title: "Track Success",
-      description: "", // "Monitor performance and optimize",
+      description: "Monitor performance and optimize",
       icon: "📈",
       href: "/analytics" as const,
       color: "pink",
+      disabled: contents.length === 0,
+      active: contents.length > 0,
+      requirement: `${contents.length} content piece${contents.length !== 1 ? 's' : ''} generated`,
     },
   ];
 
@@ -1424,11 +1455,26 @@ function GettingStartedJourney() {
                     {/* Step Number & Icon */}
                     <div className="flex items-start space-x-4">
                       {/* Step Circle */}
-                      <div className="flex-shrink-0">
+                      <div className="flex-shrink-0 relative">
                         <div
                           className={`w-16 h-16 ${colors.bg} rounded-full flex items-center justify-center border-4 ${colors.border} group-hover:scale-110 transition-transform duration-300`}
                         >
                           <span className="text-2xl">{step.icon}</span>
+                        </div>
+                        <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-gray-400 rounded-full flex items-center justify-center border-2 border-white dark:border-gray-800">
+                          <svg
+                            className="w-3 h-3 text-white"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2.5}
+                              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                            />
+                          </svg>
                         </div>
                       </div>
 
@@ -1444,9 +1490,14 @@ function GettingStartedJourney() {
                         <h4 className="text-lg font-semibold text-[var(--text-primary)] mb-1 group-hover:text-[var(--text-primary)]">
                           {step.title}
                         </h4>
-                        <p className="text-sm text-[var(--text-secondary)]">
+                        <p className="text-sm text-[var(--text-secondary)] mb-2">
                           {step.description}
                         </p>
+                        {step.requirement && (
+                          <p className="text-xs text-orange-600 dark:text-orange-400 font-medium">
+                            🔒 Complete Step {step.id - 1} first: {step.requirement}
+                          </p>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -1459,12 +1510,29 @@ function GettingStartedJourney() {
                     {/* Step Number & Icon */}
                     <div className="flex items-start space-x-4">
                       {/* Step Circle */}
-                      <div className="flex-shrink-0">
+                      <div className="flex-shrink-0 relative">
                         <div
                           className={`w-16 h-16 ${colors.bg} rounded-full flex items-center justify-center border-4 ${colors.border} group-hover:scale-110 transition-transform duration-300`}
                         >
                           <span className="text-2xl">{step.icon}</span>
                         </div>
+                        {step.active && (
+                          <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center border-2 border-white dark:border-gray-800">
+                            <svg
+                              className="w-3 h-3 text-white"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={3}
+                                d="M5 13l4 4L19 7"
+                              />
+                            </svg>
+                          </div>
+                        )}
                       </div>
 
                       {/* Content */}
@@ -1475,6 +1543,11 @@ function GettingStartedJourney() {
                           >
                             Step {step.id}
                           </span>
+                          {step.active && (
+                            <span className="text-xs font-bold px-2 py-1 rounded bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
+                              ✓ Active
+                            </span>
+                          )}
                         </div>
                         <h4 className="text-lg font-semibold text-[var(--text-primary)] mb-1 group-hover:text-[var(--text-primary)]">
                           {step.title}
