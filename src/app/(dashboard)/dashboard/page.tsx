@@ -1419,7 +1419,7 @@ function GettingStartedJourney() {
               return step.disabled ? (
                 <div key={step.id} className="group block">
                   <div
-                    className={`card p-6 transition-all duration-300 border-2 ${colors.border} opacity-60 cursor-not-allowed`}
+                    className={`card p-6 transition-all duration-300 border-2 ${colors.border} opacity-10 cursor-not-allowed`}
                   >
                     {/* Step Number & Icon */}
                     <div className="flex items-start space-x-4">
@@ -1534,15 +1534,15 @@ function GettingStartedJourney() {
         </div>
 
         {/* Call to Action */}
-        <div className="mt-8 p-6 card bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border-2 border-blue-200 dark:border-blue-800">
+        <div className="mt-4 p-6 card bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border-2 border-blue-200 dark:border-blue-800">
           <div className="flex items-center justify-between">
             <div>
               <h4 className="text-xl font-semibold text-[var(--text-primary)] mb-2">
                 Ready to Start Your Journey? 🎯
               </h4>
               <p className="text-sm text-[var(--text-secondary)]">
-                Begin with Step 1 - Browse our Product Library to explore
-                products, get affiliate links & create campaigns
+                Begin with Step 1 - Browse products, get your affiliate link &
+                create campaigns
               </p>
             </div>
             <Link
