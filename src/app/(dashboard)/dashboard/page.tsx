@@ -1315,8 +1315,8 @@ function GettingStartedJourney() {
   const steps = [
     {
       id: 1,
-      title: "Browse Products",
-      description: "Get affiliate links & create campaigns",
+      title: "Select A Product",
+      description: "", // "Get affiliate links & create campaigns",
       icon: "📦",
       href: "/products" as const,
       color: "purple",
@@ -1324,7 +1324,7 @@ function GettingStartedJourney() {
     {
       id: 2,
       title: "Generate Content",
-      description: "Create AI-powered marketing content",
+      description: "", // "Create AI-powered marketing content",
       icon: "✍️",
       href: "/content" as const,
       color: "indigo",
@@ -1332,7 +1332,7 @@ function GettingStartedJourney() {
     {
       id: 33,
       title: "Publish Content",
-      description: "Connect your social media accounts",
+      description: "", // "Connect your social media accounts",
       icon: "🔗",
       href: "#" as const,
       color: "orange",
@@ -1341,7 +1341,7 @@ function GettingStartedJourney() {
     {
       id: 4,
       title: "Track Success",
-      description: "Monitor performance and optimize",
+      description: "", // "Monitor performance and optimize",
       icon: "📈",
       href: "/analytics" as const,
       color: "pink",
@@ -1400,7 +1400,8 @@ function GettingStartedJourney() {
           🚀 Getting Started - Your Journey to Success
         </h3>
         <p className="text-sm text-[var(--text-secondary)] mb-6">
-          Follow these steps to create and launch your first successful campaign
+          Follow these 4 Steps to create and launch your first successful
+          campaign
         </p>
 
         {/* Journey Timeline */}
@@ -1409,7 +1410,7 @@ function GettingStartedJourney() {
           <div className="absolute top-8 left-8 right-8 h-1 bg-gray-200 dark:bg-gray-700 z-0 hidden md:block" />
 
           {/* Steps */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 relative z-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 relative z-10">
             {steps.map((step, index) => {
               const colors = colorMap[step.color as keyof typeof colorMap];
               const isLast = index === steps.length - 1;
