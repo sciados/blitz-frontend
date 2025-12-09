@@ -1,10 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "src/lib/appClient";
 import { ContentCard } from "src/components/ContentCard";
+import { ContentViewModal } from "src/components/ContentViewModal";
+import { ContentRefinementModal } from "src/components/ContentRefinementModal";
+import { ContentVariationsModal } from "src/components/ContentVariationsModal";
 import { GeneratedContent, GeneratedImage } from "src/lib/types";
+import { toast } from "sonner";
 
 interface ContentStudioLibraryTabProps {
   campaignId: number | null;
@@ -15,6 +19,13 @@ type FilterType = "all" | "text" | "images" | "videos";
 
 export function ContentStudioLibraryTab({ campaignId, onGenerateFromContent }: ContentStudioLibraryTabProps) {
   const [filter, setFilter] = useState<FilterType>("all");
+  const queryClient = useQueryClient();
+
+  // Modal states
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [showRefinementModal, setShowRefinementModal] = useState(false);
+  const [showVariationsModal, setShowVariationsModal] = useState(false);
+  const [selectedContent, setSelectedContent] = useState<GeneratedContent | null>(null);
 
   // Fetch all content for the campaign
   const { data: contentData, refetch: refetchContent } = useQuery({
@@ -83,6 +94,54 @@ export function ContentStudioLibraryTab({ campaignId, onGenerateFromContent }: C
   };
 
   const filteredItems = getFilteredContent();
+
+  // Delete content mutation
+  const deleteContentMutation = useMutation({
+    mutationFn: async (contentId: number) => {
+      await api.delete(`/api/content/${contentId}`);
+    },
+    onSuccess: () => {
+      toast.success("Content deleted successfully");
+      refetchContent();
+      queryClient.invalidateQueries({ queryKey: ["content-all", campaignId] });
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.detail || "Failed to delete content");
+    },
+  });
+
+  // Content action handlers
+  const handleViewContent = (content: GeneratedContent) => {
+    setSelectedContent(content);
+    setShowViewModal(true);
+  };
+
+  const handleEditContent = (content: GeneratedContent) => {
+    setSelectedContent(content);
+    setShowRefinementModal(true);
+  };
+
+  const handleCreateVariations = (content: GeneratedContent) => {
+    setSelectedContent(content);
+    setShowVariationsModal(true);
+  };
+
+  const handleDeleteContent = async (contentId: number) => {
+    if (!confirm("Are you sure you want to delete this content?")) return;
+    deleteContentMutation.mutate(contentId);
+  };
+
+  const handleContentRefined = () => {
+    setShowRefinementModal(false);
+    setSelectedContent(null);
+    refetchContent();
+  };
+
+  const handleVariationCreated = () => {
+    setShowVariationsModal(false);
+    setSelectedContent(null);
+    refetchContent();
+  };
 
   if (!campaignId) {
     return (
@@ -187,7 +246,12 @@ export function ContentStudioLibraryTab({ campaignId, onGenerateFromContent }: C
           {filteredItems.map((item, index) => (
             <div key={`${item.type}-${item.data.id}`}>
               {item.type === "text" ? (
-                <ContentCard content={item.data} />
+                <ContentCard
+                  content={item.data}
+                  onView={handleViewContent}
+                  onEdit={handleEditContent}
+                  onDelete={handleDeleteContent}
+                />
               ) : item.type === "image" ? (
                 <div className="card rounded-lg p-4 hover:shadow-lg transition">
                   <div className="flex items-start space-x-4">
@@ -363,6 +427,38 @@ export function ContentStudioLibraryTab({ campaignId, onGenerateFromContent }: C
           ))}
         </div>
       )}
+
+      {/* Content Modals */}
+      <ContentViewModal
+        isOpen={showViewModal}
+        onClose={() => {
+          setShowViewModal(false);
+          setSelectedContent(null);
+        }}
+        content={selectedContent}
+        onRefine={handleEditContent}
+        onCreateVariations={handleCreateVariations}
+      />
+
+      <ContentRefinementModal
+        isOpen={showRefinementModal}
+        onClose={() => {
+          setShowRefinementModal(false);
+          setSelectedContent(null);
+        }}
+        content={selectedContent}
+        onRefined={handleContentRefined}
+      />
+
+      <ContentVariationsModal
+        isOpen={showVariationsModal}
+        onClose={() => {
+          setShowVariationsModal(false);
+          setSelectedContent(null);
+        }}
+        content={selectedContent}
+        onVariationCreated={handleVariationCreated}
+      />
     </div>
   );
 }
