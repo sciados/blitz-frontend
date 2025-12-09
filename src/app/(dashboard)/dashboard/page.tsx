@@ -531,7 +531,7 @@ function BusinessOwnerDashboard() {
     queryKey: ["businessOwnerStats"],
     queryFn: async () => {
       try {
-        const [campaignsRes, textContentRes] = await Promise.all([
+        const [campaignsRes, textContentRes, videosRes] = await Promise.all([
           api.get("/api/campaigns"),
           api.get("/api/content").catch((err) => {
             console.error(
@@ -541,6 +541,7 @@ function BusinessOwnerDashboard() {
             );
             return { data: [] };
           }),
+          api.get("/api/video/library").catch(() => ({ data: { videos: [] } })),
         ]);
 
         const campaigns = campaignsRes.data || [];
@@ -548,6 +549,7 @@ function BusinessOwnerDashboard() {
           (c: any) => c.status === "active"
         ).length;
         const textContent = textContentRes.data || [];
+        const videos = videosRes.data?.videos || [];
 
         // Fetch images for all campaigns (same pattern as Content Library)
         const allImagePromises = campaigns.map((campaign: any) =>
@@ -566,6 +568,7 @@ function BusinessOwnerDashboard() {
           contentPieces: totalContentPieces,
           textContentPieces: textContent.length,
           imageContentPieces: images.length,
+          videoContentPieces: videos.length,
           recentCampaigns: campaigns.slice(0, 3),
         };
       } catch (error) {
@@ -575,6 +578,7 @@ function BusinessOwnerDashboard() {
           contentPieces: 0,
           textContentPieces: 0,
           imageContentPieces: 0,
+          videoContentPieces: 0,
           recentCampaigns: [],
         };
       }
@@ -584,7 +588,7 @@ function BusinessOwnerDashboard() {
   return (
     <>
       {/* Quick Stats Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
         <div className="card p-4 border-l-4 border-blue-500">
           <div className="flex items-center justify-between">
             <div>
@@ -621,14 +625,46 @@ function BusinessOwnerDashboard() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-[var(--text-secondary)] mb-1">
-                Marketing Content
+                Text Content
               </p>
               <p className="text-3xl font-bold text-purple-600 dark:text-purple-400">
-                {stats?.contentPieces || 0}
+                {stats?.textContentPieces || 0}
               </p>
             </div>
             <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
               <span className="text-2xl">✍️</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="card p-4 border-l-4 border-pink-500">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-[var(--text-secondary)] mb-1">
+                Images
+              </p>
+              <p className="text-3xl font-bold text-pink-600 dark:text-pink-400">
+                {stats?.imageContentPieces || 0}
+              </p>
+            </div>
+            <div className="w-12 h-12 bg-pink-100 dark:bg-pink-900/30 rounded-lg flex items-center justify-center">
+              <span className="text-2xl">🖼️</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="card p-4 border-l-4 border-red-500">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-[var(--text-secondary)] mb-1">
+                Videos
+              </p>
+              <p className="text-3xl font-bold text-red-600 dark:text-red-400">
+                {stats?.videoContentPieces || 0}
+              </p>
+            </div>
+            <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center">
+              <span className="text-2xl">🎬</span>
             </div>
           </div>
         </div>
@@ -987,7 +1023,7 @@ function AffiliateMarketerDashboard() {
     queryKey: ["affiliateMarketerStats"],
     queryFn: async () => {
       try {
-        const [campaignsRes, textContentRes] = await Promise.all([
+        const [campaignsRes, textContentRes, videosRes] = await Promise.all([
           api.get("/api/campaigns"),
           api.get("/api/content").catch((err) => {
             console.error(
@@ -997,6 +1033,7 @@ function AffiliateMarketerDashboard() {
             );
             return { data: [] };
           }),
+          api.get("/api/video/library").catch(() => ({ data: { videos: [] } })),
         ]);
 
         const campaigns = campaignsRes.data || [];
@@ -1004,6 +1041,7 @@ function AffiliateMarketerDashboard() {
           (c: any) => c.status === "active"
         ).length;
         const textContent = textContentRes.data || [];
+        const videos = videosRes.data?.videos || [];
 
         // Fetch images for all campaigns (same pattern as Content Library)
         const allImagePromises = campaigns.map((campaign: any) =>
@@ -1022,6 +1060,7 @@ function AffiliateMarketerDashboard() {
           contentPieces: totalContentPieces,
           textContentPieces: textContent.length,
           imageContentPieces: images.length,
+          videoContentPieces: videos.length,
           recentCampaigns: campaigns.slice(0, 3),
         };
       } catch (error) {
@@ -1031,6 +1070,7 @@ function AffiliateMarketerDashboard() {
           contentPieces: 0,
           textContentPieces: 0,
           imageContentPieces: 0,
+          videoContentPieces: 0,
           recentCampaigns: [],
         };
       }
@@ -1040,7 +1080,7 @@ function AffiliateMarketerDashboard() {
   return (
     <>
       {/* Quick Stats Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
         <div className="card p-4 border-l-4 border-blue-500">
           <div className="flex items-center justify-between">
             <div>
@@ -1101,6 +1141,22 @@ function AffiliateMarketerDashboard() {
             </div>
             <div className="w-12 h-12 bg-pink-100 dark:bg-pink-900/30 rounded-lg flex items-center justify-center">
               <span className="text-2xl">🖼️</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="card p-4 border-l-4 border-red-500">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-[var(--text-secondary)] mb-1">
+                Videos
+              </p>
+              <p className="text-3xl font-bold text-red-600 dark:text-red-400">
+                {stats?.videoContentPieces || 0}
+              </p>
+            </div>
+            <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center">
+              <span className="text-2xl">🎬</span>
             </div>
           </div>
         </div>
