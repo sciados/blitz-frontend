@@ -1163,175 +1163,11 @@ function AffiliateMarketerDashboard() {
       </div>
 
       <div className="border-t pt-6 space-y-6">
-        <div>
-          <h3 className="text-lg font-semibold mb-4 text-[var(--text-primary)]">
-            Menu
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* Product Library */}
-            <Link
-              href="/products"
-              className="group block p-6 rounded-lg transition-all duration-300 card hover:shadow-xl hover:-translate-y-1 hover:border-purple-400 dark:hover:border-purple-500 border-2 border-transparent "
-            >
-              <div className="flex items-center space-x-3 mb-2">
-                <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
-                  <span className="text-purple-600 dark:text-purple-400 text-xl">
-                    📦
-                  </span>
-                </div>
-                <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors duration-300">
-                  Product Library
-                </h2>
-              </div>
-              <p className="text-sm text-[var(--text-secondary)]">
-                Browse products and create campaigns
-              </p>
-            </Link>
+        <GettingStartedJourney />
+      </div>
 
-            {/* Campaigns */}
-            <Link
-              href="/campaigns"
-              className="group block p-6 rounded-lg transition-all duration-300 card hover:shadow-xl hover:-translate-y-1 hover:border-blue-400 dark:hover:border-blue-500 border-2 border-transparent "
-            >
-              <div className="flex items-center space-x-3 mb-2">
-                <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
-                  <span className="text-blue-600 dark:text-blue-400 text-xl">
-                    📢
-                  </span>
-                </div>
-                <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">
-                  Campaigns
-                </h2>
-              </div>
-              <p className="text-sm text-[var(--text-secondary)]">
-                Create and manage marketing campaigns
-              </p>
-            </Link>
-
-            {/* Content Generation */}
-            <Link
-              href="/content"
-              className="group block p-6 rounded-lg transition-all duration-300 card hover:shadow-xl hover:-translate-y-1 hover:border-green-400 dark:hover:border-green-500 border-2 border-transparent "
-            >
-              <div className="flex items-center space-x-3 mb-2">
-                <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
-                  <span className="text-green-600 dark:text-green-400 text-xl">
-                    ✍️
-                  </span>
-                </div>
-                <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors duration-300">
-                  Content
-                </h2>
-              </div>
-              <p className="text-sm text-[var(--text-secondary)]">
-                Generate AI-powered campaign content
-              </p>
-            </Link>
-
-            {/* Intelligence/RAG */}
-            <Link
-              href="/intelligence"
-              className="group block p-6 rounded-lg transition-all duration-300 card hover:shadow-xl hover:-translate-y-1 hover:border-indigo-400 dark:hover:border-indigo-500 border-2 border-transparent "
-            >
-              <div className="flex items-center space-x-3 mb-2">
-                <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
-                  <span className="text-indigo-600 dark:text-indigo-400 text-xl">
-                    🧠
-                  </span>
-                </div>
-                <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-300">
-                  Intelligence
-                </h2>
-              </div>
-              <p className="text-sm text-[var(--text-secondary)]">
-                Access product intelligence and insights
-              </p>
-            </Link>
-
-            {/* Analytics */}
-            <Link
-              href="/analytics"
-              className="group block p-6 rounded-lg transition-all duration-300 card hover:shadow-xl hover:-translate-y-1 hover:border-orange-400 dark:hover:border-orange-500 border-2 border-transparent "
-            >
-              <div className="flex items-center space-x-3 mb-2">
-                <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
-                  <span className="text-orange-600 dark:text-orange-400 text-xl">
-                    📈
-                  </span>
-                </div>
-                <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors duration-300">
-                  Analytics
-                </h2>
-              </div>
-              <p className="text-sm text-[var(--text-secondary)]">
-                View campaign performance metrics
-              </p>
-            </Link>
-
-            {/* Messages */}
-            <Link
-              href="/messages"
-              className="group block p-6 rounded-lg transition-all duration-300 card hover:shadow-xl hover:-translate-y-1 hover:border-pink-400 dark:hover:border-pink-500 border-2 border-transparent "
-            >
-              <div className="flex items-center space-x-3 mb-2">
-                <div className="w-10 h-10 bg-pink-100 dark:bg-pink-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
-                  <span className="text-pink-600 dark:text-pink-400 text-xl">
-                    💬
-                  </span>
-                </div>
-                <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-pink-600 dark:group-hover:text-pink-400 transition-colors duration-300">
-                  Messages
-                </h2>
-              </div>
-              <p className="text-sm text-[var(--text-secondary)]">
-                Chat with affiliates and product creators
-              </p>
-            </Link>
-
-            {/* Compliance Check */}
-            <Link
-              href="/compliance"
-              className="group block p-6 rounded-lg transition-all duration-300 card hover:shadow-xl hover:-translate-y-1 hover:border-red-400 dark:hover:border-red-500 border-2 border-transparent "
-            >
-              <div className="flex items-center space-x-3 mb-2">
-                <div className="w-10 h-10 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
-                  <span className="text-red-600 dark:text-red-400 text-xl">
-                    ✓
-                  </span>
-                </div>
-                <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors duration-300">
-                  Compliance
-                </h2>
-              </div>
-              <p className="text-sm text-[var(--text-secondary)]">
-                Check content against FTC Compliance rules
-              </p>
-            </Link>
-
-            {/* Settings */}
-            <Link
-              href="/settings"
-              className="group block p-6 rounded-lg transition-all duration-300 card hover:shadow-xl hover:-translate-y-1 hover:border-gray-400 dark:hover:border-gray-500 border-2 border-transparent "
-            >
-              <div className="flex items-center space-x-3 mb-2">
-                <div className="w-10 h-10 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
-                  <span className="text-gray-600 dark:text-gray-400 text-xl">
-                    ⚙️
-                  </span>
-                </div>
-                <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors duration-300">
-                  Settings
-                </h2>
-              </div>
-              <p className="text-sm text-[var(--text-secondary)]">
-                Manage your account and preferences
-              </p>
-            </Link>
-          </div>
-        </div>
-
-        {/* Quick Actions & Tips */}
-        <div className="border-t pt-6 space-y-6">
+      {/* Quick Actions & Tips */}
+      <div className="border-t pt-6 space-y-6">
           <div>
             <h3 className="text-lg font-semibold mb-4 text-[var(--text-primary)]">
               Quick Actions
@@ -1468,7 +1304,216 @@ function AffiliateMarketerDashboard() {
             </div>
           </div>
         </div>
-      </div>
     </>
+  );
+}
+
+// ============================================================================
+// GETTING STARTED JOURNEY COMPONENT
+// ============================================================================
+
+function GettingStartedJourney() {
+  const steps = [
+    {
+      id: 1,
+      title: "Browse Product Library",
+      description: "Explore our curated collection of products",
+      icon: "📦",
+      href: "/products" as const,
+      color: "purple"
+    },
+    {
+      id: 2,
+      title: "Choose Product",
+      description: "Select a product that fits your niche",
+      icon: "✅",
+      href: "/products" as const,
+      color: "blue"
+    },
+    {
+      id: 3,
+      title: "Create Campaign",
+      description: "Set up your marketing campaign",
+      icon: "📢",
+      href: "/campaigns" as const,
+      color: "green"
+    },
+    {
+      id: 4,
+      title: "Generate Content",
+      description: "Create AI-powered marketing content",
+      icon: "✍️",
+      href: "/content" as const,
+      color: "indigo"
+    },
+    {
+      id: 5,
+      title: "Publish Content",
+      description: "Deploy your content across channels",
+      icon: "🚀",
+      href: "/content" as const,
+      color: "orange"
+    },
+    {
+      id: 6,
+      title: "Track Success",
+      description: "Monitor performance and optimize",
+      icon: "📈",
+      href: "/analytics" as const,
+      color: "pink"
+    }
+  ];
+
+  const colorMap = {
+    purple: {
+      bg: "bg-purple-100 dark:bg-purple-900/30",
+      text: "text-purple-600 dark:text-purple-400",
+      border: "border-purple-300 dark:border-purple-700",
+      hover: "hover:border-purple-500 dark:hover:border-purple-400",
+      line: "bg-purple-300 dark:bg-purple-700"
+    },
+    blue: {
+      bg: "bg-blue-100 dark:bg-blue-900/30",
+      text: "text-blue-600 dark:text-blue-400",
+      border: "border-blue-300 dark:border-blue-700",
+      hover: "hover:border-blue-500 dark:hover:border-blue-400",
+      line: "bg-blue-300 dark:bg-blue-700"
+    },
+    green: {
+      bg: "bg-green-100 dark:bg-green-900/30",
+      text: "text-green-600 dark:text-green-400",
+      border: "border-green-300 dark:border-green-700",
+      hover: "hover:border-green-500 dark:hover:border-green-400",
+      line: "bg-green-300 dark:bg-green-700"
+    },
+    indigo: {
+      bg: "bg-indigo-100 dark:bg-indigo-900/30",
+      text: "text-indigo-600 dark:text-indigo-400",
+      border: "border-indigo-300 dark:border-indigo-700",
+      hover: "hover:border-indigo-500 dark:hover:border-indigo-400",
+      line: "bg-indigo-300 dark:bg-indigo-700"
+    },
+    orange: {
+      bg: "bg-orange-100 dark:bg-orange-900/30",
+      text: "text-orange-600 dark:text-orange-400",
+      border: "border-orange-300 dark:border-orange-700",
+      hover: "hover:border-orange-500 dark:hover:border-orange-400",
+      line: "bg-orange-300 dark:bg-orange-700"
+    },
+    pink: {
+      bg: "bg-pink-100 dark:bg-pink-900/30",
+      text: "text-pink-600 dark:text-pink-400",
+      border: "border-pink-300 dark:border-pink-700",
+      hover: "hover:border-pink-500 dark:hover:border-pink-400",
+      line: "bg-pink-300 dark:bg-pink-700"
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-lg font-semibold mb-4 text-[var(--text-primary)]">
+          🚀 Getting Started - Your Journey to Success
+        </h3>
+        <p className="text-sm text-[var(--text-secondary)] mb-6">
+          Follow these 6 steps to create and launch your first successful campaign
+        </p>
+
+        {/* Journey Timeline */}
+        <div className="relative">
+          {/* Progress Line */}
+          <div className="absolute top-8 left-8 right-8 h-1 bg-gray-200 dark:bg-gray-700 z-0 hidden md:block" />
+
+          {/* Steps */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 relative z-10">
+            {steps.map((step, index) => {
+              const colors = colorMap[step.color as keyof typeof colorMap];
+              const isLast = index === steps.length - 1;
+              const isMiddle = index === 2;
+
+              return (
+                <Link
+                  key={step.id}
+                  href={step.href}
+                  className="group block"
+                >
+                  <div className={`card p-6 transition-all duration-300 border-2 ${colors.border} ${colors.hover} hover:shadow-xl hover:-translate-y-1`}>
+                    {/* Step Number & Icon */}
+                    <div className="flex items-start space-x-4">
+                      {/* Step Circle */}
+                      <div className="flex-shrink-0">
+                        <div className={`w-16 h-16 ${colors.bg} rounded-full flex items-center justify-center border-4 ${colors.border} group-hover:scale-110 transition-transform duration-300`}>
+                          <span className="text-2xl">{step.icon}</span>
+                        </div>
+                      </div>
+
+                      {/* Content */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center space-x-2 mb-1">
+                          <span className={`text-xs font-bold px-2 py-1 rounded ${colors.bg} ${colors.text}`}>
+                            Step {step.id}
+                          </span>
+                        </div>
+                        <h4 className="text-lg font-semibold text-[var(--text-primary)] mb-1 group-hover:text-[var(--text-primary)]">
+                          {step.title}
+                        </h4>
+                        <p className="text-sm text-[var(--text-secondary)]">
+                          {step.description}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Arrow for desktop */}
+                    {!isLast && !isMiddle && (
+                      <div className="hidden lg:block absolute top-1/2 -right-3 transform -translate-y-1/2 z-20">
+                        <div className="w-6 h-6 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-full flex items-center justify-center">
+                          <svg className="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Arrow down for middle row */}
+                    {isMiddle && (
+                      <div className="hidden lg:block absolute -bottom-3 left-1/2 transform -translate-x-1/2 z-20">
+                        <div className="w-6 h-6 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-full flex items-center justify-center">
+                          <svg className="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                          </svg>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Call to Action */}
+        <div className="mt-8 p-6 card bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border-2 border-blue-200 dark:border-blue-800">
+          <div className="flex items-center justify-between">
+            <div>
+              <h4 className="text-xl font-semibold text-[var(--text-primary)] mb-2">
+                Ready to Start Your Journey? 🎯
+              </h4>
+              <p className="text-sm text-[var(--text-secondary)]">
+                Begin with Step 1 - Browse our Product Library to find the perfect product for your niche
+              </p>
+            </div>
+            <Link
+              href="/products"
+              className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors duration-300 flex items-center space-x-2 whitespace-nowrap"
+            >
+              <span>Start Now</span>
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </Link>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
