@@ -189,7 +189,9 @@
       "Bash(git -C /c/Users/shaun/OneDrive/Documents/GitHub/blitz-frontend add src/components/content-studio/ContentStudioVideoTab.tsx)",
       "Bash(git -C /c/Users/shaun/OneDrive/Documents/GitHub/blitz-frontend commit -m \"$(cat <<''EOF''\nfeat: Auto-refresh video generation status for better UX\n\n- Add automatic polling every 5 seconds when videos are processing\n- Smart polling: only polls when videos are in \"processing\" status\n- Stops polling automatically when all videos complete\n- Shows \"Auto-refreshing...\" indicator with spinner\n- Continues polling even when tab is in background\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
       "Bash(git -C /c/Users/shaun/OneDrive/Documents/GitHub/blitz-frontend push origin main)",
-      "Bash(git -C /c/Users/shaun/OneDrive/Documents/GitHub/blitz-frontend commit -m \"$(cat <<''EOF''\nfix: Add TypeScript type annotation for refetchInterval data parameter\n\n- Fixes build error: Property ''videos'' does not exist on type\n- Added type annotation: (data: any) =>\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
+      "Bash(git -C /c/Users/shaun/OneDrive/Documents/GitHub/blitz-frontend commit -m \"$(cat <<''EOF''\nfix: Add TypeScript type annotation for refetchInterval data parameter\n\n- Fixes build error: Property ''videos'' does not exist on type\n- Added type annotation: (data: any) =>\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git -C /c/Users/shaun/OneDrive/Documents/GitHub/blitz-frontend commit:*)",
+      "Bash(git -C /c/Users/shaun/OneDrive/Documents/GitHub/blitz-frontend diff:*)"
     ],
     "deny": [],
     "ask": []
