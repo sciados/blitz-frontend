@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ContentCard } from "src/components/ContentCard";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "src/lib/appClient";
@@ -17,21 +17,96 @@ const CONTENT_TYPES = [
   { value: "ad_copy", label: "Ad Copy", icon: "📢" },
 ];
 
-const MARKETING_ANGLES = [
-  { value: "problem_solution", label: "Problem/Solution" },
-  { value: "transformation", label: "Transformation" },
-  { value: "scarcity", label: "Scarcity" },
-  { value: "authority", label: "Authority" },
-  { value: "social_proof", label: "Social Proof" },
-  { value: "comparison", label: "Comparison" },
-  { value: "story", label: "Story" },
-];
-
-const LENGTH_OPTIONS = [
-  { value: "short", label: "Short" },
-  { value: "medium", label: "Medium" },
-  { value: "long", label: "Long" },
-];
+// Settings that change based on content type
+const CONTENT_SETTINGS: Record<ContentType, {
+  marketingAngles: { value: MarketingAngle; label: string }[];
+  lengthOptions: { value: string; label: string }[];
+}> = {
+  article: {
+    marketingAngles: [
+      { value: "problem_solution", label: "Problem/Solution" },
+      { value: "transformation", label: "Transformation" },
+      { value: "authority", label: "Authority" },
+      { value: "social_proof", label: "Social Proof" },
+      { value: "story", label: "Story" },
+    ],
+    lengthOptions: [
+      { value: "short", label: "500-800 words" },
+      { value: "medium", label: "800-1500 words" },
+      { value: "long", label: "1500-2500 words" },
+    ],
+  },
+  email: {
+    marketingAngles: [
+      { value: "problem_solution", label: "Problem/Solution" },
+      { value: "scarcity", label: "Scarcity" },
+      { value: "story", label: "Story" },
+    ],
+    lengthOptions: [
+      { value: "short", label: "Short (50-150 words)" },
+      { value: "medium", label: "Medium (150-300 words)" },
+    ],
+  },
+  email_sequence: {
+    marketingAngles: [
+      { value: "problem_solution", label: "Problem/Solution" },
+      { value: "transformation", label: "Transformation" },
+      { value: "social_proof", label: "Social Proof" },
+    ],
+    lengthOptions: [
+      { value: "short", label: "3-5 emails" },
+      { value: "medium", label: "5-7 emails" },
+      { value: "long", label: "7-10 emails" },
+    ],
+  },
+  video_script: {
+    marketingAngles: [
+      { value: "problem_solution", label: "Problem/Solution" },
+      { value: "transformation", label: "Transformation" },
+      { value: "story", label: "Story" },
+    ],
+    lengthOptions: [
+      { value: "short", label: "30-60 seconds" },
+      { value: "medium", label: "1-2 minutes" },
+      { value: "long", label: "2-5 minutes" },
+    ],
+  },
+  social_post: {
+    marketingAngles: [
+      { value: "scarcity", label: "Scarcity" },
+      { value: "social_proof", label: "Social Proof" },
+    ],
+    lengthOptions: [
+      { value: "short", label: "Short (1-2 sentences)" },
+      { value: "medium", label: "Medium (2-3 sentences)" },
+    ],
+  },
+  landing_page: {
+    marketingAngles: [
+      { value: "problem_solution", label: "Problem/Solution" },
+      { value: "transformation", label: "Transformation" },
+      { value: "authority", label: "Authority" },
+      { value: "social_proof", label: "Social Proof" },
+      { value: "comparison", label: "Comparison" },
+    ],
+    lengthOptions: [
+      { value: "short", label: "Short (5-7 sections)" },
+      { value: "medium", label: "Medium (7-10 sections)" },
+      { value: "long", label: "Long (10-15 sections)" },
+    ],
+  },
+  ad_copy: {
+    marketingAngles: [
+      { value: "scarcity", label: "Scarcity" },
+      { value: "social_proof", label: "Social Proof" },
+      { value: "comparison", label: "Comparison" },
+    ],
+    lengthOptions: [
+      { value: "short", label: "Short (25-50 words)" },
+      { value: "medium", label: "Medium (50-100 words)" },
+    ],
+  },
+};
 
 interface ContentStudioTextTabProps {
   campaignId: number;
@@ -43,6 +118,28 @@ export function ContentStudioTextTab({ campaignId }: ContentStudioTextTabProps) 
   const [length, setLength] = useState("medium");
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedContent, setGeneratedContent] = useState<GeneratedContent | null>(null);
+  const [selectedKeywords, setSelectedKeywords] = useState<{
+    ingredients: string[];
+    features: string[];
+    benefits: string[];
+    pain_points: string[];
+  }>({
+    ingredients: [],
+    features: [],
+    benefits: [],
+    pain_points: [],
+  });
+
+  // Get current settings based on content type
+  const currentSettings = CONTENT_SETTINGS[contentType];
+
+  // Reset settings when content type changes
+  useEffect(() => {
+    const settings = CONTENT_SETTINGS[contentType];
+    // Reset to first available option for each setting
+    setMarketingAngle(settings.marketingAngles[0]?.value || "problem_solution");
+    setLength(settings.lengthOptions[0]?.value || "medium");
+  }, [contentType]);
 
   // Fetch content for this campaign
   const { data, refetch } = useQuery({
@@ -54,6 +151,17 @@ export function ContentStudioTextTab({ campaignId }: ContentStudioTextTabProps) 
   });
 
   const contents = data?.contents || [];
+
+  // Fetch available keywords from campaign intelligence
+  const { data: keywordsData, isLoading: keywordsLoading } = useQuery({
+    queryKey: ["campaign-keywords", campaignId],
+    queryFn: async () => {
+      const response = await api.post("/api/prompt/keywords", {
+        campaign_id: campaignId,
+      });
+      return response.data;
+    },
+  });
 
   const handleGenerate = async () => {
     try {
@@ -131,7 +239,7 @@ export function ContentStudioTextTab({ campaignId }: ContentStudioTextTabProps) 
                 color: "var(--text-primary)",
               }}
             >
-              {MARKETING_ANGLES.map((angle) => (
+              {currentSettings.marketingAngles.map((angle) => (
                 <option key={angle.value} value={angle.value}>
                   {angle.label}
                 </option>
@@ -157,12 +265,166 @@ export function ContentStudioTextTab({ campaignId }: ContentStudioTextTabProps) 
                 color: "var(--text-primary)",
               }}
             >
-              {LENGTH_OPTIONS.map((option) => (
+              {currentSettings.lengthOptions.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>
               ))}
             </select>
+          </div>
+
+          {/* Keywords Selection */}
+          <div className="mb-6">
+            <label
+              className="block text-sm font-medium mb-2"
+              style={{ color: "var(--text-primary)" }}
+            >
+              Keywords (Optional)
+            </label>
+            {keywordsLoading ? (
+              <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+                Loading keywords...
+              </p>
+            ) : keywordsData ? (
+              <div className="space-y-4">
+                {/* Ingredients */}
+                {keywordsData.ingredients && keywordsData.ingredients.length > 0 && (
+                  <div>
+                    <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-secondary)" }}>
+                      Ingredients
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {keywordsData.ingredients.map((ingredient: string) => (
+                        <button
+                          key={ingredient}
+                          onClick={() => {
+                            setSelectedKeywords((prev) => ({
+                              ...prev,
+                              ingredients: prev.ingredients.includes(ingredient)
+                                ? prev.ingredients.filter((i) => i !== ingredient)
+                                : [...prev.ingredients, ingredient],
+                            }));
+                          }}
+                          className={`px-3 py-1 rounded-full text-sm border ${
+                            selectedKeywords.ingredients.includes(ingredient)
+                              ? "bg-blue-500 text-white border-blue-500"
+                              : "bg-[var(--bg-secondary)] text-[var(--text-primary)] border-[var(--border-color)] hover:border-blue-500"
+                          }`}
+                        >
+                          {ingredient}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Features */}
+                {keywordsData.features && keywordsData.features.length > 0 && (
+                  <div>
+                    <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-secondary)" }}>
+                      Features
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {keywordsData.features.map((feature: string) => (
+                        <button
+                          key={feature}
+                          onClick={() => {
+                            setSelectedKeywords((prev) => ({
+                              ...prev,
+                              features: prev.features.includes(feature)
+                                ? prev.features.filter((f) => f !== feature)
+                                : [...prev.features, feature],
+                            }));
+                          }}
+                          className={`px-3 py-1 rounded-full text-sm border ${
+                            selectedKeywords.features.includes(feature)
+                              ? "bg-blue-500 text-white border-blue-500"
+                              : "bg-[var(--bg-secondary)] text-[var(--text-primary)] border-[var(--border-color)] hover:border-blue-500"
+                          }`}
+                        >
+                          {feature}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Benefits */}
+                {keywordsData.benefits && keywordsData.benefits.length > 0 && (
+                  <div>
+                    <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-secondary)" }}>
+                      Benefits
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {keywordsData.benefits.map((benefit: string) => (
+                        <button
+                          key={benefit}
+                          onClick={() => {
+                            setSelectedKeywords((prev) => ({
+                              ...prev,
+                              benefits: prev.benefits.includes(benefit)
+                                ? prev.benefits.filter((b) => b !== benefit)
+                                : [...prev.benefits, benefit],
+                            }));
+                          }}
+                          className={`px-3 py-1 rounded-full text-sm border ${
+                            selectedKeywords.benefits.includes(benefit)
+                              ? "bg-blue-500 text-white border-blue-500"
+                              : "bg-[var(--bg-secondary)] text-[var(--text-primary)] border-[var(--border-color)] hover:border-blue-500"
+                          }`}
+                        >
+                          {benefit}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Pain Points */}
+                {keywordsData.pain_points && keywordsData.pain_points.length > 0 && (
+                  <div>
+                    <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-secondary)" }}>
+                      Pain Points
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {keywordsData.pain_points.map((pain: string) => (
+                        <button
+                          key={pain}
+                          onClick={() => {
+                            setSelectedKeywords((prev) => ({
+                              ...prev,
+                              pain_points: prev.pain_points.includes(pain)
+                                ? prev.pain_points.filter((p) => p !== pain)
+                                : [...prev.pain_points, pain],
+                            }));
+                          }}
+                          className={`px-3 py-1 rounded-full text-sm border ${
+                            selectedKeywords.pain_points.includes(pain)
+                              ? "bg-blue-500 text-white border-blue-500"
+                              : "bg-[var(--bg-secondary)] text-[var(--text-primary)] border-[var(--border-color)] hover:border-blue-500"
+                          }`}
+                        >
+                          {pain}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {!keywordsData.ingredients?.length &&
+                 !keywordsData.features?.length &&
+                 !keywordsData.benefits?.length &&
+                 !keywordsData.pain_points?.length && (
+                  <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
+                    No keywords available. Compile campaign intelligence to get keyword suggestions.
+                  </p>
+                )}
+              </div>
+            ) : (
+              <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+                Compile campaign intelligence to enable keyword selection.
+              </p>
+            )}
           </div>
 
           {/* Generate Button */}
