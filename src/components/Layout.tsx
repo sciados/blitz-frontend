@@ -385,8 +385,8 @@ export default function Layout({ children }: LayoutProps) {
             </button>
             <Link href={(isAdmin ? "/admin/dashboard" : "/dashboard") as any}>
               <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-gradient-to-br from-[var(--accent-primary)] to-[var(--accent-secondary)] rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-lg">B</span>
+                <div className="w-8 h-8 flex items-center justify-center">
+                  <span className="text-orange-500 text-2xl">⚡</span>
                 </div>
                 <span className="font-bold text-xl text-[var(--text-primary)]">
                   Blitz
