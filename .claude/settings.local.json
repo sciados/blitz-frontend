@@ -180,7 +180,10 @@
       "Bash(/tmp/video_prev.tsx:*)",
       "WebFetch(domain:piapi.ai)",
       "WebFetch(domain:docs.qingque.cn)",
-      "WebFetch(domain:replicate.com)"
+      "WebFetch(domain:replicate.com)",
+      "WebFetch(domain:aistudio.google.com)",
+      "WebFetch(domain:ai.google.dev)",
+      "Bash(python3:*)"
     ],
     "deny": [],
     "ask": []

@@ -1808,7 +1808,91 @@ export const helpContent: Record<string, HelpContent> = {
       "Use Blitz's service-focused content for authentic, relevant posts",
     ],
   },
-// Content - Video Generation  "/content/video": {    title: "Video Generation",    description: "Create professional marketing videos from your scripts using AI. Transform written content into engaging video campaigns with customizable styles and durations.",    steps: [      {        number: 1,        title: "Select Your Campaign",        description: "Choose the campaign you want to create a video for. The video will be associated with this campaign for tracking and analytics.",      },      {        number: 2,        title: "Choose Video Style",        description: "Select from Marketing (professional, engaging), Educational (clear, informative), or Social (dynamic, eye-catching) styles.",      },      {        number: 3,        title: "Set Duration & Format",        description: "Choose video length (5-20 seconds (short-form)) and aspect ratio (16:9 landscape, 9:16 portrait, or 1:1 square) based on your distribution channel.",      },      {        number: 4,        title: "Write Your Script",        description: "Enter your video script with timestamps like [0-5s], [5-10s] for better organization. Include hooks, main content, and clear CTAs.",      },      {        number: 5,        title: "Review Cost & Generate",        description: "Check the estimated cost (based on duration) and click Generate Video. Videos typically take 2-5 minutes to process.",      },    ],    tips: [      "Start with a hook in the first 3 seconds to grab attention immediately",      "Use timestamps [0-5s], [5-10s] to organize your content flow",      "Keep scripts concise - aim for 75-100 words for short-form",      "End with a strong call-to-action (CTA)",      "Use descriptive language for better AI visual generation",      "Test different styles (marketing/educational/social) for your audience",      "Portrait (9:16) works best for TikTok, Instagram Reels, YouTube Shorts",      "Landscape (16:9) is ideal for YouTube, Facebook, and websites",    ],  },
+
+  // Content - Video Generation
+  "/content/video": {
+    title: "Video Generation",
+    description: "Create professional marketing videos from your scripts using AI. Transform written content into engaging video campaigns with customizable styles and durations.",
+    steps: [
+      {
+        number: 1,
+        title: "Select Your Campaign",
+        description: "Choose the campaign you want to create a video for. The video will be associated with this campaign for tracking and analytics.",
+      },
+      {
+        number: 2,
+        title: "Choose Video Style",
+        description: "Select from Marketing (professional, engaging), Educational (clear, informative), or Social (dynamic, eye-catching) styles.",
+      },
+      {
+        number: 3,
+        title: "Set Duration & Format",
+        description: "Choose video length (5-20 seconds (short-form)) and aspect ratio (16:9 landscape, 9:16 portrait, or 1:1 square) based on your distribution channel.",
+      },
+      {
+        number: 4,
+        title: "Write Your Script",
+        description: "Enter your video script with timestamps like [0-5s], [5-10s] for better organization. Include hooks, main content, and clear CTAs.",
+      },
+      {
+        number: 5,
+        title: "Review Cost & Generate",
+        description: "Check the estimated cost (based on duration) and click Generate Video. Videos typically take 2-5 minutes to process.",
+      },
+    ],
+    tips: [
+      "Start with a hook in the first 3 seconds to grab attention immediately",
+      "Use timestamps [0-5s], [5-10s] to organize your content flow",
+      "Keep scripts concise - aim for 75-100 words for short-form",
+      "End with a strong call-to-action (CTA)",
+      "Use descriptive language for better AI visual generation",
+      "Test different styles (marketing/educational/social) for your audience",
+      "Portrait (9:16) works best for TikTok, Instagram Reels, YouTube Shorts",
+      "Landscape (16:9) is ideal for YouTube, Facebook, and websites",
+    ],
+  },
+
+  // Video Library
+  "/content/video/library": {
+    title: "Video Library",
+    description: "View and manage all your generated videos. Track processing status, view completed videos, and download high-quality files.",
+    steps: [
+      {
+        number: 1,
+        title: "Browse Your Videos",
+        description: "View all your generated videos in chronological order. Each card shows status, duration, provider, and cost.",
+      },
+      {
+        number: 2,
+        title: "Check Video Status",
+        description: "Videos show real-time status: Processing (with progress %), Completed (ready to view), or Failed (with error message).",
+      },
+      {
+        number: 3,
+        title: "View Completed Videos",
+        description: "Click 'View Video' to watch your generated video in a new tab. Videos are stored on cloud CDN for fast loading.",
+      },
+      {
+        number: 4,
+        title: "Download High-Quality",
+        description: "Click 'Download' to get the raw video file in highest quality for use in your marketing campaigns.",
+      },
+      {
+        number: 5,
+        title: "Track Costs",
+        description: "Each video shows the generation cost, helping you monitor spending on AI video creation.",
+      },
+    ],
+    tips: [
+      "Videos take 2-5 minutes to process depending on duration and provider",
+      "Use the pagination at the bottom to browse through many videos",
+      "Completed videos are stored permanently in your library",
+      "Check the thumbnail to preview your video before downloading",
+      "Video URLs are permanent and won't expire",
+      "Compare costs across different providers to optimize spending",
+      "Failed videos show error messages to help troubleshoot issues",
+    ],
+  },
 };
 
 // Helper function to get help content by pathname

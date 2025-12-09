@@ -7,22 +7,29 @@ import Link from "next/link";
 
 interface GeneratedVideo {
   id: number;
-  campaign_id: number;
-  video_type: string;
-  video_url: string;
-  thumbnail_url?: string;
+  task_id: string;
   provider: string;
-  model: string;
+  model_name: string;
   generation_mode: string;
   prompt: string;
   script?: string;
   style?: string;
-  duration: number;
   aspect_ratio?: string;
+  requested_duration: number;
+  actual_duration?: number;
+  video_url?: string;
+  video_raw_url?: string;
+  thumbnail_url?: string;
+  last_frame_url?: string;
+  video_width?: number;
+  video_height?: number;
   status: string;
-  error_message?: string;
+  progress?: number;
+  cost?: number;
   created_at: string;
+  started_at?: string;
   completed_at?: string;
+  error_message?: string;
 }
 
 export default function VideoLibraryPage() {
@@ -136,7 +143,7 @@ export default function VideoLibraryPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-2">
                       <h3 className="text-lg font-semibold truncate" style={{ color: "var(--text-primary)" }}>
-                        {video.video_type.replace("_", " ").toUpperCase()} Video
+                        {video.generation_mode?.replace("_", " ").toUpperCase() || "VIDEO"} GENERATION
                       </h3>
                       <span
                         className={`px-2 py-1 rounded text-xs font-medium ${
@@ -144,31 +151,49 @@ export default function VideoLibraryPage() {
                             ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
                             : video.status === "processing"
                             ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
-                            : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
+                            : video.status === "failed"
+                            ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
+                            : "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300"
                         }`}
                       >
                         {video.status}
+                        {video.progress !== undefined && video.status === "processing" ? ` (${video.progress}%)` : ""}
                       </span>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4 text-sm mb-3">
                       <div>
                         <span style={{ color: "var(--text-secondary)" }}>Duration:</span>{" "}
-                        <span style={{ color: "var(--text-primary)" }}>{video.duration}s</span>
+                        <span style={{ color: "var(--text-primary)" }}>
+                          {video.actual_duration || video.requested_duration}s
+                        </span>
                       </div>
                       <div>
                         <span style={{ color: "var(--text-secondary)" }}>Aspect Ratio:</span>{" "}
-                        <span style={{ color: "var(--text-primary)" }}>{video.aspect_ratio}</span>
+                        <span style={{ color: "var(--text-primary)" }}>{video.aspect_ratio || "N/A"}</span>
                       </div>
                       <div>
                         <span style={{ color: "var(--text-secondary)" }}>Provider:</span>{" "}
                         <span style={{ color: "var(--text-primary)" }}>{video.provider}</span>
                       </div>
                       <div>
-                        <span style={{ color: "var(--text-secondary)" }}>Style:</span>{" "}
-                        <span style={{ color: "var(--text-primary)" }}>{video.style || "N/A"}</span>
+                        <span style={{ color: "var(--text-secondary)" }}>Model:</span>{" "}
+                        <span style={{ color: "var(--text-primary)" }}>{video.model_name}</span>
                       </div>
                     </div>
+
+                    {video.cost !== undefined && (
+                      <div className="text-sm mb-3">
+                        <span style={{ color: "var(--text-secondary)" }}>Cost:</span>{" "}
+                        <span style={{ color: "var(--text-primary)" }}>${video.cost.toFixed(4)}</span>
+                      </div>
+                    )}
+
+                    {video.error_message && (
+                      <div className="text-sm mb-3 p-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded">
+                        <span style={{ color: "var(--text-danger)" }}>{video.error_message}</span>
+                      </div>
+                    )}
 
                     <p className="text-sm line-clamp-2 mb-3" style={{ color: "var(--text-secondary)" }}>
                       {video.prompt}
@@ -184,6 +209,26 @@ export default function VideoLibraryPage() {
                         >
                           View Video
                         </a>
+                      )}
+                      {video.status === "completed" && video.video_raw_url && (
+                        <a
+                          href={video.video_raw_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm px-3 py-1 bg-gray-600 hover:bg-gray-700 text-white rounded transition"
+                        >
+                          Download
+                        </a>
+                      )}
+                      {video.status === "processing" && (
+                        <span className="text-sm px-3 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 rounded">
+                          Processing...
+                        </span>
+                      )}
+                      {video.status === "failed" && (
+                        <span className="text-sm px-3 py-1 bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 rounded">
+                          Failed
+                        </span>
                       )}
                       <span className="text-xs" style={{ color: "var(--text-secondary)" }}>
                         Created: {new Date(video.created_at).toLocaleDateString()}
