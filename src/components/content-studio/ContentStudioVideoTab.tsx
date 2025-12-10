@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "src/lib/appClient";
 import { toast } from "sonner";
+import { VideoEditorModal } from "src/components/VideoEditorModal";
 
 const VIDEO_STYLES = [
   { value: "marketing", label: "Marketing", description: "Professional, engaging" },
@@ -36,6 +37,11 @@ export function ContentStudioVideoTab({ campaignId }: ContentStudioVideoTabProps
   const [selectedScriptId, setSelectedScriptId] = useState<number | null>(null);
   const [selectedImageId, setSelectedImageId] = useState<number | null>(null);
   const [selectedImageUrl, setSelectedImageUrl] = useState<string>("");
+
+  // Video Editor Modal state
+  const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [editorVideoUrl, setEditorVideoUrl] = useState<string>("");
+  const [editorVideoScript, setEditorVideoScript] = useState<string>("");
 
   // Fetch videos for this campaign
   const { data, refetch } = useQuery({
@@ -107,6 +113,18 @@ export function ContentStudioVideoTab({ campaignId }: ContentStudioVideoTabProps
   const handleClearImage = () => {
     setSelectedImageId(null);
     setSelectedImageUrl("");
+  };
+
+  // Video Editor handlers
+  const handleOpenEditor = (videoUrl: string, videoScript?: string) => {
+    setEditorVideoUrl(videoUrl);
+    setEditorVideoScript(videoScript || "");
+    setIsEditorOpen(true);
+  };
+
+  const handleSaveEditedVideo = (video: { video_url: string }) => {
+    toast.success("Video with text overlays saved successfully!");
+    refetch();
   };
 
   // Reset form when generation mode changes
@@ -601,14 +619,22 @@ export function ContentStudioVideoTab({ campaignId }: ContentStudioVideoTabProps
 
                     <div className="flex items-center space-x-3 flex-wrap">
                       {video.status === "completed" && video.video_url && (
-                        <a
-                          href={video.video_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-sm px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded transition"
-                        >
-                          View Video
-                        </a>
+                        <>
+                          <a
+                            href={video.video_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded transition"
+                          >
+                            View Video
+                          </a>
+                          <button
+                            onClick={() => handleOpenEditor(video.video_url, video.prompt)}
+                            className="text-sm px-3 py-1 bg-orange-600 hover:bg-orange-700 text-white rounded transition"
+                          >
+                            ✏️ Edit Text
+                          </button>
+                        </>
                       )}
                       {video.saved_to_r2 && (
                         <a
@@ -659,6 +685,16 @@ export function ContentStudioVideoTab({ campaignId }: ContentStudioVideoTabProps
           </div>
         )}
       </div>
+
+      {/* Video Editor Modal */}
+      <VideoEditorModal
+        isOpen={isEditorOpen}
+        onClose={() => setIsEditorOpen(false)}
+        videoUrl={editorVideoUrl}
+        videoScript={editorVideoScript}
+        campaignId={campaignId}
+        onSave={handleSaveEditedVideo}
+      />
     </div>
   );
 }

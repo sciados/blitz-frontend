@@ -1,0 +1,483 @@
+"use client";
+
+import { useState, useRef, useEffect } from "react";
+import { toast } from "sonner";
+import { api } from "src/lib/appClient";
+
+interface VideoTextLayer {
+  id: string;
+  text: string;
+  x: number;
+  y: number;
+  font_size: number;
+  font_family: string;
+  color: string;
+  stroke_color?: string;
+  stroke_width: number;
+  opacity: number;
+  // Time-based properties for video
+  start_time: number;    // When text appears (seconds)
+  duration: number;      // How long it stays (seconds)
+  animation_in: string;  // "fade", "slide_up", "zoom", "none"
+  animation_out: string; // "fade", "slide_down", "zoom", "none"
+}
+
+interface VideoEditorModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  videoUrl: string;
+  videoScript?: string;  // Optional: auto-generate text layers from script
+  campaignId: number;
+  onSave: (video: { video_url: string }) => void;
+}
+
+const PRESET_COLORS = [
+  "#FFFFFF", "#000000", "#FF0000", "#00FF00", "#0000FF",
+  "#FFFF00", "#FF00FF", "#00FFFF", "#FFA500", "#800080",
+  "#FFC0CB", "#A52A2A", "#808080", "#000080", "#008000",
+];
+
+const ANIMATION_OPTIONS = [
+  { value: "none", label: "None" },
+  { value: "fade", label: "Fade In/Out" },
+  { value: "slide_up", label: "Slide Up" },
+  { value: "slide_down", label: "Slide Down" },
+  { value: "zoom", label: "Zoom In" },
+];
+
+export function VideoEditorModal({
+  isOpen,
+  onClose,
+  videoUrl,
+  videoScript,
+  campaignId,
+  onSave,
+}: VideoEditorModalProps) {
+  const [textLayers, setTextLayers] = useState<VideoTextLayer[]>([]);
+  const [activeLayerId, setActiveLayerId] = useState<string>("");
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [videoDuration, setVideoDuration] = useState<number>(0);
+  const [currentTime, setCurrentTime] = useState<number>(0);
+  const [fonts, setFonts] = useState<FontOption[]>([]);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLDivElement>(null);
+
+  const activeLayer = textLayers.find((layer) => layer.id === activeLayerId);
+
+  // Auto-generate text layers from video script
+  useEffect(() => {
+    if (isOpen && videoScript) {
+      autoGenerateTextLayers(videoScript);
+    }
+  }, [isOpen, videoScript]);
+
+  // Fetch fonts
+  useEffect(() => {
+    if (isOpen) {
+      api.get("/api/images/fonts")
+        .then(({ data }) => setFonts(data))
+        .catch(() => {
+          setFonts([
+            { value: "Arial", label: "Arial" },
+            { value: "Helvetica", label: "Helvetica" },
+            { value: "Times New Roman", label: "Times New Roman" },
+          ]);
+        });
+    }
+  }, [isOpen]);
+
+  const autoGenerateTextLayers = (script: string) => {
+    // Remove VOICEOVER: prefix if present
+    const cleanScript = script.replace(/^VOICEOVER:\s*/, "");
+
+    // Split by common breakpoints
+    const segments = cleanScript.split(/[\.\!\?]\s+/).filter(s => s.trim());
+
+    const layers: VideoTextLayer[] = segments.map((segment, index) => {
+      const startTime = (index * videoDuration) / segments.length;
+      return {
+        id: (index + 1).toString(),
+        text: segment.trim() + (index < segments.length - 1 ? "." : ""),
+        x: 50, // Center
+        y: 85, // Bottom
+        font_size: 48,
+        font_family: fonts[0]?.value || "Arial",
+        color: "#FFFFFF",
+        stroke_color: "#000000",
+        stroke_width: 2,
+        opacity: 1.0,
+        start_time: startTime,
+        duration: videoDuration / segments.length,
+        animation_in: "fade",
+        animation_out: "fade",
+      };
+    });
+
+    setTextLayers(layers);
+    if (layers.length > 0) {
+      setActiveLayerId(layers[0].id);
+    }
+  };
+
+  const handleAddTextLayer = () => {
+    const newId = (textLayers.length + 1).toString();
+    const defaultFont = fonts[0]?.value || "Arial";
+    const newLayer: VideoTextLayer = {
+      id: newId,
+      text: "New Text",
+      x: 50,
+      y: 85,
+      font_size: 48,
+      font_family: defaultFont,
+      color: "#FFFFFF",
+      stroke_width: 0,
+      opacity: 1.0,
+      start_time: currentTime,
+      duration: 3,
+      animation_in: "fade",
+      animation_out: "fade",
+    };
+    setTextLayers([...textLayers, newLayer]);
+    setActiveLayerId(newId);
+  };
+
+  const handleDeleteLayer = (id: string) => {
+    if (textLayers.length === 1) return;
+    const updatedLayers = textLayers.filter((layer) => layer.id !== id);
+    setTextLayers(updatedLayers);
+    if (activeLayerId === id && updatedLayers.length > 0) {
+      setActiveLayerId(updatedLayers[0].id);
+    }
+  };
+
+  const handleLayerChange = (id: string, updates: Partial<VideoTextLayer>) => {
+    setTextLayers(
+      textLayers.map((layer) => (layer.id === id ? { ...layer, ...updates } : layer))
+    );
+  };
+
+  const handleSave = async () => {
+    if (!activeLayer) return;
+
+    setIsProcessing(true);
+
+    try {
+      const payload = {
+        video_url: videoUrl,
+        text_layers: textLayers,
+        campaign_id: campaignId,
+      };
+
+      const { data } = await api.post("/api/videos/text-overlay", payload);
+
+      toast.success("Text overlay added to video successfully!");
+      onSave(data);
+      onClose();
+    } catch (err: any) {
+      console.error("Error adding text overlay:", err);
+      toast.error(err.response?.data?.detail || "Failed to add text overlay");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+      <div className="bg-white dark:bg-gray-900 rounded-lg max-h-[90vh] overflow-hidden flex flex-col w-[1200px]">
+        {/* Header */}
+        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+              🎬 Video Text Editor
+            </h2>
+            <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 overflow-hidden flex">
+          {/* Left Sidebar - Controls */}
+          <div className="w-80 bg-gray-50 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto p-4">
+            {/* Video Timeline */}
+            <div className="mb-4 p-3 bg-white dark:bg-gray-900 rounded border">
+              <div className="text-xs font-medium mb-2 text-gray-600 dark:text-gray-400">
+                ⏱️ Video Timeline
+              </div>
+              <video
+                ref={videoRef}
+                src={videoUrl}
+                className="w-full rounded"
+                onLoadedMetadata={(e) => {
+                  const video = e.currentTarget;
+                  setVideoDuration(video.duration);
+                }}
+                onTimeUpdate={(e) => {
+                  setCurrentTime(e.currentTarget.currentTime);
+                }}
+              />
+              <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                Duration: {videoDuration.toFixed(1)}s | Current: {currentTime.toFixed(1)}s
+              </div>
+            </div>
+
+            {/* Text Layers */}
+            <div className="space-y-4">
+              <div>
+                <h3 className="font-normal mb-2 text-gray-900 dark:text-white">
+                  Text Layers ({textLayers.length})
+                </h3>
+                <div className="space-y-2">
+                  {textLayers.map((layer) => (
+                    <div
+                      key={layer.id}
+                      className={`p-2 rounded border cursor-pointer transition ${
+                        activeLayerId === layer.id
+                          ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+                          : "border-gray-200 dark:border-gray-700 hover:border-gray-300"
+                      }`}
+                      onClick={() => setActiveLayerId(layer.id)}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-gray-900 dark:text-white">
+                          Layer {layer.id}
+                        </span>
+                        {textLayers.length > 1 && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteLayer(layer.id);
+                            }}
+                            className="text-red-600 hover:text-red-700 text-xs"
+                          >
+                            Delete
+                          </button>
+                        )}
+                      </div>
+                      <p className="text-xs truncate text-gray-600 dark:text-gray-400">
+                        {layer.text}
+                      </p>
+                      <div className="text-xs text-gray-500 mt-1">
+                        {layer.start_time.toFixed(1)}s - {(layer.start_time + layer.duration).toFixed(1)}s
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <button
+                  onClick={handleAddTextLayer}
+                  className="w-full mt-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition text-sm"
+                >
+                  + Add Text Layer
+                </button>
+              </div>
+
+              {/* Layer Properties */}
+              {activeLayer && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
+                      Text
+                    </label>
+                    <textarea
+                      value={activeLayer.text}
+                      onChange={(e) => handleLayerChange(activeLayer.id, { text: e.target.value })}
+                      className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                      rows={2}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
+                      Start Time: {activeLayer.start_time.toFixed(1)}s
+                    </label>
+                    <input
+                      type="range"
+                      min="0"
+                      max={videoDuration}
+                      step="0.1"
+                      value={activeLayer.start_time}
+                      onChange={(e) =>
+                        handleLayerChange(activeLayer.id, { start_time: parseFloat(e.target.value) })
+                      }
+                      className="w-full"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
+                      Duration: {activeLayer.duration.toFixed(1)}s
+                    </label>
+                    <input
+                      type="range"
+                      min="0.5"
+                      max="10"
+                      step="0.1"
+                      value={activeLayer.duration}
+                      onChange={(e) =>
+                        handleLayerChange(activeLayer.id, { duration: parseFloat(e.target.value) })
+                      }
+                      className="w-full"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
+                      Font Size: {activeLayer.font_size}px
+                    </label>
+                    <input
+                      type="range"
+                      min="12"
+                      max="120"
+                      value={activeLayer.font_size}
+                      onChange={(e) =>
+                        handleLayerChange(activeLayer.id, { font_size: parseInt(e.target.value) })
+                      }
+                      className="w-full"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
+                      Text Color
+                    </label>
+                    <div className="grid grid-cols-5 gap-2">
+                      {PRESET_COLORS.map((color) => (
+                        <button
+                          key={color}
+                          onClick={() => handleLayerChange(activeLayer.id, { color })}
+                          className={`w-full aspect-square rounded border-2 ${
+                            activeLayer.color === color ? "border-gray-800 dark:border-white" : "border-gray-300"
+                          }`}
+                          style={{ backgroundColor: color }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
+                      Animation In
+                    </label>
+                    <select
+                      value={activeLayer.animation_in}
+                      onChange={(e) => handleLayerChange(activeLayer.id, { animation_in: e.target.value })}
+                      className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                    >
+                      {ANIMATION_OPTIONS.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
+                      Animation Out
+                    </label>
+                    <select
+                      value={activeLayer.animation_out}
+                      onChange={(e) => handleLayerChange(activeLayer.id, { animation_out: e.target.value })}
+                      className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                    >
+                      {ANIMATION_OPTIONS.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Right Side - Video Preview */}
+          <div className="flex-1 overflow-auto p-4">
+            <div className="relative bg-black rounded-lg overflow-hidden" style={{ paddingBottom: "56.25%" }}>
+              <video
+                src={videoUrl}
+                className="absolute top-0 left-0 w-full h-full object-contain"
+                controls
+                ref={videoRef}
+                onLoadedMetadata={(e) => {
+                  const video = e.currentTarget;
+                  setVideoDuration(video.duration);
+                }}
+              />
+
+              {/* Text Overlay Preview */}
+              {textLayers.map((layer) => (
+                <div
+                  key={layer.id}
+                  className={`absolute cursor-move transition-opacity ${
+                    activeLayerId === layer.id ? "ring-2 ring-blue-500" : ""
+                  }`}
+                  style={{
+                    left: `${layer.x}%`,
+                    top: `${layer.y}%`,
+                    transform: "translate(-50%, -50%)",
+                    fontSize: layer.font_size,
+                    fontFamily: layer.font_family,
+                    color: layer.color,
+                    opacity: layer.opacity,
+                    WebkitTextStroke: layer.stroke_width > 0 ? `${layer.stroke_width}px ${layer.stroke_color || "#000"}` : "none",
+                    textShadow: layer.stroke_width > 0 ? `0 0 ${layer.stroke_width}px ${layer.stroke_color || "#000"}` : "none",
+                  }}
+                  onClick={() => setActiveLayerId(layer.id)}
+                >
+                  <span className="inline-block">{layer.text}</span>
+                </div>
+              ))}
+            </div>
+
+            <p className="text-xs mt-2 text-center text-gray-600 dark:text-gray-400">
+              💡 Click text to select • Video shows live preview with overlays
+            </p>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="p-6 border-t border-gray-200 dark:border-gray-700 flex justify-end space-x-3">
+          <button
+            onClick={onClose}
+            className="px-6 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition text-gray-900 dark:text-white"
+            disabled={isProcessing}
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={isProcessing}
+            className="px-6 py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:from-gray-400 disabled:to-gray-500 text-white rounded-lg transition font-medium flex items-center space-x-2"
+          >
+            {isProcessing ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                <span>Processing...</span>
+              </>
+            ) : (
+              <>
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                <span>Save with Text Overlays</span>
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+interface FontOption {
+  value: string;
+  label: string;
+}
