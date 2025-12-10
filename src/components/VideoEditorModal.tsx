@@ -92,17 +92,60 @@ export function VideoEditorModal({
     // Remove VOICEOVER: prefix if present
     const cleanScript = script.replace(/^VOICEOVER:\s*/, "");
 
-    // Split by common breakpoints
-    const segments = cleanScript.split(/[\.\!\?]\s+/).filter(s => s.trim());
+    // Split by sentences first
+    const sentences = cleanScript.split(/[\.\!\?]\s+/).filter(s => s.trim());
+
+    // Further split long sentences into smaller chunks
+    const segments: string[] = [];
+    const MAX_SEGMENT_LENGTH = 80; // Maximum characters per segment
+
+    sentences.forEach((sentence) => {
+      const trimmedSentence = sentence.trim();
+      if (!trimmedSentence) return;
+
+      // If sentence is short enough, add it as-is
+      if (trimmedSentence.length <= MAX_SEGMENT_LENGTH) {
+        segments.push(trimmedSentence);
+      } else {
+        // Split long sentences by commas or "and" if available
+        const parts = trimmedSentence.split(/,\s+|\s+and\s+/i).filter(p => p.trim());
+
+        if (parts.length > 1) {
+          // Recombine parts into manageable segments
+          let currentSegment = "";
+          parts.forEach((part, i) => {
+            if ((currentSegment + (currentSegment ? ", " : "") + part).length <= MAX_SEGMENT_LENGTH) {
+              currentSegment += (currentSegment ? ", " : "") + part;
+            } else {
+              if (currentSegment) {
+                segments.push(currentSegment);
+              }
+              currentSegment = part;
+            }
+          });
+          if (currentSegment) {
+            segments.push(currentSegment);
+          }
+        } else {
+          // If we can't split nicely, just take chunks of MAX_SEGMENT_LENGTH
+          for (let i = 0; i < trimmedSentence.length; i += MAX_SEGMENT_LENGTH) {
+            segments.push(trimmedSentence.slice(i, i + MAX_SEGMENT_LENGTH));
+          }
+        }
+      }
+    });
 
     const layers: VideoTextLayer[] = segments.map((segment, index) => {
       const startTime = (index * videoDuration) / segments.length;
+      // Add period to all segments except the last one if it doesn't already end with punctuation
+      const displayText = segment.trim() + (index < segments.length - 1 && !/[.,!?]$/.test(segment.trim()) ? "." : "");
+
       return {
         id: (index + 1).toString(),
-        text: segment.trim() + (index < segments.length - 1 ? "." : ""),
+        text: displayText,
         x: 50, // Center
         y: 85, // Bottom
-        font_size: 48,
+        font_size: 28, // Reduced from 48 to prevent overflow
         font_family: fonts[0]?.value || "Arial",
         color: "#FFFFFF",
         stroke_color: "#000000",
@@ -129,7 +172,7 @@ export function VideoEditorModal({
       text: "New Text",
       x: 50,
       y: 85,
-      font_size: 48,
+      font_size: 28, // Reduced from 48 to match auto-generated layers
       font_family: defaultFont,
       color: "#FFFFFF",
       stroke_width: 0,
@@ -508,11 +551,15 @@ export function VideoEditorModal({
                     opacity: layer.opacity,
                     WebkitTextStroke: layer.stroke_width > 0 ? `${layer.stroke_width}px ${layer.stroke_color || "#000"}` : "none",
                     textShadow: layer.stroke_width > 0 ? `0 0 ${layer.stroke_width}px ${layer.stroke_color || "#000"}` : "none",
+                    maxWidth: "80%", // Limit width to prevent overflow
+                    textAlign: "center", // Center align text
+                    lineHeight: "1.2", // Better line spacing
+                    wordWrap: "break-word", // Enable word wrapping
                   }}
                   onMouseDown={(e) => handleMouseDown(e, layer.id)}
                   onClick={() => setActiveLayerId(layer.id)}
                 >
-                  <span className="inline-block pointer-events-none">{layer.text}</span>
+                  <div className="pointer-events-none">{layer.text}</div>
                   {/* Debug indicator - shows position */}
                   {activeLayerId === layer.id && (
                     <div
@@ -537,7 +584,7 @@ export function VideoEditorModal({
             </div>
 
             <p className="text-xs mt-2 text-center text-gray-600 dark:text-gray-400">
-              💡 Click and drag text to position it • Preview automatically matches video aspect ratio
+              💡 Click and drag text to position it • Text automatically wraps and stays within bounds
             </p>
           </div>
         </div>
