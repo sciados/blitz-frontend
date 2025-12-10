@@ -156,6 +156,62 @@ export function VideoEditorModal({
     );
   };
 
+  const handleMouseDown = (e: React.MouseEvent, layerId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!canvasRef.current) return;
+
+    const layer = textLayers.find((l) => l.id === layerId);
+    if (!layer) return;
+
+    const canvasRect = canvasRef.current.getBoundingClientRect();
+
+    // Calculate mouse position relative to the canvas
+    const mouseX = e.clientX - canvasRect.left;
+    const mouseY = e.clientY - canvasRect.top;
+
+    // Store the initial mouse position and layer position
+    const initialMouseX = mouseX;
+    const initialMouseY = mouseY;
+    const initialLayerX = layer.x;
+    const initialLayerY = layer.y;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      // Calculate current mouse position relative to the canvas
+      const currentMouseX = e.clientX - canvasRect.left;
+      const currentMouseY = e.clientY - canvasRect.top;
+
+      // Calculate movement delta
+      const deltaX = currentMouseX - initialMouseX;
+      const deltaY = currentMouseY - initialMouseY;
+
+      // Apply delta to initial layer position
+      const newX = initialLayerX + deltaX;
+      const newY = initialLayerY + deltaY;
+
+      // Update both x and y in a single state update
+      handleLayerChange(layerId, {
+        x: Math.max(0, newX),
+        y: Math.max(0, newY),
+      });
+    };
+
+    const handleMouseUp = (e: MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+
+    document.addEventListener("mousemove", handleMouseMove, { passive: false });
+    document.addEventListener("mouseup", handleMouseUp, { once: true });
+  };
+
   const handleSave = async () => {
     if (!activeLayer) return;
 
@@ -430,15 +486,35 @@ export function VideoEditorModal({
                     WebkitTextStroke: layer.stroke_width > 0 ? `${layer.stroke_width}px ${layer.stroke_color || "#000"}` : "none",
                     textShadow: layer.stroke_width > 0 ? `0 0 ${layer.stroke_width}px ${layer.stroke_color || "#000"}` : "none",
                   }}
+                  onMouseDown={(e) => handleMouseDown(e, layer.id)}
                   onClick={() => setActiveLayerId(layer.id)}
                 >
-                  <span className="inline-block">{layer.text}</span>
+                  <span className="inline-block pointer-events-none">{layer.text}</span>
+                  {/* Debug indicator - shows position */}
+                  {activeLayerId === layer.id && (
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: -24,
+                        left: 0,
+                        fontSize: 12,
+                        color: "white",
+                        background: "rgba(0,0,0,0.7)",
+                        padding: "2px 4px",
+                        borderRadius: 2,
+                        pointerEvents: "none",
+                        fontWeight: "normal",
+                      }}
+                    >
+                      x: {Math.round(layer.x)}, y: {Math.round(layer.y)}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
 
             <p className="text-xs mt-2 text-center text-gray-600 dark:text-gray-400">
-              💡 Click text to select • Video shows live preview with overlays
+              💡 Click and drag text to position it • Select a layer on the left to edit its properties
             </p>
           </div>
         </div>
