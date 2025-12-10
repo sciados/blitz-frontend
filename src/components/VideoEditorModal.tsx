@@ -59,6 +59,7 @@ export function VideoEditorModal({
   const [videoDuration, setVideoDuration] = useState<number>(0);
   const [currentTime, setCurrentTime] = useState<number>(0);
   const [fonts, setFonts] = useState<FontOption[]>([]);
+  const [videoAspectRatio, setVideoAspectRatio] = useState<number>(16/9); // Default to 16:9
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
 
@@ -282,6 +283,11 @@ export function VideoEditorModal({
                 onLoadedMetadata={(e) => {
                   const video = e.currentTarget;
                   setVideoDuration(video.duration);
+                  // Detect and set video aspect ratio
+                  if (video.videoWidth && video.videoHeight) {
+                    const aspectRatio = video.videoWidth / video.videoHeight;
+                    setVideoAspectRatio(aspectRatio);
+                  }
                 }}
                 onTimeUpdate={(e) => {
                   setCurrentTime(e.currentTarget.currentTime);
@@ -289,6 +295,8 @@ export function VideoEditorModal({
               />
               <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
                 Duration: {videoDuration.toFixed(1)}s | Current: {currentTime.toFixed(1)}s
+                <br />
+                Aspect Ratio: {videoAspectRatio.toFixed(2)} ({videoAspectRatio > 1.5 ? "Landscape" : videoAspectRatio < 0.75 ? "Portrait" : "Square"})
               </div>
             </div>
 
@@ -466,7 +474,10 @@ export function VideoEditorModal({
 
           {/* Right Side - Video Preview */}
           <div className="flex-1 overflow-auto p-4">
-            <div className="relative bg-black rounded-lg overflow-hidden" style={{ paddingBottom: "56.25%" }}>
+            <div
+              className="relative bg-black rounded-lg overflow-hidden"
+              style={{ paddingBottom: `${(1 / videoAspectRatio) * 100}%` }}
+            >
               <video
                 src={videoUrl}
                 className="absolute top-0 left-0 w-full h-full object-contain"
@@ -475,6 +486,11 @@ export function VideoEditorModal({
                 onLoadedMetadata={(e) => {
                   const video = e.currentTarget;
                   setVideoDuration(video.duration);
+                  // Detect and set video aspect ratio
+                  if (video.videoWidth && video.videoHeight) {
+                    const aspectRatio = video.videoWidth / video.videoHeight;
+                    setVideoAspectRatio(aspectRatio);
+                  }
                 }}
               />
 
@@ -524,7 +540,7 @@ export function VideoEditorModal({
             </div>
 
             <p className="text-xs mt-2 text-center text-gray-600 dark:text-gray-400">
-              💡 Click and drag text to position it • Select a layer on the left to edit its properties
+              💡 Click and drag text to position it • Preview automatically matches video aspect ratio
             </p>
           </div>
         </div>
