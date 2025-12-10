@@ -166,37 +166,47 @@ export function VideoEditorModal({
     if (!layer) return;
 
     const canvasRect = canvasRef.current.getBoundingClientRect();
+    const canvasWidth = canvasRect.width;
+    const canvasHeight = canvasRect.height;
 
-    // Calculate mouse position relative to the canvas
+    // Convert percentage to pixels for calculations
+    const layerXpx = (layer.x / 100) * canvasWidth;
+    const layerYpx = (layer.y / 100) * canvasHeight;
+
+    // Calculate mouse position relative to the canvas (in pixels)
     const mouseX = e.clientX - canvasRect.left;
     const mouseY = e.clientY - canvasRect.top;
 
-    // Store the initial mouse position and layer position
+    // Store the initial mouse position and layer position (in pixels)
     const initialMouseX = mouseX;
     const initialMouseY = mouseY;
-    const initialLayerX = layer.x;
-    const initialLayerY = layer.y;
+    const initialLayerX = layerXpx;
+    const initialLayerY = layerYpx;
 
     const handleMouseMove = (e: MouseEvent) => {
       e.preventDefault();
       e.stopPropagation();
 
-      // Calculate current mouse position relative to the canvas
+      // Calculate current mouse position relative to the canvas (in pixels)
       const currentMouseX = e.clientX - canvasRect.left;
       const currentMouseY = e.clientY - canvasRect.top;
 
-      // Calculate movement delta
+      // Calculate movement delta (in pixels)
       const deltaX = currentMouseX - initialMouseX;
       const deltaY = currentMouseY - initialMouseY;
 
-      // Apply delta to initial layer position
-      const newX = initialLayerX + deltaX;
-      const newY = initialLayerY + deltaY;
+      // Apply delta to initial layer position (in pixels)
+      const newXpx = initialLayerX + deltaX;
+      const newYpx = initialLayerY + deltaY;
 
-      // Update both x and y in a single state update
+      // Convert back to percentage for storage
+      const newXPercent = Math.max(0, Math.min(100, (newXpx / canvasWidth) * 100));
+      const newYPercent = Math.max(0, Math.min(100, (newYpx / canvasHeight) * 100));
+
+      // Update both x and y in percentage
       handleLayerChange(layerId, {
-        x: Math.max(0, newX),
-        y: Math.max(0, newY),
+        x: newXPercent,
+        y: newYPercent,
       });
     };
 
