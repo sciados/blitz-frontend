@@ -60,8 +60,9 @@ export function VideoEditorModal({
   const [currentTime, setCurrentTime] = useState<number>(0);
   const [fonts, setFonts] = useState<FontOption[]>([]);
   const [videoAspectRatio, setVideoAspectRatio] = useState<number>(16/9); // Default to 16:9
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const canvasRef = useRef<HTMLDivElement>(null);
+  const timelineVideoRef = useRef<HTMLVideoElement>(null);
+  const previewVideoRef = useRef<HTMLVideoElement>(null);
+  const previewContainerRef = useRef<HTMLDivElement>(null);
 
   const activeLayer = textLayers.find((layer) => layer.id === activeLayerId);
 
@@ -161,22 +162,22 @@ export function VideoEditorModal({
     e.preventDefault();
     e.stopPropagation();
 
-    if (!canvasRef.current) return;
+    if (!previewContainerRef.current) return;
 
     const layer = textLayers.find((l) => l.id === layerId);
     if (!layer) return;
 
-    const canvasRect = canvasRef.current.getBoundingClientRect();
-    const canvasWidth = canvasRect.width;
-    const canvasHeight = canvasRect.height;
+    const containerRect = previewContainerRef.current.getBoundingClientRect();
+    const containerWidth = containerRect.width;
+    const containerHeight = containerRect.height;
 
     // Convert percentage to pixels for calculations
-    const layerXpx = (layer.x / 100) * canvasWidth;
-    const layerYpx = (layer.y / 100) * canvasHeight;
+    const layerXpx = (layer.x / 100) * containerWidth;
+    const layerYpx = (layer.y / 100) * containerHeight;
 
-    // Calculate mouse position relative to the canvas (in pixels)
-    const mouseX = e.clientX - canvasRect.left;
-    const mouseY = e.clientY - canvasRect.top;
+    // Calculate mouse position relative to the container (in pixels)
+    const mouseX = e.clientX - containerRect.left;
+    const mouseY = e.clientY - containerRect.top;
 
     // Store the initial mouse position and layer position (in pixels)
     const initialMouseX = mouseX;
@@ -188,9 +189,9 @@ export function VideoEditorModal({
       e.preventDefault();
       e.stopPropagation();
 
-      // Calculate current mouse position relative to the canvas (in pixels)
-      const currentMouseX = e.clientX - canvasRect.left;
-      const currentMouseY = e.clientY - canvasRect.top;
+      // Calculate current mouse position relative to the container (in pixels)
+      const currentMouseX = e.clientX - containerRect.left;
+      const currentMouseY = e.clientY - containerRect.top;
 
       // Calculate movement delta (in pixels)
       const deltaX = currentMouseX - initialMouseX;
@@ -201,8 +202,8 @@ export function VideoEditorModal({
       const newYpx = initialLayerY + deltaY;
 
       // Convert back to percentage for storage
-      const newXPercent = Math.max(0, Math.min(100, (newXpx / canvasWidth) * 100));
-      const newYPercent = Math.max(0, Math.min(100, (newYpx / canvasHeight) * 100));
+      const newXPercent = Math.max(0, Math.min(100, (newXpx / containerWidth) * 100));
+      const newYPercent = Math.max(0, Math.min(100, (newYpx / containerHeight) * 100));
 
       // Update both x and y in percentage
       handleLayerChange(layerId, {
@@ -277,17 +278,12 @@ export function VideoEditorModal({
                 ⏱️ Video Timeline
               </div>
               <video
-                ref={videoRef}
+                ref={timelineVideoRef}
                 src={videoUrl}
                 className="w-full rounded"
                 onLoadedMetadata={(e) => {
                   const video = e.currentTarget;
                   setVideoDuration(video.duration);
-                  // Detect and set video aspect ratio
-                  if (video.videoWidth && video.videoHeight) {
-                    const aspectRatio = video.videoWidth / video.videoHeight;
-                    setVideoAspectRatio(aspectRatio);
-                  }
                 }}
                 onTimeUpdate={(e) => {
                   setCurrentTime(e.currentTarget.currentTime);
@@ -475,14 +471,15 @@ export function VideoEditorModal({
           {/* Right Side - Video Preview */}
           <div className="flex-1 overflow-auto p-4">
             <div
+              ref={previewContainerRef}
               className="relative bg-black rounded-lg overflow-hidden"
               style={{ paddingBottom: `${(1 / videoAspectRatio) * 100}%` }}
             >
               <video
+                ref={previewVideoRef}
                 src={videoUrl}
                 className="absolute top-0 left-0 w-full h-full object-contain"
                 controls
-                ref={videoRef}
                 onLoadedMetadata={(e) => {
                   const video = e.currentTarget;
                   setVideoDuration(video.duration);
