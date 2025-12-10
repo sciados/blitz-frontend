@@ -1,43 +1,61 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "src/lib/appClient";
 import { toast } from "sonner";
+import { AuthGate } from "src/components/AuthGate";
 
 // ============================================================================
-// TYPES
+// TYPES - Matching new database schema
 // ============================================================================
 
 interface TierLimit {
+  id: number;
   tier_name: string;
-  display_name: string;
-  videos_per_month: number;
-  images_per_month: number;
-  video_scripts_per_month: number;
-  articles_per_month: number;
-  emails_per_month: number;
-  social_posts_per_month: number;
-  campaigns_per_month: number;
-  is_active: boolean;
+  monthly_ai_video_scripts: number | null;  // NULL = unlimited
+  monthly_ai_text_generations: number | null;
+  monthly_ai_image_generations: number | null;
+  monthly_campaigns: number | null;
+  max_tokens_per_request: number;
+  can_use_premium_ai: boolean;
+  can_use_templates: boolean;
+  description: string | null;
 }
 
-interface UsageMetrics {
-  tier_name: string;
+interface TierLimitUpdate {
+  monthly_ai_video_scripts?: number | null;
+  monthly_ai_text_generations?: number | null;
+  monthly_ai_image_generations?: number | null;
+  monthly_campaigns?: number | null;
+  max_tokens_per_request?: number;
+  can_use_premium_ai?: boolean;
+  can_use_templates?: boolean;
+  description?: string;
+}
+
+interface UserUsage {
+  user_id: number;
+  email: string;
+  tier: string;
+  usage_month: string;
+  ai_video_scripts_used: number;
+  ai_text_generations_used: number;
+  ai_image_generations_used: number;
+  campaigns_created: number;
+  estimated_cost_usd: number;
+}
+
+interface UsageSummary {
   total_users: number;
-  videos_generated: number;
-  images_generated: number;
-  video_scripts_generated: number;
-  articles_generated: number;
-  revenue: number;
-  avg_usage_percentage: number;
-}
-
-interface BulkUpdateRequest {
-  tier_name: string;
-  field: string;
-  value: number;
-  reason?: string;
+  total_cost_this_month: number;
+  usage_by_tier: Record<string, {
+    user_count: number;
+    ai_video_scripts: number;
+    ai_text_generations: number;
+    ai_image_generations: number;
+    total_cost: number;
+  }>;
 }
 
 // ============================================================================
@@ -46,141 +64,132 @@ interface BulkUpdateRequest {
 
 export default function AdminLimitsPage() {
   const [activeTab, setActiveTab] = useState("overview");
+  const [selectedMonth, setSelectedMonth] = useState(() => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  });
   const queryClient = useQueryClient();
 
-  // Fetch tier limits
-  const { data: tierLimitsData, isLoading: tierLimitsLoading } = useQuery<{
-    tiers: TierLimit[];
-  }>({
+  // Fetch tier limits from database
+  const { data: tiers = [], isLoading: tiersLoading } = useQuery<TierLimit[]>({
     queryKey: ["admin-tier-limits"],
     queryFn: async () => (await api.get("/api/admin/limits/tiers")).data,
   });
 
-  // Fetch usage analytics
-  const { data: usageData, isLoading: usageLoading } = useQuery<{
-    metrics: UsageMetrics[];
-  }>({
-    queryKey: ["admin-usage-analytics"],
-    queryFn: async () => (await api.get("/api/admin/limits/usage")).data,
+  // Fetch usage summary
+  const { data: usageSummary, isLoading: summaryLoading } = useQuery<UsageSummary>({
+    queryKey: ["admin-usage-summary", selectedMonth],
+    queryFn: async () => (await api.get(`/api/admin/limits/usage/summary?month=${selectedMonth}`)).data,
   });
 
-  const tiers = tierLimitsData?.tiers || [];
-  const metrics = usageData?.metrics || [];
+  // Fetch detailed user usage
+  const { data: userUsage = [], isLoading: usageLoading } = useQuery<UserUsage[]>({
+    queryKey: ["admin-user-usage", selectedMonth],
+    queryFn: async () => (await api.get(`/api/admin/limits/usage?month=${selectedMonth}`)).data,
+    enabled: activeTab === "users",
+  });
 
-  // Mutations
-  const updateTierLimitMutation = useMutation({
-    mutationFn: async ({ tierName, updates }: { tierName: string; updates: Partial<TierLimit> }) => {
+  // Update tier mutation
+  const updateTierMutation = useMutation({
+    mutationFn: async ({ tierName, updates }: { tierName: string; updates: TierLimitUpdate }) => {
       return await api.put(`/api/admin/limits/tiers/${tierName}`, updates);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-tier-limits"] });
-      toast.success("Tier limit updated successfully");
+      toast.success("Tier limits updated successfully");
     },
     onError: (err: any) => {
-      toast.error(err.response?.data?.detail || "Failed to update tier limit");
+      toast.error(err.response?.data?.detail || "Failed to update tier limits");
     },
   });
 
-  const bulkUpdateMutation = useMutation({
-    mutationFn: async (updates: BulkUpdateRequest[]) => {
-      return await api.post("/api/admin/limits/bulk-update", { updates });
+  // Reset user usage mutation
+  const resetUsageMutation = useMutation({
+    mutationFn: async (userId: number) => {
+      return await api.delete(`/api/admin/limits/usage/${userId}`);
     },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["admin-tier-limits"] });
-      toast.success(`Successfully updated ${data.data.count} tier limits`);
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-user-usage"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-usage-summary"] });
+      toast.success("User usage reset successfully");
     },
     onError: (err: any) => {
-      toast.error(err.response?.data?.detail || "Failed to perform bulk update");
+      toast.error(err.response?.data?.detail || "Failed to reset usage");
     },
   });
 
   return (
-    <div className="p-6">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">Usage Limits Management</h1>
-        <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
-          Configure tier limits and monitor usage across all content types
-        </p>
+    <AuthGate requiredRole="admin">
+      <div className="p-6">
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold mb-2">Usage Limits Management</h1>
+          <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+            Configure tier limits and monitor platform usage. Data from database tables: tier_limits, user_usage
+          </p>
+        </div>
+
+        {/* Month Selector */}
+        <div className="mb-4">
+          <label className="text-sm mr-2" style={{ color: "var(--text-secondary)" }}>
+            Viewing month:
+          </label>
+          <input
+            type="month"
+            value={selectedMonth}
+            onChange={(e) => setSelectedMonth(e.target.value)}
+            className="px-3 py-1 border rounded"
+            style={{ borderColor: "var(--card-border)" }}
+          />
+        </div>
+
+        {/* Tabs */}
+        <div className="flex space-x-1 mb-6 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg w-fit">
+          {["overview", "tiers", "users"].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`px-4 py-2 rounded-md transition capitalize ${
+                activeTab === tab
+                  ? "bg-white dark:bg-gray-700 shadow"
+                  : "hover:bg-gray-200 dark:hover:bg-gray-700"
+              }`}
+            >
+              {tab === "overview" ? "Overview" : tab === "tiers" ? "Tier Limits" : "User Usage"}
+            </button>
+          ))}
+        </div>
+
+        {/* Content */}
+        <div className="card rounded-lg p-6">
+          {activeTab === "overview" && (
+            <OverviewDashboard
+              tiers={tiers}
+              summary={usageSummary}
+              isLoading={tiersLoading || summaryLoading}
+              selectedMonth={selectedMonth}
+            />
+          )}
+
+          {activeTab === "tiers" && (
+            <TierLimitsEditor
+              tiers={tiers}
+              isLoading={tiersLoading}
+              onUpdate={(tierName, updates) => updateTierMutation.mutate({ tierName, updates })}
+              isUpdating={updateTierMutation.isPending}
+            />
+          )}
+
+          {activeTab === "users" && (
+            <UserUsageTable
+              users={userUsage}
+              isLoading={usageLoading}
+              onResetUsage={(userId) => resetUsageMutation.mutate(userId)}
+              isResetting={resetUsageMutation.isPending}
+            />
+          )}
+        </div>
       </div>
-
-      {/* Tabs */}
-      <div className="flex space-x-1 mb-6 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg w-fit">
-        <button
-          onClick={() => setActiveTab("overview")}
-          className={`px-4 py-2 rounded-md transition ${
-            activeTab === "overview"
-              ? "bg-white dark:bg-gray-700 shadow"
-              : "hover:bg-gray-200 dark:hover:bg-gray-700"
-          }`}
-        >
-          Overview
-        </button>
-        <button
-          onClick={() => setActiveTab("tiers")}
-          className={`px-4 py-2 rounded-md transition ${
-            activeTab === "tiers"
-              ? "bg-white dark:bg-gray-700 shadow"
-              : "hover:bg-gray-200 dark:hover:bg-gray-700"
-          }`}
-        >
-          Tier Limits
-        </button>
-        <button
-          onClick={() => setActiveTab("analytics")}
-          className={`px-4 py-2 rounded-md transition ${
-            activeTab === "analytics"
-              ? "bg-white dark:bg-gray-700 shadow"
-              : "hover:bg-gray-200 dark:hover:bg-gray-700"
-          }`}
-        >
-          Usage Analytics
-        </button>
-        <button
-          onClick={() => setActiveTab("bulk")}
-          className={`px-4 py-2 rounded-md transition ${
-            activeTab === "bulk"
-              ? "bg-white dark:bg-gray-700 shadow"
-              : "hover:bg-gray-200 dark:hover:bg-gray-700"
-          }`}
-        >
-          Bulk Update
-        </button>
-      </div>
-
-      {/* Content */}
-      <div className="card rounded-lg p-6">
-        {activeTab === "overview" && (
-          <OverviewDashboard
-            tiers={tiers}
-            metrics={metrics}
-            isLoading={tierLimitsLoading || usageLoading}
-          />
-        )}
-
-        {activeTab === "tiers" && (
-          <TierLimitsEditor
-            tiers={tiers}
-            isLoading={tierLimitsLoading}
-            onUpdate={(tierName, updates) => updateTierLimitMutation.mutate({ tierName, updates })}
-          />
-        )}
-
-        {activeTab === "analytics" && (
-          <UsageAnalytics
-            metrics={metrics}
-            isLoading={usageLoading}
-          />
-        )}
-
-        {activeTab === "bulk" && (
-          <BulkUpdate
-            tiers={tiers}
-            onBulkUpdate={(updates) => bulkUpdateMutation.mutate(updates)}
-            isUpdating={bulkUpdateMutation.isPending}
-          />
-        )}
-      </div>
-    </div>
+    </AuthGate>
   );
 }
 
@@ -190,155 +199,123 @@ export default function AdminLimitsPage() {
 
 function OverviewDashboard({
   tiers,
-  metrics,
+  summary,
   isLoading,
+  selectedMonth,
 }: {
   tiers: TierLimit[];
-  metrics: UsageMetrics[];
+  summary?: UsageSummary;
   isLoading: boolean;
+  selectedMonth: string;
 }) {
   if (isLoading) {
     return <div className="text-center py-12">Loading overview...</div>;
   }
 
-  // Calculate totals
-  const totalUsers = metrics.reduce((sum, m) => sum + m.total_users, 0);
-  const totalVideos = tiers.reduce((sum, t) => sum + (t.videos_per_month || 0), 0);
-  const totalImages = tiers.reduce((sum, t) => sum + (t.images_per_month || 0), 0);
-  const totalScripts = tiers.reduce((sum, t) => sum + (t.video_scripts_per_month || 0), 0);
-  const totalArticles = tiers.reduce((sum, t) => sum + (t.articles_per_month || 0), 0);
+  const formatLimit = (value: number | null) => {
+    return value === null ? "Unlimited" : value.toLocaleString();
+  };
 
   return (
     <div>
-      <h2 className="text-xl font-semibold mb-6">Platform Overview</h2>
+      <h2 className="text-xl font-semibold mb-6">Platform Overview - {selectedMonth}</h2>
 
       {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <div
-          className="p-4 rounded-lg border"
-          style={{ borderColor: "var(--card-border)" }}
-        >
-          <div className="text-sm" style={{ color: "var(--text-secondary)" }}>
-            Total Active Users
-          </div>
-          <div className="text-2xl font-bold mt-1" style={{ color: "var(--text-primary)" }}>
-            {totalUsers.toLocaleString()}
-          </div>
-        </div>
-
-        <div
-          className="p-4 rounded-lg border"
-          style={{ borderColor: "var(--card-border)" }}
-        >
-          <div className="text-sm" style={{ color: "var(--text-secondary)" }}>
-            Monthly Video Limit
-          </div>
-          <div className="text-2xl font-bold mt-1" style={{ color: "var(--text-primary)" }}>
-            {totalVideos.toLocaleString()}
-          </div>
-        </div>
-
-        <div
-          className="p-4 rounded-lg border"
-          style={{ borderColor: "var(--card-border)" }}
-        >
-          <div className="text-sm" style={{ color: "var(--text-secondary)" }}>
-            Monthly Image Limit
-          </div>
-          <div className="text-2xl font-bold mt-1" style={{ color: "var(--text-primary)" }}>
-            {totalImages.toLocaleString()}
-          </div>
-        </div>
-
-        <div
-          className="p-4 rounded-lg border"
-          style={{ borderColor: "var(--card-border)" }}
-        >
-          <div className="text-sm" style={{ color: "var(--text-secondary)" }}>
-            Monthly Script Limit
-          </div>
-          <div className="text-2xl font-bold mt-1" style={{ color: "var(--text-primary)" }}>
-            {totalScripts.toLocaleString()}
-          </div>
-        </div>
+        <MetricCard
+          label="Total Users"
+          value={summary?.total_users?.toLocaleString() || "0"}
+        />
+        <MetricCard
+          label="Total Cost (USD)"
+          value={`$${summary?.total_cost_this_month?.toFixed(2) || "0.00"}`}
+        />
+        <MetricCard
+          label="Tiers Configured"
+          value={tiers.length.toString()}
+        />
+        <MetricCard
+          label="Premium AI Tiers"
+          value={tiers.filter(t => t.can_use_premium_ai).length.toString()}
+        />
       </div>
 
-      {/* Tier Summary */}
-      <h3 className="text-lg font-semibold mb-4" style={{ color: "var(--text-primary)" }}>
-        Tier Summary
-      </h3>
-      <div className="space-y-4">
-        {tiers.map((tier) => {
-          const tierMetric = metrics.find((m) => m.tier_name === tier.tier_name);
-          return (
-            <div
-              key={tier.tier_name}
-              className="p-4 rounded-lg border hover:bg-gray-50 dark:hover:bg-gray-800 transition"
-              style={{ borderColor: "var(--card-border)" }}
-            >
-              <div className="flex items-start justify-between mb-3">
-                <div>
-                  <h4
-                    className="text-lg font-semibold"
-                    style={{ color: "var(--text-primary)" }}
-                  >
-                    {tier.display_name}
-                  </h4>
-                  <div className="text-sm" style={{ color: "var(--text-secondary)" }}>
-                    {tierMetric?.total_users || 0} active users
-                  </div>
-                </div>
-                {!tier.is_active && (
-                  <span className="px-2 py-1 text-xs bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 rounded">
-                    Inactive
-                  </span>
-                )}
-              </div>
-
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                <div>
-                  <span style={{ color: "var(--text-secondary)" }}>Videos:</span>
-                  <span className="ml-2 font-semibold" style={{ color: "var(--text-primary)" }}>
-                    {tier.videos_per_month === -1 ? "Unlimited" : tier.videos_per_month.toLocaleString()}
-                  </span>
-                </div>
-                <div>
-                  <span style={{ color: "var(--text-secondary)" }}>Images:</span>
-                  <span className="ml-2 font-semibold" style={{ color: "var(--text-primary)" }}>
-                    {tier.images_per_month === -1 ? "Unlimited" : tier.images_per_month.toLocaleString()}
-                  </span>
-                </div>
-                <div>
-                  <span style={{ color: "var(--text-secondary)" }}>Scripts:</span>
-                  <span className="ml-2 font-semibold" style={{ color: "var(--text-primary)" }}>
-                    {tier.video_scripts_per_month === -1 ? "Unlimited" : tier.video_scripts_per_month.toLocaleString()}
-                  </span>
-                </div>
-                <div>
-                  <span style={{ color: "var(--text-secondary)" }}>Articles:</span>
-                  <span className="ml-2 font-semibold" style={{ color: "var(--text-primary)" }}>
-                    {tier.articles_per_month === -1 ? "Unlimited" : tier.articles_per_month.toLocaleString()}
-                  </span>
+      {/* Usage by Tier */}
+      {summary?.usage_by_tier && Object.keys(summary.usage_by_tier).length > 0 && (
+        <>
+          <h3 className="text-lg font-semibold mb-4">Usage by Tier</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+            {Object.entries(summary.usage_by_tier).map(([tierName, data]) => (
+              <div
+                key={tierName}
+                className="p-4 rounded-lg border"
+                style={{ borderColor: "var(--card-border)" }}
+              >
+                <h4 className="font-semibold capitalize mb-2">{tierName}</h4>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div>Users: <span className="font-medium">{data.user_count}</span></div>
+                  <div>Cost: <span className="font-medium">${data.total_cost.toFixed(2)}</span></div>
+                  <div>Video Scripts: <span className="font-medium">{data.ai_video_scripts}</span></div>
+                  <div>Text Gens: <span className="font-medium">{data.ai_text_generations}</span></div>
+                  <div>Images: <span className="font-medium">{data.ai_image_generations}</span></div>
                 </div>
               </div>
+            ))}
+          </div>
+        </>
+      )}
 
-              {tierMetric && (
-                <div className="mt-3 pt-3 border-t" style={{ borderColor: "var(--card-border)" }}>
-                  <div className="text-sm" style={{ color: "var(--text-secondary)" }}>
-                    Avg Usage: {tierMetric.avg_usage_percentage.toFixed(1)}%
-                  </div>
-                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-1">
-                    <div
-                      className="bg-blue-600 h-2 rounded-full"
-                      style={{ width: `${Math.min(tierMetric.avg_usage_percentage, 100)}%` }}
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
-          );
-        })}
+      {/* Tier Configuration Summary */}
+      <h3 className="text-lg font-semibold mb-4">Tier Configuration</h3>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b" style={{ borderColor: "var(--card-border)" }}>
+              <th className="text-left py-3 px-2">Tier</th>
+              <th className="text-center py-3 px-2">Video Scripts</th>
+              <th className="text-center py-3 px-2">Text Gens</th>
+              <th className="text-center py-3 px-2">Images</th>
+              <th className="text-center py-3 px-2">Campaigns</th>
+              <th className="text-center py-3 px-2">Premium AI</th>
+              <th className="text-center py-3 px-2">Templates</th>
+            </tr>
+          </thead>
+          <tbody>
+            {tiers.map((tier) => (
+              <tr key={tier.id} className="border-b" style={{ borderColor: "var(--card-border)" }}>
+                <td className="py-3 px-2 font-medium capitalize">{tier.tier_name}</td>
+                <td className="py-3 px-2 text-center">{formatLimit(tier.monthly_ai_video_scripts)}</td>
+                <td className="py-3 px-2 text-center">{formatLimit(tier.monthly_ai_text_generations)}</td>
+                <td className="py-3 px-2 text-center">{formatLimit(tier.monthly_ai_image_generations)}</td>
+                <td className="py-3 px-2 text-center">{formatLimit(tier.monthly_campaigns)}</td>
+                <td className="py-3 px-2 text-center">
+                  {tier.can_use_premium_ai ? (
+                    <span className="text-green-600">Yes</span>
+                  ) : (
+                    <span className="text-gray-400">No</span>
+                  )}
+                </td>
+                <td className="py-3 px-2 text-center">
+                  {tier.can_use_templates ? (
+                    <span className="text-green-600">Yes</span>
+                  ) : (
+                    <span className="text-gray-400">No</span>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
+    </div>
+  );
+}
+
+function MetricCard({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="p-4 rounded-lg border" style={{ borderColor: "var(--card-border)" }}>
+      <div className="text-sm" style={{ color: "var(--text-secondary)" }}>{label}</div>
+      <div className="text-2xl font-bold mt-1" style={{ color: "var(--text-primary)" }}>{value}</div>
     </div>
   );
 }
@@ -351,10 +328,12 @@ function TierLimitsEditor({
   tiers,
   isLoading,
   onUpdate,
+  isUpdating,
 }: {
   tiers: TierLimit[];
   isLoading: boolean;
-  onUpdate: (tierName: string, updates: Partial<TierLimit>) => void;
+  onUpdate: (tierName: string, updates: TierLimitUpdate) => void;
+  isUpdating: boolean;
 }) {
   const [editingTier, setEditingTier] = useState<TierLimit | null>(null);
 
@@ -362,74 +341,53 @@ function TierLimitsEditor({
     return <div className="text-center py-12">Loading tier limits...</div>;
   }
 
+  const formatLimit = (value: number | null) => {
+    return value === null ? "Unlimited" : value.toLocaleString();
+  };
+
   return (
     <div>
       <h2 className="text-xl font-semibold mb-6">Tier Limits Configuration</h2>
+      <p className="text-sm mb-6" style={{ color: "var(--text-secondary)" }}>
+        Set -1 or leave empty for unlimited. Changes are saved to the database immediately.
+      </p>
 
       <div className="space-y-4">
         {tiers.map((tier) => (
           <div
-            key={tier.tier_name}
+            key={tier.id}
             className="p-4 rounded-lg border hover:bg-gray-50 dark:hover:bg-gray-800 transition"
             style={{ borderColor: "var(--card-border)" }}
           >
             <div className="flex items-start justify-between mb-4">
               <div>
-                <h3
-                  className="text-lg font-semibold"
-                  style={{ color: "var(--text-primary)" }}
-                >
-                  {tier.display_name}
-                </h3>
-                <span className="text-sm" style={{ color: "var(--text-secondary)" }}>
+                <h3 className="text-lg font-semibold capitalize" style={{ color: "var(--text-primary)" }}>
                   {tier.tier_name}
-                </span>
+                </h3>
+                <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+                  {tier.description || "No description"}
+                </p>
               </div>
-              <button
-                onClick={() => setEditingTier(tier)}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition"
-              >
-                Edit Limits
-              </button>
+              <div className="flex items-center space-x-3">
+                {tier.can_use_premium_ai && (
+                  <span className="px-2 py-1 text-xs bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 rounded">
+                    Premium AI
+                  </span>
+                )}
+                <button
+                  onClick={() => setEditingTier(tier)}
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition"
+                >
+                  Edit
+                </button>
+              </div>
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-              <div>
-                <span style={{ color: "var(--text-secondary)" }}>Videos/Month:</span>
-                <div
-                  className="mt-1 font-semibold text-lg"
-                  style={{ color: "var(--text-primary)" }}
-                >
-                  {tier.videos_per_month === -1 ? "Unlimited" : tier.videos_per_month.toLocaleString()}
-                </div>
-              </div>
-              <div>
-                <span style={{ color: "var(--text-secondary)" }}>Images/Month:</span>
-                <div
-                  className="mt-1 font-semibold text-lg"
-                  style={{ color: "var(--text-primary)" }}
-                >
-                  {tier.images_per_month === -1 ? "Unlimited" : tier.images_per_month.toLocaleString()}
-                </div>
-              </div>
-              <div>
-                <span style={{ color: "var(--text-secondary)" }}>Scripts/Month:</span>
-                <div
-                  className="mt-1 font-semibold text-lg"
-                  style={{ color: "var(--text-primary)" }}
-                >
-                  {tier.video_scripts_per_month === -1 ? "Unlimited" : tier.video_scripts_per_month.toLocaleString()}
-                </div>
-              </div>
-              <div>
-                <span style={{ color: "var(--text-secondary)" }}>Articles/Month:</span>
-                <div
-                  className="mt-1 font-semibold text-lg"
-                  style={{ color: "var(--text-primary)" }}
-                >
-                  {tier.articles_per_month === -1 ? "Unlimited" : tier.articles_per_month.toLocaleString()}
-                </div>
-              </div>
+              <LimitDisplay label="AI Video Scripts" value={formatLimit(tier.monthly_ai_video_scripts)} />
+              <LimitDisplay label="AI Text Gens" value={formatLimit(tier.monthly_ai_text_generations)} />
+              <LimitDisplay label="AI Images" value={formatLimit(tier.monthly_ai_image_generations)} />
+              <LimitDisplay label="Campaigns" value={formatLimit(tier.monthly_campaigns)} />
             </div>
           </div>
         ))}
@@ -437,250 +395,155 @@ function TierLimitsEditor({
 
       {/* Edit Modal */}
       {editingTier && (
-        <TierLimitEditModal
+        <TierEditModal
           tier={editingTier}
           onClose={() => setEditingTier(null)}
-          onSave={(updatedTier) => {
-            onUpdate(editingTier.tier_name, updatedTier);
+          onSave={(updates) => {
+            onUpdate(editingTier.tier_name, updates);
             setEditingTier(null);
           }}
+          isUpdating={isUpdating}
         />
       )}
     </div>
   );
 }
 
+function LimitDisplay({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <span style={{ color: "var(--text-secondary)" }}>{label}:</span>
+      <div className="mt-1 font-semibold text-lg" style={{ color: "var(--text-primary)" }}>
+        {value}
+      </div>
+    </div>
+  );
+}
+
 // ============================================================================
-// TIER LIMIT EDIT MODAL
+// TIER EDIT MODAL
 // ============================================================================
 
-function TierLimitEditModal({
+function TierEditModal({
   tier,
   onClose,
   onSave,
+  isUpdating,
 }: {
   tier: TierLimit;
   onClose: () => void;
-  onSave: (tier: Partial<TierLimit>) => void;
+  onSave: (updates: TierLimitUpdate) => void;
+  isUpdating: boolean;
 }) {
-  const [formData, setFormData] = useState<Partial<TierLimit>>(tier);
+  const [formData, setFormData] = useState<TierLimitUpdate>({
+    monthly_ai_video_scripts: tier.monthly_ai_video_scripts,
+    monthly_ai_text_generations: tier.monthly_ai_text_generations,
+    monthly_ai_image_generations: tier.monthly_ai_image_generations,
+    monthly_campaigns: tier.monthly_campaigns,
+    max_tokens_per_request: tier.max_tokens_per_request,
+    can_use_premium_ai: tier.can_use_premium_ai,
+    can_use_templates: tier.can_use_templates,
+    description: tier.description || "",
+  });
 
-  const handleSave = () => {
-    onSave(formData);
+  const handleNumberChange = (field: keyof TierLimitUpdate, value: string) => {
+    const numValue = value === "" || value === "-1" ? null : parseInt(value);
+    setFormData({ ...formData, [field]: numValue === -1 ? null : numValue });
   };
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-        <div
-          className="p-6 border-b"
-          style={{ borderColor: "var(--card-border)" }}
-        >
-          <h3
-            className="text-xl font-semibold"
-            style={{ color: "var(--text-primary)" }}
-          >
-            Edit Limits: {tier.display_name}
-          </h3>
+      <div className="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="p-6 border-b" style={{ borderColor: "var(--card-border)" }}>
+          <h3 className="text-xl font-semibold capitalize">Edit: {tier.tier_name} Tier</h3>
         </div>
 
         <div className="p-6 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Videos */}
-            <div>
-              <label
-                className="block text-sm font-medium mb-2"
-                style={{ color: "var(--text-primary)" }}
-              >
-                Videos per Month (-1 for unlimited)
-              </label>
-              <input
-                type="number"
-                value={formData.videos_per_month ?? tier.videos_per_month}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    videos_per_month: parseInt(e.target.value),
-                  })
-                }
-                className="w-full px-4 py-2 border rounded-lg"
-                style={{ borderColor: "var(--card-border)" }}
-              />
-            </div>
-
-            {/* Images */}
-            <div>
-              <label
-                className="block text-sm font-medium mb-2"
-                style={{ color: "var(--text-primary)" }}
-              >
-                Images per Month (-1 for unlimited)
-              </label>
-              <input
-                type="number"
-                value={formData.images_per_month ?? tier.images_per_month}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    images_per_month: parseInt(e.target.value),
-                  })
-                }
-                className="w-full px-4 py-2 border rounded-lg"
-                style={{ borderColor: "var(--card-border)" }}
-              />
-            </div>
-
-            {/* Video Scripts */}
-            <div>
-              <label
-                className="block text-sm font-medium mb-2"
-                style={{ color: "var(--text-primary)" }}
-              >
-                Video Scripts per Month (-1 for unlimited)
-              </label>
-              <input
-                type="number"
-                value={formData.video_scripts_per_month ?? tier.video_scripts_per_month}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    video_scripts_per_month: parseInt(e.target.value),
-                  })
-                }
-                className="w-full px-4 py-2 border rounded-lg"
-                style={{ borderColor: "var(--card-border)" }}
-              />
-            </div>
-
-            {/* Articles */}
-            <div>
-              <label
-                className="block text-sm font-medium mb-2"
-                style={{ color: "var(--text-primary)" }}
-              >
-                Articles per Month (-1 for unlimited)
-              </label>
-              <input
-                type="number"
-                value={formData.articles_per_month ?? tier.articles_per_month}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    articles_per_month: parseInt(e.target.value),
-                  })
-                }
-                className="w-full px-4 py-2 border rounded-lg"
-                style={{ borderColor: "var(--card-border)" }}
-              />
-            </div>
-
-            {/* Emails */}
-            <div>
-              <label
-                className="block text-sm font-medium mb-2"
-                style={{ color: "var(--text-primary)" }}
-              >
-                Emails per Month (-1 for unlimited)
-              </label>
-              <input
-                type="number"
-                value={formData.emails_per_month ?? tier.emails_per_month}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    emails_per_month: parseInt(e.target.value),
-                  })
-                }
-                className="w-full px-4 py-2 border rounded-lg"
-                style={{ borderColor: "var(--card-border)" }}
-              />
-            </div>
-
-            {/* Social Posts */}
-            <div>
-              <label
-                className="block text-sm font-medium mb-2"
-                style={{ color: "var(--text-primary)" }}
-              >
-                Social Posts per Month (-1 for unlimited)
-              </label>
-              <input
-                type="number"
-                value={formData.social_posts_per_month ?? tier.social_posts_per_month}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    social_posts_per_month: parseInt(e.target.value),
-                  })
-                }
-                className="w-full px-4 py-2 border rounded-lg"
-                style={{ borderColor: "var(--card-border)" }}
-              />
-            </div>
-
-            {/* Campaigns */}
-            <div>
-              <label
-                className="block text-sm font-medium mb-2"
-                style={{ color: "var(--text-primary)" }}
-              >
-                Campaigns per Month (-1 for unlimited)
-              </label>
-              <input
-                type="number"
-                value={formData.campaigns_per_month ?? tier.campaigns_per_month}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    campaigns_per_month: parseInt(e.target.value),
-                  })
-                }
-                className="w-full px-4 py-2 border rounded-lg"
-                style={{ borderColor: "var(--card-border)" }}
-              />
-            </div>
+          {/* Monthly Limits */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <LimitInput
+              label="AI Video Scripts/Month"
+              value={formData.monthly_ai_video_scripts}
+              onChange={(v) => handleNumberChange("monthly_ai_video_scripts", v)}
+            />
+            <LimitInput
+              label="AI Text Generations/Month"
+              value={formData.monthly_ai_text_generations}
+              onChange={(v) => handleNumberChange("monthly_ai_text_generations", v)}
+            />
+            <LimitInput
+              label="AI Images/Month"
+              value={formData.monthly_ai_image_generations}
+              onChange={(v) => handleNumberChange("monthly_ai_image_generations", v)}
+            />
+            <LimitInput
+              label="Campaigns/Month"
+              value={formData.monthly_campaigns}
+              onChange={(v) => handleNumberChange("monthly_campaigns", v)}
+            />
           </div>
 
-          {/* Active Toggle */}
-          <div className="flex items-center space-x-2">
+          {/* Max Tokens */}
+          <div>
+            <label className="block text-sm font-medium mb-2">Max Tokens per Request</label>
             <input
-              type="checkbox"
-              id="tier_active"
-              checked={formData.is_active ?? tier.is_active}
-              onChange={(e) =>
-                setFormData({ ...formData, is_active: e.target.checked })
-              }
-              className="w-4 h-4"
+              type="number"
+              value={formData.max_tokens_per_request || 4000}
+              onChange={(e) => setFormData({ ...formData, max_tokens_per_request: parseInt(e.target.value) })}
+              className="w-full px-4 py-2 border rounded-lg"
+              style={{ borderColor: "var(--card-border)" }}
             />
-            <label
-              htmlFor="tier_active"
-              className="text-sm font-medium"
-              style={{ color: "var(--text-primary)" }}
-            >
-              Tier Active
+          </div>
+
+          {/* Feature Flags */}
+          <div className="space-y-3">
+            <label className="flex items-center space-x-3">
+              <input
+                type="checkbox"
+                checked={formData.can_use_premium_ai}
+                onChange={(e) => setFormData({ ...formData, can_use_premium_ai: e.target.checked })}
+                className="w-4 h-4"
+              />
+              <span>Can use Premium AI (Claude/GPT-4o for video scripts)</span>
             </label>
+            <label className="flex items-center space-x-3">
+              <input
+                type="checkbox"
+                checked={formData.can_use_templates}
+                onChange={(e) => setFormData({ ...formData, can_use_templates: e.target.checked })}
+                className="w-4 h-4"
+              />
+              <span>Can use Templates (template-based video scripts)</span>
+            </label>
+          </div>
+
+          {/* Description */}
+          <div>
+            <label className="block text-sm font-medium mb-2">Description</label>
+            <textarea
+              value={formData.description || ""}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              className="w-full px-4 py-2 border rounded-lg"
+              style={{ borderColor: "var(--card-border)" }}
+              rows={2}
+            />
           </div>
         </div>
 
-        <div
-          className="p-6 border-t flex justify-end space-x-3"
-          style={{ borderColor: "var(--card-border)" }}
-        >
+        <div className="p-6 border-t flex justify-end space-x-3" style={{ borderColor: "var(--card-border)" }}>
           <button
             onClick={onClose}
             className="px-4 py-2 border rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
-            style={{
-              borderColor: "var(--card-border)",
-              color: "var(--text-primary)",
-            }}
+            style={{ borderColor: "var(--card-border)" }}
           >
             Cancel
           </button>
           <button
-            onClick={handleSave}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
+            onClick={() => onSave(formData)}
+            disabled={isUpdating}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg"
           >
-            Save Changes
+            {isUpdating ? "Saving..." : "Save Changes"}
           </button>
         </div>
       </div>
@@ -688,378 +551,112 @@ function TierLimitEditModal({
   );
 }
 
+function LimitInput({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: number | null | undefined;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <div>
+      <label className="block text-sm font-medium mb-2">{label}</label>
+      <input
+        type="number"
+        value={value === null ? "" : value ?? ""}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="Empty = unlimited"
+        className="w-full px-4 py-2 border rounded-lg"
+        style={{ borderColor: "var(--card-border)" }}
+      />
+      <p className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>
+        Leave empty or -1 for unlimited
+      </p>
+    </div>
+  );
+}
+
 // ============================================================================
-// USAGE ANALYTICS
+// USER USAGE TABLE
 // ============================================================================
 
-function UsageAnalytics({
-  metrics,
+function UserUsageTable({
+  users,
   isLoading,
+  onResetUsage,
+  isResetting,
 }: {
-  metrics: UsageMetrics[];
+  users: UserUsage[];
   isLoading: boolean;
+  onResetUsage: (userId: number) => void;
+  isResetting: boolean;
 }) {
   if (isLoading) {
-    return <div className="text-center py-12">Loading analytics...</div>;
+    return <div className="text-center py-12">Loading user usage...</div>;
+  }
+
+  if (users.length === 0) {
+    return (
+      <div className="text-center py-12" style={{ color: "var(--text-secondary)" }}>
+        No usage data for this month
+      </div>
+    );
   }
 
   return (
     <div>
-      <h2 className="text-xl font-semibold mb-6">Usage Analytics</h2>
+      <h2 className="text-xl font-semibold mb-6">User Usage Details</h2>
+      <p className="text-sm mb-4" style={{ color: "var(--text-secondary)" }}>
+        Showing {users.length} users. Click "Reset" to clear a user's usage for the current month.
+      </p>
 
-      <div className="space-y-4">
-        {metrics.map((metric) => (
-          <div
-            key={metric.tier_name}
-            className="p-6 rounded-lg border"
-            style={{ borderColor: "var(--card-border)" }}
-          >
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <h3
-                  className="text-lg font-semibold"
-                  style={{ color: "var(--text-primary)" }}
-                >
-                  {metric.tier_name}
-                </h3>
-                <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
-                  {metric.total_users} active users
-                </p>
-              </div>
-              <div className="text-right">
-                <div
-                  className="text-sm"
-                  style={{ color: "var(--text-secondary)" }}
-                >
-                  Avg Usage
-                </div>
-                <div
-                  className="text-2xl font-bold"
-                  style={{ color: "var(--text-primary)" }}
-                >
-                  {metric.avg_usage_percentage.toFixed(1)}%
-                </div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-              <div>
-                <div className="text-sm" style={{ color: "var(--text-secondary)" }}>
-                  Videos Generated
-                </div>
-                <div
-                  className="text-xl font-semibold mt-1"
-                  style={{ color: "var(--text-primary)" }}
-                >
-                  {metric.videos_generated.toLocaleString()}
-                </div>
-              </div>
-              <div>
-                <div className="text-sm" style={{ color: "var(--text-secondary)" }}>
-                  Images Generated
-                </div>
-                <div
-                  className="text-xl font-semibold mt-1"
-                  style={{ color: "var(--text-primary)" }}
-                >
-                  {metric.images_generated.toLocaleString()}
-                </div>
-              </div>
-              <div>
-                <div className="text-sm" style={{ color: "var(--text-secondary)" }}>
-                  Scripts Generated
-                </div>
-                <div
-                  className="text-xl font-semibold mt-1"
-                  style={{ color: "var(--text-primary)" }}
-                >
-                  {metric.video_scripts_generated.toLocaleString()}
-                </div>
-              </div>
-              <div>
-                <div className="text-sm" style={{ color: "var(--text-secondary)" }}>
-                  Revenue
-                </div>
-                <div
-                  className="text-xl font-semibold mt-1"
-                  style={{ color: "var(--text-primary)" }}
-                >
-                  ${metric.revenue.toLocaleString()}
-                </div>
-              </div>
-            </div>
-
-            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
-              <div
-                className="bg-gradient-to-r from-blue-500 to-purple-600 h-3 rounded-full transition-all"
-                style={{ width: `${Math.min(metric.avg_usage_percentage, 100)}%` }}
-              />
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// ============================================================================
-// BULK UPDATE
-// ============================================================================
-
-function BulkUpdate({
-  tiers,
-  onBulkUpdate,
-  isUpdating,
-}: {
-  tiers: TierLimit[];
-  onBulkUpdate: (updates: BulkUpdateRequest[]) => void;
-  isUpdating: boolean;
-}) {
-  const [updates, setUpdates] = useState<BulkUpdateRequest[]>([]);
-  const [newUpdate, setNewUpdate] = useState<Partial<BulkUpdateRequest>>({
-    tier_name: "",
-    field: "",
-    value: 0,
-    reason: "",
-  });
-
-  const addUpdate = () => {
-    if (!newUpdate.tier_name || !newUpdate.field || newUpdate.value === undefined) {
-      toast.error("Please fill in all fields");
-      return;
-    }
-
-    setUpdates([...updates, newUpdate as BulkUpdateRequest]);
-    setNewUpdate({ tier_name: "", field: "", value: 0, reason: "" });
-  };
-
-  const removeUpdate = (index: number) => {
-    setUpdates(updates.filter((_, i) => i !== index));
-  };
-
-  const handleSubmit = () => {
-    if (updates.length === 0) {
-      toast.error("Please add at least one update");
-      return;
-    }
-
-    onBulkUpdate(updates);
-    setUpdates([]);
-  };
-
-  const fields = [
-    { value: "videos_per_month", label: "Videos per Month" },
-    { value: "images_per_month", label: "Images per Month" },
-    { value: "video_scripts_per_month", label: "Video Scripts per Month" },
-    { value: "articles_per_month", label: "Articles per Month" },
-    { value: "emails_per_month", label: "Emails per Month" },
-    { value: "social_posts_per_month", label: "Social Posts per Month" },
-    { value: "campaigns_per_month", label: "Campaigns per Month" },
-  ];
-
-  return (
-    <div>
-      <h2 className="text-xl font-semibold mb-6">Bulk Update</h2>
-
-      {/* Add Update Form */}
-      <div
-        className="p-4 rounded-lg border mb-6"
-        style={{ borderColor: "var(--card-border)" }}
-      >
-        <h3
-          className="text-lg font-medium mb-4"
-          style={{ color: "var(--text-primary)" }}
-        >
-          Add Update
-        </h3>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div>
-            <label
-              className="block text-sm font-medium mb-2"
-              style={{ color: "var(--text-primary)" }}
-            >
-              Tier
-            </label>
-            <select
-              value={newUpdate.tier_name}
-              onChange={(e) =>
-                setNewUpdate({ ...newUpdate, tier_name: e.target.value })
-              }
-              className="w-full px-4 py-2 border rounded-lg"
-              style={{ borderColor: "var(--card-border)" }}
-            >
-              <option value="">Select tier...</option>
-              {tiers.map((tier) => (
-                <option key={tier.tier_name} value={tier.tier_name}>
-                  {tier.display_name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label
-              className="block text-sm font-medium mb-2"
-              style={{ color: "var(--text-primary)" }}
-            >
-              Field
-            </label>
-            <select
-              value={newUpdate.field}
-              onChange={(e) =>
-                setNewUpdate({ ...newUpdate, field: e.target.value })
-              }
-              className="w-full px-4 py-2 border rounded-lg"
-              style={{ borderColor: "var(--card-border)" }}
-            >
-              <option value="">Select field...</option>
-              {fields.map((field) => (
-                <option key={field.value} value={field.value}>
-                  {field.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label
-              className="block text-sm font-medium mb-2"
-              style={{ color: "var(--text-primary)" }}
-            >
-              New Value
-            </label>
-            <input
-              type="number"
-              value={newUpdate.value}
-              onChange={(e) =>
-                setNewUpdate({ ...newUpdate, value: parseInt(e.target.value) })
-              }
-              className="w-full px-4 py-2 border rounded-lg"
-              style={{ borderColor: "var(--card-border)" }}
-              placeholder="Enter value..."
-            />
-          </div>
-
-          <div>
-            <label
-              className="block text-sm font-medium mb-2"
-              style={{ color: "var(--text-primary)" }}
-            >
-              Reason (optional)
-            </label>
-            <input
-              type="text"
-              value={newUpdate.reason}
-              onChange={(e) =>
-                setNewUpdate({ ...newUpdate, reason: e.target.value })
-              }
-              className="w-full px-4 py-2 border rounded-lg"
-              style={{ borderColor: "var(--card-border)" }}
-              placeholder="Why this change?"
-            />
-          </div>
-        </div>
-
-        <button
-          onClick={addUpdate}
-          className="mt-4 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition"
-        >
-          Add to Batch
-        </button>
-      </div>
-
-      {/* Pending Updates */}
-      {updates.length > 0 && (
-        <div
-          className="p-4 rounded-lg border mb-6"
-          style={{ borderColor: "var(--card-border)" }}
-        >
-          <h3
-            className="text-lg font-medium mb-4"
-            style={{ color: "var(--text-primary)" }}
-          >
-            Pending Updates ({updates.length})
-          </h3>
-
-          <div className="space-y-2">
-            {updates.map((update, index) => {
-              const fieldLabel = fields.find((f) => f.value === update.field)?.label || update.field;
-              return (
-                <div
-                  key={index}
-                  className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded"
-                >
-                  <div className="flex-1">
-                    <span className="font-medium">{update.tier_name}</span>
-                    <span className="mx-2">→</span>
-                    <span>{fieldLabel}</span>
-                    <span className="mx-2">=</span>
-                    <span className="font-mono">{update.value}</span>
-                    {update.reason && (
-                      <span className="ml-2 text-sm" style={{ color: "var(--text-secondary)" }}>
-                        ({update.reason})
-                      </span>
-                    )}
-                  </div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b" style={{ borderColor: "var(--card-border)" }}>
+              <th className="text-left py-3 px-2">User</th>
+              <th className="text-center py-3 px-2">Tier</th>
+              <th className="text-center py-3 px-2">Video Scripts</th>
+              <th className="text-center py-3 px-2">Text Gens</th>
+              <th className="text-center py-3 px-2">Images</th>
+              <th className="text-center py-3 px-2">Campaigns</th>
+              <th className="text-center py-3 px-2">Est. Cost</th>
+              <th className="text-center py-3 px-2">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {users.map((user) => (
+              <tr key={user.user_id} className="border-b hover:bg-gray-50 dark:hover:bg-gray-800" style={{ borderColor: "var(--card-border)" }}>
+                <td className="py-3 px-2">
+                  <div className="font-medium">{user.email}</div>
+                  <div className="text-xs" style={{ color: "var(--text-secondary)" }}>ID: {user.user_id}</div>
+                </td>
+                <td className="py-3 px-2 text-center capitalize">{user.tier}</td>
+                <td className="py-3 px-2 text-center">{user.ai_video_scripts_used}</td>
+                <td className="py-3 px-2 text-center">{user.ai_text_generations_used}</td>
+                <td className="py-3 px-2 text-center">{user.ai_image_generations_used}</td>
+                <td className="py-3 px-2 text-center">{user.campaigns_created}</td>
+                <td className="py-3 px-2 text-center">${user.estimated_cost_usd.toFixed(4)}</td>
+                <td className="py-3 px-2 text-center">
                   <button
-                    onClick={() => removeUpdate(index)}
-                    className="ml-4 p-1 text-red-600 hover:bg-red-100 dark:hover:bg-red-900/30 rounded"
+                    onClick={() => {
+                      if (confirm(`Reset usage for ${user.email}?`)) {
+                        onResetUsage(user.user_id);
+                      }
+                    }}
+                    disabled={isResetting}
+                    className="px-2 py-1 text-xs bg-red-100 hover:bg-red-200 dark:bg-red-900 dark:hover:bg-red-800 text-red-800 dark:text-red-200 rounded"
                   >
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M6 18L18 6M6 6l12 12"
-                      />
-                    </svg>
+                    Reset
                   </button>
-                </div>
-              );
-            })}
-          </div>
-
-          <button
-            onClick={handleSubmit}
-            disabled={isUpdating}
-            className="mt-4 px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg transition flex items-center space-x-2"
-          >
-            {isUpdating ? (
-              <>
-                <svg
-                  className="animate-spin h-4 w-4 text-white"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  />
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  />
-                </svg>
-                <span>Updating...</span>
-              </>
-            ) : (
-              <span>Apply All Updates</span>
-            )}
-          </button>
-        </div>
-      )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
