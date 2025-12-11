@@ -42,18 +42,12 @@ export function ContentStudioLibraryTab({ campaignId, onGenerateFromContent }: C
     enabled: !!campaignId,
   });
 
-  // Fetch images with type filter
+  // Fetch all images for the campaign
   const { data: imagesData, refetch: refetchImages } = useQuery({
-    queryKey: ["images", campaignId, imageFilter],
+    queryKey: ["images", campaignId],
     queryFn: async () => {
       if (!campaignId) return { images: [] };
-      const params = new URLSearchParams();
-      if (imageFilter === "generated") {
-        params.set("image_type", "original");
-      } else if (imageFilter === "overlays") {
-        params.set("image_type", "overlay");
-      }
-      const response = await api.get(`/api/images/campaign/${campaignId}?${params.toString()}`);
+      const response = await api.get(`/api/images/campaign/${campaignId}`);
       return response.data;
     },
     enabled: !!campaignId,
@@ -251,7 +245,7 @@ export function ContentStudioLibraryTab({ campaignId, onGenerateFromContent }: C
           >
             <span>🖼️ Original</span>
             <span className="text-xs px-2 py-0.5 bg-gray-200 dark:bg-gray-600 rounded-full">
-              {allImages.filter((img: any) => img.image_type === "original").length}
+              {allImages.filter((img: any) => !img.metadata?.text_overlay).length}
             </span>
           </button>
           <button
@@ -264,7 +258,7 @@ export function ContentStudioLibraryTab({ campaignId, onGenerateFromContent }: C
           >
             <span>✨ Text Overlays</span>
             <span className="text-xs px-2 py-0.5 bg-gray-200 dark:bg-gray-600 rounded-full">
-              {allImages.filter((img: any) => img.image_type === "overlay").length}
+              {allImages.filter((img: any) => img.metadata?.text_overlay).length}
             </span>
           </button>
         </div>
@@ -379,11 +373,11 @@ export function ContentStudioLibraryTab({ campaignId, onGenerateFromContent }: C
                             className="font-semibold"
                             style={{ color: "var(--text-primary)" }}
                           >
-                            {item.data.image_type === "overlay"
+                            {item.data.metadata?.text_overlay
                               ? "✨ TEXT OVERLAY"
                               : item.data.image_type?.replace("_", " ").toUpperCase()}
                           </h4>
-                          {item.data.image_type === "overlay" && (
+                          {item.data.metadata?.text_overlay && (
                             <span className="px-2 py-1 bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300 rounded text-xs font-medium">
                               Edited
                             </span>
