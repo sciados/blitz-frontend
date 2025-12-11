@@ -151,8 +151,13 @@ export function VideoEditorModal({
       }
     });
 
+    // Calculate equal distribution of layers across video duration
+    const numLayers = segments.length;
+    const layerDuration = videoDuration / numLayers; // Each layer gets equal time
+    const layerStartOffset = layerDuration; // Start time increment for each subsequent layer
+
     const layers: VideoTextLayer[] = segments.map((segment, index) => {
-      const startTime = (index * videoDuration) / segments.length;
+      const startTime = index * layerStartOffset; // 0, 0.8, 1.6, 2.4, 3.2 for 4s video with 5 layers
       // Add period to all segments except the last one if it doesn't already end with punctuation
       const displayText = segment.trim() + (index < segments.length - 1 && !/[.,!?]$/.test(segment.trim()) ? "." : "");
 
@@ -168,7 +173,7 @@ export function VideoEditorModal({
         stroke_width: 2,
         opacity: 1.0,
         start_time: startTime,
-        duration: videoDuration / segments.length,
+        duration: layerDuration, // Equal duration for all layers
         animation_in: "fade",
         animation_out: "fade",
         visible: index === 0, // Only first layer visible by default
@@ -462,8 +467,13 @@ export function VideoEditorModal({
                       <p className="text-xs text-gray-600 dark:text-gray-400 mb-2 line-clamp-2">
                         {layer.text}
                       </p>
-                      <div className="text-xs text-gray-500">
-                        {layer.start_time.toFixed(1)}s - {(layer.start_time + layer.duration).toFixed(1)}s
+                      <div className="text-xs text-gray-500 flex items-center justify-between">
+                        <span>
+                          {layer.start_time.toFixed(1)}s - {(layer.start_time + layer.duration).toFixed(1)}s
+                        </span>
+                        <span className="text-[10px] text-gray-400 italic">
+                          ({(layer.duration / videoDuration * 100).toFixed(0)}% of video)
+                        </span>
                       </div>
                     </div>
                   );
@@ -726,7 +736,7 @@ export function VideoEditorModal({
             </div>
 
             <p className="text-xs mt-2 text-center text-gray-600 dark:text-gray-400">
-              💡 Click layer buttons (L1, L2, etc.) to expand details • Use 👁️ to show/hide in preview
+              💡 Auto-timed layers: 5 layers in 4s video = 0.8s each • Click layer buttons to expand details
             </p>
           </div>
         </div>
