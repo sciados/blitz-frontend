@@ -20,6 +20,8 @@ interface VideoTextLayer {
   duration: number;      // How long it stays (seconds)
   animation_in: string;  // "fade", "slide_up", "zoom", "none"
   animation_out: string; // "fade", "slide_down", "zoom", "none"
+  // Preview visibility
+  visible: boolean;      // Whether to show this layer in preview
 }
 
 interface VideoEditorModalProps {
@@ -65,6 +67,17 @@ export function VideoEditorModal({
   const previewContainerRef = useRef<HTMLDivElement>(null);
 
   const activeLayer = textLayers.find((layer) => layer.id === activeLayerId);
+
+  // Auto-show the active layer when it changes
+  useEffect(() => {
+    if (activeLayerId) {
+      setTextLayers((prevLayers) =>
+        prevLayers.map((layer) =>
+          layer.id === activeLayerId ? { ...layer, visible: true } : layer
+        )
+      );
+    }
+  }, [activeLayerId]);
 
   // Auto-generate text layers from video script
   useEffect(() => {
@@ -155,6 +168,7 @@ export function VideoEditorModal({
         duration: videoDuration / segments.length,
         animation_in: "fade",
         animation_out: "fade",
+        visible: index === 0, // Only first layer visible by default
       };
     });
 
@@ -181,6 +195,7 @@ export function VideoEditorModal({
       duration: 3,
       animation_in: "fade",
       animation_out: "fade",
+      visible: true, // New layers are visible by default
     };
     setTextLayers([...textLayers, newLayer]);
     setActiveLayerId(newId);
@@ -193,6 +208,22 @@ export function VideoEditorModal({
     if (activeLayerId === id && updatedLayers.length > 0) {
       setActiveLayerId(updatedLayers[0].id);
     }
+  };
+
+  const handleToggleVisibility = (id: string) => {
+    setTextLayers(
+      textLayers.map((layer) =>
+        layer.id === id ? { ...layer, visible: !layer.visible } : layer
+      )
+    );
+  };
+
+  const handleShowAll = () => {
+    setTextLayers(textLayers.map((layer) => ({ ...layer, visible: true })));
+  };
+
+  const handleHideAll = () => {
+    setTextLayers(textLayers.map((layer) => ({ ...layer, visible: false })));
   };
 
   const handleLayerChange = (id: string, updates: Partial<VideoTextLayer>) => {
@@ -342,9 +373,27 @@ export function VideoEditorModal({
             {/* Text Layers */}
             <div className="space-y-4">
               <div>
-                <h3 className="font-normal mb-2 text-gray-900 dark:text-white">
-                  Text Layers ({textLayers.length})
-                </h3>
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="font-normal text-gray-900 dark:text-white">
+                    Text Layers ({textLayers.length})
+                  </h3>
+                  <div className="flex gap-1">
+                    <button
+                      onClick={handleShowAll}
+                      className="text-xs px-2 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded transition"
+                      title="Show all layers"
+                    >
+                      👁️ All
+                    </button>
+                    <button
+                      onClick={handleHideAll}
+                      className="text-xs px-2 py-1 bg-gray-500 hover:bg-gray-600 text-white rounded transition"
+                      title="Hide all layers"
+                    >
+                      🚫 All
+                    </button>
+                  </div>
+                </div>
                 <div className="space-y-2">
                   {textLayers.map((layer) => (
                     <div
@@ -357,9 +406,25 @@ export function VideoEditorModal({
                       onClick={() => setActiveLayerId(layer.id)}
                     >
                       <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-gray-900 dark:text-white">
-                          Layer {layer.id}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleToggleVisibility(layer.id);
+                            }}
+                            className={`text-xs px-2 py-1 rounded transition ${
+                              layer.visible
+                                ? "bg-green-500 hover:bg-green-600 text-white"
+                                : "bg-gray-300 hover:bg-gray-400 text-gray-700 dark:bg-gray-600 dark:text-gray-300 dark:hover:bg-gray-500"
+                            }`}
+                            title={layer.visible ? "Hide layer" : "Show layer"}
+                          >
+                            {layer.visible ? "👁️" : "🚫"}
+                          </button>
+                          <span className="text-sm font-medium text-gray-900 dark:text-white">
+                            Layer {layer.id}
+                          </span>
+                        </div>
                         {textLayers.length > 1 && (
                           <button
                             onClick={(e) => {
@@ -375,8 +440,13 @@ export function VideoEditorModal({
                       <p className="text-xs truncate text-gray-600 dark:text-gray-400">
                         {layer.text}
                       </p>
-                      <div className="text-xs text-gray-500 mt-1">
-                        {layer.start_time.toFixed(1)}s - {(layer.start_time + layer.duration).toFixed(1)}s
+                      <div className="text-xs text-gray-500 mt-1 flex items-center justify-between">
+                        <span>
+                          {layer.start_time.toFixed(1)}s - {(layer.start_time + layer.duration).toFixed(1)}s
+                        </span>
+                        {!layer.visible && (
+                          <span className="text-xs text-gray-400 italic">hidden</span>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -587,7 +657,9 @@ export function VideoEditorModal({
               />
 
               {/* Text Overlay Preview */}
-              {textLayers.map((layer) => (
+              {textLayers
+                .filter((layer) => layer.visible) // Only render visible layers
+                .map((layer) => (
                 <div
                   key={layer.id}
                   className={`absolute cursor-move transition-opacity ${
@@ -636,7 +708,7 @@ export function VideoEditorModal({
             </div>
 
             <p className="text-xs mt-2 text-center text-gray-600 dark:text-gray-400">
-              💡 Click and drag text to position it • Text automatically wraps and stays within bounds
+              💡 Click and drag text to position it • Use 👁️ buttons to show/hide layers and reduce clutter
             </p>
           </div>
         </div>
