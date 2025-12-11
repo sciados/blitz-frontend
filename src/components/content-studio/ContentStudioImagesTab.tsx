@@ -84,7 +84,7 @@ export function ContentStudioImagesTab({ campaignId }: ContentStudioImagesTabPro
         image_type: imageType,
         style: imageStyle,
         aspect_ratio: aspectRatio,
-        keywords: selectedKeywords,
+        highlight_features: selectedKeywords,
       });
 
       toast.success("Image generated successfully!");
@@ -359,6 +359,67 @@ export function ContentStudioImagesTab({ campaignId }: ContentStudioImagesTabPro
         >
           Generated Images ({images.length})
         </h3>
+
+        {/* Latest Generated Preview */}
+        {images.length > 0 && (
+          <div className="card rounded-lg p-6 mb-6 bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border-2 border-purple-200 dark:border-purple-800">
+            <div className="flex items-center mb-3">
+              <svg className="w-5 h-5 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+              <h4 className="font-semibold text-purple-900 dark:text-purple-100">
+                Latest Generated
+              </h4>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="aspect-video bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden">
+                {images[0].image_url ? (
+                  <img
+                    src={images[0].image_url}
+                    alt="Latest generated"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <span style={{ color: "var(--text-secondary)" }}>Processing...</span>
+                  </div>
+                )}
+              </div>
+              <div className="flex flex-col justify-center">
+                <div className="mb-2">
+                  <span
+                    className="inline-block text-xs px-2 py-1 rounded"
+                    style={{
+                      backgroundColor: "var(--bg-secondary)",
+                      color: "var(--text-primary)",
+                    }}
+                  >
+                    {images[0].image_type}
+                  </span>
+                </div>
+                <p
+                  className="text-sm mb-3"
+                  style={{ color: "var(--text-secondary)" }}
+                >
+                  {images[0].prompt || "No prompt available"}
+                </p>
+                <div className="flex gap-2">
+                  {images[0].image_url && (
+                    <a
+                      href={images[0].image_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-sm rounded-lg transition"
+                    >
+                      View Full Size
+                    </a>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {images.length === 0 ? (
           <div className="card rounded-lg p-8 text-center">
             <p style={{ color: "var(--text-secondary)" }}>
