@@ -57,6 +57,7 @@ export function VideoEditorModal({
 }: VideoEditorModalProps) {
   const [textLayers, setTextLayers] = useState<VideoTextLayer[]>([]);
   const [activeLayerId, setActiveLayerId] = useState<string>("");
+  const [expandedLayerId, setExpandedLayerId] = useState<string>(""); // Which layer card is expanded
   const [isProcessing, setIsProcessing] = useState(false);
   const [videoDuration, setVideoDuration] = useState<number>(0);
   const [currentTime, setCurrentTime] = useState<number>(0);
@@ -76,15 +77,17 @@ export function VideoEditorModal({
           layer.id === activeLayerId ? { ...layer, visible: true } : layer
         )
       );
+      // Auto-expand the selected layer
+      setExpandedLayerId(activeLayerId);
     }
   }, [activeLayerId]);
 
-  // Auto-generate text layers from video script
+  // Auto-generate text layers from video script (wait for video duration to be known)
   useEffect(() => {
-    if (isOpen && videoScript) {
+    if (isOpen && videoScript && videoDuration > 0) {
       autoGenerateTextLayers(videoScript);
     }
-  }, [isOpen, videoScript]);
+  }, [isOpen, videoScript, videoDuration]);
 
   // Fetch fonts
   useEffect(() => {
@@ -394,24 +397,46 @@ export function VideoEditorModal({
                     </button>
                   </div>
                 </div>
-                <div className="space-y-2">
-                  {textLayers.map((layer) => (
-                    <div
-                      key={layer.id}
-                      className={`p-2 rounded border cursor-pointer transition ${
-                        activeLayerId === layer.id
-                          ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
-                          : "border-gray-200 dark:border-gray-700 hover:border-gray-300"
-                      }`}
-                      onClick={() => setActiveLayerId(layer.id)}
-                    >
-                      <div className="flex items-center justify-between">
+
+                {/* Horizontal Layer Button Bar */}
+                <div className="flex flex-wrap gap-1 mb-2">
+                  {textLayers.map((layer) => {
+                    const isActive = activeLayerId === layer.id;
+                    const isExpanded = expandedLayerId === layer.id;
+                    return (
+                      <button
+                        key={layer.id}
+                        onClick={() => {
+                          setActiveLayerId(layer.id);
+                          setExpandedLayerId(isExpanded ? "" : layer.id);
+                        }}
+                        className={`flex-1 min-w-0 px-2 py-2 rounded border transition text-xs font-medium ${
+                          isActive
+                            ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+                            : "border-gray-200 dark:border-gray-700 hover:border-gray-300"
+                        }`}
+                        title={`Layer ${layer.id} - ${layer.visible ? "Visible" : "Hidden"}`}
+                      >
+                        <div className="flex items-center justify-center gap-1">
+                          <span>{layer.visible ? "👁️" : "🚫"}</span>
+                          <span className="text-gray-900 dark:text-white">L{layer.id}</span>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Expanded Layer Details - Only shows one at a time */}
+                {expandedLayerId && (() => {
+                  const layer = textLayers.find(l => l.id === expandedLayerId);
+                  if (!layer) return null;
+
+                  return (
+                    <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 bg-white dark:bg-gray-900">
+                      <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
                           <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleToggleVisibility(layer.id);
-                            }}
+                            onClick={() => handleToggleVisibility(layer.id)}
                             className={`text-xs px-2 py-1 rounded transition ${
                               layer.visible
                                 ? "bg-green-500 hover:bg-green-600 text-white"
@@ -422,35 +447,27 @@ export function VideoEditorModal({
                             {layer.visible ? "👁️" : "🚫"}
                           </button>
                           <span className="text-sm font-medium text-gray-900 dark:text-white">
-                            Layer {layer.id}
+                            Layer {layer.id} Details
                           </span>
                         </div>
                         {textLayers.length > 1 && (
                           <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteLayer(layer.id);
-                            }}
+                            onClick={() => handleDeleteLayer(layer.id)}
                             className="text-red-600 hover:text-red-700 text-xs"
                           >
                             Delete
                           </button>
                         )}
                       </div>
-                      <p className="text-xs truncate text-gray-600 dark:text-gray-400">
+                      <p className="text-xs text-gray-600 dark:text-gray-400 mb-2 line-clamp-2">
                         {layer.text}
                       </p>
-                      <div className="text-xs text-gray-500 mt-1 flex items-center justify-between">
-                        <span>
-                          {layer.start_time.toFixed(1)}s - {(layer.start_time + layer.duration).toFixed(1)}s
-                        </span>
-                        {!layer.visible && (
-                          <span className="text-xs text-gray-400 italic">hidden</span>
-                        )}
+                      <div className="text-xs text-gray-500">
+                        {layer.start_time.toFixed(1)}s - {(layer.start_time + layer.duration).toFixed(1)}s
                       </div>
                     </div>
-                  ))}
-                </div>
+                  );
+                })()}
 
                 <button
                   onClick={handleAddTextLayer}
@@ -465,13 +482,14 @@ export function VideoEditorModal({
                 <>
                   <div>
                     <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
-                      Text
+                      Text {!activeLayer.visible && <span className="text-xs text-gray-500">(hidden in preview)</span>}
                     </label>
                     <textarea
                       value={activeLayer.text}
                       onChange={(e) => handleLayerChange(activeLayer.id, { text: e.target.value })}
                       className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
                       rows={2}
+                      placeholder={activeLayer.visible ? "" : "Click 👁️ to show text in preview"}
                     />
                   </div>
 
@@ -708,7 +726,7 @@ export function VideoEditorModal({
             </div>
 
             <p className="text-xs mt-2 text-center text-gray-600 dark:text-gray-400">
-              💡 Click and drag text to position it • Use 👁️ buttons to show/hide layers and reduce clutter
+              💡 Click layer buttons (L1, L2, etc.) to expand details • Use 👁️ to show/hide in preview
             </p>
           </div>
         </div>
