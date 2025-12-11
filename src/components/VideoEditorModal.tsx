@@ -63,6 +63,9 @@ export function VideoEditorModal({
   const [currentTime, setCurrentTime] = useState<number>(0);
   const [fonts, setFonts] = useState<FontOption[]>([]);
   const [videoAspectRatio, setVideoAspectRatio] = useState<number>(16/9); // Default to 16:9
+  const [thumbnailOptions, setThumbnailOptions] = useState<any[]>([]);
+  const [selectedThumbnailTimestamp, setSelectedThumbnailTimestamp] = useState<number | null>(null);
+  const [isLoadingThumbnails, setIsLoadingThumbnails] = useState(false);
   const timelineVideoRef = useRef<HTMLVideoElement>(null);
   const previewVideoRef = useRef<HTMLVideoElement>(null);
   const previewContainerRef = useRef<HTMLDivElement>(null);
@@ -103,6 +106,13 @@ export function VideoEditorModal({
         });
     }
   }, [isOpen]);
+
+  // Fetch thumbnail options when video duration is available
+  useEffect(() => {
+    if (isOpen && videoDuration > 0) {
+      fetchThumbnailOptions();
+    }
+  }, [isOpen, videoDuration]);
 
   const autoGenerateTextLayers = (script: string) => {
     // Remove VOICEOVER: prefix if present
@@ -316,6 +326,7 @@ export function VideoEditorModal({
         video_url: videoUrl,
         text_layers: textLayers,
         campaign_id: campaignId,
+        thumbnail_timestamp: selectedThumbnailTimestamp,
       };
 
       const { data } = await api.post("/api/videos/text-overlay", payload);
@@ -328,6 +339,31 @@ export function VideoEditorModal({
       toast.error(err.response?.data?.detail || "Failed to add text overlay");
     } finally {
       setIsProcessing(false);
+    }
+  };
+
+  const fetchThumbnailOptions = async () => {
+    if (!videoDuration || thumbnailOptions.length > 0) return;
+
+    setIsLoadingThumbnails(true);
+
+    try {
+      const { data } = await api.post("/api/videos/thumbnail-options", {
+        video_url: videoUrl,
+        video_duration: videoDuration,
+        campaign_id: campaignId,
+      });
+
+      setThumbnailOptions(data.thumbnail_options || []);
+      // Auto-select first option
+      if (data.thumbnail_options && data.thumbnail_options.length > 0) {
+        setSelectedThumbnailTimestamp(data.thumbnail_options[0].timestamp);
+      }
+    } catch (err: any) {
+      console.error("Error fetching thumbnail options:", err);
+      // Don't show error toast, as this is optional
+    } finally {
+      setIsLoadingThumbnails(false);
     }
   };
 
@@ -739,6 +775,62 @@ export function VideoEditorModal({
               💡 Auto-timed layers: 5 layers in 4s video = 0.8s each • Click layer buttons to expand details
             </p>
           </div>
+        </div>
+
+        {/* Thumbnail Selector */}
+        <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
+                Choose Thumbnail
+              </h3>
+              <p className="text-xs text-gray-600 dark:text-gray-400">
+                Select which frame to use as the video thumbnail
+              </p>
+            </div>
+            {isLoadingThumbnails && (
+              <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600"></div>
+                <span>Loading thumbnails...</span>
+              </div>
+            )}
+          </div>
+
+          {thumbnailOptions.length > 0 ? (
+            <div className="grid grid-cols-5 gap-3">
+              {thumbnailOptions.map((option, index) => (
+                <button
+                  key={index}
+                  onClick={() => setSelectedThumbnailTimestamp(option.timestamp)}
+                  className={`relative rounded-lg overflow-hidden border-2 transition-all ${
+                    selectedThumbnailTimestamp === option.timestamp
+                      ? "border-blue-600 ring-2 ring-blue-600 ring-offset-2"
+                      : "border-gray-300 dark:border-gray-600 hover:border-gray-400"
+                  }`}
+                >
+                  <img
+                    src={option.data_url}
+                    alt={`Thumbnail at ${option.timestamp}s`}
+                    className="w-full aspect-video object-cover"
+                  />
+                  <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-75 text-white text-xs py-1 px-2 text-center">
+                    {option.timestamp}s
+                  </div>
+                  {selectedThumbnailTimestamp === option.timestamp && (
+                    <div className="absolute top-2 right-2 bg-blue-600 text-white rounded-full p-1">
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+                      </svg>
+                    </div>
+                  )}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-4 text-sm text-gray-500 dark:text-gray-400">
+              No thumbnail options available
+            </div>
+          )}
         </div>
 
         {/* Footer */}
