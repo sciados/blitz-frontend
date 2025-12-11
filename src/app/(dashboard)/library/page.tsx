@@ -58,6 +58,8 @@ export default function ContentLibraryPage() {
   const [activeLibraryTab, setActiveLibraryTab] = useState<"text" | "images" | "videos">(
     "text"
   );
+  const [imageFilter, setImageFilter] = useState<"all" | "original" | "overlays">("all");
+  const [videoFilter, setVideoFilter] = useState<"all" | "generated" | "overlays">("all");
   const [allImages, setAllImages] = useState<GeneratedImage[]>([]);
   const [allVideos, setAllVideos] = useState<any[]>([]);
 
@@ -170,12 +172,22 @@ export default function ContentLibraryPage() {
   const filteredImages = allImages.filter((image) => {
     if (filterCampaignId && image.campaign_id !== filterCampaignId)
       return false;
+    // Apply image type filter
+    if (imageFilter === "original" && image.metadata?.text_overlay === true)
+      return false;
+    if (imageFilter === "overlays" && image.metadata?.text_overlay !== true)
+      return false;
     return true;
   });
 
   // Filter videos based on campaign
   const filteredVideos = allVideos.filter((video) => {
     if (filterCampaignId && video.campaign_id !== filterCampaignId)
+      return false;
+    // Apply video type filter
+    if (videoFilter === "generated" && video.generation_mode === "text_overlay")
+      return false;
+    if (videoFilter === "overlays" && video.generation_mode !== "text_overlay")
       return false;
     return true;
   });
@@ -395,6 +407,96 @@ export default function ContentLibraryPage() {
               🎬 Videos ({allVideos.length})
             </button>
           </div>
+
+          {/* Image Sub-Tabs */}
+          {activeLibraryTab === "images" && (
+            <div className="flex space-x-1 mb-6 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg w-fit">
+              <button
+                onClick={() => setImageFilter("all")}
+                className={`px-4 py-2 rounded-lg transition flex items-center gap-2 ${
+                  imageFilter === "all"
+                    ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow"
+                    : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+                }`}
+              >
+                <span>All Images</span>
+                <span className="text-xs px-2 py-0.5 bg-gray-200 dark:bg-gray-600 rounded-full">
+                  {allImages.length}
+                </span>
+              </button>
+              <button
+                onClick={() => setImageFilter("original")}
+                className={`px-4 py-2 rounded-lg transition flex items-center gap-2 ${
+                  imageFilter === "original"
+                    ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow"
+                    : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+                }`}
+              >
+                <span>🖼️ Original</span>
+                <span className="text-xs px-2 py-0.5 bg-gray-200 dark:bg-gray-600 rounded-full">
+                  {allImages.filter((img) => img.metadata?.text_overlay !== true).length}
+                </span>
+              </button>
+              <button
+                onClick={() => setImageFilter("overlays")}
+                className={`px-4 py-2 rounded-lg transition flex items-center gap-2 ${
+                  imageFilter === "overlays"
+                    ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow"
+                    : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+                }`}
+              >
+                <span>✨ Text Overlays</span>
+                <span className="text-xs px-2 py-0.5 bg-gray-200 dark:bg-gray-600 rounded-full">
+                  {allImages.filter((img) => img.metadata?.text_overlay === true).length}
+                </span>
+              </button>
+            </div>
+          )}
+
+          {/* Video Sub-Tabs */}
+          {activeLibraryTab === "videos" && (
+            <div className="flex space-x-1 mb-6 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg w-fit">
+              <button
+                onClick={() => setVideoFilter("all")}
+                className={`px-4 py-2 rounded-lg transition flex items-center gap-2 ${
+                  videoFilter === "all"
+                    ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow"
+                    : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+                }`}
+              >
+                <span>All Videos</span>
+                <span className="text-xs px-2 py-0.5 bg-gray-200 dark:bg-gray-600 rounded-full">
+                  {allVideos.length}
+                </span>
+              </button>
+              <button
+                onClick={() => setVideoFilter("generated")}
+                className={`px-4 py-2 rounded-lg transition flex items-center gap-2 ${
+                  videoFilter === "generated"
+                    ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow"
+                    : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+                }`}
+              >
+                <span>📹 Generated</span>
+                <span className="text-xs px-2 py-0.5 bg-gray-200 dark:bg-gray-600 rounded-full">
+                  {allVideos.filter((vid) => vid.generation_mode !== "text_overlay").length}
+                </span>
+              </button>
+              <button
+                onClick={() => setVideoFilter("overlays")}
+                className={`px-4 py-2 rounded-lg transition flex items-center gap-2 ${
+                  videoFilter === "overlays"
+                    ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow"
+                    : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+                }`}
+              >
+                <span>✨ Text Overlays</span>
+                <span className="text-xs px-2 py-0.5 bg-gray-200 dark:bg-gray-600 rounded-full">
+                  {allVideos.filter((vid) => vid.generation_mode === "text_overlay").length}
+                </span>
+              </button>
+            </div>
+          )}
 
           {/* Tab-Specific Filters and Stats */}
           {activeLibraryTab === "text" ? (
