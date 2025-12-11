@@ -79,6 +79,12 @@ export default function ContentLibraryPage() {
   const [videoEditorScript, setVideoEditorScript] = useState<string>("");
   const [videoEditorCampaignId, setVideoEditorCampaignId] = useState<number>(0);
 
+  // Thumbnail Selection Modal state
+  const [showThumbnailModal, setShowThumbnailModal] = useState(false);
+  const [thumbnailOptions, setThumbnailOptions] = useState<string[]>([]);
+  const [selectedVideoForThumbnail, setSelectedVideoForThumbnail] = useState<any>(null);
+  const [isGeneratingThumbnails, setIsGeneratingThumbnails] = useState(false);
+
   // Confirmation modal state
   const [showDeleteContentConfirm, setShowDeleteContentConfirm] = useState(false);
   const [showDeleteImageConfirm, setShowDeleteImageConfirm] = useState(false);
@@ -353,6 +359,64 @@ export default function ContentLibraryPage() {
     toast.success("Video with text overlays saved successfully!");
     refetchVideos();
     setIsVideoEditorOpen(false);
+  };
+
+  // Thumbnail Selection handlers
+  const handleSelectThumbnail = async (video: any) => {
+    setSelectedVideoForThumbnail(video);
+    setIsGeneratingThumbnails(true);
+    setShowThumbnailModal(true);
+
+    try {
+      // Get video duration from the video metadata or estimate
+      // For now, we'll use a default or try to extract from URL
+      const videoDuration = 5.0; // Default, could be improved
+
+      const response = await api.post("/api/videos/thumbnail-options", {
+        video_url: video.video_url,
+        video_duration: videoDuration,
+        campaign_id: video.campaign_id
+      });
+
+      setThumbnailOptions(response.data.thumbnail_options || []);
+    } catch (error: any) {
+      toast.error("Failed to generate thumbnail options");
+      setShowThumbnailModal(false);
+    } finally {
+      setIsGeneratingThumbnails(false);
+    }
+  };
+
+  const handleSelectThumbnailOption = async (thumbnailDataUrl: string, timestamp: number) => {
+    if (!selectedVideoForThumbnail) return;
+
+    try {
+      // Calculate the timestamp based on the option index
+      // The thumbnail options are generated at specific timestamps
+      const videoDuration = 5.0; // Default, should match what was used to generate options
+      const thumbnailTimestamps = [
+        videoDuration * 0.1,  // 10% through video
+        videoDuration * 0.3,  // 30% through video
+        videoDuration * 0.5,  // 50% through video
+        videoDuration * 0.7,  // 70% through video
+        videoDuration * 0.9   // 90% through video
+      ];
+      const selectedTimestamp = thumbnailTimestamps[timestamp] || 1.0;
+
+      // Call backend to save the thumbnail
+      await api.post("/api/videos/save-thumbnail", {
+        video_id: selectedVideoForThumbnail.id,
+        thumbnail_timestamp: selectedTimestamp
+      });
+
+      toast.success("Thumbnail saved successfully!");
+      setShowThumbnailModal(false);
+      setThumbnailOptions([]);
+      setSelectedVideoForThumbnail(null);
+      refetchVideos();
+    } catch (error: any) {
+      toast.error("Failed to save thumbnail selection");
+    }
   };
 
   const handleContentRefined = (content: GeneratedContent) => {
@@ -1053,6 +1117,18 @@ export default function ContentLibraryPage() {
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                           </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleSelectThumbnail(video);
+                            }}
+                            className="flex-1 text-xs px-2 py-1 bg-yellow-600 hover:bg-yellow-700 text-white rounded transition flex items-center justify-center gap-1"
+                            title="Select Thumbnail"
+                          >
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                          </button>
                           {video.generation_mode !== "text_overlay" && (
                             <button
                               onClick={(e) => {
@@ -1486,6 +1562,85 @@ export default function ContentLibraryPage() {
         campaignId={videoEditorCampaignId}
         onSave={handleSaveEditedVideo}
       />
+
+      {/* Thumbnail Selection Modal */}
+      {showThumbnailModal && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+          <div className="card rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h2
+                className="text-2xl font-bold"
+                style={{ color: "var(--text-primary)" }}
+              >
+                Select Thumbnail
+              </h2>
+              <button
+                onClick={() => {
+                  setShowThumbnailModal(false);
+                  setThumbnailOptions([]);
+                  setSelectedVideoForThumbnail(null);
+                }}
+                className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {isGeneratingThumbnails ? (
+              <div className="text-center py-12">
+                <div className="animate-spin h-12 w-12 border-4 border-red-600 border-t-transparent rounded-full mx-auto mb-4"></div>
+                <p style={{ color: "var(--text-secondary)" }}>Generating thumbnail options...</p>
+              </div>
+            ) : thumbnailOptions.length > 0 ? (
+              <>
+                <p className="mb-6" style={{ color: "var(--text-secondary)" }}>
+                  Choose a thumbnail for your video:
+                </p>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                  {thumbnailOptions.map((thumbnailDataUrl: string, index: number) => (
+                    <div
+                      key={index}
+                      onClick={() => handleSelectThumbnailOption(thumbnailDataUrl, index)}
+                      className="cursor-pointer rounded-lg overflow-hidden border-2 border-transparent hover:border-blue-500 transition-all transform hover:scale-105"
+                    >
+                      <img
+                        src={thumbnailDataUrl}
+                        alt={`Thumbnail option ${index + 1}`}
+                        className="w-full aspect-video object-cover"
+                      />
+                      <div className="p-2 bg-gray-100 dark:bg-gray-800 text-center">
+                        <span className="text-xs font-medium" style={{ color: "var(--text-primary)" }}>
+                          Option {index + 1}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <div className="text-center py-12">
+                <svg
+                  className="w-16 h-16 mx-auto mb-4 opacity-30"
+                  style={{ color: "var(--text-secondary)" }}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  />
+                </svg>
+                <p style={{ color: "var(--text-secondary)" }}>No thumbnail options available</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </AuthGate>
   );
 }
