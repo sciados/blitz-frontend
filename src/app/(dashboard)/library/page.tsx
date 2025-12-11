@@ -75,8 +75,10 @@ export default function ContentLibraryPage() {
   // Confirmation modal state
   const [showDeleteContentConfirm, setShowDeleteContentConfirm] = useState(false);
   const [showDeleteImageConfirm, setShowDeleteImageConfirm] = useState(false);
+  const [showDeleteVideoConfirm, setShowDeleteVideoConfirm] = useState(false);
   const [contentToDelete, setContentToDelete] = useState<number | null>(null);
   const [imageToDelete, setImageToDelete] = useState<number | null>(null);
+  const [videoToDelete, setVideoToDelete] = useState<number | null>(null);
 
   // Fetch all content for the user
   const { refetch: refetchContent, isLoading } = useQuery({
@@ -312,6 +314,23 @@ export default function ContentLibraryPage() {
       setIsLibraryModalOpen(false);
     } catch (err: any) {
       toast.error(err.response?.data?.detail || "Failed to delete image");
+    }
+  }
+
+  const handleDeleteVideo = (videoId: number) => {
+    setVideoToDelete(videoId);
+    setShowDeleteVideoConfirm(true);
+  };
+
+  async function confirmDeleteVideo() {
+    if (!videoToDelete) return;
+
+    try {
+      await api.delete(`/api/video/${videoToDelete}`);
+      toast.success("Video deleted successfully");
+      refetchVideos();
+    } catch (err: any) {
+      toast.error(err.response?.data?.detail || "Failed to delete video");
     }
   }
 
@@ -986,6 +1005,64 @@ export default function ContentLibraryPage() {
                             {new Date(video.created_at).toLocaleDateString()}
                           </span>
                         </div>
+                        {/* Action Buttons */}
+                        <div className="flex items-center gap-1 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (video.video_url) {
+                                window.open(video.video_url, "_blank");
+                              }
+                            }}
+                            className="flex-1 text-xs px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded transition flex items-center justify-center gap-1"
+                            title="View Video"
+                          >
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                          </button>
+                          {video.generation_mode !== "text_overlay" && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                // TODO: Navigate to video editor
+                                toast.info("Video Editor coming soon!");
+                              }}
+                              className="flex-1 text-xs px-2 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded transition flex items-center justify-center gap-1"
+                              title="Add Text Overlays"
+                            >
+                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                              </svg>
+                            </button>
+                          )}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              // Generate similar video
+                              toast.info("Generate Similar feature coming soon!");
+                            }}
+                            className="flex-1 text-xs px-2 py-1 bg-green-600 hover:bg-green-700 text-white rounded transition flex items-center justify-center gap-1"
+                            title="Generate Similar"
+                          >
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteVideo(video.id);
+                            }}
+                            className="flex-1 text-xs px-2 py-1 bg-gray-600 hover:bg-red-700 text-white rounded transition flex items-center justify-center gap-1"
+                            title="Delete"
+                          >
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -1341,6 +1418,20 @@ export default function ContentLibraryPage() {
         onConfirm={confirmDeleteImage}
         title="Delete Image"
         message="Are you sure you want to delete this image? This action cannot be undone."
+        type="danger"
+        confirmText="Delete"
+      />
+
+      {/* Delete Video Confirmation */}
+      <ConfirmationModal
+        isOpen={showDeleteVideoConfirm}
+        onClose={() => {
+          setShowDeleteVideoConfirm(false);
+          setVideoToDelete(null);
+        }}
+        onConfirm={confirmDeleteVideo}
+        title="Delete Video"
+        message="Are you sure you want to delete this video? This action cannot be undone."
         type="danger"
         confirmText="Delete"
       />

@@ -43,23 +43,6 @@ export function ContentStudioVideoTab({ campaignId }: ContentStudioVideoTabProps
   const [editorVideoUrl, setEditorVideoUrl] = useState<string>("");
   const [editorVideoScript, setEditorVideoScript] = useState<string>("");
 
-  // Fetch videos for this campaign
-  const { data, refetch } = useQuery({
-    queryKey: ["videos", campaignId],
-    queryFn: async () => {
-      const response = await api.get(`/api/video/library?campaign_id=${campaignId}`);
-      return response.data;
-    },
-    // Auto-refresh every 5 seconds to check video generation progress
-    refetchInterval: (data: any) => {
-      // Only poll if there are videos and at least one is processing
-      const videos = data?.videos || [];
-      const hasProcessingVideos = videos.some((v: any) => v.status === "processing");
-      return hasProcessingVideos ? 5000 : false;
-    },
-    refetchIntervalInBackground: true,
-  });
-
   // Fetch video scripts for this campaign
   const { data: scriptData } = useQuery({
     queryKey: ["video-scripts", campaignId],
@@ -80,7 +63,6 @@ export function ContentStudioVideoTab({ campaignId }: ContentStudioVideoTabProps
     },
   });
 
-  const videos = data?.videos || [];
   const videoScripts = scriptData || [];
   const campaignImages = imagesData?.images || [];
 
@@ -124,7 +106,6 @@ export function ContentStudioVideoTab({ campaignId }: ContentStudioVideoTabProps
 
   const handleSaveEditedVideo = (video: { video_url: string }) => {
     toast.success("Video with text overlays saved successfully!");
-    refetch();
   };
 
   // Reset form when generation mode changes
@@ -153,14 +134,13 @@ export function ContentStudioVideoTab({ campaignId }: ContentStudioVideoTabProps
       }
 
       const response = await api.post("/api/video/generate", requestBody);
-
-      toast.success("Video generation started!");
-      setScript("");
+      toast.success("Video generation started! Check the Content Library to view progress.");
+      // Clear form after generation
       handleClearScript();
       handleClearImage();
-      refetch();
+      setScript("");
     } catch (error: any) {
-      toast.error(error?.response?.data?.detail || "Failed to generate video");
+      toast.error(error.response?.data?.detail || "Failed to start video generation");
     } finally {
       setIsGenerating(false);
     }
@@ -168,14 +148,14 @@ export function ContentStudioVideoTab({ campaignId }: ContentStudioVideoTabProps
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      {/* Settings Panel */}
+      {/* Generation Form */}
       <div className="lg:col-span-1">
-        <div className="card rounded-lg p-6 sticky top-6">
+        <div className="card rounded-lg p-6">
           <h3
             className="text-lg font-semibold mb-4"
             style={{ color: "var(--text-primary)" }}
           >
-            Video Settings
+            Video Configuration
           </h3>
 
           {/* Generation Mode */}
@@ -350,9 +330,9 @@ export function ContentStudioVideoTab({ campaignId }: ContentStudioVideoTabProps
                 color: "var(--text-primary)",
               }}
             >
-              {VIDEO_STYLES.map((s) => (
-                <option key={s.value} value={s.value}>
-                  {s.label}
+              {VIDEO_STYLES.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label} - {option.description}
                 </option>
               ))}
             </select>
@@ -376,9 +356,9 @@ export function ContentStudioVideoTab({ campaignId }: ContentStudioVideoTabProps
                 color: "var(--text-primary)",
               }}
             >
-              {ASPECT_RATIOS.map((ratio) => (
-                <option key={ratio.value} value={ratio.value}>
-                  {ratio.label}
+              {ASPECT_RATIOS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
                 </option>
               ))}
             </select>
@@ -402,23 +382,26 @@ export function ContentStudioVideoTab({ campaignId }: ContentStudioVideoTabProps
                 color: "var(--text-primary)",
               }}
             >
-              {DURATIONS.map((d) => (
-                <option key={d.value} value={d.value}>
-                  {d.label}
+              {DURATIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
                 </option>
               ))}
             </select>
+            <p className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>
+              Note: 10s videos use Luma AI (txt2video only) or extend 5s videos with ffmpeg
+            </p>
           </div>
 
-          {/* Video Script Selection */}
-          {filteredVideoScripts.length > 0 && (
+          {/* Video Script Selection - Only for Text to Video */}
+          {generationMode === "text_to_video" && videoScripts.length > 0 && (
             <div className="mb-4">
               <div className="flex items-center justify-between mb-2">
                 <label
                   className="block text-sm font-medium"
                   style={{ color: "var(--text-primary)" }}
                 >
-                  Or Select an Existing Video Script
+                  Or Select Existing Script
                 </label>
                 {selectedScriptId && (
                   <button
@@ -433,14 +416,12 @@ export function ContentStudioVideoTab({ campaignId }: ContentStudioVideoTabProps
                 value={selectedScriptId || ""}
                 onChange={(e) => {
                   const scriptId = Number(e.target.value);
-                  if (scriptId) {
-                    const selectedScript = filteredVideoScripts.find((s: any) => s.id === scriptId);
-                    if (selectedScript) {
-                      handleScriptSelect(scriptId, selectedScript.content_data.text);
-                    }
+                  const script = videoScripts.find((s: any) => s.id === scriptId);
+                  if (script) {
+                    handleScriptSelect(scriptId, script.content_data.text);
                   }
                 }}
-                className="w-full px-3 py-2 rounded-lg border text-sm"
+                className="w-full px-3 py-2 rounded-lg border mb-2"
                 style={{
                   borderColor: "var(--card-border)",
                   backgroundColor: "var(--bg-primary)",
@@ -503,187 +484,6 @@ export function ContentStudioVideoTab({ campaignId }: ContentStudioVideoTabProps
             {isGenerating ? "Generating..." : "Generate Video"}
           </button>
         </div>
-      </div>
-
-      {/* Generated Videos */}
-      <div className="lg:col-span-2">
-        <div className="flex items-center justify-between mb-4">
-          <h3
-            className="text-lg font-semibold"
-            style={{ color: "var(--text-primary)" }}
-          >
-            Generated Videos ({videos.length})
-          </h3>
-          {videos.some((v: any) => v.status === "processing") && (
-            <div className="flex items-center space-x-2 text-sm" style={{ color: "var(--text-secondary)" }}>
-              <svg
-                className="w-4 h-4 animate-spin"
-                style={{ color: "var(--text-secondary)" }}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                />
-              </svg>
-              <span>Auto-refreshing...</span>
-            </div>
-          )}
-        </div>
-        {videos.length === 0 ? (
-          <div className="card rounded-lg p-8 text-center">
-            <p style={{ color: "var(--text-secondary)" }}>
-              No videos generated yet. Configure settings and click "Generate".
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {videos.slice(0, 10).map((video: any) => (
-              <div
-                key={video.id}
-                className="card rounded-lg p-6 hover:border-red-500 transition"
-              >
-                <div className="flex items-start space-x-4">
-                  <div className="w-48 h-28 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden relative">
-                    {video.thumbnail_url ? (
-                      <img
-                        src={video.thumbnail_url}
-                        alt="Video thumbnail"
-                        className="w-full h-full object-cover"
-                      />
-                    ) : video.video_url ? (
-                      <div className="flex flex-col items-center justify-center">
-                        <svg
-                          className="w-12 h-12 mb-2"
-                          style={{ color: "var(--text-secondary)" }}
-                          fill="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path d="M8 5v14l11-7z" />
-                        </svg>
-                        <span className="text-xs" style={{ color: "var(--text-secondary)" }}>
-                          Video Ready
-                        </span>
-                      </div>
-                    ) : (
-                      <span style={{ color: "var(--text-secondary)" }}>
-                        No preview
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-2">
-                      <h4
-                        className="text-lg font-semibold"
-                        style={{ color: "var(--text-primary)" }}
-                      >
-                        {video.generation_mode?.replace("_", " ").toUpperCase() || "VIDEO"}
-                      </h4>
-                      <span
-                        className={`px-2 py-1 rounded text-xs font-medium ${
-                          video.status === "completed"
-                            ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
-                            : video.status === "processing"
-                            ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
-                            : "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300"
-                        }`}
-                      >
-                        {video.status}
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-2 text-sm mb-3">
-                      <div>
-                        <span style={{ color: "var(--text-secondary)" }}>Duration:</span>{" "}
-                        <span style={{ color: "var(--text-primary)" }}>
-                          {video.actual_duration || video.requested_duration}s
-                        </span>
-                      </div>
-                      <div>
-                        <span style={{ color: "var(--text-secondary)" }}>Provider:</span>{" "}
-                        <span style={{ color: "var(--text-primary)" }}>{video.provider}</span>
-                      </div>
-                    </div>
-
-                    <p
-                      className="text-sm line-clamp-2 mb-3"
-                      style={{ color: "var(--text-secondary)" }}
-                    >
-                      {video.prompt}
-                    </p>
-
-                    <div className="flex items-center space-x-3 flex-wrap">
-                      {video.status === "completed" && video.video_url && (
-                        <>
-                          <a
-                            href={video.video_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-sm px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded transition"
-                          >
-                            View Video
-                          </a>
-                          <button
-                            onClick={() => handleOpenEditor(video.video_url, video.prompt)}
-                            className="text-sm px-3 py-1 bg-orange-600 hover:bg-orange-700 text-white rounded transition"
-                          >
-                            ✏️ Edit Text
-                          </button>
-                        </>
-                      )}
-                      {video.saved_to_r2 && (
-                        <a
-                          href={video.video_url}
-                          download
-                          className="text-sm px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded transition"
-                        >
-                          Download
-                        </a>
-                      )}
-                      {!video.saved_to_r2 && (
-                        <button
-                          onClick={() => {
-                            api.post("/api/video/save-to-library", { video_id: video.id })
-                              .then(() => {
-                                toast.success("Video saved to library!");
-                                refetch();
-                              })
-                              .catch(() => toast.error("Failed to save video"));
-                          }}
-                          className="text-sm px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded transition"
-                        >
-                          {video.status === "completed" ? "Save to Library" : "Refresh & Save"}
-                        </button>
-                      )}
-                      {video.saved_to_r2 && (
-                        <button
-                          onClick={() => {
-                            if (confirm("Are you sure you want to delete this video? This action cannot be undone.")) {
-                              api.delete(`/api/video/${video.id}`)
-                                .then(() => {
-                                  toast.success("Video deleted successfully!");
-                                  refetch();
-                                })
-                                .catch(() => toast.error("Failed to delete video"));
-                            }
-                          }}
-                          className="text-sm px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded transition"
-                        >
-                          Delete
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
       </div>
 
       {/* Video Editor Modal */}
