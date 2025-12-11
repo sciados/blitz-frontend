@@ -367,34 +367,71 @@ export default function ContentLibraryPage() {
     setSelectedVideoForThumbnail(video);
     setIsGeneratingThumbnails(true);
     setShowThumbnailModal(true);
+    setThumbnailOptions([]); // Clear previous options
 
     try {
+      console.log('🎬 Starting thumbnail generation for video:', video.id);
+      console.log('📹 Video URL:', video.video_url);
+
       // Create a temporary video element to get the actual duration
       const videoElement = document.createElement('video');
       videoElement.src = video.video_url;
       videoElement.crossOrigin = 'anonymous';
 
-      // Wait for video to load metadata
+      // Wait for video to load metadata with timeout
+      console.log('⏳ Loading video metadata...');
       await new Promise((resolve, reject) => {
-        videoElement.onloadedmetadata = () => resolve(true);
-        videoElement.onerror = () => reject(new Error('Failed to load video'));
+        const timeoutId = setTimeout(() => {
+          reject(new Error('Video metadata loading timeout'));
+        }, 10000); // 10 second timeout
+
+        videoElement.onloadedmetadata = () => {
+          clearTimeout(timeoutId);
+          console.log('✅ Video metadata loaded');
+          resolve(true);
+        };
+        videoElement.onerror = (e) => {
+          clearTimeout(timeoutId);
+          console.error('❌ Video loading error:', e);
+          reject(new Error('Failed to load video - check URL or format'));
+        };
       });
 
       const videoDuration = videoElement.duration;
       setVideoDurationForThumbnail(videoDuration);
       console.log('📹 Video duration:', videoDuration, 'seconds');
 
+      // Call the API to generate thumbnails
+      console.log('🎨 Calling thumbnail options API...');
       const response = await api.post("/api/videos/thumbnail-options", {
         video_url: video.video_url,
         video_duration: videoDuration,
         campaign_id: video.campaign_id
       });
 
+      console.log('✅ API response received:', response.data);
       setThumbnailOptions(response.data.thumbnail_options || []);
+      console.log('📋 Set thumbnail options:', response.data.thumbnail_options?.length || 0);
+
+      if (!response.data.thumbnail_options || response.data.thumbnail_options.length === 0) {
+        console.warn('⚠️ No thumbnail options returned');
+        toast.warning("No thumbnail options available for this video");
+      }
+
     } catch (error: any) {
-      console.error('Error generating thumbnails:', error);
-      toast.error("Failed to generate thumbnail options");
-      setShowThumbnailModal(false);
+      console.error('❌ Error in thumbnail generation:', error);
+      console.error('Error details:', {
+        message: error.message,
+        stack: error.stack,
+        video: video?.id
+      });
+
+      // Show specific error message
+      const errorMsg = error.response?.data?.detail || error.message || "Failed to generate thumbnail options";
+      toast.error(`Error: ${errorMsg}`);
+
+      // Don't close modal immediately, let user try again
+      // setShowThumbnailModal(false);
     } finally {
       setIsGeneratingThumbnails(false);
     }
