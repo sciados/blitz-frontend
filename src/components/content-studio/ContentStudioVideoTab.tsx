@@ -146,6 +146,51 @@ export function ContentStudioVideoTab({ campaignId }: ContentStudioVideoTabProps
     }
   };
 
+  // Get provider info based on duration and generation mode
+  const getProviderInfo = () => {
+    if (duration === 10 && generationMode === "text_to_video") {
+      return {
+        name: "Luma AI",
+        model: "Ray-v1",
+        description: "High-quality 10s videos",
+        estimatedTime: "~60-90 seconds",
+        color: "text-purple-600"
+      };
+    } else if (duration === 5) {
+      return {
+        name: "Hunyuan",
+        model: "Fast Generation",
+        description: "Quick 5s videos",
+        estimatedTime: "~30-45 seconds",
+        color: "text-blue-600"
+      };
+    } else {
+      return {
+        name: "Hunyuan + Extend",
+        model: "5s + FFmpeg Loop",
+        description: "Extended duration video",
+        estimatedTime: "~45-60 seconds",
+        color: "text-green-600"
+      };
+    }
+  };
+
+  const providerInfo = getProviderInfo();
+
+  // Get resolution info based on aspect ratio
+  const getResolution = () => {
+    switch (aspectRatio) {
+      case "16:9":
+        return "1280×720 (HD)";
+      case "9:16":
+        return "720×1280 (Vertical)";
+      case "1:1":
+        return "1024×1024 (Square)";
+      default:
+        return "1280×720";
+    }
+  };
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       {/* Generation Form */}
@@ -483,6 +528,151 @@ export function ContentStudioVideoTab({ campaignId }: ContentStudioVideoTabProps
           >
             {isGenerating ? "Generating..." : "Generate Video"}
           </button>
+        </div>
+      </div>
+
+      {/* Preview Panel */}
+      <div className="lg:col-span-2">
+        <div className="card rounded-lg p-6">
+          <h3
+            className="text-lg font-semibold mb-4"
+            style={{ color: "var(--text-primary)" }}
+          >
+            Video Preview
+          </h3>
+
+          {/* Provider Info */}
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-3">
+              <h4
+                className="text-sm font-semibold"
+                style={{ color: "var(--text-primary)" }}
+              >
+                AI Provider
+              </h4>
+              <span className={`text-xs px-2 py-1 rounded ${providerInfo.color} bg-opacity-20`}>
+                {providerInfo.name}
+              </span>
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center text-sm">
+                <svg className="w-4 h-4 mr-2" style={{ color: "var(--text-secondary)" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+                </svg>
+                <span style={{ color: "var(--text-secondary)" }}>Model:</span>
+                <span className="ml-2 font-medium" style={{ color: "var(--text-primary)" }}>{providerInfo.model}</span>
+              </div>
+              <div className="flex items-center text-sm">
+                <svg className="w-4 h-4 mr-2" style={{ color: "var(--text-secondary)" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span style={{ color: "var(--text-secondary)" }}>Est. Time:</span>
+                <span className="ml-2 font-medium" style={{ color: "var(--text-primary)" }}>{providerInfo.estimatedTime}</span>
+              </div>
+              <div className="flex items-center text-sm">
+                <svg className="w-4 h-4 mr-2" style={{ color: "var(--text-secondary)" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                <span style={{ color: "var(--text-secondary)" }}>Quality:</span>
+                <span className="ml-2 font-medium" style={{ color: "var(--text-primary)" }}>{providerInfo.description}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Video Specs */}
+          <div className="mb-6">
+            <h4
+              className="text-sm font-semibold mb-3"
+              style={{ color: "var(--text-primary)" }}
+            >
+              Video Specifications
+            </h4>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
+                <div className="text-xs" style={{ color: "var(--text-secondary)" }}>Duration</div>
+                <div className="text-lg font-semibold mt-1" style={{ color: "var(--text-primary)" }}>
+                  {duration} seconds
+                </div>
+              </div>
+              <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
+                <div className="text-xs" style={{ color: "var(--text-secondary)" }}>Resolution</div>
+                <div className="text-lg font-semibold mt-1" style={{ color: "var(--text-primary)" }}>
+                  {getResolution()}
+                </div>
+              </div>
+              <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
+                <div className="text-xs" style={{ color: "var(--text-secondary)" }}>Aspect Ratio</div>
+                <div className="text-lg font-semibold mt-1" style={{ color: "var(--text-primary)" }}>
+                  {aspectRatio}
+                </div>
+              </div>
+              <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
+                <div className="text-xs" style={{ color: "var(--text-secondary)" }}>Style</div>
+                <div className="text-lg font-semibold mt-1" style={{ color: "var(--text-primary)" }}>
+                  {VIDEO_STYLES.find(s => s.value === style)?.label || style}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* What to Expect */}
+          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+            <div className="flex items-start">
+              <svg className="w-5 h-5 text-blue-600 mt-0.5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <div>
+                <h5 className="font-semibold text-blue-900 dark:text-blue-100 mb-1">
+                  What to Expect
+                </h5>
+                <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
+                  <li>• Video generation will start immediately after clicking "Generate Video"</li>
+                  <li>• Check the Content Library for real-time progress updates</li>
+                  <li>• Generation time varies based on provider and server load</li>
+                  <li>• You'll receive a notification when your video is ready</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          {/* Visual Preview Mockup */}
+          <div className="mt-6">
+            <h4
+              className="text-sm font-semibold mb-3"
+              style={{ color: "var(--text-primary)" }}
+            >
+              Visual Preview
+            </h4>
+            <div
+              className="relative rounded-lg overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 flex items-center justify-center"
+              style={{
+                aspectRatio: aspectRatio === "16:9" ? "16/9" : aspectRatio === "9:16" ? "9/16" : "1/1",
+                maxHeight: "300px"
+              }}
+            >
+              <div className="text-center">
+                <svg className="w-16 h-16 mx-auto mb-3 opacity-30" style={{ color: "var(--text-secondary)" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+                <div className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>
+                  {generationMode === "text_to_video" ? "Text-to-Video" : "Image-to-Video"}
+                </div>
+                <div className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>
+                  {duration}s • {aspectRatio}
+                </div>
+              </div>
+
+              {/* Duration indicator */}
+              <div className="absolute bottom-3 right-3 bg-black/70 text-white px-2 py-1 rounded text-xs">
+                {duration}s
+              </div>
+
+              {/* Provider badge */}
+              <div className={`absolute top-3 left-3 px-2 py-1 rounded text-xs font-medium ${providerInfo.color.replace('text-', 'bg-')} bg-opacity-20`}>
+                {providerInfo.name}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
