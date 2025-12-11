@@ -84,6 +84,7 @@ export default function ContentLibraryPage() {
   const [thumbnailOptions, setThumbnailOptions] = useState<string[]>([]);
   const [selectedVideoForThumbnail, setSelectedVideoForThumbnail] = useState<any>(null);
   const [isGeneratingThumbnails, setIsGeneratingThumbnails] = useState(false);
+  const [videoDurationForThumbnail, setVideoDurationForThumbnail] = useState<number>(0);
 
   // Confirmation modal state
   const [showDeleteContentConfirm, setShowDeleteContentConfirm] = useState(false);
@@ -368,9 +369,20 @@ export default function ContentLibraryPage() {
     setShowThumbnailModal(true);
 
     try {
-      // Get video duration from the video metadata or estimate
-      // For now, we'll use a default or try to extract from URL
-      const videoDuration = 5.0; // Default, could be improved
+      // Create a temporary video element to get the actual duration
+      const videoElement = document.createElement('video');
+      videoElement.src = video.video_url;
+      videoElement.crossOrigin = 'anonymous';
+
+      // Wait for video to load metadata
+      await new Promise((resolve, reject) => {
+        videoElement.onloadedmetadata = () => resolve(true);
+        videoElement.onerror = () => reject(new Error('Failed to load video'));
+      });
+
+      const videoDuration = videoElement.duration;
+      setVideoDurationForThumbnail(videoDuration);
+      console.log('📹 Video duration:', videoDuration, 'seconds');
 
       const response = await api.post("/api/videos/thumbnail-options", {
         video_url: video.video_url,
@@ -380,6 +392,7 @@ export default function ContentLibraryPage() {
 
       setThumbnailOptions(response.data.thumbnail_options || []);
     } catch (error: any) {
+      console.error('Error generating thumbnails:', error);
       toast.error("Failed to generate thumbnail options");
       setShowThumbnailModal(false);
     } finally {
@@ -387,13 +400,13 @@ export default function ContentLibraryPage() {
     }
   };
 
-  const handleSelectThumbnailOption = async (thumbnailDataUrl: string, timestamp: number) => {
+  const handleSelectThumbnailOption = async (thumbnailDataUrl: string, index: number) => {
     if (!selectedVideoForThumbnail) return;
 
     try {
       // Calculate the timestamp based on the option index
       // The thumbnail options are generated at specific timestamps
-      const videoDuration = 5.0; // Default, should match what was used to generate options
+      const videoDuration = videoDurationForThumbnail || 5.0; // Use real duration, fallback to 5.0
       const thumbnailTimestamps = [
         videoDuration * 0.1,  // 10% through video
         videoDuration * 0.3,  // 30% through video
@@ -401,7 +414,7 @@ export default function ContentLibraryPage() {
         videoDuration * 0.7,  // 70% through video
         videoDuration * 0.9   // 90% through video
       ];
-      const selectedTimestamp = thumbnailTimestamps[timestamp] || 1.0;
+      const selectedTimestamp = thumbnailTimestamps[index] || 1.0;
 
       // Call backend to save the thumbnail
       await api.post("/api/videos/save-thumbnail", {
@@ -1594,17 +1607,25 @@ export default function ContentLibraryPage() {
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
           <div className="card rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
-              <h2
-                className="text-2xl font-bold"
-                style={{ color: "var(--text-primary)" }}
-              >
-                Select Thumbnail
-              </h2>
+              <div>
+                <h2
+                  className="text-2xl font-bold"
+                  style={{ color: "var(--text-primary)" }}
+                >
+                  Select Thumbnail
+                </h2>
+                {videoDurationForThumbnail > 0 && (
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    Video duration: {videoDurationForThumbnail.toFixed(1)}s
+                  </p>
+                )}
+              </div>
               <button
                 onClick={() => {
                   setShowThumbnailModal(false);
                   setThumbnailOptions([]);
                   setSelectedVideoForThumbnail(null);
+                  setVideoDurationForThumbnail(0);
                 }}
                 className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
               >
