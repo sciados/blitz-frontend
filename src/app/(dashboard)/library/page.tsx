@@ -803,10 +803,20 @@ export default function ContentLibraryPage() {
                           alt={image.prompt}
                           className="w-full h-full object-cover"
                         />
-                        {/* Premium Badge */}
-                        <div className="absolute top-3 right-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white px-2 py-1 rounded-full text-xs font-medium">
-                          PREMIUM
-                        </div>
+                        {/* Badge - Different types */}
+                        {image.metadata?.text_overlay ? (
+                          <div className="absolute top-3 right-3 bg-orange-600 to-orange-700 text-white px-2 py-1 rounded-full text-xs font-medium">
+                            OVERLAY
+                          </div>
+                        ) : image.metadata?.image_overlay ? (
+                          <div className="absolute top-3 right-3 bg-green-600 to-green-700 text-white px-2 py-1 rounded-full text-xs font-medium">
+                            LAYERS
+                          </div>
+                        ) : (
+                          <div className="absolute top-3 right-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white px-2 py-1 rounded-full text-xs font-medium">
+                            PREMIUM
+                          </div>
+                        )}
                         {/* Thumbnail Notice */}
                         <div className="absolute top-3 left-3 bg-black/50 text-white px-2 py-1 rounded-full text-xs">
                           ⬇ THUMB
@@ -1225,9 +1235,20 @@ export default function ContentLibraryPage() {
                     className="w-full h-full object-contain"
                   />
                 </div>
-                <div className="absolute top-4 right-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium">
-                  PREMIUM
-                </div>
+                {/* Badge - Different types */}
+                {selectedLibraryImage.metadata?.text_overlay ? (
+                  <div className="absolute top-4 right-4 bg-orange-600 to-orange-700 text-white px-3 py-1 rounded-full text-sm font-medium">
+                    OVERLAY
+                  </div>
+                ) : selectedLibraryImage.metadata?.image_overlay ? (
+                  <div className="absolute top-4 right-4 bg-green-600 to-green-700 text-white px-3 py-1 rounded-full text-sm font-medium">
+                    LAYERS
+                  </div>
+                ) : (
+                  <div className="absolute top-4 right-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium">
+                    PREMIUM
+                  </div>
+                )}
 
                 {/* Navigation Arrows */}
                 {filteredImages.length > 1 && (
