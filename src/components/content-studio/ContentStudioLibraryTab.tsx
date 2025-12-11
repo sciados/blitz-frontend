@@ -16,9 +16,13 @@ interface ContentStudioLibraryTabProps {
 }
 
 type FilterType = "all" | "text" | "images" | "videos";
+type ImageFilterType = "all" | "generated" | "overlays";
+type VideoFilterType = "all" | "generated" | "overlays";
 
 export function ContentStudioLibraryTab({ campaignId, onGenerateFromContent }: ContentStudioLibraryTabProps) {
   const [filter, setFilter] = useState<FilterType>("all");
+  const [imageFilter, setImageFilter] = useState<ImageFilterType>("all");
+  const [videoFilter, setVideoFilter] = useState<VideoFilterType>("all");
   const queryClient = useQueryClient();
 
   // Modal states
@@ -38,25 +42,35 @@ export function ContentStudioLibraryTab({ campaignId, onGenerateFromContent }: C
     enabled: !!campaignId,
   });
 
-  // Fetch images
+  // Fetch images with type filter
   const { data: imagesData, refetch: refetchImages } = useQuery({
-    queryKey: ["images", campaignId],
+    queryKey: ["images", campaignId, imageFilter],
     queryFn: async () => {
       if (!campaignId) return { images: [] };
-      const response = await api.get(`/api/images/campaign/${campaignId}`);
+      const params = new URLSearchParams();
+      if (imageFilter === "generated") {
+        params.set("image_type", "original");
+      } else if (imageFilter === "overlays") {
+        params.set("image_type", "overlay");
+      }
+      const response = await api.get(`/api/images/campaign/${campaignId}?${params.toString()}`);
       return response.data;
     },
     enabled: !!campaignId,
   });
 
-  // Fetch videos - note: backend doesn't filter by campaign, so we fetch all and filter client-side
+  // Fetch videos with type filter
   const { data: videosData, refetch: refetchVideos } = useQuery({
-    queryKey: ["videos", campaignId],
+    queryKey: ["videos", campaignId, videoFilter],
     queryFn: async () => {
-      const response = await api.get(`/api/video/library`);
+      const params = new URLSearchParams();
+      if (videoFilter !== "all") {
+        params.set("video_type", videoFilter);
+      }
+      const response = await api.get(`/api/video/library?${params.toString()}`);
       return response.data;
     },
-    enabled: true, // Always enabled, we'll filter client-side
+    enabled: true,
   });
 
   const allContent = contentData || [];
@@ -155,8 +169,8 @@ export function ContentStudioLibraryTab({ campaignId, onGenerateFromContent }: C
 
   return (
     <div>
-      {/* Filter Tabs */}
-      <div className="flex space-x-2 mb-6">
+      {/* Main Filter Tabs */}
+      <div className="flex space-x-2 mb-4">
         <button
           onClick={() => setFilter("all")}
           className={`px-4 py-2 rounded-lg font-medium transition ${
@@ -210,6 +224,96 @@ export function ContentStudioLibraryTab({ campaignId, onGenerateFromContent }: C
           🎬 Videos ({filteredVideos.length})
         </button>
       </div>
+
+      {/* Image Type Sub-Tabs */}
+      {filter === "images" && (
+        <div className="flex space-x-1 mb-6 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg w-fit">
+          <button
+            onClick={() => setImageFilter("all")}
+            className={`px-4 py-2 rounded-lg transition flex items-center gap-2 ${
+              imageFilter === "all"
+                ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow"
+                : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+            }`}
+          >
+            <span>All Images</span>
+            <span className="text-xs px-2 py-0.5 bg-gray-200 dark:bg-gray-600 rounded-full">
+              {allImages.length}
+            </span>
+          </button>
+          <button
+            onClick={() => setImageFilter("generated")}
+            className={`px-4 py-2 rounded-lg transition flex items-center gap-2 ${
+              imageFilter === "generated"
+                ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow"
+                : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+            }`}
+          >
+            <span>🖼️ Original</span>
+            <span className="text-xs px-2 py-0.5 bg-gray-200 dark:bg-gray-600 rounded-full">
+              {allImages.filter((img: any) => img.image_type === "original").length}
+            </span>
+          </button>
+          <button
+            onClick={() => setImageFilter("overlays")}
+            className={`px-4 py-2 rounded-lg transition flex items-center gap-2 ${
+              imageFilter === "overlays"
+                ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow"
+                : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+            }`}
+          >
+            <span>✨ Text Overlays</span>
+            <span className="text-xs px-2 py-0.5 bg-gray-200 dark:bg-gray-600 rounded-full">
+              {allImages.filter((img: any) => img.image_type === "overlay").length}
+            </span>
+          </button>
+        </div>
+      )}
+
+      {/* Video Type Sub-Tabs */}
+      {filter === "videos" && (
+        <div className="flex space-x-1 mb-6 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg w-fit">
+          <button
+            onClick={() => setVideoFilter("all")}
+            className={`px-4 py-2 rounded-lg transition flex items-center gap-2 ${
+              videoFilter === "all"
+                ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow"
+                : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+            }`}
+          >
+            <span>All Videos</span>
+            <span className="text-xs px-2 py-0.5 bg-gray-200 dark:bg-gray-600 rounded-full">
+              {filteredVideos.length}
+            </span>
+          </button>
+          <button
+            onClick={() => setVideoFilter("generated")}
+            className={`px-4 py-2 rounded-lg transition flex items-center gap-2 ${
+              videoFilter === "generated"
+                ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow"
+                : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+            }`}
+          >
+            <span>📹 Generated</span>
+            <span className="text-xs px-2 py-0.5 bg-gray-200 dark:bg-gray-600 rounded-full">
+              {filteredVideos.filter((vid: any) => vid.generation_mode !== "text_overlay").length}
+            </span>
+          </button>
+          <button
+            onClick={() => setVideoFilter("overlays")}
+            className={`px-4 py-2 rounded-lg transition flex items-center gap-2 ${
+              videoFilter === "overlays"
+                ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow"
+                : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+            }`}
+          >
+            <span>✨ Text Overlays</span>
+            <span className="text-xs px-2 py-0.5 bg-gray-200 dark:bg-gray-600 rounded-full">
+              {filteredVideos.filter((vid: any) => vid.generation_mode === "text_overlay").length}
+            </span>
+          </button>
+        </div>
+      )}
 
       {/* Quick Actions */}
       {filteredItems.length === 0 ? (
@@ -270,12 +374,21 @@ export function ContentStudioLibraryTab({ campaignId, onGenerateFromContent }: C
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center justify-between mb-2">
-                        <h4
-                          className="font-semibold"
-                          style={{ color: "var(--text-primary)" }}
-                        >
-                          {item.data.image_type?.replace("_", " ").toUpperCase()}
-                        </h4>
+                        <div className="flex items-center gap-2">
+                          <h4
+                            className="font-semibold"
+                            style={{ color: "var(--text-primary)" }}
+                          >
+                            {item.data.image_type === "overlay"
+                              ? "✨ TEXT OVERLAY"
+                              : item.data.image_type?.replace("_", " ").toUpperCase()}
+                          </h4>
+                          {item.data.image_type === "overlay" && (
+                            <span className="px-2 py-1 bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300 rounded text-xs font-medium">
+                              Edited
+                            </span>
+                          )}
+                        </div>
                         <span
                           className="text-xs px-2 py-1 rounded"
                           style={{
@@ -380,12 +493,21 @@ export function ContentStudioLibraryTab({ campaignId, onGenerateFromContent }: C
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center justify-between mb-2">
-                        <h4
-                          className="font-semibold"
-                          style={{ color: "var(--text-primary)" }}
-                        >
-                          {item.data.generation_mode?.replace("_", " ").toUpperCase()}
-                        </h4>
+                        <div className="flex items-center gap-2">
+                          <h4
+                            className="font-semibold"
+                            style={{ color: "var(--text-primary)" }}
+                          >
+                            {item.data.generation_mode === "text_overlay"
+                              ? "✨ TEXT OVERLAY"
+                              : item.data.generation_mode?.replace("_", " ").toUpperCase()}
+                          </h4>
+                          {item.data.generation_mode === "text_overlay" && (
+                            <span className="px-2 py-1 bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300 rounded text-xs font-medium">
+                              Edited
+                            </span>
+                          )}
+                        </div>
                         <div className="flex items-center space-x-2">
                           {item.data.saved_to_r2 ? (
                             <span className="text-xs px-2 py-1 bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 rounded">
