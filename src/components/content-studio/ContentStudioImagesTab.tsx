@@ -79,7 +79,7 @@ export function ContentStudioImagesTab({ campaignId }: ContentStudioImagesTabPro
   const handleGenerate = async () => {
     try {
       setIsGenerating(true);
-      const response = await api.post("/api/content/images/generate", {
+      const response = await api.post("/api/images/generate", {
         campaign_id: campaignId,
         image_type: imageType,
         style: imageStyle,
