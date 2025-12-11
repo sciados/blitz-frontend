@@ -196,7 +196,9 @@
       "Bash(pip3 install:*)",
       "Bash(/c/Users/shaun/AppData/Local/Programs/Python/Python312/python -m pip install aiofiles==23.2.1)",
       "Bash(/tmp/new_file.py)",
-      "Bash(/c/Users/shaun/AppData/Local/Programs/Python/Python312/python -m py_compile:*)"
+      "Bash(/c/Users/shaun/AppData/Local/Programs/Python/Python312/python -m py_compile:*)",
+      "Bash(app/api/content/video_overlay.py:*)",
+      "Bash(/c/Users/shaun/OneDrive/Documents/GitHub/blitz-backend/app/api/content/video_overlay.py)"
     ],
     "deny": [],
     "ask": []
