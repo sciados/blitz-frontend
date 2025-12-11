@@ -373,31 +373,13 @@ export default function ContentLibraryPage() {
       console.log('🎬 Starting thumbnail generation for video:', video.id);
       console.log('📹 Video URL:', video.video_url);
 
-      // Create a temporary video element to get the actual duration
-      const videoElement = document.createElement('video');
-      videoElement.src = video.video_url;
-      videoElement.crossOrigin = 'anonymous';
-
-      // Wait for video to load metadata with timeout
-      console.log('⏳ Loading video metadata...');
-      await new Promise((resolve, reject) => {
-        const timeoutId = setTimeout(() => {
-          reject(new Error('Video metadata loading timeout'));
-        }, 10000); // 10 second timeout
-
-        videoElement.onloadedmetadata = () => {
-          clearTimeout(timeoutId);
-          console.log('✅ Video metadata loaded');
-          resolve(true);
-        };
-        videoElement.onerror = (e) => {
-          clearTimeout(timeoutId);
-          console.error('❌ Video loading error:', e);
-          reject(new Error('Failed to load video - check URL or format'));
-        };
+      // Use backend to get video duration (avoids CORS issues with R2)
+      console.log('📏 Getting video duration from backend...');
+      const durationResponse = await api.post("/api/videos/get-duration", {
+        video_url: video.video_url
       });
 
-      const videoDuration = videoElement.duration;
+      const videoDuration = durationResponse.data.duration;
       setVideoDurationForThumbnail(videoDuration);
       console.log('📹 Video duration:', videoDuration, 'seconds');
 

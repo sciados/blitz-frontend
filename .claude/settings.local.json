@@ -194,7 +194,9 @@
       "Bash(git -C /c/Users/shaun/OneDrive/Documents/GitHub/blitz-frontend diff:*)",
       "Bash(git -C /c/Users/shaun/OneDrive/Documents/GitHub/blitz-backend diff HEAD app/api/video.py)",
       "Bash(pip3 install:*)",
-      "Bash(/c/Users/shaun/AppData/Local/Programs/Python/Python312/python -m pip install aiofiles==23.2.1)"
+      "Bash(/c/Users/shaun/AppData/Local/Programs/Python/Python312/python -m pip install aiofiles==23.2.1)",
+      "Bash(/tmp/new_file.py)",
+      "Bash(/c/Users/shaun/AppData/Local/Programs/Python/Python312/python -m py_compile:*)"
     ],
     "deny": [],
     "ask": []
