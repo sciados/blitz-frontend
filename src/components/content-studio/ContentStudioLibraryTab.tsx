@@ -245,7 +245,7 @@ export function ContentStudioLibraryTab({ campaignId, onGenerateFromContent }: C
           >
             <span>🖼️ Original</span>
             <span className="text-xs px-2 py-0.5 bg-gray-200 dark:bg-gray-600 rounded-full">
-              {allImages.filter((img: any) => !img.metadata?.text_overlay).length}
+              {allImages.filter((img: any) => img.metadata?.text_overlay !== true).length}
             </span>
           </button>
           <button
@@ -258,7 +258,7 @@ export function ContentStudioLibraryTab({ campaignId, onGenerateFromContent }: C
           >
             <span>✨ Text Overlays</span>
             <span className="text-xs px-2 py-0.5 bg-gray-200 dark:bg-gray-600 rounded-full">
-              {allImages.filter((img: any) => img.metadata?.text_overlay).length}
+              {allImages.filter((img: any) => img.metadata?.text_overlay === true).length}
             </span>
           </button>
         </div>
@@ -373,11 +373,11 @@ export function ContentStudioLibraryTab({ campaignId, onGenerateFromContent }: C
                             className="font-semibold"
                             style={{ color: "var(--text-primary)" }}
                           >
-                            {item.data.metadata?.text_overlay
+                            {item.data.metadata?.text_overlay === true
                               ? "✨ TEXT OVERLAY"
                               : item.data.image_type?.replace("_", " ").toUpperCase()}
                           </h4>
-                          {item.data.metadata?.text_overlay && (
+                          {item.data.metadata?.text_overlay === true && (
                             <span className="px-2 py-1 bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300 rounded text-xs font-medium">
                               Edited
                             </span>

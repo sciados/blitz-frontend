@@ -14,7 +14,6 @@ export default function ImagesContentRedirect() {
     if (campaignId) {
       params.set("campaign", campaignId);
     }
-    params.set("tab", "generate");
     params.set("type", "images");
 
     router.replace(`/content?${params.toString()}`, { scroll: false });

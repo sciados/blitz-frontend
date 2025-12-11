@@ -14,7 +14,6 @@ export default function VideoContentRedirect() {
     if (campaignId) {
       params.set("campaign", campaignId);
     }
-    params.set("tab", "generate");
     params.set("type", "video");
 
     router.replace(`/content?${params.toString()}`, { scroll: false });

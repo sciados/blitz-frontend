@@ -14,7 +14,6 @@ export default function TextContentRedirect() {
     if (campaignId) {
       params.set("campaign", campaignId);
     }
-    params.set("tab", "generate");
     params.set("type", "text");
 
     router.replace(`/content?${params.toString()}`, { scroll: false });

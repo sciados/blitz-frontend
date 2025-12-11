@@ -5,12 +5,10 @@ import { CampaignSelector } from "src/components/CampaignSelector";
 import { ContentStudioTextTab } from "src/components/content-studio/ContentStudioTextTab";
 import { ContentStudioImagesTab } from "src/components/content-studio/ContentStudioImagesTab";
 import { ContentStudioVideoTab } from "src/components/content-studio/ContentStudioVideoTab";
-import { ContentStudioLibraryTab } from "src/components/content-studio/ContentStudioLibraryTab";
 import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 
-export type TabType = "generate" | "library";
 export type ContentType = "text" | "images" | "video";
 
 interface CampaignSelectorBarProps {
@@ -57,14 +55,12 @@ export default function ContentStudio() {
 
   // Parse URL parameters
   const urlCampaignId = searchParams.get("campaign");
-  const urlTab = (searchParams.get("tab") as TabType) || "generate";
   const urlType = (searchParams.get("type") as ContentType) || "text";
 
   // State
   const [campaignId, setCampaignId] = useState<number | null>(
     urlCampaignId ? Number(urlCampaignId) : null
   );
-  const [activeTab, setActiveTab] = useState<TabType>(urlTab);
   const [activeContentType, setActiveContentType] = useState<ContentType>(urlType);
 
   // Restore last campaign from localStorage on mount
@@ -90,14 +86,9 @@ export default function ContentStudio() {
   useEffect(() => {
     const params = new URLSearchParams();
     if (campaignId) params.set("campaign", campaignId.toString());
-    params.set("tab", activeTab);
     params.set("type", activeContentType);
     router.replace(`/content?${params.toString()}`, { scroll: false });
-  }, [campaignId, activeTab, activeContentType]);
-
-  const handleTabChange = (tab: TabType) => {
-    setActiveTab(tab);
-  };
+  }, [campaignId, activeContentType]);
 
   const handleContentTypeChange = (type: ContentType) => {
     setActiveContentType(type);
@@ -105,11 +96,6 @@ export default function ContentStudio() {
 
   const handleSelectCampaign = (id: number | null) => {
     setCampaignId(id);
-  };
-
-  const handleGenerateFromLibrary = (type: ContentType) => {
-    setActiveTab("generate");
-    setActiveContentType(type);
   };
 
   return (
@@ -149,118 +135,87 @@ export default function ContentStudio() {
 
           {/* Main Content */}
           <div className="card rounded-lg overflow-hidden">
-            {/* Tab Navigation */}
+            {/* Header with Library Link */}
+            <div className="border-b flex items-center justify-between px-6 py-4" style={{ borderColor: "var(--card-border)" }}>
+              <h2 className="text-xl font-semibold" style={{ color: "var(--text-primary)" }}>
+                Generate Content
+              </h2>
+              <a
+                href="/library"
+                className="text-sm px-3 py-1.5 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition flex items-center gap-2"
+                style={{ color: "var(--text-primary)" }}
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                </svg>
+                View Content Library
+              </a>
+            </div>
+
+            {/* Content Type Tabs */}
             <div className="border-b" style={{ borderColor: "var(--card-border)" }}>
-              <div className="flex">
+              <div className="flex space-x-1 p-2">
                 <button
-                  onClick={() => handleTabChange("generate")}
-                  className={`px-6 py-4 font-medium transition ${
-                    activeTab === "generate"
-                      ? "border-b-2 border-blue-600"
-                      : ""
+                  onClick={() => handleContentTypeChange("text")}
+                  className={`px-4 py-2 rounded-lg font-medium transition flex items-center space-x-2 ${
+                    activeContentType === "text"
+                      ? "bg-blue-600 text-white"
+                      : "hover:bg-gray-100 dark:hover:bg-gray-800"
                   }`}
                   style={{
-                    color: activeTab === "generate"
-                      ? "var(--text-primary)"
-                      : "var(--text-secondary)",
+                    color: activeContentType === "text" ? "white" : "var(--text-primary)",
                   }}
                 >
-                  Generate Content
+                  <span>✍️</span>
+                  <span>Text</span>
                 </button>
                 <button
-                  onClick={() => handleTabChange("library")}
-                  className={`px-6 py-4 font-medium transition ${
-                    activeTab === "library"
-                      ? "border-b-2 border-blue-600"
-                      : ""
+                  onClick={() => handleContentTypeChange("images")}
+                  className={`px-4 py-2 rounded-lg font-medium transition flex items-center space-x-2 ${
+                    activeContentType === "images"
+                      ? "bg-purple-600 text-white"
+                      : "hover:bg-gray-100 dark:hover:bg-gray-800"
                   }`}
                   style={{
-                    color: activeTab === "library"
-                      ? "var(--text-primary)"
-                      : "var(--text-secondary)",
+                    color: activeContentType === "images" ? "white" : "var(--text-primary)",
                   }}
                 >
-                  Content Library
+                  <span>🖼️</span>
+                  <span>Images</span>
+                </button>
+                <button
+                  onClick={() => handleContentTypeChange("video")}
+                  className={`px-4 py-2 rounded-lg font-medium transition flex items-center space-x-2 ${
+                    activeContentType === "video"
+                      ? "bg-red-600 text-white"
+                      : "hover:bg-gray-100 dark:hover:bg-gray-800"
+                  }`}
+                  style={{
+                    color: activeContentType === "video" ? "white" : "var(--text-primary)",
+                  }}
+                >
+                  <span>🎬</span>
+                  <span>Video</span>
                 </button>
               </div>
             </div>
 
-            {/* Tab Content */}
-            {activeTab === "generate" ? (
-              <div>
-                {/* Content Type Tabs */}
-                <div className="border-b" style={{ borderColor: "var(--card-border)" }}>
-                  <div className="flex space-x-1 p-2">
-                    <button
-                      onClick={() => handleContentTypeChange("text")}
-                      className={`px-4 py-2 rounded-lg font-medium transition flex items-center space-x-2 ${
-                        activeContentType === "text"
-                          ? "bg-blue-600 text-white"
-                          : "hover:bg-gray-100 dark:hover:bg-gray-800"
-                      }`}
-                      style={{
-                        color: activeContentType === "text" ? "white" : "var(--text-primary)",
-                      }}
-                    >
-                      <span>✍️</span>
-                      <span>Text</span>
-                    </button>
-                    <button
-                      onClick={() => handleContentTypeChange("images")}
-                      className={`px-4 py-2 rounded-lg font-medium transition flex items-center space-x-2 ${
-                        activeContentType === "images"
-                          ? "bg-purple-600 text-white"
-                          : "hover:bg-gray-100 dark:hover:bg-gray-800"
-                      }`}
-                      style={{
-                        color: activeContentType === "images" ? "white" : "var(--text-primary)",
-                      }}
-                    >
-                      <span>🖼️</span>
-                      <span>Images</span>
-                    </button>
-                    <button
-                      onClick={() => handleContentTypeChange("video")}
-                      className={`px-4 py-2 rounded-lg font-medium transition flex items-center space-x-2 ${
-                        activeContentType === "video"
-                          ? "bg-red-600 text-white"
-                          : "hover:bg-gray-100 dark:hover:bg-gray-800"
-                      }`}
-                      style={{
-                        color: activeContentType === "video" ? "white" : "var(--text-primary)",
-                      }}
-                    >
-                      <span>🎬</span>
-                      <span>Video</span>
-                    </button>
-                  </div>
+            {/* Content Type Panels */}
+            <div className="p-6">
+              {!campaignId ? (
+                <div className="text-center py-12">
+                  <p style={{ color: "var(--text-secondary)" }}>
+                    Please select a campaign above to generate content
+                  </p>
                 </div>
-
-                {/* Content Type Panels */}
-                <div className="p-6">
-                  {!campaignId ? (
-                    <div className="text-center py-12">
-                      <p style={{ color: "var(--text-secondary)" }}>
-                        Please select a campaign above to generate content
-                      </p>
-                    </div>
-                  ) : activeContentType === "text" ? (
-                    <ContentStudioTextTab campaignId={campaignId} />
-                  ) : activeContentType === "images" ? (
-                    <ContentStudioImagesTab campaignId={campaignId} />
-                  ) : (
-                    <ContentStudioVideoTab campaignId={campaignId} />
-                  )}
-                </div>
-              </div>
-            ) : (
-              <div className="p-6">
-                <ContentStudioLibraryTab
-                  campaignId={campaignId}
-                  onGenerateFromContent={handleGenerateFromLibrary}
-                />
-              </div>
-            )}
+              ) : activeContentType === "text" ? (
+                <ContentStudioTextTab campaignId={campaignId} />
+              ) : activeContentType === "images" ? (
+                <ContentStudioImagesTab campaignId={campaignId} />
+              ) : (
+                <ContentStudioVideoTab campaignId={campaignId} />
+              )}
+            </div>
           </div>
         </div>
       </div>
