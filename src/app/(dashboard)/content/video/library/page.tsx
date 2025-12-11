@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { AuthGate } from "src/components/AuthGate";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "src/lib/appClient";
@@ -37,6 +38,7 @@ interface GeneratedVideo {
 
 export default function VideoLibraryPage() {
   const queryClient = useQueryClient();
+  const [videoType, setVideoType] = useState<"generated" | "overlays" | undefined>(undefined);
 
   const { data, isLoading, error } = useQuery<{
     videos: GeneratedVideo[];
@@ -45,8 +47,14 @@ export default function VideoLibraryPage() {
     per_page: number;
     pages: number;
   }>({
-    queryKey: ["video-library"],
-    queryFn: async () => (await api.get("/api/video/library")).data,
+    queryKey: ["video-library", videoType],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (videoType) {
+        params.set("video_type", videoType);
+      }
+      return (await api.get(`/api/video/library?${params.toString()}`)).data;
+    },
   });
 
   const saveVideoMutation = useMutation({
@@ -92,6 +100,51 @@ export default function VideoLibraryPage() {
           </Link>
         </div>
 
+        {/* Video Type Tabs */}
+        <div className="mb-6">
+          <div className="flex space-x-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg w-fit">
+            <button
+              onClick={() => setVideoType(undefined)}
+              className={`px-4 py-2 rounded-lg transition flex items-center gap-2 ${
+                videoType === undefined
+                  ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow"
+                  : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+              }`}
+            >
+              <span>All Videos</span>
+              <span className="text-xs px-2 py-0.5 bg-gray-200 dark:bg-gray-600 rounded-full">
+                {total}
+              </span>
+            </button>
+            <button
+              onClick={() => setVideoType("generated")}
+              className={`px-4 py-2 rounded-lg transition flex items-center gap-2 ${
+                videoType === "generated"
+                  ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow"
+                  : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+              }`}
+            >
+              <span>📹 Generated</span>
+              <span className="text-xs px-2 py-0.5 bg-gray-200 dark:bg-gray-600 rounded-full">
+                {total}
+              </span>
+            </button>
+            <button
+              onClick={() => setVideoType("overlays")}
+              className={`px-4 py-2 rounded-lg transition flex items-center gap-2 ${
+                videoType === "overlays"
+                  ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow"
+                  : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+              }`}
+            >
+              <span>✨ Text Overlays</span>
+              <span className="text-xs px-2 py-0.5 bg-gray-200 dark:bg-gray-600 rounded-full">
+                {total}
+              </span>
+            </button>
+          </div>
+        </div>
+
         {isLoading ? (
           <div className="card rounded-lg p-8 text-center">
             <div className="animate-spin h-8 w-8 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
@@ -122,10 +175,12 @@ export default function VideoLibraryPage() {
               </svg>
             </div>
             <h3 className="text-xl font-semibold mb-2" style={{ color: "var(--text-primary)" }}>
-              No videos yet
+              No {videoType === "overlays" ? "overlay" : videoType === "generated" ? "generated" : ""} videos yet
             </h3>
             <p className="text-sm mb-4" style={{ color: "var(--text-secondary)" }}>
-              Generate your first video to get started
+              {videoType === "overlays"
+                ? "Add text overlays to your videos to see them here"
+                : "Generate your first video to get started"}
             </p>
             <Link
               href="/content/video"
@@ -169,9 +224,19 @@ export default function VideoLibraryPage() {
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-2">
-                      <h3 className="text-lg font-semibold truncate" style={{ color: "var(--text-primary)" }}>
-                        {video.generation_mode?.replace("_", " ").toUpperCase() || "VIDEO"} GENERATION
-                      </h3>
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-lg font-semibold truncate" style={{ color: "var(--text-primary)" }}>
+                          {video.generation_mode === "text_overlay"
+                            ? "✨ TEXT OVERLAY"
+                            : `${video.generation_mode?.replace("_", " ").toUpperCase() || "VIDEO"} GENERATION`
+                          }
+                        </h3>
+                        {video.generation_mode === "text_overlay" && (
+                          <span className="px-2 py-1 bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300 rounded text-xs font-medium">
+                            Edited
+                          </span>
+                        )}
+                      </div>
                       <span
                         className={`px-2 py-1 rounded text-xs font-medium ${
                           video.status === "completed"
@@ -247,7 +312,7 @@ export default function VideoLibraryPage() {
                           Download
                         </a>
                       )}
-                      {video.status === "completed" && !video.saved_to_r2 && (
+                      {video.generation_mode !== "text_overlay" && video.status === "completed" && !video.saved_to_r2 && (
                         <button
                           onClick={() => handleSaveToLibrary(video.id)}
                           disabled={saveVideoMutation.isPending}
@@ -256,7 +321,7 @@ export default function VideoLibraryPage() {
                           {saveVideoMutation.isPending ? "Saving..." : "Save to Library"}
                         </button>
                       )}
-                      {video.saved_to_r2 && (
+                      {video.saved_to_r2 && video.generation_mode !== "text_overlay" && (
                         <span className="text-sm px-3 py-1 bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 rounded flex items-center">
                           <svg
                             className="w-4 h-4 mr-1"
