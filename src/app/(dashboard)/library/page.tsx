@@ -11,6 +11,7 @@ import { ContentVariationsModal } from "src/components/ContentVariationsModal";
 import { ContentViewModal } from "src/components/ContentViewModal";
 import { UnifiedEditorModal } from "src/components/UnifiedEditorModal";
 import { ConfirmationModal } from "src/components/ConfirmationModal";
+import { VideoEditorModal } from "src/components/VideoEditorModal";
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -71,6 +72,12 @@ export default function ContentLibraryPage() {
 
   // Unified editor state for library images
   const [showUnifiedEditor, setShowUnifiedEditor] = useState(false);
+
+  // Video Editor Modal state
+  const [isVideoEditorOpen, setIsVideoEditorOpen] = useState(false);
+  const [videoEditorUrl, setVideoEditorUrl] = useState<string>("");
+  const [videoEditorScript, setVideoEditorScript] = useState<string>("");
+  const [videoEditorCampaignId, setVideoEditorCampaignId] = useState<number>(0);
 
   // Confirmation modal state
   const [showDeleteContentConfirm, setShowDeleteContentConfirm] = useState(false);
@@ -333,6 +340,20 @@ export default function ContentLibraryPage() {
       toast.error(err.response?.data?.detail || "Failed to delete video");
     }
   }
+
+  // Video Editor handlers
+  const handleOpenVideoEditor = (videoUrl: string, campaignId: number, videoScript?: string) => {
+    setVideoEditorUrl(videoUrl);
+    setVideoEditorCampaignId(campaignId);
+    setVideoEditorScript(videoScript || "");
+    setIsVideoEditorOpen(true);
+  };
+
+  const handleSaveEditedVideo = (video: { video_url: string }) => {
+    toast.success("Video with text overlays saved successfully!");
+    refetchVideos();
+    setIsVideoEditorOpen(false);
+  };
 
   const handleContentRefined = (content: GeneratedContent) => {
     setShowRefinementModal(false);
@@ -1026,8 +1047,7 @@ export default function ContentLibraryPage() {
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                // TODO: Navigate to video editor
-                                toast.info("Video Editor coming soon!");
+                                handleOpenVideoEditor(video.video_url, video.campaign_id, video.prompt);
                               }}
                               className="flex-1 text-xs px-2 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded transition flex items-center justify-center gap-1"
                               title="Add Text Overlays"
@@ -1434,6 +1454,16 @@ export default function ContentLibraryPage() {
         message="Are you sure you want to delete this video? This action cannot be undone."
         type="danger"
         confirmText="Delete"
+      />
+
+      {/* Video Editor Modal */}
+      <VideoEditorModal
+        isOpen={isVideoEditorOpen}
+        onClose={() => setIsVideoEditorOpen(false)}
+        videoUrl={videoEditorUrl}
+        videoScript={videoEditorScript}
+        campaignId={videoEditorCampaignId}
+        onSave={handleSaveEditedVideo}
       />
     </AuthGate>
   );
