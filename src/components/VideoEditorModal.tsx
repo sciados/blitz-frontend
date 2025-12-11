@@ -441,6 +441,23 @@ export function VideoEditorModal({
 
                   <div>
                     <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
+                      Font Family
+                    </label>
+                    <select
+                      value={activeLayer.font_family}
+                      onChange={(e) => handleLayerChange(activeLayer.id, { font_family: e.target.value })}
+                      className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                    >
+                      {fonts.map((font) => (
+                        <option key={font.value} value={font.value} style={{ fontFamily: font.value }}>
+                          {font.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
                       Font Size: {activeLayer.font_size}px
                     </label>
                     <input
@@ -466,6 +483,41 @@ export function VideoEditorModal({
                           onClick={() => handleLayerChange(activeLayer.id, { color })}
                           className={`w-full aspect-square rounded border-2 ${
                             activeLayer.color === color ? "border-gray-800 dark:border-white" : "border-gray-300"
+                          }`}
+                          style={{ backgroundColor: color }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
+                      Border Size: {activeLayer.stroke_width}px
+                    </label>
+                    <input
+                      type="range"
+                      min="0"
+                      max="10"
+                      step="1"
+                      value={activeLayer.stroke_width}
+                      onChange={(e) =>
+                        handleLayerChange(activeLayer.id, { stroke_width: parseInt(e.target.value) })
+                      }
+                      className="w-full"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
+                      Border Color
+                    </label>
+                    <div className="grid grid-cols-5 gap-2">
+                      {PRESET_COLORS.map((color) => (
+                        <button
+                          key={color}
+                          onClick={() => handleLayerChange(activeLayer.id, { stroke_color: color })}
+                          className={`w-full aspect-square rounded border-2 ${
+                            (activeLayer.stroke_color || "#000000") === color ? "border-gray-800 dark:border-white" : "border-gray-300"
                           }`}
                           style={{ backgroundColor: color }}
                         />
