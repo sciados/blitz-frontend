@@ -276,6 +276,7 @@ export type GeneratedImage = {
         custom_params: any;
         is_enhanced?: boolean;  // Indicates if this is a protected seed/premium image
         has_layers?: boolean;  // Indicates if this image has overlay layers
+        text_overlay?: boolean;  // Indicates if this image has text overlay
     };
     ai_generation_cost?: number;
     created_at: string;
