@@ -289,6 +289,12 @@ export type ImageGenerateRequest = {
     style?: ImageStyle;
     aspect_ratio?: AspectRatio;
     custom_prompt?: string | null;
+    highlight_features?: {
+        ingredients: string[];
+        features: string[];
+        benefits: string[];
+        pain_points: string[];
+    };
 };
 
 export type ImageBatchRequest = {
@@ -299,6 +305,12 @@ export type ImageBatchRequest = {
         aspect_ratio?: AspectRatio;
         custom_prompt?: string | null;
     }>;
+    highlight_features?: {
+        ingredients: string[];
+        features: string[];
+        benefits: string[];
+        pain_points: string[];
+    };
 };
 
 export type ImageVariationRequest = {
