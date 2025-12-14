@@ -38,10 +38,34 @@ export function ContentStudioVideoTab({ campaignId }: ContentStudioVideoTabProps
   const [selectedImageId, setSelectedImageId] = useState<number | null>(null);
   const [selectedImageUrl, setSelectedImageUrl] = useState<string>("");
 
+  // Selected keywords state
+  const [selectedKeywords, setSelectedKeywords] = useState<{
+    ingredients: string[];
+    features: string[];
+    benefits: string[];
+    pain_points: string[];
+  }>({
+    ingredients: [],
+    features: [],
+    benefits: [],
+    pain_points: [],
+  });
+
   // Video Editor Modal state
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [editorVideoUrl, setEditorVideoUrl] = useState<string>("");
   const [editorVideoScript, setEditorVideoScript] = useState<string>("");
+
+  // Fetch available keywords from campaign intelligence
+  const { data: keywordsData, isLoading: keywordsLoading } = useQuery({
+    queryKey: ["campaign-keywords", campaignId],
+    queryFn: async () => {
+      const response = await api.post("/api/prompt/keywords", {
+        campaign_id: campaignId,
+      });
+      return response.data;
+    },
+  });
 
   // Fetch video scripts for this campaign
   const { data: scriptData } = useQuery({
@@ -126,6 +150,7 @@ export function ContentStudioVideoTab({ campaignId }: ContentStudioVideoTabProps
         aspect_ratio: aspectRatio,
         duration,
         script,
+        keywords: selectedKeywords,
       };
 
       // Add image URL for image-to-video generation
@@ -436,6 +461,179 @@ export function ContentStudioVideoTab({ campaignId }: ContentStudioVideoTabProps
             <p className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>
               Note: 10s videos use Luma AI (txt2video only) or extend 5s videos with ffmpeg
             </p>
+          </div>
+
+          {/* Keywords Section */}
+          <div className="mb-4">
+            <label
+              className="block text-sm font-medium mb-2"
+              style={{ color: "var(--text-primary)" }}
+            >
+              Focus Keywords (Optional)
+            </label>
+            <p className="text-xs mb-3" style={{ color: "var(--text-secondary)" }}>
+              Select specific ingredients, features, or benefits to include in your video
+            </p>
+
+            {keywordsLoading ? (
+              <div className="text-center py-4">
+                <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+              </div>
+            ) : keywordsData && (keywordsData.ingredients?.length > 0 || keywordsData.features?.length > 0 || keywordsData.benefits?.length > 0 || keywordsData.pain_points?.length > 0) ? (
+              <div className="space-y-3">
+                {/* Ingredients */}
+                {keywordsData.ingredients && keywordsData.ingredients.length > 0 && (
+                  <div>
+                    <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-primary)" }}>
+                      Ingredients/Tech
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {keywordsData.ingredients.map((ingredient: string) => (
+                        <button
+                          key={ingredient}
+                          onClick={() => {
+                            const newIngredients = selectedKeywords.ingredients.includes(ingredient)
+                              ? selectedKeywords.ingredients.filter((i) => i !== ingredient)
+                              : [...selectedKeywords.ingredients, ingredient];
+                            setSelectedKeywords({ ...selectedKeywords, ingredients: newIngredients });
+                          }}
+                          className={`px-2 py-1 rounded-full text-xs border transition ${
+                            selectedKeywords.ingredients.includes(ingredient)
+                              ? "bg-blue-600 text-white border-blue-600"
+                              : "bg-transparent hover:bg-blue-50 border-gray-300"
+                          }`}
+                          style={{
+                            borderColor: selectedKeywords.ingredients.includes(ingredient)
+                              ? "var(--primary-color)"
+                              : "var(--card-border)",
+                            color: selectedKeywords.ingredients.includes(ingredient)
+                              ? "white"
+                              : "var(--text-primary)",
+                          }}
+                        >
+                          {ingredient}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Features */}
+                {keywordsData.features && keywordsData.features.length > 0 && (
+                  <div>
+                    <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-primary)" }}>
+                      Features
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {keywordsData.features.map((feature: string) => (
+                        <button
+                          key={feature}
+                          onClick={() => {
+                            const newFeatures = selectedKeywords.features.includes(feature)
+                              ? selectedKeywords.features.filter((f) => f !== feature)
+                              : [...selectedKeywords.features, feature];
+                            setSelectedKeywords({ ...selectedKeywords, features: newFeatures });
+                          }}
+                          className={`px-2 py-1 rounded-full text-xs border transition ${
+                            selectedKeywords.features.includes(feature)
+                              ? "bg-blue-600 text-white border-blue-600"
+                              : "bg-transparent hover:bg-blue-50 border-gray-300"
+                          }`}
+                          style={{
+                            borderColor: selectedKeywords.features.includes(feature)
+                              ? "var(--primary-color)"
+                              : "var(--card-border)",
+                            color: selectedKeywords.features.includes(feature)
+                              ? "white"
+                              : "var(--text-primary)",
+                          }}
+                        >
+                          {feature}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Benefits */}
+                {keywordsData.benefits && keywordsData.benefits.length > 0 && (
+                  <div>
+                    <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-primary)" }}>
+                      Benefits
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {keywordsData.benefits.map((benefit: string) => (
+                        <button
+                          key={benefit}
+                          onClick={() => {
+                            const newBenefits = selectedKeywords.benefits.includes(benefit)
+                              ? selectedKeywords.benefits.filter((b) => b !== benefit)
+                              : [...selectedKeywords.benefits, benefit];
+                            setSelectedKeywords({ ...selectedKeywords, benefits: newBenefits });
+                          }}
+                          className={`px-2 py-1 rounded-full text-xs border transition ${
+                            selectedKeywords.benefits.includes(benefit)
+                              ? "bg-blue-600 text-white border-blue-600"
+                              : "bg-transparent hover:bg-blue-50 border-gray-300"
+                          }`}
+                          style={{
+                            borderColor: selectedKeywords.benefits.includes(benefit)
+                              ? "var(--primary-color)"
+                              : "var(--card-border)",
+                            color: selectedKeywords.benefits.includes(benefit)
+                              ? "white"
+                              : "var(--text-primary)",
+                          }}
+                        >
+                          {benefit}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Pain Points */}
+                {keywordsData.pain_points && keywordsData.pain_points.length > 0 && (
+                  <div>
+                    <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-primary)" }}>
+                      Pain Points
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {keywordsData.pain_points.map((pain: string) => (
+                        <button
+                          key={pain}
+                          onClick={() => {
+                            const newPainPoints = selectedKeywords.pain_points.includes(pain)
+                              ? selectedKeywords.pain_points.filter((p) => p !== pain)
+                              : [...selectedKeywords.pain_points, pain];
+                            setSelectedKeywords({ ...selectedKeywords, pain_points: newPainPoints });
+                          }}
+                          className={`px-2 py-1 rounded-full text-xs border transition ${
+                            selectedKeywords.pain_points.includes(pain)
+                              ? "bg-blue-600 text-white border-blue-600"
+                              : "bg-transparent hover:bg-blue-50 border-gray-300"
+                          }`}
+                          style={{
+                            borderColor: selectedKeywords.pain_points.includes(pain)
+                              ? "var(--primary-color)"
+                              : "var(--card-border)",
+                            color: selectedKeywords.pain_points.includes(pain)
+                              ? "white"
+                              : "var(--text-primary)",
+                          }}
+                        >
+                          {pain}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <p className="text-xs text-center py-2" style={{ color: "var(--text-secondary)" }}>
+                No keywords available
+              </p>
+            )}
           </div>
 
           {/* Video Script Selection - Only for Text to Video */}
