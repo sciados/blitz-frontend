@@ -32,6 +32,13 @@ type UserInfo = {
   full_name?: string;
   user_type?: string; // For backward compatibility
   affiliate_tier?: string | null;
+  subscription_tier?: string | null; // free, trial, standard, pro, business
+};
+
+// Helper to check if user is Pro (subscription_tier pro/business OR affiliate_tier pro)
+const isProUser = (user: UserInfo | null) => {
+  if (!user) return false;
+  return user.subscription_tier === "pro" || user.subscription_tier === "business" || user.affiliate_tier === "pro";
 };
 
 export default function Layout({ children }: LayoutProps) {
@@ -427,7 +434,7 @@ export default function Layout({ children }: LayoutProps) {
                   {userInfo.email}
                 </span>
                 <span className="text-xs text-[var(--text-secondary)] capitalize">
-                  {(userInfo.user_type === "Affiliate" && userInfo.affiliate_tier === "pro" && "Pro Marketer") ||
+                  {(userInfo.user_type === "Affiliate" && isProUser(userInfo) && "Pro Marketer") ||
                     (userInfo.user_type === "Affiliate" && "Marketer") ||
                     (userInfo.user_type === "Creator" && "Product Developer") ||
                     (userInfo.user_type === "Business" && "Business") ||
@@ -519,7 +526,7 @@ export default function Layout({ children }: LayoutProps) {
                               "Loading..."}
                           </p>
                           <p className="text-xs text-[var(--text-secondary)] capitalize">
-                            {(userInfo?.user_type === "Affiliate" && userInfo?.affiliate_tier === "pro" && "Pro Marketer") ||
+                            {(userInfo?.user_type === "Affiliate" && isProUser(userInfo) && "Pro Marketer") ||
                               (userInfo?.user_type === "Affiliate" && "Marketer") ||
                               (userInfo?.user_type === "Creator" && "Product Developer") ||
                               (userInfo?.user_type === "Business" && "Business") ||
@@ -577,7 +584,7 @@ export default function Layout({ children }: LayoutProps) {
                           ? "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300"
                           : userInfo.user_type === "Business"
                           ? "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300"
-                          : userInfo.affiliate_tier === "pro"
+                          : isProUser(userInfo)
                           ? "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300"
                           : "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
                       }`}
@@ -586,7 +593,7 @@ export default function Layout({ children }: LayoutProps) {
                         ? "🎯 Product Developer"
                         : userInfo.user_type === "Business"
                         ? "💼 Business"
-                        : userInfo.affiliate_tier === "pro"
+                        : isProUser(userInfo)
                         ? "⭐ Pro Marketer"
                         : "🚀 Marketer"}
                     </div>
