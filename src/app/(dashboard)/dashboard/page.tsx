@@ -1018,6 +1018,19 @@ function AffiliateMarketerDashboard() {
     queryFn: async () => (await api.get("/api/auth/me")).data,
   });
 
+  // Fetch usage and limits for dashboard display
+  const { data: usageLimits } = useQuery({
+    queryKey: ["usageLimits"],
+    queryFn: async () => {
+      try {
+        const res = await api.get("/api/auth/usage");
+        return res.data;
+      } catch {
+        return null;
+      }
+    },
+  });
+
   // Fetch Marketer stats
   const { data: stats } = useQuery({
     queryKey: ["affiliateMarketerStats"],
@@ -1077,6 +1090,26 @@ function AffiliateMarketerDashboard() {
     },
   });
 
+  // Helper to format usage display
+  const formatUsage = (used: number, limit: number | null) => {
+    if (limit === null || limit === undefined) return `${used}`;
+    return `${used}/${limit}`;
+  };
+
+  // Helper to get progress percentage
+  const getProgress = (used: number, limit: number | null) => {
+    if (limit === null || limit === undefined || limit === 0) return 0;
+    return Math.min((used / limit) * 100, 100);
+  };
+
+  // Helper to get color based on usage percentage
+  const getUsageColor = (used: number, limit: number | null) => {
+    const progress = getProgress(used, limit);
+    if (progress >= 90) return "text-red-600 dark:text-red-400";
+    if (progress >= 70) return "text-orange-600 dark:text-orange-400";
+    return "";
+  };
+
   return (
     <>
       {/* Quick Stats Section */}
@@ -1087,9 +1120,17 @@ function AffiliateMarketerDashboard() {
               <p className="text-sm text-[var(--text-secondary)] mb-1">
                 Total Campaigns
               </p>
-              <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
-                {stats?.totalCampaigns || 0}
+              <p className={`text-3xl font-bold text-blue-600 dark:text-blue-400 ${getUsageColor(stats?.totalCampaigns || 0, usageLimits?.limits?.campaigns)}`}>
+                {formatUsage(stats?.totalCampaigns || 0, usageLimits?.limits?.campaigns)}
               </p>
+              {usageLimits?.limits?.campaigns && (
+                <div className="mt-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+                  <div
+                    className="bg-blue-500 h-1.5 rounded-full transition-all"
+                    style={{ width: `${getProgress(stats?.totalCampaigns || 0, usageLimits?.limits?.campaigns)}%` }}
+                  />
+                </div>
+              )}
             </div>
             <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
               <span className="text-2xl">📢</span>
@@ -1119,9 +1160,17 @@ function AffiliateMarketerDashboard() {
               <p className="text-sm text-[var(--text-secondary)] mb-1">
                 Text Content
               </p>
-              <p className="text-3xl font-bold text-purple-600 dark:text-purple-400">
-                {stats?.textContentPieces || 0}
+              <p className={`text-3xl font-bold text-purple-600 dark:text-purple-400 ${getUsageColor(usageLimits?.usage?.text_content || 0, usageLimits?.limits?.text_content)}`}>
+                {formatUsage(usageLimits?.usage?.text_content || stats?.textContentPieces || 0, usageLimits?.limits?.text_content)}
               </p>
+              {usageLimits?.limits?.text_content && (
+                <div className="mt-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+                  <div
+                    className="bg-purple-500 h-1.5 rounded-full transition-all"
+                    style={{ width: `${getProgress(usageLimits?.usage?.text_content || 0, usageLimits?.limits?.text_content)}%` }}
+                  />
+                </div>
+              )}
             </div>
             <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
               <span className="text-2xl">✍️</span>
@@ -1135,9 +1184,17 @@ function AffiliateMarketerDashboard() {
               <p className="text-sm text-[var(--text-secondary)] mb-1">
                 Images
               </p>
-              <p className="text-3xl font-bold text-pink-600 dark:text-pink-400">
-                {stats?.imageContentPieces || 0}
+              <p className={`text-3xl font-bold text-pink-600 dark:text-pink-400 ${getUsageColor(usageLimits?.usage?.images || 0, usageLimits?.limits?.images)}`}>
+                {formatUsage(usageLimits?.usage?.images || stats?.imageContentPieces || 0, usageLimits?.limits?.images)}
               </p>
+              {usageLimits?.limits?.images && (
+                <div className="mt-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+                  <div
+                    className="bg-pink-500 h-1.5 rounded-full transition-all"
+                    style={{ width: `${getProgress(usageLimits?.usage?.images || 0, usageLimits?.limits?.images)}%` }}
+                  />
+                </div>
+              )}
             </div>
             <div className="w-12 h-12 bg-pink-100 dark:bg-pink-900/30 rounded-lg flex items-center justify-center">
               <span className="text-2xl">🖼️</span>
@@ -1151,9 +1208,17 @@ function AffiliateMarketerDashboard() {
               <p className="text-sm text-[var(--text-secondary)] mb-1">
                 Videos
               </p>
-              <p className="text-3xl font-bold text-red-600 dark:text-red-400">
-                {stats?.videoContentPieces || 0}
+              <p className={`text-3xl font-bold text-red-600 dark:text-red-400 ${getUsageColor(usageLimits?.usage?.videos || 0, usageLimits?.limits?.videos)}`}>
+                {formatUsage(usageLimits?.usage?.videos || stats?.videoContentPieces || 0, usageLimits?.limits?.videos)}
               </p>
+              {usageLimits?.limits?.videos && (
+                <div className="mt-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+                  <div
+                    className="bg-red-500 h-1.5 rounded-full transition-all"
+                    style={{ width: `${getProgress(usageLimits?.usage?.videos || 0, usageLimits?.limits?.videos)}%` }}
+                  />
+                </div>
+              )}
             </div>
             <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center">
               <span className="text-2xl">🎬</span>
