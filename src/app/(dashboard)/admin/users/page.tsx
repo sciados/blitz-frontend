@@ -14,6 +14,7 @@ interface User {
   role: string;
   user_type: string | null;
   subscription_tier: string | null;
+  affiliate_tier: string | null;
   created_at: string;
   is_active: boolean;
   campaign_count: number;
@@ -32,6 +33,7 @@ export default function AdminUsersPage() {
     role: "user",
     user_type: "",
     subscription_tier: "trial",
+    affiliate_tier: "standard",
   });
   const queryClient = useQueryClient();
 
@@ -62,7 +64,7 @@ export default function AdminUsersPage() {
       queryClient.invalidateQueries({ queryKey: ["admin-users"] });
       toast.success("User created successfully");
       setCreatingUser(false);
-      setFormData({ email: "", full_name: "", password: "", role: "user", user_type: "", subscription_tier: "trial" });
+      setFormData({ email: "", full_name: "", password: "", role: "user", user_type: "", subscription_tier: "trial", affiliate_tier: "standard" });
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.detail || "Failed to create user");
@@ -71,7 +73,7 @@ export default function AdminUsersPage() {
 
   // Update user mutation
   const updateMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: number; data: { full_name: string; role: string; user_type: string; subscription_tier: string } }) => {
+    mutationFn: async ({ id, data }: { id: number; data: { full_name: string; role: string; user_type: string; subscription_tier: string; affiliate_tier: string } }) => {
       const response = await api.put(`/api/admin/users/${id}`, data);
       return response.data;
     },
@@ -79,7 +81,7 @@ export default function AdminUsersPage() {
       queryClient.invalidateQueries({ queryKey: ["admin-users"] });
       toast.success("User updated successfully");
       setEditingUser(null);
-      setFormData({ email: "", full_name: "", password: "", role: "user", user_type: "", subscription_tier: "trial" });
+      setFormData({ email: "", full_name: "", password: "", role: "user", user_type: "", subscription_tier: "trial", affiliate_tier: "standard" });
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.detail || "Failed to update user");
@@ -104,7 +106,7 @@ export default function AdminUsersPage() {
 
   const handleCreateUser = () => {
     setCreatingUser(true);
-    setFormData({ email: "", full_name: "", password: "", role: "user", user_type: "", subscription_tier: "trial" });
+    setFormData({ email: "", full_name: "", password: "", role: "user", user_type: "", subscription_tier: "trial", affiliate_tier: "standard" });
   };
 
   const handleEditUser = (user: User) => {
@@ -116,6 +118,7 @@ export default function AdminUsersPage() {
       role: user.role,
       user_type: user.user_type || "",
       subscription_tier: user.subscription_tier || "trial",
+      affiliate_tier: user.affiliate_tier || "standard",
     });
   };
 
@@ -136,6 +139,7 @@ export default function AdminUsersPage() {
         role: formData.role || "user", // Ensure role is never empty
         user_type: formData.user_type || "", // Ensure user_type is never null
         subscription_tier: formData.subscription_tier || "trial",
+        affiliate_tier: formData.affiliate_tier || "standard",
       };
       updateMutation.mutate({
         id: editingUser.id,
@@ -492,7 +496,7 @@ export default function AdminUsersPage() {
                   type="button"
                   onClick={() => {
                     setCreatingUser(false);
-                    setFormData({ email: "", full_name: "", password: "", role: "user", user_type: "", subscription_tier: "trial" });
+                    setFormData({ email: "", full_name: "", password: "", role: "user", user_type: "", subscription_tier: "trial", affiliate_tier: "standard" });
                   }}
                   className="px-4 py-2 border rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition"
                   style={{ borderColor: "var(--card-border)" }}
@@ -613,6 +617,25 @@ export default function AdminUsersPage() {
                     <option value="business">Business</option>
                   </select>
                 </div>
+                <div>
+                  <label
+                    className="block text-sm font-medium mb-1"
+                    style={{ color: "var(--text-secondary)" }}
+                  >
+                    Affiliate Tier (Pro Marketer Status)
+                  </label>
+                  <select
+                    value={formData.affiliate_tier}
+                    onChange={(e) =>
+                      setFormData({ ...formData, affiliate_tier: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border rounded-lg"
+                    style={{ borderColor: "var(--card-border)" }}
+                  >
+                    <option value="standard">Standard Marketer</option>
+                    <option value="pro">Pro Marketer</option>
+                  </select>
+                </div>
               </div>
               <div className="flex gap-2 mt-6">
                 <button
@@ -626,7 +649,7 @@ export default function AdminUsersPage() {
                   type="button"
                   onClick={() => {
                     setEditingUser(null);
-                    setFormData({ email: "", full_name: "", password: "", role: "user", user_type: "", subscription_tier: "trial" });
+                    setFormData({ email: "", full_name: "", password: "", role: "user", user_type: "", subscription_tier: "trial", affiliate_tier: "standard" });
                   }}
                   className="px-4 py-2 border rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition"
                   style={{ borderColor: "var(--card-border)" }}
