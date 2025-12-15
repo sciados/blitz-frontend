@@ -13,6 +13,7 @@ interface User {
   full_name: string;
   role: string;
   user_type: string | null;
+  subscription_tier: string | null;
   created_at: string;
   is_active: boolean;
   campaign_count: number;
@@ -30,6 +31,7 @@ export default function AdminUsersPage() {
     password: "",
     role: "user",
     user_type: "",
+    subscription_tier: "trial",
   });
   const queryClient = useQueryClient();
 
@@ -60,7 +62,7 @@ export default function AdminUsersPage() {
       queryClient.invalidateQueries({ queryKey: ["admin-users"] });
       toast.success("User created successfully");
       setCreatingUser(false);
-      setFormData({ email: "", full_name: "", password: "", role: "user", user_type: "" });
+      setFormData({ email: "", full_name: "", password: "", role: "user", user_type: "", subscription_tier: "trial" });
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.detail || "Failed to create user");
@@ -69,7 +71,7 @@ export default function AdminUsersPage() {
 
   // Update user mutation
   const updateMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: number; data: { full_name: string; role: string; user_type: string } }) => {
+    mutationFn: async ({ id, data }: { id: number; data: { full_name: string; role: string; user_type: string; subscription_tier: string } }) => {
       const response = await api.put(`/api/admin/users/${id}`, data);
       return response.data;
     },
@@ -77,7 +79,7 @@ export default function AdminUsersPage() {
       queryClient.invalidateQueries({ queryKey: ["admin-users"] });
       toast.success("User updated successfully");
       setEditingUser(null);
-      setFormData({ email: "", full_name: "", password: "", role: "user", user_type: "" });
+      setFormData({ email: "", full_name: "", password: "", role: "user", user_type: "", subscription_tier: "trial" });
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.detail || "Failed to update user");
@@ -102,7 +104,7 @@ export default function AdminUsersPage() {
 
   const handleCreateUser = () => {
     setCreatingUser(true);
-    setFormData({ email: "", full_name: "", password: "", role: "user", user_type: "" });
+    setFormData({ email: "", full_name: "", password: "", role: "user", user_type: "", subscription_tier: "trial" });
   };
 
   const handleEditUser = (user: User) => {
@@ -113,6 +115,7 @@ export default function AdminUsersPage() {
       password: "",
       role: user.role,
       user_type: user.user_type || "",
+      subscription_tier: user.subscription_tier || "trial",
     });
   };
 
@@ -132,6 +135,7 @@ export default function AdminUsersPage() {
         full_name: formData.full_name,
         role: formData.role || "user", // Ensure role is never empty
         user_type: formData.user_type || "", // Ensure user_type is never null
+        subscription_tier: formData.subscription_tier || "trial",
       };
       updateMutation.mutate({
         id: editingUser.id,
@@ -245,6 +249,12 @@ export default function AdminUsersPage() {
                       className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
                       style={{ color: "var(--text-secondary)" }}
                     >
+                      Tier
+                    </th>
+                    <th
+                      className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
+                      style={{ color: "var(--text-secondary)" }}
+                    >
                       Campaigns
                     </th>
                     <th
@@ -302,6 +312,23 @@ export default function AdminUsersPage() {
                           className="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
                         >
                           {user.user_type || "—"}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span
+                          className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                            user.subscription_tier === "pro"
+                              ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+                              : user.subscription_tier === "business"
+                              ? "bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200"
+                              : user.subscription_tier === "standard"
+                              ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                              : user.subscription_tier === "free"
+                              ? "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200"
+                              : "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200"
+                          }`}
+                        >
+                          {user.subscription_tier || "trial"}
                         </span>
                       </td>
                       <td
@@ -465,7 +492,7 @@ export default function AdminUsersPage() {
                   type="button"
                   onClick={() => {
                     setCreatingUser(false);
-                    setFormData({ email: "", full_name: "", password: "", role: "user", user_type: "" });
+                    setFormData({ email: "", full_name: "", password: "", role: "user", user_type: "", subscription_tier: "trial" });
                   }}
                   className="px-4 py-2 border rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition"
                   style={{ borderColor: "var(--card-border)" }}
@@ -564,6 +591,28 @@ export default function AdminUsersPage() {
                     <option value="Admin">Admin</option>
                   </select>
                 </div>
+                <div>
+                  <label
+                    className="block text-sm font-medium mb-1"
+                    style={{ color: "var(--text-secondary)" }}
+                  >
+                    Subscription Tier
+                  </label>
+                  <select
+                    value={formData.subscription_tier}
+                    onChange={(e) =>
+                      setFormData({ ...formData, subscription_tier: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border rounded-lg"
+                    style={{ borderColor: "var(--card-border)" }}
+                  >
+                    <option value="free">Free</option>
+                    <option value="trial">Trial</option>
+                    <option value="standard">Standard</option>
+                    <option value="pro">Pro</option>
+                    <option value="business">Business</option>
+                  </select>
+                </div>
               </div>
               <div className="flex gap-2 mt-6">
                 <button
@@ -577,7 +626,7 @@ export default function AdminUsersPage() {
                   type="button"
                   onClick={() => {
                     setEditingUser(null);
-                    setFormData({ email: "", full_name: "", password: "", role: "user", user_type: "" });
+                    setFormData({ email: "", full_name: "", password: "", role: "user", user_type: "", subscription_tier: "trial" });
                   }}
                   className="px-4 py-2 border rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition"
                   style={{ borderColor: "var(--card-border)" }}
