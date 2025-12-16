@@ -97,10 +97,26 @@ export function ContentStudioVideoTab({ campaignId }: ContentStudioVideoTabProps
     return true;
   });
 
+  // Helper function to extract clean narrative from script (remove overlay guide)
+  const extractCleanNarrative = (fullScript: string): string => {
+    // Find the overlay guide separator
+    const overlayGuideIndex = fullScript.indexOf("============================================================");
+
+    if (overlayGuideIndex !== -1) {
+      // Return only the narrative part (before the overlay guide)
+      return fullScript.substring(0, overlayGuideIndex).trim();
+    }
+
+    // If no overlay guide found, return the full script
+    return fullScript;
+  };
+
   // Handle script selection
   const handleScriptSelect = (scriptId: number, scriptText: string) => {
     setSelectedScriptId(scriptId);
-    setScript(scriptText);
+    // Store the clean narrative (without overlay guide) for video generation
+    const cleanNarrative = extractCleanNarrative(scriptText);
+    setScript(cleanNarrative);
   };
 
   // Clear script selection
@@ -692,9 +708,17 @@ export function ContentStudioVideoTab({ campaignId }: ContentStudioVideoTabProps
               }}
             />
             {selectedScriptId && (
-              <p className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>
-                ✓ Using selected video script. You can edit above or select a different one.
-              </p>
+              <div className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>
+                <p className="flex items-center">
+                  <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  ✓ Using selected video script (overlay guide stripped for clean generation)
+                </p>
+                <p className="mt-1 text-xs">
+                  💡 Note: Only the narrative is sent to AI. Overlay guide is for your reference only.
+                </p>
+              </div>
             )}
           </div>
 
