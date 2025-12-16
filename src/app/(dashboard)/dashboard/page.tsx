@@ -116,7 +116,7 @@ function ProductCreatorDashboard() {
               <p className="text-sm text-[var(--text-secondary)] mb-1">
                 Total Products
               </p>
-              <p className="text-3xl font-bold text-purple-600 dark:text-purple-400">
+              <p className="text-3xl text-purple-600 dark:text-purple-400">
                 {stats?.totalProducts || 0}
               </p>
             </div>
@@ -148,7 +148,7 @@ function ProductCreatorDashboard() {
               <p className="text-sm text-[var(--text-secondary)] mb-1">
                 Total Clicks (7d)
               </p>
-              <p className="text-3xl font-bold text-green-600 dark:text-green-400">
+              <p className="text-3xl text-green-600 dark:text-green-400">
                 {stats?.totalClicks || 0}
               </p>
             </div>
@@ -611,7 +611,7 @@ function BusinessOwnerDashboard() {
               <p className="text-sm text-[var(--text-secondary)] mb-1">
                 Active Campaigns
               </p>
-              <p className="text-3xl font-bold text-green-600 dark:text-green-400">
+              <p className="text-3xl text-green-600 dark:text-green-400">
                 {stats?.activeCampaigns || 0}
               </p>
             </div>
@@ -627,7 +627,7 @@ function BusinessOwnerDashboard() {
               <p className="text-sm text-[var(--text-secondary)] mb-1">
                 Text Content
               </p>
-              <p className="text-3xl font-bold text-purple-600 dark:text-purple-400">
+              <p className="text-3xl text-purple-600 dark:text-purple-400">
                 {stats?.textContentPieces || 0}
               </p>
             </div>
@@ -643,7 +643,7 @@ function BusinessOwnerDashboard() {
               <p className="text-sm text-[var(--text-secondary)] mb-1">
                 Images
               </p>
-              <p className="text-3xl font-bold text-pink-600 dark:text-pink-400">
+              <p className="text-3xl text-pink-600 dark:text-pink-400">
                 {stats?.imageContentPieces || 0}
               </p>
             </div>
@@ -659,7 +659,7 @@ function BusinessOwnerDashboard() {
               <p className="text-sm text-[var(--text-secondary)] mb-1">
                 Videos
               </p>
-              <p className="text-3xl font-bold text-red-600 dark:text-red-400">
+              <p className="text-3xl text-red-600 dark:text-red-400">
                 {stats?.videoContentPieces || 0}
               </p>
             </div>
@@ -1144,7 +1144,7 @@ function AffiliateMarketerDashboard() {
               <p className="text-sm text-[var(--text-secondary)] mb-1">
                 Active Campaigns
               </p>
-              <p className="text-3xl font-bold text-green-600 dark:text-green-400">
+              <p className="text-3xl text-green-600 dark:text-green-400">
                 {stats?.activeCampaigns || 0}
               </p>
             </div>
@@ -1160,7 +1160,7 @@ function AffiliateMarketerDashboard() {
               <p className="text-sm text-[var(--text-secondary)] mb-1">
                 Text Content
               </p>
-              <p className={`text-3xl font-bold text-purple-600 dark:text-purple-400 ${getUsageColor(usageLimits?.usage?.text_content || 0, usageLimits?.limits?.text_content)}`}>
+              <p className={`text-3xl text-purple-600 dark:text-purple-400 ${getUsageColor(usageLimits?.usage?.text_content || 0, usageLimits?.limits?.text_content)}`}>
                 {formatUsage(usageLimits?.usage?.text_content || stats?.textContentPieces || 0, usageLimits?.limits?.text_content)}
               </p>
               {usageLimits?.limits?.text_content && (
@@ -1184,7 +1184,7 @@ function AffiliateMarketerDashboard() {
               <p className="text-sm text-[var(--text-secondary)] mb-1">
                 Images
               </p>
-              <p className={`text-3xl font-bold text-pink-600 dark:text-pink-400 ${getUsageColor(usageLimits?.usage?.images || 0, usageLimits?.limits?.images)}`}>
+              <p className={`text-3xl text-pink-600 dark:text-pink-400 ${getUsageColor(usageLimits?.usage?.images || 0, usageLimits?.limits?.images)}`}>
                 {formatUsage(usageLimits?.usage?.images || stats?.imageContentPieces || 0, usageLimits?.limits?.images)}
               </p>
               {usageLimits?.limits?.images && (
@@ -1208,7 +1208,7 @@ function AffiliateMarketerDashboard() {
               <p className="text-sm text-[var(--text-secondary)] mb-1">
                 Videos
               </p>
-              <p className={`text-3xl font-bold text-red-600 dark:text-red-400 ${getUsageColor(usageLimits?.usage?.videos || 0, usageLimits?.limits?.videos)}`}>
+              <p className={`text-3xl text-red-600 dark:text-red-400 ${getUsageColor(usageLimits?.usage?.videos || 0, usageLimits?.limits?.videos)}`}>
                 {formatUsage(usageLimits?.usage?.videos || stats?.videoContentPieces || 0, usageLimits?.limits?.videos)}
               </p>
               {usageLimits?.limits?.videos && (

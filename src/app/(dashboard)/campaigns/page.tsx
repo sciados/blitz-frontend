@@ -25,6 +25,7 @@ export default function CampaignsPage() {
   // Check if user is Pro Marketer (affiliate with pro tier)
   const userRole = getRoleFromToken();
   const isProMarketer = userRole === "affiliate"; // TODO: Check affiliate_tier when available
+
   // Active campaign limit state
   const [activeLimit, setActiveLimit] = useState<{
     current_active: number;
@@ -89,7 +90,6 @@ export default function CampaignsPage() {
       setActiveLimit(response.data);
     } catch (err: any) {
       console.error("Failed to fetch active limit:", err);
-      // Don't show error for this, just use defaults
       setActiveLimit({
         current_active: 0,
         limit: 4,
@@ -108,7 +108,7 @@ export default function CampaignsPage() {
       
       // Update campaigns list
       setCampaigns(prev => prev.map(c => 
-        c.id === campaignId ? { ...c, status: newStatus } : c
+        c.id === campaignId ? { ...c, status: newStatus } as Campaign : c
       ));
       
       // Refresh active limit
