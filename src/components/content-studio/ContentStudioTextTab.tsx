@@ -318,11 +318,16 @@ export function ContentStudioTextTab({ campaignId }: ContentStudioTextTabProps) 
                   </div>
                 )}
 
-                {/* Features */}
+                {/* Features - Disabled for Video Scripts */}
                 {keywordsData.features && keywordsData.features.length > 0 && (
                   <div>
-                    <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-secondary)" }}>
+                    <label className="block text-xs font-medium mb-1 flex items-center" style={{ color: contentType === "video_script" ? "var(--text-secondary)" : "var(--text-primary)" }}>
                       Features
+                      {contentType === "video_script" && (
+                        <span className="ml-2 text-xs px-2 py-0.5 rounded bg-gray-200 dark:bg-gray-700" style={{ color: "var(--text-secondary)" }}>
+                          Disabled for Video Scripts
+                        </span>
+                      )}
                     </label>
                     <div className="flex flex-wrap gap-2">
                       {keywordsData.features.map((feature: string) => (
@@ -336,11 +341,15 @@ export function ContentStudioTextTab({ campaignId }: ContentStudioTextTabProps) 
                                 : [...prev.features, feature],
                             }));
                           }}
+                          disabled={contentType === "video_script"}
                           className={`px-3 py-1 rounded-full text-sm border ${
-                            selectedKeywords.features.includes(feature)
+                            contentType === "video_script"
+                              ? "cursor-not-allowed opacity-50"
+                              : selectedKeywords.features.includes(feature)
                               ? "bg-blue-500 text-white border-blue-500"
                               : "bg-[var(--bg-secondary)] text-[var(--text-primary)] border-[var(--border-color)] hover:border-blue-500"
                           }`}
+                          title={contentType === "video_script" ? "Features are disabled for video scripts" : ""}
                         >
                           {feature}
                         </button>
@@ -349,11 +358,16 @@ export function ContentStudioTextTab({ campaignId }: ContentStudioTextTabProps) 
                   </div>
                 )}
 
-                {/* Benefits */}
+                {/* Benefits - Disabled for Video Scripts */}
                 {keywordsData.benefits && keywordsData.benefits.length > 0 && (
                   <div>
-                    <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-secondary)" }}>
+                    <label className="block text-xs font-medium mb-1 flex items-center" style={{ color: contentType === "video_script" ? "var(--text-secondary)" : "var(--text-primary)" }}>
                       Benefits
+                      {contentType === "video_script" && (
+                        <span className="ml-2 text-xs px-2 py-0.5 rounded bg-gray-200 dark:bg-gray-700" style={{ color: "var(--text-secondary)" }}>
+                          Disabled for Video Scripts
+                        </span>
+                      )}
                     </label>
                     <div className="flex flex-wrap gap-2">
                       {keywordsData.benefits.map((benefit: string) => (
@@ -367,11 +381,15 @@ export function ContentStudioTextTab({ campaignId }: ContentStudioTextTabProps) 
                                 : [...prev.benefits, benefit],
                             }));
                           }}
+                          disabled={contentType === "video_script"}
                           className={`px-3 py-1 rounded-full text-sm border ${
-                            selectedKeywords.benefits.includes(benefit)
+                            contentType === "video_script"
+                              ? "cursor-not-allowed opacity-50"
+                              : selectedKeywords.benefits.includes(benefit)
                               ? "bg-blue-500 text-white border-blue-500"
                               : "bg-[var(--bg-secondary)] text-[var(--text-primary)] border-[var(--border-color)] hover:border-blue-500"
                           }`}
+                          title={contentType === "video_script" ? "Benefits are disabled for video scripts" : ""}
                         >
                           {benefit}
                         </button>

@@ -518,35 +518,27 @@ export function ContentStudioVideoTab({ campaignId }: ContentStudioVideoTabProps
                   </div>
                 )}
 
-                {/* Features */}
+                {/* Features - Disabled for Videos */}
                 {keywordsData.features && keywordsData.features.length > 0 && (
                   <div>
-                    <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-primary)" }}>
+                    <label className="block text-xs font-medium mb-1 flex items-center" style={{ color: "var(--text-secondary)" }}>
                       Features
+                      <span className="ml-2 text-xs px-2 py-0.5 rounded bg-gray-200 dark:bg-gray-700" style={{ color: "var(--text-secondary)" }}>
+                        Disabled for Videos
+                      </span>
                     </label>
                     <div className="flex flex-wrap gap-2">
                       {keywordsData.features.map((feature: string) => (
                         <button
                           key={feature}
-                          onClick={() => {
-                            const newFeatures = selectedKeywords.features.includes(feature)
-                              ? selectedKeywords.features.filter((f) => f !== feature)
-                              : [...selectedKeywords.features, feature];
-                            setSelectedKeywords({ ...selectedKeywords, features: newFeatures });
-                          }}
-                          className={`px-2 py-1 rounded-full text-xs border transition ${
-                            selectedKeywords.features.includes(feature)
-                              ? "bg-blue-600 text-white border-blue-600"
-                              : "bg-transparent hover:bg-blue-50 border-gray-300"
-                          }`}
+                          disabled
+                          className="px-2 py-1 rounded-full text-xs border cursor-not-allowed opacity-50"
                           style={{
-                            borderColor: selectedKeywords.features.includes(feature)
-                              ? "var(--primary-color)"
-                              : "var(--card-border)",
-                            color: selectedKeywords.features.includes(feature)
-                              ? "white"
-                              : "var(--text-primary)",
+                            borderColor: "var(--card-border)",
+                            color: "var(--text-secondary)",
+                            backgroundColor: "var(--bg-primary)",
                           }}
+                          title="Features are disabled for video generation"
                         >
                           {feature}
                         </button>
@@ -555,35 +547,27 @@ export function ContentStudioVideoTab({ campaignId }: ContentStudioVideoTabProps
                   </div>
                 )}
 
-                {/* Benefits */}
+                {/* Benefits - Disabled for Videos */}
                 {keywordsData.benefits && keywordsData.benefits.length > 0 && (
                   <div>
-                    <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-primary)" }}>
+                    <label className="block text-xs font-medium mb-1 flex items-center" style={{ color: "var(--text-secondary)" }}>
                       Benefits
+                      <span className="ml-2 text-xs px-2 py-0.5 rounded bg-gray-200 dark:bg-gray-700" style={{ color: "var(--text-secondary)" }}>
+                        Disabled for Videos
+                      </span>
                     </label>
                     <div className="flex flex-wrap gap-2">
                       {keywordsData.benefits.map((benefit: string) => (
                         <button
                           key={benefit}
-                          onClick={() => {
-                            const newBenefits = selectedKeywords.benefits.includes(benefit)
-                              ? selectedKeywords.benefits.filter((b) => b !== benefit)
-                              : [...selectedKeywords.benefits, benefit];
-                            setSelectedKeywords({ ...selectedKeywords, benefits: newBenefits });
-                          }}
-                          className={`px-2 py-1 rounded-full text-xs border transition ${
-                            selectedKeywords.benefits.includes(benefit)
-                              ? "bg-blue-600 text-white border-blue-600"
-                              : "bg-transparent hover:bg-blue-50 border-gray-300"
-                          }`}
+                          disabled
+                          className="px-2 py-1 rounded-full text-xs border cursor-not-allowed opacity-50"
                           style={{
-                            borderColor: selectedKeywords.benefits.includes(benefit)
-                              ? "var(--primary-color)"
-                              : "var(--card-border)",
-                            color: selectedKeywords.benefits.includes(benefit)
-                              ? "white"
-                              : "var(--text-primary)",
+                            borderColor: "var(--card-border)",
+                            color: "var(--text-secondary)",
+                            backgroundColor: "var(--bg-primary)",
                           }}
+                          title="Benefits are disabled for video generation"
                         >
                           {benefit}
                         </button>
