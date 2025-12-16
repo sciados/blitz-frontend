@@ -3,6 +3,7 @@ export type User = {
     email: string;
     full_name?: string | null;
     role: string; // "user" | "business" | "affiliate" | "creator" | "admin"
+    user_type?: string | null; // "Creator" | "Affiliate" | "Business" | "Admin" (for backward compatibility)
     developer_tier?: string | null; // "new" | "verified" | "premium"
     developer_tier_upgraded_at?: string | null;
     affiliate_tier?: string | null; // "standard" | "pro"
