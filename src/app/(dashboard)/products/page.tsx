@@ -4,8 +4,9 @@ import { AuthGate } from "src/components/AuthGate";
 import { ProductCard } from "src/components/ProductCard";
 import { ProductDetailsPanel } from "src/components/ProductDetailsPanel";
 import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { api } from "src/lib/appClient";
-import { ProductLibraryItem, ProductCategory } from "src/lib/types";
+import { ProductLibraryItem, ProductCategory, User } from "src/lib/types";
 import { getRoleFromToken } from "src/lib/auth";
 import { toast } from "sonner";
 import Link from "next/link";
@@ -21,11 +22,19 @@ export default function ProductLibraryPage() {
   const [recurringOnly, setRecurringOnly] = useState<boolean | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
+
+  // Fetch current user to determine user type
+  const { data: currentUser } = useQuery<User>({
+    queryKey: ["currentUser"],
+    queryFn: async () => (await api.get("/api/auth/me")).data,
+  });
+
   const isAdmin = getRoleFromToken() === "admin";
   const userRole = getRoleFromToken();
-  const isProductDeveloper = userRole === "creator";
-  const isProMarketer = userRole === "affiliate"; // TODO: Check affiliate_tier when available
-  const canAddProduct = isProductDeveloper || isProMarketer;
+  const isProductDeveloper = userRole === "creator" || currentUser?.user_type === "Creator";
+  const isProMarketer = userRole === "affiliate" || currentUser?.user_type === "Affiliate";
+  const isBusinessOwner = userRole === "business" || currentUser?.user_type === "Business";
+  const canAddProduct = (isProductDeveloper || isAdmin) && !isProMarketer && !isBusinessOwner;
 
   const fetchProducts = async () => {
     try {
