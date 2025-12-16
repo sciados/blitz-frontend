@@ -34,6 +34,7 @@ export default function CampaignsPage() {
     can_activate_more: boolean;
     tier: string;
   } | null>(null);
+  const [toggleLoading, setToggleLoading] = useState<{ [key: number]: boolean }>({});
 
 
   // Sorting, filtering, and search state
@@ -102,18 +103,20 @@ export default function CampaignsPage() {
 
   const handleStatusToggle = async (campaignId: number, newStatus: string) => {
     try {
+      setToggleLoading(prev => ({ ...prev, [campaignId]: true }));
+
       const response = await api.patch(`/api/campaigns/${campaignId}/status`, null, {
         params: { new_status: newStatus }
       });
-      
+
       // Update campaigns list
-      setCampaigns(prev => prev.map(c => 
+      setCampaigns(prev => prev.map(c =>
         c.id === campaignId ? { ...c, status: newStatus } as Campaign : c
       ));
-      
+
       // Refresh active limit
       fetchActiveLimit();
-      
+
     } catch (err: any) {
       console.error("Failed to toggle status:", err);
       if (err.response?.status === 400) {
@@ -126,6 +129,8 @@ export default function CampaignsPage() {
       } else {
         alert("Failed to update campaign status. Please try again.");
       }
+    } finally {
+      setToggleLoading(prev => ({ ...prev, [campaignId]: false }));
     }
   };
 
@@ -206,10 +211,29 @@ export default function CampaignsPage() {
   return (
     <AuthGate requiredRole="user">
       <div className="p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>
-            Campaigns
-          </h1>
+        <div className="flex justify-between items-start mb-6">
+          <div>
+            <h1 className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>
+              Campaigns
+            </h1>
+            {activeLimit && (
+              <div className="mt-2 flex items-center space-x-2">
+                <div className="px-3 py-1 rounded-full text-sm font-medium"
+                     style={{
+                       backgroundColor: activeLimit.remaining === 0 ? 'var(--warning-bg)' : 'var(--bg-secondary)',
+                       color: activeLimit.remaining === 0 ? 'var(--warning-text)' : 'var(--text-primary)'
+                     }}>
+                  <span className="font-semibold">{activeLimit.current_active}</span> of{' '}
+                  <span className="font-semibold">{activeLimit.limit}</span> active
+                </div>
+                <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                  {activeLimit.remaining > 0
+                    ? `${activeLimit.remaining} remaining`
+                    : 'Limit reached'}
+                </span>
+              </div>
+            )}
+          </div>
           {isProMarketer && (
             <button
               onClick={() => setIsModalOpen(true)}
@@ -478,14 +502,77 @@ export default function CampaignsPage() {
                     </div>
                   </div>
 
-                  {/* Footer */}
-                  <div className="flex items-center justify-between mt-2 pt-2 border-t" style={{ borderColor: 'var(--border-primary)' }}>
-                    <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>
-                      {new Date(campaign.created_at).toLocaleDateString()}
-                    </span>
-                    <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
+                  {/* Action Buttons */}
+                  <div className="mt-3 pt-2 border-t space-y-2" style={{ borderColor: 'var(--border-primary)' }}>
+                    {campaign.status === 'active' ? (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleStatusToggle(campaign.id, 'paused');
+                        }}
+                        disabled={toggleLoading[campaign.id]}
+                        className="w-full px-3 py-1.5 bg-yellow-600 hover:bg-yellow-700 disabled:bg-yellow-400 text-white text-xs rounded transition flex items-center justify-center space-x-1"
+                      >
+                        {toggleLoading[campaign.id] ? (
+                          <>
+                            <svg className="animate-spin h-3 w-3" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span>Pausing...</span>
+                          </>
+                        ) : (
+                          <>
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span>Pause</span>
+                          </>
+                        )}
+                      </button>
+                    ) : (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleStatusToggle(campaign.id, 'active');
+                        }}
+                        disabled={toggleLoading[campaign.id] || (activeLimit?.can_activate_more === false)}
+                        className={`w-full px-3 py-1.5 text-xs rounded transition flex items-center justify-center space-x-1 ${
+                          activeLimit?.can_activate_more === false
+                            ? 'bg-gray-400 text-white cursor-not-allowed'
+                            : 'bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white'
+                        }`}
+                        title={activeLimit?.can_activate_more === false ? `You can only have ${activeLimit.limit} active campaigns` : ''}
+                      >
+                        {toggleLoading[campaign.id] ? (
+                          <>
+                            <svg className="animate-spin h-3 w-3" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span>Activating...</span>
+                          </>
+                        ) : (
+                          <>
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span>Activate</span>
+                          </>
+                        )}
+                      </button>
+                    )}
+
+                    {/* Footer */}
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+                        {new Date(campaign.created_at).toLocaleDateString()}
+                      </span>
+                      <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </div>
                   </div>
                 </div>
               </div>
