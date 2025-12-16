@@ -25,15 +25,6 @@ export default function CampaignsPage() {
   // Check if user is Pro Marketer (affiliate with pro tier)
   const userRole = getRoleFromToken();
   const isProMarketer = userRole === "affiliate"; // TODO: Check affiliate_tier when available
-  // Active campaign limit state
-  const [activeLimit, setActiveLimit] = useState<{
-    current_active: number;
-    limit: number;
-    remaining: number;
-    can_activate_more: boolean;
-    tier: string;
-  } | null>(null);
-
 
   // Sorting, filtering, and search state
   const [searchQuery, setSearchQuery] = useState("");
@@ -58,7 +49,6 @@ export default function CampaignsPage() {
 
   useEffect(() => {
     fetchCampaigns();
-    fetchActiveLimit();
 
     // Check if productId query parameter exists
     const productIdParam = searchParams.get("productId");
@@ -82,56 +72,6 @@ export default function CampaignsPage() {
     setIsModalOpen(false);
     setPreselectedProductId(null);
   };
-
-  const fetchActiveLimit = async () => {
-    try {
-      const response = await api.get("/api/campaigns/active-limit");
-      setActiveLimit(response.data);
-    } catch (err: any) {
-      console.error("Failed to fetch active limit:", err);
-      // Don't show error for this, just use defaults
-      setActiveLimit({
-        current_active: 0,
-        limit: 4,
-        remaining: 4,
-        can_activate_more: true,
-        tier: "trial"
-      });
-    }
-  };
-
-  const handleStatusToggle = async (campaignId: number, newStatus: string) => {
-    try {
-      const response = await api.patch(`/api/campaigns/${campaignId}/status`, null, {
-        params: { new_status: newStatus }
-      });
-      
-      // Update campaigns list
-      setCampaigns(prev => prev.map(c => 
-        c.id === campaignId ? { ...c, status: newStatus } : c
-      ));
-      
-      // Refresh active limit
-      fetchActiveLimit();
-      
-    } catch (err: any) {
-      console.error("Failed to toggle status:", err);
-      if (err.response?.status === 400) {
-        const errorData = err.response.data.detail;
-        if (errorData.code === "ACTIVE_CAMPAIGN_LIMIT_EXCEEDED") {
-          alert(errorData.message);
-        } else {
-          alert(errorData.message || "Failed to update campaign status");
-        }
-      } else {
-        alert("Failed to update campaign status. Please try again.");
-      }
-    }
-  };
-
-
-
-
 
   const getStatusColor = (status: string) => {
     switch (status) {

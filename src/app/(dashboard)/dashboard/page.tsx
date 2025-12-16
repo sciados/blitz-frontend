@@ -132,7 +132,7 @@ function ProductCreatorDashboard() {
               <p className="text-sm text-[var(--text-secondary)] mb-1">
                 Active Affiliates
               </p>
-              <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
+              <p className="text-3xl text-blue-600 dark:text-blue-400">
                 {stats?.activeAffiliates || 0}
               </p>
             </div>
@@ -595,7 +595,7 @@ function BusinessOwnerDashboard() {
               <p className="text-sm text-[var(--text-secondary)] mb-1">
                 Business Campaigns
               </p>
-              <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
+              <p className="text-3xl text-blue-600 dark:text-blue-400">
                 {stats?.totalCampaigns || 0}
               </p>
             </div>
@@ -996,7 +996,7 @@ function BusinessOwnerDashboard() {
               <p className="text-sm text-[var(--text-secondary)] mb-1">
                 Total Campaigns
               </p>
-              <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+              <p className="text-2xl text-blue-600 dark:text-blue-400">
                 {stats?.totalCampaigns || 0}
               </p>
             </div>
@@ -1120,7 +1120,7 @@ function AffiliateMarketerDashboard() {
               <p className="text-sm text-[var(--text-secondary)] mb-1">
                 Total Campaigns
               </p>
-              <p className={`text-3xl font-bold text-blue-600 dark:text-blue-400 ${getUsageColor(stats?.totalCampaigns || 0, usageLimits?.limits?.campaigns)}`}>
+              <p className={`text-3xl text-blue-600 dark:text-blue-400 ${getUsageColor(stats?.totalCampaigns || 0, usageLimits?.limits?.campaigns)}`}>
                 {formatUsage(stats?.totalCampaigns || 0, usageLimits?.limits?.campaigns)}
               </p>
               {usageLimits?.limits?.campaigns && (
