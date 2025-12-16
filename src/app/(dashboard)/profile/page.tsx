@@ -452,7 +452,7 @@ export default function ProfilePage() {
         </div>
 
         {/* User Type Specific Statistics */}
-        {user?.role === "creator" && (
+        {(user?.role === "creator" || user?.user_type === "Creator") && (
           <div className="card p-6 space-y-4">
             <div className="flex items-center space-x-2">
               <span className="text-2xl">🎯</span>
@@ -510,7 +510,7 @@ export default function ProfilePage() {
           </div>
         )}
 
-        {user?.role === "affiliate" && (
+        {(user?.role === "affiliate" || user?.user_type === "Affiliate") && (
           <div className="card p-6 space-y-4">
             <div className="flex items-center space-x-2">
               <span className="text-2xl">🚀</span>

@@ -85,7 +85,7 @@ export default function AnalyticsPage() {
     queryFn: async () => (await api.get("/api/auth/me")).data,
   });
 
-  const isProductDeveloper = currentUser?.role === "creator";
+  const isProductDeveloper = currentUser?.role === "creator" || currentUser?.user_type === "Creator";
 
   // Product Developer Analytics
   const { data: devAnalytics, isLoading: devAnalyticsLoading } =

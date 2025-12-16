@@ -30,7 +30,7 @@ type UserInfo = {
   role: string; // "user" | "business" | "affiliate" | "creator" | "admin"
   profile_image_url?: string;
   full_name?: string;
-  user_type?: string; // For backward compatibility
+  user_type?: string; // "Creator" | "Affiliate" | "Business" | "Admin" (for fallback matching)
   affiliate_tier?: string | null;
   subscription_tier?: string | null; // free, trial, standard, pro, business
 };
@@ -235,7 +235,7 @@ export default function Layout({ children }: LayoutProps) {
     }
 
     // Product Creator menu
-    if (userInfo?.role === "creator") {
+    if (userInfo?.role === "creator" || userInfo?.user_type === "Creator") {
       return [
         { href: "/dashboard", label: "Dashboard", icon: "🏠" },
         { href: "/products", label: "Product Library", icon: "📦" },
@@ -268,7 +268,7 @@ export default function Layout({ children }: LayoutProps) {
     }
 
     // Business Owner menu (promoting their own business)
-    if (userInfo?.role === "business") {
+    if (userInfo?.role === "business" || userInfo?.user_type === "Business") {
       return [
         { href: "/dashboard", label: "Dashboard", icon: "🏠" },
         { href: "/campaigns", label: "Business Campaigns", icon: "📢" },
@@ -406,7 +406,7 @@ export default function Layout({ children }: LayoutProps) {
           <div className="flex items-center space-x-4">
             {/* Upgrade Button for Non-Pro Affiliates */}
             {userInfo?.affiliate_tier !== "pro" &&
-              userInfo?.role === "affiliate" && (
+              (userInfo?.role === "affiliate" || userInfo?.user_type === "Affiliate") && (
                 <Link
                   href="/billing/subscribe"
                   className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400 hover:bg-orange-200 dark:hover:bg-orange-900/50 transition mr-[30px] -translate-x-[30px]"

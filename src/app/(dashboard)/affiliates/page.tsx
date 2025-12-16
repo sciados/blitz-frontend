@@ -56,6 +56,14 @@ export default function AffiliatesPage() {
     try {
       const payload = JSON.parse(atob(token.split(".")[1]));
       // Check role - if role is 'creator', user_type is 'Creator'
+      // Also check localStorage userInfo for user_type field
+      const userInfoStr = localStorage.getItem("userInfo");
+      if (userInfoStr) {
+        const userInfo = JSON.parse(userInfoStr);
+        if (userInfo.user_type === "Creator") {
+          return "Creator";
+        }
+      }
       return payload.role === "creator" ? "Creator" : null;
     } catch (e) {
       console.error("Failed to decode token:", e);
@@ -216,9 +224,16 @@ export default function AffiliatesPage() {
       try {
         // Decode JWT to get user info (simple decode, not verification)
         const payload = JSON.parse(atob(token.split(".")[1]));
-        // The token contains role, but we need user_type
-        // For now, let's check based on role: if role is 'creator', user_type is 'Creator'
-        if (payload.role === "creator") {
+        // Also check localStorage userInfo for user_type field
+        const userInfoStr = localStorage.getItem("userInfo");
+        if (userInfoStr) {
+          const userInfo = JSON.parse(userInfoStr);
+          if (userInfo.user_type === "Creator") {
+            currentUserType = "Creator";
+          } else if (payload.role === "creator") {
+            currentUserType = "Creator";
+          }
+        } else if (payload.role === "creator") {
           currentUserType = "Creator";
         }
       } catch (e) {

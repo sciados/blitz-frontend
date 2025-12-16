@@ -40,8 +40,8 @@ export default function DashboardPage() {
     );
   }
 
-  const isProductCreator = userInfo?.role === "creator";
-  const isBusinessOwner = userInfo?.role === "business";
+  const isProductCreator = userInfo?.role === "creator" || userInfo?.user_type === "Creator";
+  const isBusinessOwner = userInfo?.role === "business" || userInfo?.user_type === "Business";
 
   return (
     <AuthGate requiredRole="user">
