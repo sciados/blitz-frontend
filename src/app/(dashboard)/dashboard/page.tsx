@@ -40,8 +40,10 @@ export default function DashboardPage() {
     );
   }
 
-  const isProductCreator = userInfo?.role === "creator" || userInfo?.user_type === "Creator";
-  const isBusinessOwner = userInfo?.role === "business" || userInfo?.user_type === "Business";
+  const isProductCreator =
+    userInfo?.role === "creator" || userInfo?.user_type === "Creator";
+  const isBusinessOwner =
+    userInfo?.role === "business" || userInfo?.user_type === "Business";
 
   return (
     <AuthGate requiredRole="user">
@@ -1120,14 +1122,27 @@ function AffiliateMarketerDashboard() {
               <p className="text-sm text-[var(--text-secondary)] mb-1">
                 Total Campaigns
               </p>
-              <p className={`text-3xl text-blue-600 dark:text-blue-400 ${getUsageColor(stats?.totalCampaigns || 0, usageLimits?.limits?.campaigns)}`}>
-                {formatUsage(stats?.totalCampaigns || 0, usageLimits?.limits?.campaigns)}
+              <p
+                className={`text-3xl text-white-600 dark:text-white-400 ${getUsageColor(
+                  stats?.totalCampaigns || 0,
+                  usageLimits?.limits?.campaigns
+                )}`}
+              >
+                {formatUsage(
+                  stats?.totalCampaigns || 0,
+                  usageLimits?.limits?.campaigns
+                )}
               </p>
               {usageLimits?.limits?.campaigns && (
                 <div className="mt-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
                   <div
                     className="bg-blue-500 h-1.5 rounded-full transition-all"
-                    style={{ width: `${getProgress(stats?.totalCampaigns || 0, usageLimits?.limits?.campaigns)}%` }}
+                    style={{
+                      width: `${getProgress(
+                        stats?.totalCampaigns || 0,
+                        usageLimits?.limits?.campaigns
+                      )}%`,
+                    }}
                   />
                 </div>
               )}
@@ -1147,6 +1162,30 @@ function AffiliateMarketerDashboard() {
               <p className="text-3xl text-green-600 dark:text-green-400">
                 {stats?.activeCampaigns || 0}
               </p>
+              <p
+                className={`text-3xl text-white-600 dark:text-white-400 ${getUsageColor(
+                  stats?.activeCampaigns || 0,
+                  usageLimits?.limits?.campaigns
+                )}`}
+              >
+                {formatUsage(
+                  stats?.activeCampaigns || 0,
+                  usageLimits?.limits?.campaigns
+                )}
+              </p>
+              {usageLimits?.limits?.campaigns && (
+                <div className="mt-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+                  <div
+                    className="bg-blue-500 h-1.5 rounded-full transition-all"
+                    style={{
+                      width: `${getProgress(
+                        stats?.activeCampaigns || 0,
+                        usageLimits?.limits?.campaigns
+                      )}%`,
+                    }}
+                  />
+                </div>
+              )}
             </div>
             <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
               <span className="text-2xl">✓</span>
@@ -1160,14 +1199,29 @@ function AffiliateMarketerDashboard() {
               <p className="text-sm text-[var(--text-secondary)] mb-1">
                 Text Content
               </p>
-              <p className={`text-3xl text-purple-600 dark:text-purple-400 ${getUsageColor(usageLimits?.usage?.text_content || 0, usageLimits?.limits?.text_content)}`}>
-                {formatUsage(usageLimits?.usage?.text_content || stats?.textContentPieces || 0, usageLimits?.limits?.text_content)}
+              <p
+                className={`text-3xl text-white-600 dark:text-white-400 ${getUsageColor(
+                  usageLimits?.usage?.text_content || 0,
+                  usageLimits?.limits?.text_content
+                )}`}
+              >
+                {formatUsage(
+                  usageLimits?.usage?.text_content ||
+                    stats?.textContentPieces ||
+                    0,
+                  usageLimits?.limits?.text_content
+                )}
               </p>
               {usageLimits?.limits?.text_content && (
                 <div className="mt-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
                   <div
                     className="bg-purple-500 h-1.5 rounded-full transition-all"
-                    style={{ width: `${getProgress(usageLimits?.usage?.text_content || 0, usageLimits?.limits?.text_content)}%` }}
+                    style={{
+                      width: `${getProgress(
+                        usageLimits?.usage?.text_content || 0,
+                        usageLimits?.limits?.text_content
+                      )}%`,
+                    }}
                   />
                 </div>
               )}
@@ -1184,14 +1238,27 @@ function AffiliateMarketerDashboard() {
               <p className="text-sm text-[var(--text-secondary)] mb-1">
                 Images
               </p>
-              <p className={`text-3xl text-pink-600 dark:text-pink-400 ${getUsageColor(usageLimits?.usage?.images || 0, usageLimits?.limits?.images)}`}>
-                {formatUsage(usageLimits?.usage?.images || stats?.imageContentPieces || 0, usageLimits?.limits?.images)}
+              <p
+                className={`text-3xl text-white-600 dark:text-white-400 ${getUsageColor(
+                  usageLimits?.usage?.images || 0,
+                  usageLimits?.limits?.images
+                )}`}
+              >
+                {formatUsage(
+                  usageLimits?.usage?.images || stats?.imageContentPieces || 0,
+                  usageLimits?.limits?.images
+                )}
               </p>
               {usageLimits?.limits?.images && (
                 <div className="mt-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
                   <div
                     className="bg-pink-500 h-1.5 rounded-full transition-all"
-                    style={{ width: `${getProgress(usageLimits?.usage?.images || 0, usageLimits?.limits?.images)}%` }}
+                    style={{
+                      width: `${getProgress(
+                        usageLimits?.usage?.images || 0,
+                        usageLimits?.limits?.images
+                      )}%`,
+                    }}
                   />
                 </div>
               )}
@@ -1208,14 +1275,27 @@ function AffiliateMarketerDashboard() {
               <p className="text-sm text-[var(--text-secondary)] mb-1">
                 Videos
               </p>
-              <p className={`text-3xl text-red-600 dark:text-red-400 ${getUsageColor(usageLimits?.usage?.videos || 0, usageLimits?.limits?.videos)}`}>
-                {formatUsage(usageLimits?.usage?.videos || stats?.videoContentPieces || 0, usageLimits?.limits?.videos)}
+              <p
+                className={`text-3xl text-white-600 dark:text-white-400 ${getUsageColor(
+                  usageLimits?.usage?.videos || 0,
+                  usageLimits?.limits?.videos
+                )}`}
+              >
+                {formatUsage(
+                  usageLimits?.usage?.videos || stats?.videoContentPieces || 0,
+                  usageLimits?.limits?.videos
+                )}
               </p>
               {usageLimits?.limits?.videos && (
                 <div className="mt-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
                   <div
                     className="bg-red-500 h-1.5 rounded-full transition-all"
-                    style={{ width: `${getProgress(usageLimits?.usage?.videos || 0, usageLimits?.limits?.videos)}%` }}
+                    style={{
+                      width: `${getProgress(
+                        usageLimits?.usage?.videos || 0,
+                        usageLimits?.limits?.videos
+                      )}%`,
+                    }}
                   />
                 </div>
               )}
