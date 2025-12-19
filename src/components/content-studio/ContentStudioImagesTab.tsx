@@ -53,6 +53,9 @@ export function ContentStudioImagesTab({ campaignId }: ContentStudioImagesTabPro
     benefits: [],
     pain_points: [],
   });
+  const [draftImages, setDraftImages] = useState<GeneratedImage[]>([]);
+  const [selectedDraftId, setSelectedDraftId] = useState<number | null>(null);
+  const [isEnhancing, setIsEnhancing] = useState(false);
 
   // Fetch images for this campaign
   const { data, refetch } = useQuery({
@@ -79,7 +82,11 @@ export function ContentStudioImagesTab({ campaignId }: ContentStudioImagesTabPro
   const handleGenerate = async () => {
     try {
       setIsGenerating(true);
-      const response = await api.post("/api/images/generate", {
+      setDraftImages([]);
+      setSelectedDraftId(null);
+
+      // Generate 4 draft images (free, not saved to database)
+      const response = await api.post("/api/images/previews", {
         campaign_id: campaignId,
         image_type: imageType,
         style: imageStyle,
@@ -87,12 +94,52 @@ export function ContentStudioImagesTab({ campaignId }: ContentStudioImagesTabPro
         highlight_features: selectedKeywords,
       });
 
-      toast.success("Image generated successfully!");
-      refetch();
+      setDraftImages(response.data || []);
+      toast.success(`Generated ${response.data?.length || 0} draft images! Select one to enhance.`);
     } catch (error: any) {
-      toast.error(error?.response?.data?.detail || "Failed to generate image");
+      toast.error(error?.response?.data?.detail || "Failed to generate draft images");
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const handleEnhanceImage = async () => {
+    if (!selectedDraftId) {
+      toast.error("Please select a draft image first");
+      return;
+    }
+
+    try {
+      setIsEnhancing(true);
+      const selectedDraft = draftImages.find(img => img.id === selectedDraftId);
+
+      if (!selectedDraft) {
+        toast.error("Selected draft not found");
+        return;
+      }
+
+      // Enhance the selected draft to premium quality
+      const response = await api.post("/api/images/upgrade", {
+        campaign_id: campaignId,
+        image_type: imageType,
+        style: imageStyle,
+        aspect_ratio: aspectRatio,
+        draft_image_url: selectedDraft.image_url,
+        provider: selectedDraft.provider,
+        model: selectedDraft.model,
+        prompt: selectedDraft.prompt,
+      });
+
+      toast.success("Image enhanced successfully!");
+
+      // Clear drafts and refresh saved images
+      setDraftImages([]);
+      setSelectedDraftId(null);
+      refetch();
+    } catch (error: any) {
+      toast.error(error?.response?.data?.detail || "Failed to enhance image");
+    } finally {
+      setIsEnhancing(false);
     }
   };
 
@@ -346,8 +393,19 @@ export function ContentStudioImagesTab({ campaignId }: ContentStudioImagesTabPro
             disabled={isGenerating}
             className="w-full px-4 py-3 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 text-white rounded-lg font-medium transition"
           >
-            {isGenerating ? "Generating..." : "Generate Image"}
+            {isGenerating ? "Generating Drafts..." : "Generate 4 Draft Images"}
           </button>
+
+          {/* Enhance Button - shown when draft is selected */}
+          {draftImages.length > 0 && (
+            <button
+              onClick={handleEnhanceImage}
+              disabled={isEnhancing || !selectedDraftId}
+              className="w-full px-4 py-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white rounded-lg font-medium transition mt-3"
+            >
+              {isEnhancing ? "Enhancing..." : selectedDraftId ? "Enhance Selected Image" : "Select a Draft to Enhance"}
+            </button>
+          )}
         </div>
       </div>
 
@@ -357,129 +415,180 @@ export function ContentStudioImagesTab({ campaignId }: ContentStudioImagesTabPro
           className="text-lg font-semibold mb-4"
           style={{ color: "var(--text-primary)" }}
         >
-          Generated Images ({images.length})
+          {draftImages.length > 0 ? `Draft Images - Select One to Enhance (${draftImages.length})` : `Generated Images (${images.length})`}
         </h3>
 
-        {/* Latest Generated Preview */}
-        {images.length > 0 && (
-          <div className="card rounded-lg p-6 mb-6 bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border-2 border-purple-200 dark:border-purple-800">
+        {/* Draft Images Section - shown when drafts exist */}
+        {draftImages.length > 0 ? (
+          <div className="card rounded-lg p-6 mb-6 bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 border-2 border-yellow-200 dark:border-yellow-800">
             <div className="flex items-center mb-3">
-              <svg className="w-5 h-5 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              <svg className="w-5 h-5 mr-2 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <h4 className="font-semibold text-purple-900 dark:text-purple-100">
-                Latest Generated
+              <h4 className="font-semibold text-yellow-900 dark:text-yellow-100">
+                Draft Images (Free Preview)
               </h4>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="aspect-video bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden">
-                {images[0].image_url ? (
-                  <img
-                    src={images[0].image_url}
-                    alt="Latest generated"
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <span style={{ color: "var(--text-secondary)" }}>Processing...</span>
-                  </div>
-                )}
-              </div>
-              <div className="flex flex-col justify-center">
-                <div className="mb-2">
-                  <span
-                    className="inline-block text-xs px-2 py-1 rounded"
-                    style={{
-                      backgroundColor: "var(--bg-secondary)",
-                      color: "var(--text-primary)",
-                    }}
-                  >
-                    {images[0].image_type}
-                  </span>
-                </div>
-                <p
-                  className="text-sm mb-3"
-                  style={{ color: "var(--text-secondary)" }}
-                >
-                  {images[0].prompt || "No prompt available"}
-                </p>
-                <div className="flex gap-2">
-                  {images[0].image_url && (
-                    <a
-                      href={images[0].image_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-sm rounded-lg transition"
-                    >
-                      View Full Size
-                    </a>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {images.length === 0 ? (
-          <div className="card rounded-lg p-8 text-center">
-            <p style={{ color: "var(--text-secondary)" }}>
-              No images generated yet. Configure settings and click "Generate".
+            <p className="text-sm text-yellow-800 dark:text-yellow-200 mb-4">
+              Select one draft image below to enhance it to premium quality. Drafts are free and not saved to your library.
             </p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {images.slice(0, 10).map((image: GeneratedImage) => (
-              <div
-                key={image.id}
-                className="card rounded-lg overflow-hidden hover:shadow-lg transition"
-              >
-                <div className="aspect-square bg-gray-100 dark:bg-gray-800">
-                  {image.image_url ? (
+            <div className="grid grid-cols-2 gap-4">
+              {draftImages.map((image) => (
+                <div
+                  key={image.id}
+                  onClick={() => setSelectedDraftId(image.id)}
+                  className={`relative cursor-pointer rounded-lg overflow-hidden border-2 transition ${
+                    selectedDraftId === image.id
+                      ? "border-green-500 ring-2 ring-green-300"
+                      : "border-transparent hover:border-yellow-400"
+                  }`}
+                >
+                  <div className="aspect-square bg-gray-100 dark:bg-gray-800">
                     <img
-                      src={image.image_url}
+                      src={image.thumbnail_url || image.image_url}
                       alt={image.prompt}
                       className="w-full h-full object-cover"
                     />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <span style={{ color: "var(--text-secondary)" }}>
-                        Processing...
-                      </span>
+                  </div>
+                  {selectedDraftId === image.id && (
+                    <div className="absolute top-2 right-2 bg-green-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold">
+                      ✓
                     </div>
                   )}
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3">
+                    <p className="text-white text-xs font-medium truncate">
+                      Click to select
+                    </p>
+                  </div>
                 </div>
-                <div className="p-4">
-                  <p
-                    className="text-sm line-clamp-2 mb-2"
-                    style={{ color: "var(--text-secondary)" }}
-                  >
-                    {image.prompt}
-                  </p>
-                  <div className="flex items-center justify-between">
-                    <span
-                      className="text-xs px-2 py-1 rounded"
-                      style={{
-                        backgroundColor: "var(--bg-secondary)",
-                        color: "var(--text-primary)",
-                      }}
-                    >
-                      {image.image_type}
-                    </span>
-                    {image.image_url && (
-                      <a
-                        href={image.image_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs text-blue-600 hover:underline"
-                      >
-                        View Full Size
-                      </a>
+              ))}
+            </div>
+          </div>
+        ) : (
+          /* Generated Images Section - shown when no drafts */
+          <>
+            {/* Latest Generated Preview */}
+            {images.length > 0 && (
+              <div className="card rounded-lg p-6 mb-6 bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border-2 border-purple-200 dark:border-purple-800">
+                <div className="flex items-center mb-3">
+                  <svg className="w-5 h-5 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                  <h4 className="font-semibold text-purple-900 dark:text-purple-100">
+                    Latest Generated
+                  </h4>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="aspect-video bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden">
+                    {images[0].image_url ? (
+                      <img
+                        src={images[0].image_url}
+                        alt="Latest generated"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <span style={{ color: "var(--text-secondary)" }}>Processing...</span>
+                      </div>
                     )}
+                  </div>
+                  <div className="flex flex-col justify-center">
+                    <div className="mb-2">
+                      <span
+                        className="inline-block text-xs px-2 py-1 rounded"
+                        style={{
+                          backgroundColor: "var(--bg-secondary)",
+                          color: "var(--text-primary)",
+                        }}
+                      >
+                        {images[0].image_type}
+                      </span>
+                    </div>
+                    <p
+                      className="text-sm mb-3"
+                      style={{ color: "var(--text-secondary)" }}
+                    >
+                      {images[0].prompt || "No prompt available"}
+                    </p>
+                    <div className="flex gap-2">
+                      {images[0].image_url && (
+                        <a
+                          href={images[0].image_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-sm rounded-lg transition"
+                        >
+                          View Full Size
+                        </a>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
-            ))}
-          </div>
+            )}
+
+            {images.length === 0 ? (
+              <div className="card rounded-lg p-8 text-center">
+                <p style={{ color: "var(--text-secondary)" }}>
+                  No images generated yet. Configure settings and click "Generate 4 Draft Images".
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {images.slice(0, 10).map((image: GeneratedImage) => (
+                  <div
+                    key={image.id}
+                    className="card rounded-lg overflow-hidden hover:shadow-lg transition"
+                  >
+                    <div className="aspect-square bg-gray-100 dark:bg-gray-800">
+                      {image.image_url ? (
+                        <img
+                          src={image.image_url}
+                          alt={image.prompt}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <span style={{ color: "var(--text-secondary)" }}>
+                            Processing...
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="p-4">
+                      <p
+                        className="text-sm line-clamp-2 mb-2"
+                        style={{ color: "var(--text-secondary)" }}
+                      >
+                        {image.prompt}
+                      </p>
+                      <div className="flex items-center justify-between">
+                        <span
+                          className="text-xs px-2 py-1 rounded"
+                          style={{
+                            backgroundColor: "var(--bg-secondary)",
+                            color: "var(--text-primary)",
+                          }}
+                        >
+                          {image.image_type}
+                        </span>
+                        {image.image_url && (
+                          <a
+                            href={image.image_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs text-blue-600 hover:underline"
+                          >
+                            View Full Size
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
