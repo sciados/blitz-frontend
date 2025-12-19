@@ -4,15 +4,50 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "src/lib/appClient";
 import { toast } from "sonner";
-import { GeneratedImage, ImageType, ImageStyle, AspectRatio } from "src/lib/types";
+import {
+  GeneratedImage,
+  ImageType,
+  ImageStyle,
+  AspectRatio,
+} from "src/lib/types";
 
 const IMAGE_TYPES = [
-  { value: "hero", label: "Hero Image", icon: "🖼️", description: "Large banner/header image" },
-  { value: "product", label: "Product Image", icon: "📦", description: "Product showcase" },
-  { value: "social", label: "Social Media", icon: "📱", description: "Instagram, Facebook, etc." },
-  { value: "ad", label: "Ad Creative", icon: "📢", description: "Paid advertising" },
-  { value: "email", label: "Email Header", icon: "✉️", description: "Email campaign header" },
-  { value: "blog", label: "Blog Feature", icon: "📝", description: "Blog post featured image" },
+  {
+    value: "hero",
+    label: "Hero Image",
+    icon: "🖼️",
+    description: "Large banner/header image",
+  },
+  {
+    value: "product",
+    label: "Product Image",
+    icon: "📦",
+    description: "Product showcase",
+  },
+  {
+    value: "social",
+    label: "Social Media",
+    icon: "📱",
+    description: "Instagram, Facebook, etc.",
+  },
+  {
+    value: "ad",
+    label: "Ad Creative",
+    icon: "📢",
+    description: "Paid advertising",
+  },
+  {
+    value: "email",
+    label: "Email Header",
+    icon: "✉️",
+    description: "Email campaign header",
+  },
+  {
+    value: "blog",
+    label: "Blog Feature",
+    icon: "📝",
+    description: "Blog post featured image",
+  },
 ];
 
 const IMAGE_STYLES = [
@@ -37,7 +72,9 @@ interface ContentStudioImagesTabProps {
   campaignId: number;
 }
 
-export function ContentStudioImagesTab({ campaignId }: ContentStudioImagesTabProps) {
+export function ContentStudioImagesTab({
+  campaignId,
+}: ContentStudioImagesTabProps) {
   const [imageType, setImageType] = useState<ImageType>("hero");
   const [imageStyle, setImageStyle] = useState<ImageStyle>("photorealistic");
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>("1:1");
@@ -54,14 +91,18 @@ export function ContentStudioImagesTab({ campaignId }: ContentStudioImagesTabPro
     pain_points: [],
   });
   const [draftImages, setDraftImages] = useState<GeneratedImage[]>([]);
-  const [selectedDraftIndex, setSelectedDraftIndex] = useState<number | null>(null);
+  const [selectedDraftIndex, setSelectedDraftIndex] = useState<number | null>(
+    null
+  );
   const [isEnhancing, setIsEnhancing] = useState(false);
 
   // Fetch images for this campaign
   const { data, refetch } = useQuery({
     queryKey: ["images", campaignId],
     queryFn: async () => {
-      const response = await api.get(`/api/content/campaign/${campaignId}/images`);
+      const response = await api.get(
+        `/api/content/campaign/${campaignId}/images`
+      );
       return response.data;
     },
   });
@@ -95,9 +136,15 @@ export function ContentStudioImagesTab({ campaignId }: ContentStudioImagesTabPro
       });
 
       setDraftImages(response.data || []);
-      toast.success(`Generated ${response.data?.length || 0} draft images! Select one to enhance.`);
+      toast.success(
+        `Generated ${
+          response.data?.length || 0
+        } draft images! Select one to enhance.`
+      );
     } catch (error: any) {
-      toast.error(error?.response?.data?.detail || "Failed to generate draft images");
+      toast.error(
+        error?.response?.data?.detail || "Failed to generate draft images"
+      );
     } finally {
       setIsGenerating(false);
     }
@@ -248,40 +295,51 @@ export function ContentStudioImagesTab({ campaignId }: ContentStudioImagesTabPro
             ) : keywordsData ? (
               <div className="space-y-4">
                 {/* Ingredients */}
-                {keywordsData.ingredients && keywordsData.ingredients.length > 0 && (
-                  <div>
-                    <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-secondary)" }}>
-                      Ingredients
-                    </label>
-                    <div className="flex flex-wrap gap-2">
-                      {keywordsData.ingredients.map((ingredient: string) => (
-                        <button
-                          key={ingredient}
-                          onClick={() => {
-                            setSelectedKeywords((prev) => ({
-                              ...prev,
-                              ingredients: prev.ingredients.includes(ingredient)
-                                ? prev.ingredients.filter((i) => i !== ingredient)
-                                : [...prev.ingredients, ingredient],
-                            }));
-                          }}
-                          className={`px-3 py-1 rounded-full text-sm border ${
-                            selectedKeywords.ingredients.includes(ingredient)
-                              ? "bg-purple-500 text-white border-purple-500"
-                              : "bg-[var(--bg-secondary)] text-[var(--text-primary)] border-[var(--border-color)] hover:border-purple-500"
-                          }`}
-                        >
-                          {ingredient}
-                        </button>
-                      ))}
+                {keywordsData.ingredients &&
+                  keywordsData.ingredients.length > 0 && (
+                    <div>
+                      <label
+                        className="block text-xs font-medium mb-1"
+                        style={{ color: "var(--text-secondary)" }}
+                      >
+                        Ingredients
+                      </label>
+                      <div className="flex flex-wrap gap-2">
+                        {keywordsData.ingredients.map((ingredient: string) => (
+                          <button
+                            key={ingredient}
+                            onClick={() => {
+                              setSelectedKeywords((prev) => ({
+                                ...prev,
+                                ingredients: prev.ingredients.includes(
+                                  ingredient
+                                )
+                                  ? prev.ingredients.filter(
+                                      (i) => i !== ingredient
+                                    )
+                                  : [...prev.ingredients, ingredient],
+                              }));
+                            }}
+                            className={`px-3 py-1 rounded-full text-sm border ${
+                              selectedKeywords.ingredients.includes(ingredient)
+                                ? "bg-purple-500 text-white border-purple-500"
+                                : "bg-[var(--bg-secondary)] text-[var(--text-primary)] border-[var(--border-color)] hover:border-purple-500"
+                            }`}
+                          >
+                            {ingredient}
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
                 {/* Features */}
                 {keywordsData.features && keywordsData.features.length > 0 && (
                   <div>
-                    <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-secondary)" }}>
+                    <label
+                      className="block text-xs font-medium mb-1"
+                      style={{ color: "var(--text-secondary)" }}
+                    >
                       Features
                     </label>
                     <div className="flex flex-wrap gap-2">
@@ -312,7 +370,10 @@ export function ContentStudioImagesTab({ campaignId }: ContentStudioImagesTabPro
                 {/* Benefits */}
                 {keywordsData.benefits && keywordsData.benefits.length > 0 && (
                   <div>
-                    <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-secondary)" }}>
+                    <label
+                      className="block text-xs font-medium mb-1"
+                      style={{ color: "var(--text-secondary)" }}
+                    >
                       Benefits
                     </label>
                     <div className="flex flex-wrap gap-2">
@@ -341,44 +402,52 @@ export function ContentStudioImagesTab({ campaignId }: ContentStudioImagesTabPro
                 )}
 
                 {/* Pain Points */}
-                {keywordsData.pain_points && keywordsData.pain_points.length > 0 && (
-                  <div>
-                    <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-secondary)" }}>
-                      Pain Points
-                    </label>
-                    <div className="flex flex-wrap gap-2">
-                      {keywordsData.pain_points.map((pain: string) => (
-                        <button
-                          key={pain}
-                          onClick={() => {
-                            setSelectedKeywords((prev) => ({
-                              ...prev,
-                              pain_points: prev.pain_points.includes(pain)
-                                ? prev.pain_points.filter((p) => p !== pain)
-                                : [...prev.pain_points, pain],
-                            }));
-                          }}
-                          className={`px-3 py-1 rounded-full text-sm border ${
-                            selectedKeywords.pain_points.includes(pain)
-                              ? "bg-purple-500 text-white border-purple-500"
-                              : "bg-[var(--bg-secondary)] text-[var(--text-primary)] border-[var(--border-color)] hover:border-purple-500"
-                          }`}
-                        >
-                          {pain}
-                        </button>
-                      ))}
+                {keywordsData.pain_points &&
+                  keywordsData.pain_points.length > 0 && (
+                    <div>
+                      <label
+                        className="block text-xs font-medium mb-1"
+                        style={{ color: "var(--text-secondary)" }}
+                      >
+                        Pain Points
+                      </label>
+                      <div className="flex flex-wrap gap-2">
+                        {keywordsData.pain_points.map((pain: string) => (
+                          <button
+                            key={pain}
+                            onClick={() => {
+                              setSelectedKeywords((prev) => ({
+                                ...prev,
+                                pain_points: prev.pain_points.includes(pain)
+                                  ? prev.pain_points.filter((p) => p !== pain)
+                                  : [...prev.pain_points, pain],
+                              }));
+                            }}
+                            className={`px-3 py-1 rounded-full text-sm border ${
+                              selectedKeywords.pain_points.includes(pain)
+                                ? "bg-purple-500 text-white border-purple-500"
+                                : "bg-[var(--bg-secondary)] text-[var(--text-primary)] border-[var(--border-color)] hover:border-purple-500"
+                            }`}
+                          >
+                            {pain}
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
                 {!keywordsData.ingredients?.length &&
-                 !keywordsData.features?.length &&
-                 !keywordsData.benefits?.length &&
-                 !keywordsData.pain_points?.length && (
-                  <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
-                    No keywords available. Compile campaign intelligence to get keyword suggestions.
-                  </p>
-                )}
+                  !keywordsData.features?.length &&
+                  !keywordsData.benefits?.length &&
+                  !keywordsData.pain_points?.length && (
+                    <p
+                      className="text-xs"
+                      style={{ color: "var(--text-secondary)" }}
+                    >
+                      No keywords available. Compile campaign intelligence to
+                      get keyword suggestions.
+                    </p>
+                  )}
               </div>
             ) : (
               <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
@@ -403,7 +472,11 @@ export function ContentStudioImagesTab({ campaignId }: ContentStudioImagesTabPro
               disabled={isEnhancing || selectedDraftIndex === null}
               className="w-full px-4 py-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white rounded-lg font-medium transition mt-3"
             >
-              {isEnhancing ? "Enhancing..." : selectedDraftIndex !== null ? "Enhance Selected Image" : "Select a Draft to Enhance"}
+              {isEnhancing
+                ? "Enhancing..."
+                : selectedDraftIndex !== null
+                ? "Enhance Selected Image"
+                : "Select a Draft to Enhance"}
             </button>
           )}
         </div>
@@ -415,22 +488,35 @@ export function ContentStudioImagesTab({ campaignId }: ContentStudioImagesTabPro
           className="text-lg font-semibold mb-4"
           style={{ color: "var(--text-primary)" }}
         >
-          {draftImages.length > 0 ? `Draft Images - Select One to Enhance (${draftImages.length})` : `Generated Images (${images.length})`}
+          {draftImages.length > 0
+            ? `Draft Images - Select One to Enhance (${draftImages.length})`
+            : `Generated Images (${images.length})`}
         </h3>
 
         {/* Draft Images Section - shown when drafts exist */}
         {draftImages.length > 0 ? (
           <div className="card rounded-lg p-6 mb-6 bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 border-2 border-yellow-200 dark:border-yellow-800">
             <div className="flex items-center mb-3">
-              <svg className="w-5 h-5 mr-2 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <svg
+                className="w-5 h-5 mr-2 text-yellow-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
               </svg>
               <h4 className="font-semibold text-yellow-900 dark:text-yellow-100">
                 Draft Images (Free Preview)
               </h4>
             </div>
             <p className="text-sm text-yellow-800 dark:text-yellow-200 mb-4">
-              Select one draft image below to enhance it to premium quality. Drafts are free and not saved to your library.
+              Select one draft image below to enhance it to premium quality and
+              save it to your library.
             </p>
             <div className="grid grid-cols-2 gap-4">
               {draftImages.map((image, index) => {
@@ -495,8 +581,18 @@ export function ContentStudioImagesTab({ campaignId }: ContentStudioImagesTabPro
             {images.length > 0 && (
               <div className="card rounded-lg p-6 mb-6 bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border-2 border-purple-200 dark:border-purple-800">
                 <div className="flex items-center mb-3">
-                  <svg className="w-5 h-5 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  <svg
+                    className="w-5 h-5 mr-2 text-purple-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 10V3L4 14h7v7l9-11h-7z"
+                    />
                   </svg>
                   <h4 className="font-semibold text-purple-900 dark:text-purple-100">
                     Latest Generated
@@ -512,7 +608,9 @@ export function ContentStudioImagesTab({ campaignId }: ContentStudioImagesTabPro
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
-                        <span style={{ color: "var(--text-secondary)" }}>Processing...</span>
+                        <span style={{ color: "var(--text-secondary)" }}>
+                          Processing...
+                        </span>
                       </div>
                     )}
                   </div>
@@ -554,7 +652,8 @@ export function ContentStudioImagesTab({ campaignId }: ContentStudioImagesTabPro
             {images.length === 0 ? (
               <div className="card rounded-lg p-8 text-center">
                 <p style={{ color: "var(--text-secondary)" }}>
-                  No images generated yet. Configure settings and click "Generate 4 Draft Images".
+                  No images generated yet. Configure settings and click
+                  "Generate 4 Draft Images".
                 </p>
               </div>
             ) : (

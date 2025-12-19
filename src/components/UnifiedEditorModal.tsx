@@ -1295,6 +1295,10 @@ export function UnifiedEditorModal({
                   maxWidth: "none",
                   maxHeight: "none",
                 }}
+                onError={(e) => {
+                  console.error("Failed to load image:", sourceImage.image_url);
+                  toast.error("Failed to load image in editor");
+                }}
                 onLoad={(e) => {
                   const img = e.currentTarget;
                   const naturalWidth = img.naturalWidth;
