@@ -54,7 +54,7 @@ export function ContentStudioImagesTab({ campaignId }: ContentStudioImagesTabPro
     pain_points: [],
   });
   const [draftImages, setDraftImages] = useState<GeneratedImage[]>([]);
-  const [selectedDraftId, setSelectedDraftId] = useState<number | null>(null);
+  const [selectedDraftIndex, setSelectedDraftIndex] = useState<number | null>(null);
   const [isEnhancing, setIsEnhancing] = useState(false);
 
   // Fetch images for this campaign
@@ -83,7 +83,7 @@ export function ContentStudioImagesTab({ campaignId }: ContentStudioImagesTabPro
     try {
       setIsGenerating(true);
       setDraftImages([]);
-      setSelectedDraftId(null);
+      setSelectedDraftIndex(null);
 
       // Generate 4 draft images (free, not saved to database)
       const response = await api.post("/api/images/previews", {
@@ -104,14 +104,14 @@ export function ContentStudioImagesTab({ campaignId }: ContentStudioImagesTabPro
   };
 
   const handleEnhanceImage = async () => {
-    if (!selectedDraftId) {
+    if (selectedDraftIndex === null) {
       toast.error("Please select a draft image first");
       return;
     }
 
     try {
       setIsEnhancing(true);
-      const selectedDraft = draftImages.find(img => img.id === selectedDraftId);
+      const selectedDraft = draftImages[selectedDraftIndex];
 
       if (!selectedDraft) {
         toast.error("Selected draft not found");
@@ -134,7 +134,7 @@ export function ContentStudioImagesTab({ campaignId }: ContentStudioImagesTabPro
 
       // Clear drafts and refresh saved images
       setDraftImages([]);
-      setSelectedDraftId(null);
+      setSelectedDraftIndex(null);
       refetch();
     } catch (error: any) {
       toast.error(error?.response?.data?.detail || "Failed to enhance image");
@@ -400,10 +400,10 @@ export function ContentStudioImagesTab({ campaignId }: ContentStudioImagesTabPro
           {draftImages.length > 0 && (
             <button
               onClick={handleEnhanceImage}
-              disabled={isEnhancing || !selectedDraftId}
+              disabled={isEnhancing || selectedDraftIndex === null}
               className="w-full px-4 py-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white rounded-lg font-medium transition mt-3"
             >
-              {isEnhancing ? "Enhancing..." : selectedDraftId ? "Enhance Selected Image" : "Select a Draft to Enhance"}
+              {isEnhancing ? "Enhancing..." : selectedDraftIndex !== null ? "Enhance Selected Image" : "Select a Draft to Enhance"}
             </button>
           )}
         </div>
@@ -433,35 +433,59 @@ export function ContentStudioImagesTab({ campaignId }: ContentStudioImagesTabPro
               Select one draft image below to enhance it to premium quality. Drafts are free and not saved to your library.
             </p>
             <div className="grid grid-cols-2 gap-4">
-              {draftImages.map((image) => (
-                <div
-                  key={image.id}
-                  onClick={() => setSelectedDraftId(image.id)}
-                  className={`relative cursor-pointer rounded-lg overflow-hidden border-2 transition ${
-                    selectedDraftId === image.id
-                      ? "border-green-500 ring-2 ring-green-300"
-                      : "border-transparent hover:border-yellow-400"
-                  }`}
-                >
-                  <div className="aspect-square bg-gray-100 dark:bg-gray-800">
-                    <img
-                      src={image.thumbnail_url || image.image_url}
-                      alt={image.prompt}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  {selectedDraftId === image.id && (
-                    <div className="absolute top-2 right-2 bg-green-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold">
-                      ✓
+              {draftImages.map((image, index) => {
+                // Calculate card height based on aspect ratio
+                // Default to 1:1 if aspect_ratio is missing
+                const aspectRatio = image.aspect_ratio || "1:1";
+                const [width, height] = aspectRatio.split(":").map(Number);
+                const ratio = height / width;
+
+                // Set a max width for the cards and calculate height
+                const maxCardWidth = 400; // pixels
+                let cardHeight = maxCardWidth * ratio;
+
+                // Constrain height to reasonable bounds
+                if (cardHeight > 500) {
+                  cardHeight = 500;
+                } else if (cardHeight < 200) {
+                  cardHeight = 200;
+                }
+
+                return (
+                  <div
+                    key={index}
+                    onClick={() => setSelectedDraftIndex(index)}
+                    className={`relative cursor-pointer rounded-lg overflow-hidden border-2 transition ${
+                      selectedDraftIndex === index
+                        ? "border-green-500 ring-2 ring-green-300"
+                        : "border-transparent hover:border-yellow-400"
+                    }`}
+                    style={{ height: `${cardHeight}px` }}
+                  >
+                    <div className="w-full h-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                      <img
+                        src={image.thumbnail_url || image.image_url}
+                        alt={image.prompt}
+                        className="max-w-full max-h-full object-contain"
+                        style={{
+                          maxWidth: "100%",
+                          maxHeight: "100%",
+                        }}
+                      />
                     </div>
-                  )}
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3">
-                    <p className="text-white text-xs font-medium truncate">
-                      Click to select
-                    </p>
+                    {selectedDraftIndex === index && (
+                      <div className="absolute top-2 right-2 bg-green-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold">
+                        ✓
+                      </div>
+                    )}
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3">
+                      <p className="text-white text-xs font-medium truncate">
+                        Click to select
+                      </p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         ) : (
