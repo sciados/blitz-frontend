@@ -1159,9 +1159,6 @@ function AffiliateMarketerDashboard() {
               <p className="text-sm text-[var(--text-secondary)] mb-1">
                 Active Campaigns
               </p>
-              <p className="text-3xl text-green-600 dark:text-green-400">
-                {stats?.activeCampaigns || 0}
-              </p>
               <p
                 className={`text-3xl text-white-600 dark:text-white-400 ${getUsageColor(
                   stats?.activeCampaigns || 0,
@@ -1170,7 +1167,7 @@ function AffiliateMarketerDashboard() {
               >
                 {formatUsage(
                   stats?.activeCampaigns || 0,
-                  usageLimits?.limits?.campaigns
+                  usageLimits?.limits?.active_campaigns
                 )}
               </p>
               {usageLimits?.limits?.campaigns && (
@@ -1180,7 +1177,7 @@ function AffiliateMarketerDashboard() {
                     style={{
                       width: `${getProgress(
                         stats?.activeCampaigns || 0,
-                        usageLimits?.limits?.campaigns
+                        usageLimits?.limits?.active_campaigns
                       )}%`,
                     }}
                   />
