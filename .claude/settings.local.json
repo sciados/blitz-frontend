@@ -200,7 +200,8 @@
       "Bash(app/api/content/video_overlay.py:*)",
       "Bash(/c/Users/shaun/OneDrive/Documents/GitHub/blitz-backend/app/api/content/video_overlay.py)",
       "Bash(/c/Users/shaun/AppData/Local/Programs/Python/Python312/python -c:*)",
-      "Bash(git diff-index:*)"
+      "Bash(git diff-index:*)",
+      "Bash(git check-ignore:*)"
     ],
     "deny": [],
     "ask": []
