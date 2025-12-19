@@ -1283,7 +1283,7 @@ export function UnifiedEditorModal({
               {/* Base Image */}
               <img
                 ref={imageRef}
-                src={`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/images/proxy?url=${encodeURIComponent(sourceImage.image_url)}`}
+                src={sourceImage.image_url}
                 alt="Base"
                 crossOrigin="anonymous"
                 className="select-none pointer-events-none"
