@@ -400,7 +400,7 @@ export function VideoEditorModal({
     ctx.globalCompositeOperation = 'source-over';
     ctx.fillStyle = 'white';
     ctx.beginPath();
-    ctx.arc(x, y, 20, 0, Math.PI * 2);
+    ctx.arc(x, y, 10, 0, Math.PI * 2);
     ctx.fill();
   };
 
@@ -418,7 +418,7 @@ export function VideoEditorModal({
     ctx.globalCompositeOperation = 'source-over';
     ctx.fillStyle = 'white';
     ctx.beginPath();
-    ctx.arc(x, y, 20, 0, Math.PI * 2);
+    ctx.arc(x, y, 10, 0, Math.PI * 2);
     ctx.fill();
   };
 

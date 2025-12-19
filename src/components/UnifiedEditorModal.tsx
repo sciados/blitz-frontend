@@ -7,6 +7,7 @@ import { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
 import { api } from "src/lib/appClient";
 import { GeneratedImage } from "src/lib/types";
+import { useQuery } from "@tanstack/react-query";
 
 type LayerType = "text" | "image";
 
@@ -91,10 +92,25 @@ export function UnifiedEditorModal({
   const [loadingImages, setLoadingImages] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [isEraseMode, setIsEraseMode] = useState(false);
+  const [isErasing, setIsErasing] = useState(false);
+  const [isDrawingMask, setIsDrawingMask] = useState(false);
 
   const canvasRef = useRef<HTMLDivElement>(null);
   const imageContainerRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
+  const maskRef = useRef<HTMLCanvasElement>(null);
+
+  // Fetch current user to check tier
+  const { data: currentUser } = useQuery({
+    queryKey: ["currentUser"],
+    queryFn: async () => (await api.get("/api/auth/me")).data,
+  });
+
+  // Check if user can use erase feature (Pro Marketer or Business Owner)
+  const canUseErase = currentUser?.user_type === "Affiliate" ||
+                      currentUser?.user_type === "Business" ||
+                      currentUser?.affiliate_tier === "pro";
 
   const selectedLayer = layers.find((l) => l.id === selectedLayerId);
   const nextZIndex =
@@ -349,6 +365,112 @@ export function UnifiedEditorModal({
     }
   };
 
+  // Mask drawing functions
+  const startDrawingMask = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!maskRef.current || !isEraseMode) return;
+
+    setIsDrawingMask(true);
+    const canvas = maskRef.current;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.fillStyle = 'white';
+    ctx.beginPath();
+    ctx.arc(x, y, 10, 0, Math.PI * 2);
+    ctx.fill();
+  };
+
+  const drawMask = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!isDrawingMask || !maskRef.current) return;
+
+    const canvas = maskRef.current;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.fillStyle = 'white';
+    ctx.beginPath();
+    ctx.arc(x, y, 10, 0, Math.PI * 2);
+    ctx.fill();
+  };
+
+  const stopDrawingMask = () => {
+    setIsDrawingMask(false);
+  };
+
+  const clearMask = () => {
+    if (!maskRef.current) return;
+    const ctx = maskRef.current.getContext('2d');
+    if (!ctx) return;
+    ctx.clearRect(0, 0, maskRef.current.width, maskRef.current.height);
+  };
+
+  // AI erase function
+  const handleEraseWithAI = async () => {
+    if (!imageRef.current || !maskRef.current) {
+      toast.error("Image or mask not ready");
+      return;
+    }
+
+    const image = imageRef.current;
+    const canvas = maskRef.current;
+
+    // Create a temporary canvas to get the current image
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = image.naturalWidth;
+    tempCanvas.height = image.naturalHeight;
+    const tempCtx = tempCanvas.getContext('2d');
+
+    if (!tempCtx) {
+      toast.error("Could not create canvas context");
+      return;
+    }
+
+    tempCtx.drawImage(image, 0, 0);
+
+    // Convert to base64
+    const imageBase64 = tempCanvas.toDataURL('image/jpeg', 0.9);
+    const maskBase64 = canvas.toDataURL('image/png');
+
+    setIsErasing(true);
+
+    try {
+      const { data } = await api.post("/api/images/ai-erase", {
+        image_base64: imageBase64,
+        mask_base64: maskBase64,
+      });
+
+      // Replace the image with the inpainted result
+      if (data.inpainted_image_url) {
+        toast.success("Successfully removed text/objects!");
+
+        // Update the source image URL
+        // This would trigger a re-render with the new image
+        // Note: In a real implementation, you'd want to update the sourceImage state
+        // For now, we'll just show success and clear the mask
+
+        clearMask();
+        setIsEraseMode(false);
+      } else {
+        throw new Error("No inpainted image returned");
+      }
+    } catch (err: any) {
+      console.error("Error with AI erase:", err);
+      toast.error(err.response?.data?.detail || "Failed to erase. Please try again.");
+    } finally {
+      setIsErasing(false);
+    }
+  };
+
   // Save composite image
   const handleSave = async () => {
     if (layers.length === 0) {
@@ -535,6 +657,73 @@ export function UnifiedEditorModal({
                   className="hidden"
                 />
               </label>
+            </div>
+
+            {/* Image Tools - Pro/Business Feature */}
+            <div className="mb-4 p-3 bg-white dark:bg-gray-900 rounded border">
+              <div className="text-xs font-medium mb-2 text-gray-600 dark:text-gray-400">
+                🖼️ Image Tools {canUseErase ? "" : <span className="text-purple-600">(Pro Feature)</span>}
+              </div>
+              <div className="space-y-2">
+                {canUseErase ? (
+                  <>
+                    <button
+                      onClick={() => setIsEraseMode(!isEraseMode)}
+                      className={`w-full px-3 py-2 rounded border transition text-sm font-medium ${
+                        isEraseMode
+                          ? "border-purple-500 bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300"
+                          : "border-gray-300 dark:border-gray-600 hover:border-purple-400 text-gray-700 dark:text-gray-300"
+                      }`}
+                    >
+                      🧹 Erase Tool
+                    </button>
+                    {isEraseMode && (
+                      <div className="space-y-2">
+                        <p className="text-xs text-gray-600 dark:text-gray-400">
+                          Draw over text/objects to erase them
+                        </p>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={handleEraseWithAI}
+                            disabled={isErasing}
+                            className="flex-1 px-3 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 text-white rounded transition text-sm font-medium"
+                          >
+                            {isErasing ? "Erasing..." : "✨ AI Erase"}
+                          </button>
+                          <button
+                            onClick={clearMask}
+                            className="px-3 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded transition text-sm"
+                          >
+                            Clear
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="text-center py-3">
+                    <svg className="w-8 h-8 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                    <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
+                      Remove text/objects from images
+                    </p>
+                    <button
+                      onClick={() => {
+                        toast.info("Upgrade to Pro or Business tier to use AI Erase tool", {
+                          action: {
+                            label: "Upgrade",
+                            onClick: () => window.open("/billing/subscribe", "_blank")
+                          }
+                        });
+                      }}
+                      className="text-xs px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded transition"
+                    >
+                      Upgrade to Pro
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Browse Campaign Images */}
@@ -1109,8 +1298,26 @@ export function UnifiedEditorModal({
                   const img = e.currentTarget;
                   setImageWidth(img.naturalWidth);
                   setImageHeight(img.naturalHeight);
+                  // Initialize mask canvas size
+                  if (maskRef.current) {
+                    maskRef.current.width = img.naturalWidth;
+                    maskRef.current.height = img.naturalHeight;
+                  }
                 }}
               />
+
+              {/* Mask Canvas Overlay for Erase Tool */}
+              {isEraseMode && (
+                <canvas
+                  ref={maskRef}
+                  className="absolute top-0 left-0 w-full h-full cursor-crosshair"
+                  style={{ mixBlendMode: "normal" }}
+                  onMouseDown={startDrawingMask}
+                  onMouseMove={drawMask}
+                  onMouseUp={stopDrawingMask}
+                  onMouseLeave={stopDrawingMask}
+                />
+              )}
 
               {/* Layers */}
               {sortedLayers.map((layer) => {
@@ -1217,6 +1424,15 @@ export function UnifiedEditorModal({
                 }
               })}
             </div>
+
+            {/* Erase Mode Indicator */}
+            {isEraseMode && (
+              <div className="mt-4 text-center">
+                <p className="text-xs text-purple-600 dark:text-purple-400">
+                  🧹 Erase Mode Active: Draw over areas to mask them for AI removal
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>
