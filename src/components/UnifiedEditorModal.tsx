@@ -1285,6 +1285,7 @@ export function UnifiedEditorModal({
                 ref={imageRef}
                 src={sourceImage.image_url}
                 alt="Base"
+                crossOrigin="anonymous"
                 className="select-none pointer-events-none"
                 draggable={false}
                 style={{
@@ -1296,12 +1297,43 @@ export function UnifiedEditorModal({
                 }}
                 onLoad={(e) => {
                   const img = e.currentTarget;
-                  setImageWidth(img.naturalWidth);
-                  setImageHeight(img.naturalHeight);
-                  // Initialize mask canvas size
+                  const naturalWidth = img.naturalWidth;
+                  const naturalHeight = img.naturalHeight;
+
+                  setImageWidth(naturalWidth);
+                  setImageHeight(naturalHeight);
+
+                  // Calculate scaled dimensions for tall/wide images to fit in modal
+                  const maxModalHeight = window.innerHeight * 0.75; // 75% of viewport height
+                  const maxModalWidth = window.innerWidth * 0.8; // 80% of viewport width
+
+                  let scaledWidth = naturalWidth;
+                  let scaledHeight = naturalHeight;
+
+                  // Scale down if too tall
+                  if (naturalHeight > maxModalHeight) {
+                    const scale = maxModalHeight / naturalHeight;
+                    scaledWidth = naturalWidth * scale;
+                    scaledHeight = naturalHeight * scale;
+                  }
+
+                  // Scale down if too wide (after height scaling)
+                  if (scaledWidth > maxModalWidth) {
+                    const scale = maxModalWidth / scaledWidth;
+                    scaledWidth = scaledWidth * scale;
+                    scaledHeight = scaledHeight * scale;
+                  }
+
+                  // Update image container dimensions
+                  if (imageContainerRef.current) {
+                    imageContainerRef.current.style.width = `${scaledWidth}px`;
+                    imageContainerRef.current.style.height = `${scaledHeight}px`;
+                  }
+
+                  // Initialize mask canvas size (use natural dimensions for accuracy)
                   if (maskRef.current) {
-                    maskRef.current.width = img.naturalWidth;
-                    maskRef.current.height = img.naturalHeight;
+                    maskRef.current.width = naturalWidth;
+                    maskRef.current.height = naturalHeight;
                   }
                 }}
               />
