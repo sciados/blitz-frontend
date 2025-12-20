@@ -699,6 +699,22 @@ export function UnifiedEditorModal({
                         <p className="text-xs text-gray-600 dark:text-gray-400">
                           Draw over text/objects to erase them
                         </p>
+                        <div>
+                          <label
+                            className="text-xs block mb-1"
+                            style={{ color: "var(--text-secondary)" }}
+                          >
+                            Brush Size: {brushSize}px
+                          </label>
+                          <input
+                            type="range"
+                            min="5"
+                            max="50"
+                            value={brushSize}
+                            onChange={(e) => setBrushSize(parseInt(e.target.value))}
+                            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+                          />
+                        </div>
                         <div className="flex gap-2">
                           <button
                             onClick={handleEraseWithAI}
@@ -1498,26 +1514,10 @@ export function UnifiedEditorModal({
 
             {/* Erase Mode Indicator */}
             {isEraseMode && (
-              <div className="mt-4">
-                <p className="text-xs text-purple-600 dark:text-purple-400 mb-3 text-center">
+              <div className="mt-4 text-center">
+                <p className="text-xs text-purple-600 dark:text-purple-400">
                   🧹 Erase Mode Active: Draw over areas to mask them for AI removal
                 </p>
-                <div>
-                  <label
-                    className="text-xs block mb-2"
-                    style={{ color: "var(--text-secondary)" }}
-                  >
-                    Brush Size: {brushSize}px
-                  </label>
-                  <input
-                    type="range"
-                    min="5"
-                    max="50"
-                    value={brushSize}
-                    onChange={(e) => setBrushSize(parseInt(e.target.value))}
-                    className="w-full"
-                  />
-                </div>
               </div>
             )}
           </div>
