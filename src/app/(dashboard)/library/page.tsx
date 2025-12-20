@@ -137,6 +137,7 @@ export default function ContentLibraryPage() {
   const { refetch: refetchVideos } = useQuery({
     queryKey: ["all-videos"],
     queryFn: async () => {
+      console.log("Fetching videos - active tab:", activeLibraryTab);
       const { data } = await api.get("/api/video/library");
       setAllVideos(data.videos || []);
       return data.videos || [];
@@ -144,6 +145,12 @@ export default function ContentLibraryPage() {
     // Only poll when videos tab is active
     refetchInterval: activeLibraryTab === "videos" ? 5000 : false,
   });
+
+  // Debug log for tab changes
+  useEffect(() => {
+    console.log("Library tab changed to:", activeLibraryTab);
+    console.log("Video polling enabled:", activeLibraryTab === "videos");
+  }, [activeLibraryTab]);
 
   // Refetch images when tab changes to images (for manual refresh if needed)
   useEffect(() => {
