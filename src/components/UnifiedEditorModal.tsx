@@ -95,6 +95,7 @@ export function UnifiedEditorModal({
   const [isEraseMode, setIsEraseMode] = useState(false);
   const [isErasing, setIsErasing] = useState(false);
   const [isDrawingMask, setIsDrawingMask] = useState(false);
+  const [brushSize, setBrushSize] = useState<number>(10);
 
   const canvasRef = useRef<HTMLDivElement>(null);
   const imageContainerRef = useRef<HTMLDivElement>(null);
@@ -387,7 +388,7 @@ export function UnifiedEditorModal({
     ctx.globalCompositeOperation = 'source-over';
     ctx.fillStyle = 'white';
     ctx.beginPath();
-    ctx.arc(x, y, 5, 0, Math.PI * 2);
+    ctx.arc(x, y, brushSize, 0, Math.PI * 2);
     ctx.fill();
   };
 
@@ -411,7 +412,7 @@ export function UnifiedEditorModal({
     ctx.globalCompositeOperation = 'source-over';
     ctx.fillStyle = 'white';
     ctx.beginPath();
-    ctx.arc(x, y, 5, 0, Math.PI * 2);
+    ctx.arc(x, y, brushSize, 0, Math.PI * 2);
     ctx.fill();
   };
 
@@ -1282,7 +1283,7 @@ export function UnifiedEditorModal({
           {/* Canvas Area */}
           <div
             ref={canvasRef}
-            className="flex-1 overflow-auto p-4 flex items-start justify-center"
+            className="flex-1 overflow-auto p-2 flex items-start justify-start"
             style={{ background: "var(--card-bg)" }}
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
@@ -1327,15 +1328,15 @@ export function UnifiedEditorModal({
                   // Account for modal header (~80px), sidebar (~350px), and minimal padding
                   const headerHeight = 80;
                   const sidebarWidth = 350;
-                  const padding = 16; // Minimal padding to prevent edge collisions
+                  const padding = 8; // Minimal padding to prevent edge collisions
 
                   // Calculate available space in the modal editor area
                   const availableHeight = (window.innerHeight * 0.95) - headerHeight - (padding * 2);
                   const availableWidth = (window.innerWidth * 0.95) - sidebarWidth - (padding * 2);
 
-                  // Use 95% of available space to ensure no scrolling
-                  const maxModalHeight = availableHeight * 0.95;
-                  const maxModalWidth = availableWidth * 0.95;
+                  // Use 80% of available space to ensure no scrolling even with scrollbars
+                  const maxModalHeight = availableHeight * 0.8;
+                  const maxModalWidth = availableWidth * 0.8;
 
                   let scaledWidth = naturalWidth;
                   let scaledHeight = naturalHeight;
@@ -1354,6 +1355,9 @@ export function UnifiedEditorModal({
                     scaledWidth = maxModalWidth;
                     scaledHeight = maxModalWidth / aspectRatio;
                   }
+
+                  console.log(`Final scaled: ${scaledWidth}x${scaledHeight} (natural: ${naturalWidth}x${naturalHeight})`);
+                  console.log(`Max allowed: ${maxModalWidth}x${maxModalHeight}`);
 
                   // Update image container dimensions
                   if (imageContainerRef.current) {
@@ -1494,10 +1498,26 @@ export function UnifiedEditorModal({
 
             {/* Erase Mode Indicator */}
             {isEraseMode && (
-              <div className="mt-4 text-center">
-                <p className="text-xs text-purple-600 dark:text-purple-400">
+              <div className="mt-4">
+                <p className="text-xs text-purple-600 dark:text-purple-400 mb-3 text-center">
                   🧹 Erase Mode Active: Draw over areas to mask them for AI removal
                 </p>
+                <div>
+                  <label
+                    className="text-xs block mb-2"
+                    style={{ color: "var(--text-secondary)" }}
+                  >
+                    Brush Size: {brushSize}px
+                  </label>
+                  <input
+                    type="range"
+                    min="5"
+                    max="50"
+                    value={brushSize}
+                    onChange={(e) => setBrushSize(parseInt(e.target.value))}
+                    className="w-full"
+                  />
+                </div>
               </div>
             )}
           </div>
