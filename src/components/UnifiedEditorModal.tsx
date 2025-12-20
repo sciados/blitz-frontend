@@ -465,10 +465,14 @@ export function UnifiedEditorModal({
       if (data.inpainted_image_url) {
         toast.success("Successfully removed text/objects!");
 
-        // Update the source image URL to trigger a re-render with the new image
-        const timestamp = new Date().getTime();
-        const newImageUrl = `${data.inpainted_image_url}?t=${timestamp}`;
-        setSourceImage(newImageUrl);
+        // Create updated image object with the new URL
+        const updatedImage: GeneratedImage = {
+          ...sourceImage,
+          image_url: data.inpainted_image_url,
+        };
+
+        // Save the updated image
+        onSave(updatedImage);
 
         clearMask();
         setIsEraseMode(false);
