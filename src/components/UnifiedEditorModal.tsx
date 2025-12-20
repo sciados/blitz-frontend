@@ -449,8 +449,8 @@ export function UnifiedEditorModal({
 
     tempCtx.drawImage(image, 0, 0);
 
-    // Convert to base64
-    const imageBase64 = tempCanvas.toDataURL('image/jpeg', 0.9);
+    // Convert to base64 (PNG for better quality)
+    const imageBase64 = tempCanvas.toDataURL('image/png');
     const maskBase64 = canvas.toDataURL('image/png');
 
     setIsErasing(true);
@@ -465,10 +465,10 @@ export function UnifiedEditorModal({
       if (data.inpainted_image_url) {
         toast.success("Successfully removed text/objects!");
 
-        // Update the source image URL
-        // This would trigger a re-render with the new image
-        // Note: In a real implementation, you'd want to update the sourceImage state
-        // For now, we'll just show success and clear the mask
+        // Update the source image URL to trigger a re-render with the new image
+        const timestamp = new Date().getTime();
+        const newImageUrl = `${data.inpainted_image_url}?t=${timestamp}`;
+        setSourceImage(newImageUrl);
 
         clearMask();
         setIsEraseMode(false);
