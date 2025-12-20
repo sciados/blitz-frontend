@@ -1562,11 +1562,20 @@ export default function ContentLibraryPage() {
           onClose={() => setShowUnifiedEditor(false)}
           sourceImage={selectedLibraryImage}
           campaignId={selectedLibraryImage.campaign_id}
-          onSave={(image) => {
-            toast.success("Image saved to library!");
-            setShowUnifiedEditor(false);
-            setIsLibraryModalOpen(false);
-            refetchImages();
+          onSave={async (image) => {
+            try {
+              // Update the image URL in the database
+              await api.put(`/api/images/${image.id}/url`, {
+                image_url: image.image_url,
+              });
+              toast.success("Image updated successfully!");
+              setShowUnifiedEditor(false);
+              setIsLibraryModalOpen(false);
+              refetchImages();
+            } catch (error) {
+              console.error("Failed to update image:", error);
+              toast.error("Failed to save image changes");
+            }
           }}
         />
       )}
