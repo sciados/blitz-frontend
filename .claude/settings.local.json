@@ -202,7 +202,9 @@
       "Bash(/c/Users/shaun/AppData/Local/Programs/Python/Python312/python -c:*)",
       "Bash(git diff-index:*)",
       "Bash(git check-ignore:*)",
-      "Bash(/bin/bash:*)"
+      "Bash(/bin/bash:*)",
+      "Bash(git merge:*)",
+      "Bash(README.md)"
     ],
     "deny": [],
     "ask": []

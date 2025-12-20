@@ -1307,25 +1307,36 @@ export function UnifiedEditorModal({
                   setImageWidth(naturalWidth);
                   setImageHeight(naturalHeight);
 
-                  // Calculate scaled dimensions for tall/wide images to fit in modal
-                  const maxModalHeight = window.innerHeight * 0.75; // 75% of viewport height
-                  const maxModalWidth = window.innerWidth * 0.8; // 80% of viewport width
+                  // Calculate scaled dimensions to fit in available modal space
+                  // Account for modal header (~80px), sidebar (~350px), and padding
+                  const headerHeight = 80;
+                  const sidebarWidth = 350;
+                  const padding = 32; // 16px padding on each side
+
+                  // Calculate available space in the modal editor area
+                  const availableHeight = (window.innerHeight * 0.95) - headerHeight - (padding * 2);
+                  const availableWidth = (window.innerWidth * 0.95) - sidebarWidth - (padding * 2);
+
+                  // Use 90% of available space to ensure no scrolling
+                  const maxModalHeight = availableHeight * 0.9;
+                  const maxModalWidth = availableWidth * 0.9;
 
                   let scaledWidth = naturalWidth;
                   let scaledHeight = naturalHeight;
 
-                  // Scale down if too tall
+                  // Calculate aspect ratio
+                  const aspectRatio = naturalWidth / naturalHeight;
+
+                  // Scale to fit height first
                   if (naturalHeight > maxModalHeight) {
-                    const scale = maxModalHeight / naturalHeight;
-                    scaledWidth = naturalWidth * scale;
-                    scaledHeight = naturalHeight * scale;
+                    scaledHeight = maxModalHeight;
+                    scaledWidth = maxModalHeight * aspectRatio;
                   }
 
-                  // Scale down if too wide (after height scaling)
+                  // Then scale to fit width if needed
                   if (scaledWidth > maxModalWidth) {
-                    const scale = maxModalWidth / scaledWidth;
-                    scaledWidth = scaledWidth * scale;
-                    scaledHeight = scaledHeight * scale;
+                    scaledWidth = maxModalWidth;
+                    scaledHeight = maxModalWidth / aspectRatio;
                   }
 
                   // Update image container dimensions
