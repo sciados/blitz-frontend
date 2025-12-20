@@ -84,7 +84,7 @@ export function UnifiedEditorModal({
   const [isTrimming, setIsTrimming] = useState(false);
   const [imageWidth, setImageWidth] = useState<number>(0);
   const [imageHeight, setImageHeight] = useState<number>(0);
-  const [modalWidth, setModalWidth] = useState<number>(800);
+  const [modalWidth, setModalWidth] = useState<number>(0); // 0 = auto, will use available space
   const [fonts, setFonts] = useState<FontOption[]>([]);
   const [fontsLoading, setFontsLoading] = useState(false);
   const [showCampaignImages, setShowCampaignImages] = useState(false);
@@ -387,7 +387,7 @@ export function UnifiedEditorModal({
     ctx.globalCompositeOperation = 'source-over';
     ctx.fillStyle = 'white';
     ctx.beginPath();
-    ctx.arc(x, y, 10, 0, Math.PI * 2);
+    ctx.arc(x, y, 5, 0, Math.PI * 2);
     ctx.fill();
   };
 
@@ -411,7 +411,7 @@ export function UnifiedEditorModal({
     ctx.globalCompositeOperation = 'source-over';
     ctx.fillStyle = 'white';
     ctx.beginPath();
-    ctx.arc(x, y, 10, 0, Math.PI * 2);
+    ctx.arc(x, y, 5, 0, Math.PI * 2);
     ctx.fill();
   };
 
@@ -581,7 +581,7 @@ export function UnifiedEditorModal({
       <div
         className="flex flex-col rounded-lg shadow-xl overflow-hidden"
         style={{
-          width: `${modalWidth}px`,
+          width: modalWidth > 0 ? `${modalWidth}px` : "95vw",
           maxWidth: "95vw",
           maxHeight: "95vh",
           background: "var(--card-bg)",
@@ -1324,18 +1324,18 @@ export function UnifiedEditorModal({
                   setImageHeight(naturalHeight);
 
                   // Calculate scaled dimensions to fit in available modal space
-                  // Account for modal header (~80px), sidebar (~350px), and padding
+                  // Account for modal header (~80px), sidebar (~350px), and minimal padding
                   const headerHeight = 80;
                   const sidebarWidth = 350;
-                  const padding = 32; // 16px padding on each side
+                  const padding = 16; // Minimal padding to prevent edge collisions
 
                   // Calculate available space in the modal editor area
                   const availableHeight = (window.innerHeight * 0.95) - headerHeight - (padding * 2);
                   const availableWidth = (window.innerWidth * 0.95) - sidebarWidth - (padding * 2);
 
-                  // Use 90% of available space to ensure no scrolling
-                  const maxModalHeight = availableHeight * 0.9;
-                  const maxModalWidth = availableWidth * 0.9;
+                  // Use 95% of available space to ensure no scrolling
+                  const maxModalHeight = availableHeight * 0.95;
+                  const maxModalWidth = availableWidth * 0.95;
 
                   let scaledWidth = naturalWidth;
                   let scaledHeight = naturalHeight;
