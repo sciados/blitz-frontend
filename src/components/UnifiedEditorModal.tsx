@@ -375,8 +375,14 @@ export function UnifiedEditorModal({
     if (!ctx) return;
 
     const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const displayX = e.clientX - rect.left;
+    const displayY = e.clientY - rect.top;
+
+    // Scale coordinates from display size to natural size
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const x = displayX * scaleX;
+    const y = displayY * scaleY;
 
     ctx.globalCompositeOperation = 'source-over';
     ctx.fillStyle = 'white';
@@ -393,8 +399,14 @@ export function UnifiedEditorModal({
     if (!ctx) return;
 
     const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const displayX = e.clientX - rect.left;
+    const displayY = e.clientY - rect.top;
+
+    // Scale coordinates from display size to natural size
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const x = displayX * scaleX;
+    const y = displayY * scaleY;
 
     ctx.globalCompositeOperation = 'source-over';
     ctx.fillStyle = 'white';
@@ -1357,8 +1369,12 @@ export function UnifiedEditorModal({
               {isEraseMode && (
                 <canvas
                   ref={maskRef}
-                  className="absolute top-0 left-0 w-full h-full cursor-crosshair"
-                  style={{ mixBlendMode: "normal" }}
+                  className="absolute top-0 left-0 cursor-crosshair"
+                  style={{
+                    mixBlendMode: "normal",
+                    width: imageWidth > 0 ? imageWidth : "auto",
+                    height: imageHeight > 0 ? imageHeight : "auto",
+                  }}
                   onMouseDown={startDrawingMask}
                   onMouseMove={drawMask}
                   onMouseUp={stopDrawingMask}

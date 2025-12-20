@@ -133,7 +133,7 @@ export default function ContentLibraryPage() {
     // Remove enabled condition so images load immediately with text content
   });
 
-  // Query to fetch videos for the library
+  // Query to fetch videos for the library - ONLY poll when videos tab is active
   const { refetch: refetchVideos } = useQuery({
     queryKey: ["all-videos"],
     queryFn: async () => {
@@ -141,6 +141,8 @@ export default function ContentLibraryPage() {
       setAllVideos(data.videos || []);
       return data.videos || [];
     },
+    // Only poll when videos tab is active
+    refetchInterval: activeLibraryTab === "videos" ? 5000 : false,
   });
 
   // Refetch images when tab changes to images (for manual refresh if needed)
