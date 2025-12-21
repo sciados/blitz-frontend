@@ -35,24 +35,37 @@ export function ImageEditorCanvas({
 
   // Load image onto canvas
   useEffect(() => {
-    if (!originalImage || !canvasRef.current || !maskCanvasRef.current || !containerRef.current) return;
+    if (!originalImage || !canvasRef.current || !maskCanvasRef.current) return;
 
     const canvas = canvasRef.current;
     const maskCanvas = maskCanvasRef.current;
-    const container = containerRef.current;
     const ctx = canvas.getContext("2d");
     const maskCtx = maskCanvas.getContext("2d");
 
     if (!ctx || !maskCtx) return;
 
+    console.log("Loading image into canvas:", originalImage);
+
     const img = new Image();
-    // Use proxy endpoint to bypass CORS
-    const proxyUrl = `/api/images/proxy?url=${encodeURIComponent(originalImage)}`;
+    // Use proxy endpoint to bypass CORS - need to use full URL with API base
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+    const proxyUrl = `${apiBaseUrl}/api/images/proxy?url=${encodeURIComponent(originalImage)}`;
+    console.log("Using proxy URL:", proxyUrl);
     img.crossOrigin = "anonymous";
 
     img.onload = () => {
-      const containerWidth = container.clientWidth - 32; // Account for padding
-      const containerHeight = container.clientHeight - 100; // Account for header space
+      console.log("Image loaded successfully! Dimensions:", img.width, "x", img.height);
+
+      // Use a default size if container isn't measured yet
+      let containerWidth = 800;
+      let containerHeight = 600;
+
+      if (containerRef.current) {
+        containerWidth = containerRef.current.clientWidth - 32; // Account for padding
+        containerHeight = containerRef.current.clientHeight - 100; // Account for header space
+      }
+
+      console.log("Container dimensions:", containerWidth, "x", containerHeight);
 
       // Calculate scale to fit image in container while maintaining aspect ratio
       const scaleX = containerWidth / img.width;
@@ -61,6 +74,8 @@ export function ImageEditorCanvas({
 
       const displayWidth = img.width * scale;
       const displayHeight = img.height * scale;
+
+      console.log("Display dimensions:", displayWidth, "x", displayHeight, "Scale:", scale);
 
       // Set canvas size to display size (not original size)
       canvas.width = displayWidth;
@@ -78,11 +93,12 @@ export function ImageEditorCanvas({
       maskCtx.fillStyle = "black";
       maskCtx.fillRect(0, 0, maskCanvas.width, maskCanvas.height);
 
+      console.log("Canvas setup complete! Canvas size:", canvas.width, "x", canvas.height);
       setImageLoaded(true);
     };
 
-    img.onerror = () => {
-      console.error("Failed to load image via proxy:", originalImage);
+    img.onerror = (error) => {
+      console.error("Failed to load image via proxy:", originalImage, error);
       setImageLoaded(false);
     };
 

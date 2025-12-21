@@ -313,7 +313,7 @@ export default function ImageEditorPage() {
               <div className="border border-gray-300 rounded overflow-hidden">
                 {originalImage && (
                   <img
-                    src={originalImage}
+                    src={`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/images/proxy?url=${encodeURIComponent(originalImage)}`}
                     alt="Original"
                     className="w-full h-auto"
                   />
