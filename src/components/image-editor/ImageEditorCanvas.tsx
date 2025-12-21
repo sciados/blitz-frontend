@@ -59,6 +59,17 @@ export function ImageEditorCanvas({
     img.onload = () => {
       console.log("Image loaded successfully! Dimensions:", img.width, "x", img.height);
 
+      // Get canvas references
+      const canvas = canvasRef.current;
+      const maskCanvas = maskCanvasRef.current;
+      const ctx = canvas.getContext("2d");
+      const maskCtx = maskCanvas.getContext("2d");
+
+      if (!ctx || !maskCtx) {
+        console.error("Failed to get canvas contexts!");
+        return;
+      }
+
       // Use a default size if container isn't measured yet
       let containerWidth = 800;
       let containerHeight = 600;
