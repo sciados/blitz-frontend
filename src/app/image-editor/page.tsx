@@ -291,7 +291,7 @@ export default function ImageEditorPage() {
         />
 
         {/* Main Canvas Area */}
-        <div className="flex-1 flex items-center justify-center p-4 overflow-auto">
+        <div className="flex-1 flex flex-col p-4 overflow-hidden">
           <ImageEditorCanvas
             originalImage={originalImage}
             editedImage={editedImage}

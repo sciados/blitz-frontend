@@ -24,18 +24,22 @@ export function ImageEditorCanvas({
 }: ImageEditorCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const maskCanvasRef = useRef<HTMLCanvasElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [showMask, setShowMask] = useState(true);
+  const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
+  const [displayScale, setDisplayScale] = useState(1);
 
   const needsMask = ["inpaint", "erase"].includes(selectedEditTool);
 
   // Load image onto canvas
   useEffect(() => {
-    if (!originalImage || !canvasRef.current || !maskCanvasRef.current) return;
+    if (!originalImage || !canvasRef.current || !maskCanvasRef.current || !containerRef.current) return;
 
     const canvas = canvasRef.current;
     const maskCanvas = maskCanvasRef.current;
+    const container = containerRef.current;
     const ctx = canvas.getContext("2d");
     const maskCtx = maskCanvas.getContext("2d");
 
@@ -45,13 +49,30 @@ export function ImageEditorCanvas({
     img.crossOrigin = "anonymous";
 
     img.onload = () => {
-      canvas.width = img.width;
-      canvas.height = img.height;
-      maskCanvas.width = img.width;
-      maskCanvas.height = img.height;
+      const containerWidth = container.clientWidth - 32; // Account for padding
+      const containerHeight = container.clientHeight - 100; // Account for header space
 
-      ctx.drawImage(img, 0, 0);
+      // Calculate scale to fit image in container while maintaining aspect ratio
+      const scaleX = containerWidth / img.width;
+      const scaleY = containerHeight / img.height;
+      const scale = Math.min(scaleX, scaleY, 1); // Don't scale up beyond 100%
 
+      const displayWidth = img.width * scale;
+      const displayHeight = img.height * scale;
+
+      // Set canvas size to display size (not original size)
+      canvas.width = displayWidth;
+      canvas.height = displayHeight;
+      maskCanvas.width = displayWidth;
+      maskCanvas.height = displayHeight;
+
+      setDisplayScale(scale);
+      setImageSize({ width: img.width, height: img.height });
+
+      // Draw image scaled to fit canvas
+      ctx.drawImage(img, 0, 0, displayWidth, displayHeight);
+
+      // Initialize mask as all black (no mask)
       maskCtx.fillStyle = "black";
       maskCtx.fillRect(0, 0, maskCanvas.width, maskCanvas.height);
 
@@ -80,11 +101,10 @@ export function ImageEditorCanvas({
     if (!ctx) return;
 
     const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
-    const x = (e.clientX - rect.left) * scaleX;
-    const y = (e.clientY - rect.top) * scaleY;
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
 
+    // Brush size is in display pixels, so use directly
     ctx.globalCompositeOperation =
       selectedDrawTool === "brush" ? "source-over" : "destination-out";
     ctx.fillStyle = "white";
@@ -150,7 +170,7 @@ export function ImageEditorCanvas({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-4">
+    <div ref={containerRef} className="h-full w-full flex flex-col">
       <div className="mb-4">
         <div className="flex items-center justify-between mb-2">
           <h3 className="font-semibold text-gray-900">
@@ -186,38 +206,47 @@ export function ImageEditorCanvas({
         <p className="text-sm text-gray-600">{getToolDescription()}</p>
       </div>
 
-      <div className="relative inline-block">
-        <canvas
-          ref={canvasRef}
-          className="border border-gray-300 rounded"
-          style={{ maxWidth: "100%", height: "auto" }}
-        />
+      <div className="flex-1 flex items-center justify-center bg-gray-50 rounded-lg border-2 border-dashed border-gray-300 overflow-hidden">
+        {!imageLoaded ? (
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading image...</p>
+          </div>
+        ) : (
+          <div className="relative">
+            <canvas
+              ref={canvasRef}
+              className="max-w-full max-h-full shadow-lg rounded"
+            />
 
-        {needsMask && (
-          <canvas
-            ref={maskCanvasRef}
-            onMouseDown={startDrawing}
-            onMouseMove={draw}
-            onMouseUp={stopDrawing}
-            onMouseLeave={stopDrawing}
-            className="absolute top-0 left-0 border border-gray-300 rounded cursor-crosshair"
-            style={{
-              maxWidth: "100%",
-              height: "auto",
-              opacity: showMask ? 0.5 : 0,
-              pointerEvents: isProcessing ? "none" : "auto",
-            }}
-          />
-        )}
+            {needsMask && (
+              <canvas
+                ref={maskCanvasRef}
+                onMouseDown={startDrawing}
+                onMouseMove={draw}
+                onMouseUp={stopDrawing}
+                onMouseLeave={stopDrawing}
+                className="absolute top-0 left-0 cursor-crosshair"
+                style={{
+                  opacity: showMask ? 0.5 : 0,
+                  pointerEvents: isProcessing ? "none" : "auto",
+                }}
+              />
+            )}
 
-        {isProcessing && (
-          <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded">
-            <div className="bg-white p-4 rounded-lg">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-              <p className="mt-2 text-sm text-gray-700">
-                Processing with AI...
-              </p>
-            </div>
+            {isProcessing && (
+              <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded">
+                <div className="bg-white p-6 rounded-lg shadow-xl">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+                  <p className="mt-4 text-gray-700 font-medium">
+                    Processing with AI...
+                  </p>
+                  <p className="mt-2 text-sm text-gray-500">
+                    This may take 10-30 seconds
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
