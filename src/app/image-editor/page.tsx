@@ -155,11 +155,14 @@ export default function ImageEditorPage() {
           break;
       }
 
-      console.log("Sending request to:", endpoint);
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+      const fullEndpoint = `${apiBaseUrl}${endpoint}`;
+
+      console.log("Sending request to:", fullEndpoint);
       console.log("Selected tool:", selectedEditTool);
       console.log("FormData entries:", Array.from(formData.entries()));
 
-      const response = await fetch(endpoint, {
+      const response = await fetch(fullEndpoint, {
         method: "POST",
         body: formData,
         credentials: "include",
