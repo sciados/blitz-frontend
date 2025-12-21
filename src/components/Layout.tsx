@@ -259,6 +259,7 @@ export default function Layout({ children }: LayoutProps) {
           children: [
             { href: "/campaigns", label: "Campaigns", icon: "📢" },
             { href: "/content", label: "Content", icon: "✍️" },
+            { href: "/image-editor", label: "AI Image Editor", icon: "🎨" },
             { href: "/compliance", label: "Compliance", icon: "✅" },
             { href: "/analytics", label: "Analytics", icon: "📈" },
             { href: "/settings", label: "Settings", icon: "⚙️" },
@@ -310,7 +311,9 @@ export default function Layout({ children }: LayoutProps) {
     return [
       { href: "/dashboard", label: "Dashboard", icon: "🏠" },
       { href: "/products", label: "Product Library", icon: "📦" },
+            { href: "/image-editor", label: "AI Image Editor", icon: "🎨" },
       { href: "/campaigns", label: "Campaigns", icon: "📢" },
+            { href: "/image-editor", label: "AI Image Editor", icon: "🎨" },
       {
         href: "/content",
         label: "Content",
