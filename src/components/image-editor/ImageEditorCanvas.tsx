@@ -46,6 +46,8 @@ export function ImageEditorCanvas({
     if (!ctx || !maskCtx) return;
 
     const img = new Image();
+    // Use proxy endpoint to bypass CORS
+    const proxyUrl = `/api/images/proxy?url=${encodeURIComponent(originalImage)}`;
     img.crossOrigin = "anonymous";
 
     img.onload = () => {
@@ -79,7 +81,12 @@ export function ImageEditorCanvas({
       setImageLoaded(true);
     };
 
-    img.src = originalImage;
+    img.onerror = () => {
+      console.error("Failed to load image via proxy:", originalImage);
+      setImageLoaded(false);
+    };
+
+    img.src = proxyUrl;
   }, [originalImage]);
 
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
