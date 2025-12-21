@@ -17,10 +17,25 @@ export type EditTool =
   | "sketch-to-image";
 
 export default function ImageEditorPage() {
+  console.log("🔥 ImageEditorPage component is MOUNTING/RENDERING!");
+
   const searchParams = useSearchParams();
   const imageUrl = searchParams.get("imageUrl");
   const campaignId = searchParams.get("campaignId");
   const imageId = searchParams.get("imageId");
+
+  console.log("🔥 URL Params received:", { imageUrl, campaignId, imageId });
+  console.log("🔥 searchParams entries:", Object.fromEntries(searchParams.entries()));
+
+  // Make variables globally accessible for debugging
+  if (typeof window !== "undefined") {
+    (window as any).debugImageEditor = {
+      imageUrl,
+      campaignId,
+      imageId,
+      searchParams: Object.fromEntries(searchParams.entries())
+    };
+  }
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -51,15 +66,21 @@ export default function ImageEditorPage() {
   const [creativity, setCreativity] = useState(0.5);
 
   useEffect(() => {
+    console.log("Image Editor Page - URL Params:", { imageUrl, campaignId, imageId });
+    console.log("Image Editor Page - imageUrl type:", typeof imageUrl);
+    console.log("Image Editor Page - imageUrl value:", imageUrl);
+
     if (!imageUrl || !campaignId) {
+      console.error("Missing required parameters!");
       setError("Missing required parameters: imageUrl and campaignId");
       setLoading(false);
       return;
     }
 
+    console.log("Setting originalImage:", imageUrl);
     setOriginalImage(imageUrl);
     setLoading(false);
-  }, [imageUrl, campaignId]);
+  }, [imageUrl, campaignId, imageId]);
 
   const handleEdit = async (maskDataUrl?: string) => {
     if (!campaignId || !imageUrl) {
@@ -253,6 +274,15 @@ export default function ImageEditorPage() {
             )}
           </div>
         </div>
+      </div>
+
+      {/* DEBUG INFO - Always visible for testing */}
+      <div className="bg-yellow-100 border-b border-yellow-300 px-6 py-2 text-sm">
+        <strong>DEBUG:</strong>
+        <span className="ml-2">imageUrl={imageUrl ? `"${imageUrl.substring(0, 50)}..."` : 'NULL'}</span>,
+        <span className="ml-2">campaignId={campaignId || 'NULL'}</span>,
+        <span className="ml-2">imageId={imageId || 'NULL'}</span> |
+        <span className="ml-2">originalImage={originalImage ? `"${originalImage.substring(0, 50)}..."` : 'NULL'}</span>
       </div>
 
       {/* Top Toolbar */}

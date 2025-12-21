@@ -1482,10 +1482,13 @@ export default function ContentLibraryPage() {
 
                   <button
                     onClick={() => {
-                      const imageUrl = encodeURIComponent(selectedLibraryImage.image_url);
-                      const imageId = selectedLibraryImage.id;
-                      const campaignId = selectedLibraryImage.campaign_id;
-                      router.push(`/image-editor?imageUrl=${imageUrl}&campaignId=${campaignId}&imageId=${imageId}`);
+                      // Don't encode here - let URLSearchParams handle it properly
+                      const params = new URLSearchParams({
+                        imageUrl: selectedLibraryImage.image_url,
+                        campaignId: selectedLibraryImage.campaign_id.toString(),
+                        imageId: selectedLibraryImage.id.toString()
+                      });
+                      router.push(`/image-editor?${params.toString()}`);
                     }}
                     className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition font-medium flex items-center space-x-2"
                   >
