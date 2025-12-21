@@ -17,25 +17,10 @@ export type EditTool =
   | "sketch-to-image";
 
 export default function ImageEditorPage() {
-  console.log("🔥 ImageEditorPage component is MOUNTING/RENDERING!");
-
   const searchParams = useSearchParams();
   const imageUrl = searchParams.get("imageUrl");
   const campaignId = searchParams.get("campaignId");
   const imageId = searchParams.get("imageId");
-
-  console.log("🔥 URL Params received:", { imageUrl, campaignId, imageId });
-  console.log("🔥 searchParams entries:", Object.fromEntries(searchParams.entries()));
-
-  // Make variables globally accessible for debugging
-  if (typeof window !== "undefined") {
-    (window as any).debugImageEditor = {
-      imageUrl,
-      campaignId,
-      imageId,
-      searchParams: Object.fromEntries(searchParams.entries())
-    };
-  }
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -66,18 +51,12 @@ export default function ImageEditorPage() {
   const [creativity, setCreativity] = useState(0.5);
 
   useEffect(() => {
-    console.log("Image Editor Page - URL Params:", { imageUrl, campaignId, imageId });
-    console.log("Image Editor Page - imageUrl type:", typeof imageUrl);
-    console.log("Image Editor Page - imageUrl value:", imageUrl);
-
     if (!imageUrl || !campaignId) {
-      console.error("Missing required parameters!");
       setError("Missing required parameters: imageUrl and campaignId");
       setLoading(false);
       return;
     }
 
-    console.log("Setting originalImage:", imageUrl);
     setOriginalImage(imageUrl);
     setLoading(false);
   }, [imageUrl, campaignId, imageId]);
@@ -176,15 +155,36 @@ export default function ImageEditorPage() {
           break;
       }
 
+      console.log("Sending request to:", endpoint);
+      console.log("Selected tool:", selectedEditTool);
+      console.log("FormData entries:", Array.from(formData.entries()));
+
       const response = await fetch(endpoint, {
         method: "POST",
         body: formData,
         credentials: "include",
       });
 
+      console.log("API Response status:", response.status);
+      console.log("API Response headers:", response.headers.get('content-type'));
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || "Edit operation failed");
+        const contentType = response.headers.get('content-type');
+        let errorMessage = "Edit operation failed";
+
+        if (contentType && contentType.includes('application/json')) {
+          try {
+            const errorData = await response.json();
+            errorMessage = errorData.detail || errorData.message || JSON.stringify(errorData);
+          } catch (e) {
+            errorMessage = `Server returned ${response.status} but JSON parsing failed`;
+          }
+        } else {
+          const text = await response.text();
+          console.error("Non-JSON error response:", text.substring(0, 500));
+          errorMessage = `Server error (${response.status}): ${text.substring(0, 200)}`;
+        }
+        throw new Error(errorMessage);
       }
 
       const result = await response.json();
@@ -274,15 +274,6 @@ export default function ImageEditorPage() {
             )}
           </div>
         </div>
-      </div>
-
-      {/* DEBUG INFO - Always visible for testing */}
-      <div className="bg-yellow-100 border-b border-yellow-300 px-6 py-2 text-sm">
-        <strong>DEBUG:</strong>
-        <span className="ml-2">imageUrl={imageUrl ? `"${imageUrl.substring(0, 50)}..."` : 'NULL'}</span>,
-        <span className="ml-2">campaignId={campaignId || 'NULL'}</span>,
-        <span className="ml-2">imageId={imageId || 'NULL'}</span> |
-        <span className="ml-2">originalImage={originalImage ? `"${originalImage.substring(0, 50)}..."` : 'NULL'}</span>
       </div>
 
       {/* Top Toolbar */}
