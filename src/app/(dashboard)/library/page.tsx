@@ -1481,7 +1481,12 @@ export default function ContentLibraryPage() {
                   </button>
 
                   <button
-                    onClick={() => setShowUnifiedEditor(true)}
+                    onClick={() => {
+                      const imageUrl = encodeURIComponent(selectedLibraryImage.image_url);
+                      const imageId = selectedLibraryImage.id;
+                      const campaignId = selectedLibraryImage.campaign_id;
+                      router.push(`/image-editor?imageUrl=${imageUrl}&campaignId=${campaignId}&imageId=${imageId}`);
+                    }}
                     className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition font-medium flex items-center space-x-2"
                   >
                     <svg
@@ -1497,7 +1502,7 @@ export default function ContentLibraryPage() {
                         d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
                       />
                     </svg>
-                    <span>Edit Image</span>
+                    <span>AI Image Editor</span>
                   </button>
 
                   {isSeedImage(selectedLibraryImage) ? (
