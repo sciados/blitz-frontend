@@ -105,7 +105,7 @@ export function ImageEditorSidebar({
           <button
             key={tool.id}
             onClick={() => onEditToolChange(tool.id)}
-            disabled={isProcessing}
+            
             className={`p-3 rounded-lg border-2 transition-all text-left ${
               selectedEditTool === tool.id
                 ? "border-blue-600 bg-blue-50"
@@ -132,7 +132,7 @@ export function ImageEditorSidebar({
               <textarea
                 value={prompt}
                 onChange={(e) => onPromptChange(e.target.value)}
-                disabled={isProcessing}
+                
                 placeholder="What to paint in masked area..."
                 rows={3}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:bg-gray-100"
@@ -145,7 +145,7 @@ export function ImageEditorSidebar({
               <textarea
                 value={negativePrompt}
                 onChange={(e) => onNegativePromptChange(e.target.value)}
-                disabled={isProcessing}
+                
                 placeholder="What to avoid..."
                 rows={2}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:bg-gray-100"
@@ -185,7 +185,7 @@ export function ImageEditorSidebar({
                 type="text"
                 value={searchPrompt}
                 onChange={(e) => onSearchPromptChange(e.target.value)}
-                disabled={isProcessing}
+                
                 placeholder="e.g., 'the car'"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:bg-gray-100"
               />
@@ -198,7 +198,7 @@ export function ImageEditorSidebar({
                 type="text"
                 value={prompt}
                 onChange={(e) => onPromptChange(e.target.value)}
-                disabled={isProcessing}
+                
                 placeholder="e.g., 'a bicycle'"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:bg-gray-100"
               />
@@ -211,7 +211,7 @@ export function ImageEditorSidebar({
                 type="text"
                 value={negativePrompt}
                 onChange={(e) => onNegativePromptChange(e.target.value)}
-                disabled={isProcessing}
+                
                 placeholder="What to avoid..."
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:bg-gray-100"
               />
@@ -229,7 +229,7 @@ export function ImageEditorSidebar({
               <textarea
                 value={prompt}
                 onChange={(e) => onPromptChange(e.target.value)}
-                disabled={isProcessing}
+                
                 placeholder="Describe how to extend..."
                 rows={2}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:bg-gray-100"
@@ -245,7 +245,7 @@ export function ImageEditorSidebar({
                   type="number"
                   value={outpaintLeft}
                   onChange={(e) => onOutpaintLeftChange(Number(e.target.value))}
-                  disabled={isProcessing}
+                  
                   min="0"
                   max="2000"
                   className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
@@ -261,7 +261,7 @@ export function ImageEditorSidebar({
                   onChange={(e) =>
                     onOutpaintRightChange(Number(e.target.value))
                   }
-                  disabled={isProcessing}
+                  
                   min="0"
                   max="2000"
                   className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
@@ -275,7 +275,7 @@ export function ImageEditorSidebar({
                   type="number"
                   value={outpaintUp}
                   onChange={(e) => onOutpaintUpChange(Number(e.target.value))}
-                  disabled={isProcessing}
+                  
                   min="0"
                   max="2000"
                   className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
@@ -289,7 +289,7 @@ export function ImageEditorSidebar({
                   type="number"
                   value={outpaintDown}
                   onChange={(e) => onOutpaintDownChange(Number(e.target.value))}
-                  disabled={isProcessing}
+                  
                   min="0"
                   max="2000"
                   className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
@@ -305,7 +305,7 @@ export function ImageEditorSidebar({
                 type="range"
                 value={creativity}
                 onChange={(e) => onCreativityChange(Number(e.target.value))}
-                disabled={isProcessing}
+                
                 min="0"
                 max="1"
                 step="0.05"
@@ -329,7 +329,7 @@ export function ImageEditorSidebar({
               <textarea
                 value={prompt}
                 onChange={(e) => onPromptChange(e.target.value)}
-                disabled={isProcessing}
+                
                 placeholder="Describe the image for better upscaling..."
                 rows={3}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:bg-gray-100"
@@ -342,7 +342,7 @@ export function ImageEditorSidebar({
               <textarea
                 value={negativePrompt}
                 onChange={(e) => onNegativePromptChange(e.target.value)}
-                disabled={isProcessing}
+                
                 placeholder="What to avoid..."
                 rows={2}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:bg-gray-100"
@@ -364,7 +364,7 @@ export function ImageEditorSidebar({
               <textarea
                 value={prompt}
                 onChange={(e) => onPromptChange(e.target.value)}
-                disabled={isProcessing}
+                
                 placeholder="Describe what the sketch represents..."
                 rows={3}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:bg-gray-100"
@@ -377,7 +377,7 @@ export function ImageEditorSidebar({
               <textarea
                 value={negativePrompt}
                 onChange={(e) => onNegativePromptChange(e.target.value)}
-                disabled={isProcessing}
+                
                 placeholder="What to avoid..."
                 rows={2}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:bg-gray-100"

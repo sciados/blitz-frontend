@@ -29,23 +29,21 @@ export function ImageEditorToolbar({
           <div className="flex gap-2">
             <button
               onClick={() => onToolChange('brush')}
-              disabled={isProcessing}
               className={`px-4 py-2 rounded font-medium transition-colors ${
                 selectedTool === 'brush'
                   ? 'bg-blue-600 text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              } disabled:opacity-50`}
+              }`}
             >
               🖌️ Brush
             </button>
             <button
               onClick={() => onToolChange('eraser')}
-              disabled={isProcessing}
               className={`px-4 py-2 rounded font-medium transition-colors ${
                 selectedTool === 'eraser'
                   ? 'bg-blue-600 text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              } disabled:opacity-50`}
+              }`}
             >
               🧹 Eraser
             </button>
@@ -63,7 +61,6 @@ export function ImageEditorToolbar({
               max="100"
               value={brushSize}
               onChange={(e) => onBrushSizeChange(Number(e.target.value))}
-              disabled={isProcessing}
               className="w-32"
             />
             <span className="text-sm text-gray-600 w-12">{brushSize}px</span>
