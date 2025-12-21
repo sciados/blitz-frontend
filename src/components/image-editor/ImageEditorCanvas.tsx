@@ -31,20 +31,23 @@ export function ImageEditorCanvas({
   const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
   const [displayScale, setDisplayScale] = useState(1);
 
+  console.log("🎨 ImageEditorCanvas RENDERED - originalImage:", originalImage);
+
   const needsMask = ["inpaint", "erase"].includes(selectedEditTool);
 
   // Load image onto canvas
   useEffect(() => {
-    if (!originalImage || !canvasRef.current || !maskCanvasRef.current) return;
+    console.log("🎨 useEffect TRIGGERED! originalImage:", originalImage);
+    if (!originalImage || !canvasRef.current || !maskCanvasRef.current) {
+      console.log("🎨 useEffect ABORTED - missing requirements:", {
+        hasImage: !!originalImage,
+        hasCanvas: !!canvasRef.current,
+        hasMaskCanvas: !!maskCanvasRef.current
+      });
+      return;
+    }
 
-    const canvas = canvasRef.current;
-    const maskCanvas = maskCanvasRef.current;
-    const ctx = canvas.getContext("2d");
-    const maskCtx = maskCanvas.getContext("2d");
-
-    if (!ctx || !maskCtx) return;
-
-    console.log("Loading image into canvas:", originalImage);
+    console.log("🎨 Starting to load image into canvas:", originalImage);
 
     const img = new Image();
     // Use proxy endpoint to bypass CORS - need to use full URL with API base
