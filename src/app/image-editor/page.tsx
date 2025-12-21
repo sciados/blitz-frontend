@@ -158,6 +158,12 @@ export default function ImageEditorPage() {
       const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
       const fullEndpoint = `${apiBaseUrl}${endpoint}`;
 
+      // Get auth token
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("Not authenticated. Please log in again.");
+      }
+
       console.log("Sending request to:", fullEndpoint);
       console.log("Selected tool:", selectedEditTool);
       console.log("FormData entries:", Array.from(formData.entries()));
@@ -165,7 +171,9 @@ export default function ImageEditorPage() {
       const response = await fetch(fullEndpoint, {
         method: "POST",
         body: formData,
-        credentials: "include",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+        },
       });
 
       console.log("API Response status:", response.status);
