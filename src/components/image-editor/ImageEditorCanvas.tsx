@@ -62,6 +62,12 @@ export function ImageEditorCanvas({
       // Get canvas references
       const canvas = canvasRef.current;
       const maskCanvas = maskCanvasRef.current;
+
+      if (!canvas || !maskCanvas) {
+        console.error("Canvas refs not available!");
+        return;
+      }
+
       const ctx = canvas.getContext("2d");
       const maskCtx = maskCanvas.getContext("2d");
 
