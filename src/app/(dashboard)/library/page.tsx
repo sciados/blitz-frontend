@@ -1571,17 +1571,20 @@ export default function ContentLibraryPage() {
           campaignId={selectedLibraryImage.campaign_id}
           onSave={async (image) => {
             try {
-              // Update the image URL in the database
-              await api.put(`/api/images/${image.id}/url`, {
-                image_url: image.image_url,
+              // Create a NEW image record instead of updating the original
+              // This preserves the original enhanced image
+              await api.post(`/api/images/create-from-existing`, {
+                original_image_id: image.id,
+                new_image_url: image.image_url,
+                campaign_id: image.campaign_id,
               });
-              toast.success("Image updated successfully!");
+              toast.success("New edited version saved! Original image preserved.");
               setShowUnifiedEditor(false);
               setIsLibraryModalOpen(false);
               refetchImages();
             } catch (error) {
-              console.error("Failed to update image:", error);
-              toast.error("Failed to save image changes");
+              console.error("Failed to save edited image:", error);
+              toast.error("Failed to save edited image");
             }
           }}
         />
