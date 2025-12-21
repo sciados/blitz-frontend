@@ -250,48 +250,50 @@ export function ImageEditorCanvas({
       </div>
 
       <div className="flex-1 flex items-center justify-center bg-gray-50 rounded-lg border-2 border-dashed border-gray-300 overflow-hidden">
-        {!imageLoaded ? (
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading image...</p>
-          </div>
-        ) : (
-          <div className="relative">
+        <div className="relative">
+          <canvas
+            ref={canvasRef}
+            className="max-w-full max-h-full shadow-lg rounded"
+          />
+
+          {needsMask && (
             <canvas
-              ref={canvasRef}
-              className="max-w-full max-h-full shadow-lg rounded"
+              ref={maskCanvasRef}
+              onMouseDown={startDrawing}
+              onMouseMove={draw}
+              onMouseUp={stopDrawing}
+              onMouseLeave={stopDrawing}
+              className="absolute top-0 left-0 cursor-crosshair"
+              style={{
+                opacity: showMask ? 0.5 : 0,
+                pointerEvents: isProcessing ? "none" : "auto",
+              }}
             />
+          )}
 
-            {needsMask && (
-              <canvas
-                ref={maskCanvasRef}
-                onMouseDown={startDrawing}
-                onMouseMove={draw}
-                onMouseUp={stopDrawing}
-                onMouseLeave={stopDrawing}
-                className="absolute top-0 left-0 cursor-crosshair"
-                style={{
-                  opacity: showMask ? 0.5 : 0,
-                  pointerEvents: isProcessing ? "none" : "auto",
-                }}
-              />
-            )}
-
-            {isProcessing && (
-              <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded">
-                <div className="bg-white p-6 rounded-lg shadow-xl">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-                  <p className="mt-4 text-gray-700 font-medium">
-                    Processing with AI...
-                  </p>
-                  <p className="mt-2 text-sm text-gray-500">
-                    This may take 10-30 seconds
-                  </p>
-                </div>
+          {!imageLoaded && (
+            <div className="absolute inset-0 flex items-center justify-center bg-gray-50 bg-opacity-90">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+                <p className="mt-4 text-gray-600">Loading image...</p>
               </div>
-            )}
-          </div>
-        )}
+            </div>
+          )}
+
+          {isProcessing && (
+            <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded">
+              <div className="bg-white p-6 rounded-lg shadow-xl">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+                <p className="mt-4 text-gray-700 font-medium">
+                  Processing with AI...
+                </p>
+                <p className="mt-2 text-sm text-gray-500">
+                  This may take 10-30 seconds
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {editedImage && (
