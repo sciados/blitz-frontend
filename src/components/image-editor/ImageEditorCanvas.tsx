@@ -249,11 +249,11 @@ export function ImageEditorCanvas({
         <p className="text-sm text-gray-600">{getToolDescription()}</p>
       </div>
 
-      <div className="flex-1 flex items-center justify-center bg-gray-50 rounded-lg border-2 border-dashed border-gray-300 overflow-hidden">
+      <div className="flex-1 flex items-center justify-center bg-gray-50 rounded-lg border-2 border-dashed border-gray-300 overflow-auto">
         <div className="relative">
           <canvas
             ref={canvasRef}
-            className="max-w-full max-h-full shadow-lg rounded"
+            className="shadow-lg rounded"
           />
 
           {needsMask && (
