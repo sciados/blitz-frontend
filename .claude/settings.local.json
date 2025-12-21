@@ -205,7 +205,13 @@
       "Bash(/bin/bash:*)",
       "Bash(git merge:*)",
       "Bash(README.md)",
-      "WebFetch(domain:platform.stability.ai)"
+      "WebFetch(domain:platform.stability.ai)",
+      "Bash(/tmp/image_router_backup.py)",
+      "Bash(\"C:/Users/shaun/OneDrive/Documents/GitHub/blitz-backend/app/plugins/image_editor/image_router.py\")",
+      "Bash(git -C \"C:/Users/shaun/OneDrive/Documents/GitHub/blitz-backend\" checkout app/plugins/image_editor/image_router.py)",
+      "Bash(git -C \"C:/Users/shaun/OneDrive/Documents/GitHub/blitz-backend\" status:*)",
+      "Bash(/tmp/backup_router.py:*)",
+      "Bash(git -C \"C:/Users/shaun/OneDrive/Documents/GitHub/blitz-backend\" diff app/plugins/image_editor/image_router.py)"
     ],
     "deny": [],
     "ask": []
