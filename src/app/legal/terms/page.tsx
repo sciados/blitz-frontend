@@ -468,11 +468,10 @@ export default function TermsPage() {
               style={{ borderColor: "var(--card-border)" }}
             >
               <p className="mb-2" style={{ color: "var(--text-primary)" }}>
-                <strong>Email:</strong> legal@blitz.app
+                <strong>Email:</strong> legal@blitz.ws
               </p>
               <p className="mb-2" style={{ color: "var(--text-primary)" }}>
-                <strong>Website:</strong>{" "}
-                https://blitz.ws
+                <strong>Website:</strong> https://blitz.ws
               </p>
             </div>
           </section>

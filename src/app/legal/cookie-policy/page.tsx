@@ -489,11 +489,10 @@ export default function CookiePolicyPage() {
               style={{ borderColor: "var(--card-border)" }}
             >
               <p className="mb-2" style={{ color: "var(--text-primary)" }}>
-                <strong>Email:</strong> privacy@blitz.app
+                <strong>Email:</strong> privacy@blitz.ws
               </p>
               <p className="mb-2" style={{ color: "var(--text-primary)" }}>
-                <strong>Website:</strong>{" "}
-                https://blitz.ws
+                <strong>Website:</strong> https://blitz.ws
               </p>
             </div>
           </section>

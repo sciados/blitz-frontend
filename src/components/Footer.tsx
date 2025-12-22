@@ -126,18 +126,18 @@ export function Footer() {
               style={{ color: "var(--text-secondary)" }}
             >
               <li>
-                <a href="mailto:support@blitz.app" className="hover:underline">
-                  support@blitz.app
+                <a href="mailto:support@blitz.ws" className="hover:underline">
+                  support@blitz.ws
                 </a>
               </li>
               <li>
-                <a href="mailto:legal@blitz.app" className="hover:underline">
-                  legal@blitz.app
+                <a href="mailto:legal@blitz.ws" className="hover:underline">
+                  legal@blitz.ws
                 </a>
               </li>
               <li>
-                <a href="mailto:privacy@blitz.app" className="hover:underline">
-                  privacy@blitz.app
+                <a href="mailto:privacy@blitz.ws" className="hover:underline">
+                  privacy@blitz.ws
                 </a>
               </li>
             </ul>

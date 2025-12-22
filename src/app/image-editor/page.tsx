@@ -29,6 +29,7 @@ export default function ImageEditorPage() {
   const [error, setError] = useState<string | null>(null);
   const [originalImage, setOriginalImage] = useState<string | null>(null);
   const [editedImage, setEditedImage] = useState<string | null>(null);
+  const [activeImage, setActiveImage] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
   // Tool states
@@ -61,6 +62,7 @@ export default function ImageEditorPage() {
     }
 
     setOriginalImage(imageUrl);
+    setActiveImage(imageUrl); // Set the original as the initial active image
     setLoading(false);
   }, [imageUrl, campaignId]);
 
@@ -176,6 +178,7 @@ export default function ImageEditorPage() {
 
       if (result.success && result.edited_image_url) {
         setEditedImage(result.edited_image_url);
+        setActiveImage(result.edited_image_url); // Automatically switch to the edited image
       } else {
         throw new Error("Failed to generate edited image");
       }
@@ -193,10 +196,25 @@ export default function ImageEditorPage() {
 
   const handleResizeSave = (resizedImageDataUrl: string, preset: string) => {
     setEditedImage(resizedImageDataUrl);
+    setActiveImage(resizedImageDataUrl); // Automatically switch to the resized image
+  };
+
+  // Switch active image for editing
+  const switchToOriginal = () => {
+    if (originalImage) {
+      setActiveImage(originalImage);
+    }
+  };
+
+  const switchToEdited = () => {
+    if (editedImage) {
+      setActiveImage(editedImage);
+    }
   };
 
   const handleReset = () => {
     setEditedImage(null);
+    setActiveImage(originalImage); // Reset to original image
     setPrompt("");
     setNegativePrompt("");
     setSearchPrompt("");
@@ -288,19 +306,19 @@ export default function ImageEditorPage() {
         <div className="flex-1 flex items-center justify-center p-4 overflow-auto">
           {selectedEditTool === "overlay" ? (
             <OverlayEditor
-              originalImage={originalImage}
+              originalImage={activeImage}
               onSave={handleOverlaySave}
               isProcessing={isProcessing}
             />
           ) : selectedEditTool === "resize" ? (
             <SmartResize
-              originalImage={originalImage}
+              originalImage={activeImage}
               onSave={handleResizeSave}
               isProcessing={isProcessing}
             />
           ) : (
             <ImageEditorCanvas
-              originalImage={originalImage}
+              originalImage={activeImage}
               editedImage={editedImage}
               selectedEditTool={selectedEditTool}
               selectedDrawTool={selectedDrawTool}
@@ -321,7 +339,14 @@ export default function ImageEditorPage() {
                 <p className="text-sm font-medium text-gray-700 mb-2">
                   Original
                 </p>
-                <div className="border border-gray-300 rounded overflow-hidden">
+                <div
+                  className={`border-2 rounded overflow-hidden cursor-pointer transition-all ${
+                    activeImage === originalImage
+                      ? "border-blue-500 ring-2 ring-blue-200"
+                      : "border-gray-300 hover:border-gray-400"
+                  }`}
+                  onClick={switchToOriginal}
+                >
                   {originalImage && (
                     <img
                       src={originalImage}
@@ -330,6 +355,11 @@ export default function ImageEditorPage() {
                     />
                   )}
                 </div>
+                {activeImage === originalImage && (
+                  <p className="text-xs text-blue-600 mt-1 text-center font-medium">
+                    ✓ Active
+                  </p>
+                )}
               </div>
 
               {editedImage && (
@@ -337,13 +367,25 @@ export default function ImageEditorPage() {
                   <p className="text-sm font-medium text-gray-700 mb-2">
                     Edited ({selectedEditTool})
                   </p>
-                  <div className="border border-gray-300 rounded overflow-hidden">
+                  <div
+                    className={`border-2 rounded overflow-hidden cursor-pointer transition-all ${
+                      activeImage === editedImage
+                        ? "border-blue-500 ring-2 ring-blue-200"
+                        : "border-gray-300 hover:border-gray-400"
+                    }`}
+                    onClick={switchToEdited}
+                  >
                     <img
                       src={editedImage}
                       alt="Edited"
                       className="w-full h-auto"
                     />
                   </div>
+                  {activeImage === editedImage && (
+                    <p className="text-xs text-blue-600 mt-1 text-center font-medium">
+                      ✓ Active
+                  </p>
+                  )}
                 </div>
               )}
             </div>
