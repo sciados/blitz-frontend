@@ -1,6 +1,6 @@
 "use client";
 
-import { EditTool } from '@/app/image-editor/page';
+import { EditTool } from "src/app/image-editor/page";
 
 interface ImageEditorSidebarProps {
   selectedEditTool: EditTool;
@@ -45,17 +45,66 @@ export function ImageEditorSidebar({
   onCreativityChange,
   isProcessing,
 }: ImageEditorSidebarProps) {
-  
-  const tools: { id: EditTool; label: string; icon: string; description: string }[] = [
-    { id: 'inpaint', label: 'Inpaint', icon: '🎨', description: 'Fill masked areas with AI' },
-    { id: 'erase', label: 'Erase', icon: '🧹', description: 'Remove objects cleanly' },
-    { id: 'background-remove', label: 'Remove BG', icon: '🖼️', description: 'Remove background' },
-    { id: 'search-replace', label: 'Replace', icon: '🔄', description: 'Replace specific objects' },
-    { id: 'outpaint', label: 'Extend', icon: '↔️', description: 'Extend image borders' },
-    { id: 'upscale', label: 'Upscale', icon: '⬆️', description: 'AI enhance & upscale' },
-    { id: 'sketch-to-image', label: 'Sketch', icon: '✏️', description: 'Sketch to photo' },
-    { id: 'overlay', label: 'Overlay', icon: '📝', description: 'Add text/images' },
-    { id: 'resize', label: 'Resize', icon: '📐', description: 'Smart resize & format' },
+  const tools: {
+    id: EditTool;
+    label: string;
+    icon: string;
+    description: string;
+  }[] = [
+    {
+      id: "inpaint",
+      label: "Inpaint",
+      icon: "🎨",
+      description: "Fill masked areas with AI",
+    },
+    {
+      id: "erase",
+      label: "Erase",
+      icon: "🧹",
+      description: "Remove objects cleanly",
+    },
+    {
+      id: "background-remove",
+      label: "Remove BG",
+      icon: "🖼️",
+      description: "Remove background",
+    },
+    {
+      id: "search-replace",
+      label: "Replace",
+      icon: "🔄",
+      description: "Replace specific objects",
+    },
+    {
+      id: "outpaint",
+      label: "Extend",
+      icon: "↔️",
+      description: "Extend image borders",
+    },
+    {
+      id: "upscale",
+      label: "Upscale",
+      icon: "⬆️",
+      description: "AI enhance & upscale",
+    },
+    {
+      id: "sketch-to-image",
+      label: "Sketch",
+      icon: "✏️",
+      description: "Sketch to photo",
+    },
+    {
+      id: "overlay",
+      label: "Overlay",
+      icon: "📝",
+      description: "Add text/images",
+    },
+    {
+      id: "resize",
+      label: "Resize",
+      icon: "📐",
+      description: "Smart resize & format",
+    },
   ];
 
   return (
@@ -71,8 +120,8 @@ export function ImageEditorSidebar({
             disabled={isProcessing}
             className={`p-3 rounded-lg border-2 transition-all text-left ${
               selectedEditTool === tool.id
-                ? 'border-blue-600 bg-blue-50'
-                : 'border-gray-200 hover:border-gray-300'
+                ? "border-blue-600 bg-blue-50"
+                : "border-gray-200 hover:border-gray-300"
             } disabled:opacity-50`}
           >
             <div className="text-2xl mb-1">{tool.icon}</div>
@@ -86,7 +135,7 @@ export function ImageEditorSidebar({
         <h4 className="text-sm font-semibold text-gray-700 mb-3">Settings</h4>
 
         {/* Inpainting Settings */}
-        {selectedEditTool === 'inpaint' && (
+        {selectedEditTool === "inpaint" && (
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -118,25 +167,27 @@ export function ImageEditorSidebar({
         )}
 
         {/* Erase Settings */}
-        {selectedEditTool === 'erase' && (
+        {selectedEditTool === "erase" && (
           <div className="space-y-4">
             <p className="text-sm text-gray-600">
-              Paint over objects you want to remove. AI will intelligently fill the area.
+              Paint over objects you want to remove. AI will intelligently fill
+              the area.
             </p>
           </div>
         )}
 
         {/* Background Removal Settings */}
-        {selectedEditTool === 'background-remove' && (
+        {selectedEditTool === "background-remove" && (
           <div className="space-y-4">
             <p className="text-sm text-gray-600">
-              Automatically removes the background from your image. No mask needed!
+              Automatically removes the background from your image. No mask
+              needed!
             </p>
           </div>
         )}
 
         {/* Search & Replace Settings */}
-        {selectedEditTool === 'search-replace' && (
+        {selectedEditTool === "search-replace" && (
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -181,7 +232,7 @@ export function ImageEditorSidebar({
         )}
 
         {/* Outpainting Settings */}
-        {selectedEditTool === 'outpaint' && (
+        {selectedEditTool === "outpaint" && (
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -196,7 +247,7 @@ export function ImageEditorSidebar({
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:bg-gray-100"
               />
             </div>
-            
+
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-medium text-gray-700 mb-1">
@@ -219,7 +270,9 @@ export function ImageEditorSidebar({
                 <input
                   type="number"
                   value={outpaintRight}
-                  onChange={(e) => onOutpaintRightChange(Number(e.target.value))}
+                  onChange={(e) =>
+                    onOutpaintRightChange(Number(e.target.value))
+                  }
                   disabled={isProcessing}
                   min="0"
                   max="2000"
@@ -279,7 +332,7 @@ export function ImageEditorSidebar({
         )}
 
         {/* Upscale Settings */}
-        {selectedEditTool === 'upscale' && (
+        {selectedEditTool === "upscale" && (
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -314,7 +367,7 @@ export function ImageEditorSidebar({
         )}
 
         {/* Sketch to Image Settings */}
-        {selectedEditTool === 'sketch-to-image' && (
+        {selectedEditTool === "sketch-to-image" && (
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">

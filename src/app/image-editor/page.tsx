@@ -2,12 +2,12 @@
 
 import { useSearchParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { ImageEditorCanvas } from '@/components/image-editor/ImageEditorCanvas';
-import { ImageEditorToolbar } from '@/components/image-editor/ImageEditorToolbar';
-import { ImageEditorSidebar } from '@/components/image-editor/ImageEditorSidebar';
-import { ToolSelector } from '@/components/image-editor/ToolSelector';
-import { OverlayEditor } from '@/components/image-editor/OverlayEditor';
-import { SmartResize } from '@/components/image-editor/SmartResize';
+import { ImageEditorCanvas } from "src/components/image-editor/ImageEditorCanvas";
+import { ImageEditorToolbar } from 'src/components/image-editor/ImageEditorToolbar';
+import { ImageEditorSidebar } from 'src/components/image-editor/ImageEditorSidebar';
+import { ToolSelector } from 'src/components/image-editor/ToolSelector';
+import { OverlayEditor } from 'src/components/image-editor/OverlayEditor';
+import { SmartResize } from 'src/components/image-editor/SmartResize';
 
 export type EditTool = 'inpaint' | 'erase' | 'background-remove' | 'search-replace' | 'outpaint' | 'upscale' | 'sketch-to-image' | 'overlay' | 'resize';
 
