@@ -153,13 +153,16 @@ export default function ContentLibraryPage() {
               .filter((edit: any) => edit.success && edit.edited_image_path)
               .map((edit: any) => {
                 // Construct public URL from R2 path
-                // Use the proxy endpoint to correctly handle R2 paths including /edited/ folder
+                // The edited_image_path from database is like "campaigns/28/edited/file.png"
+                // But R2 storage folder is "campaignforge-storage/campaigns/28/edited/"
                 let imageUrl = edit.edited_image_path;
 
-                // If it's not a full URL, use the proxy endpoint
+                // If it's not a full URL, construct the full R2 public URL
                 if (!imageUrl.startsWith('http')) {
-                  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
-                  imageUrl = `${apiBaseUrl}/api/images/proxy?url=${encodeURIComponent(imageUrl)}`;
+                  // Prepend the R2 storage folder and construct the full URL
+                  // Format: https://[bucket].r2.dev/campaignforge-storage/campaigns/{id}/edited/{filename}
+                  const r2BucketUrl = 'https://pub-8b3d0a9c0e9f4c9d8a7b6c5d4e3f2a1b.r2.dev';
+                  imageUrl = `${r2BucketUrl}/campaignforge-storage/${imageUrl}`;
                 }
 
                 return {
@@ -189,8 +192,23 @@ export default function ContentLibraryPage() {
 
         const allEditedArrays = await Promise.all(allEditedPromises);
         const flatEdited = allEditedArrays.flat();
-        setAllEditedImages(flatEdited);
-        return flatEdited;
+
+        // Deduplicate by image_url, keeping only the most recent for each unique image
+        const uniqueEdits = flatEdited.reduce((acc: any[], current) => {
+          const existingIndex = acc.findIndex(item => item.image_url === current.image_url);
+          if (existingIndex === -1) {
+            acc.push(current);
+          } else {
+            // Keep the more recent one
+            if (new Date(current.created_at) > new Date(acc[existingIndex].created_at)) {
+              acc[existingIndex] = current;
+            }
+          }
+          return acc;
+        }, []);
+
+        setAllEditedImages(uniqueEdits);
+        return uniqueEdits;
       } catch (error) {
         console.error('Error in refetchEditedImages:', error);
         return [];
