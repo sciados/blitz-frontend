@@ -162,16 +162,15 @@ export default function ImageEditorPage() {
           break;
       }
 
+      const token = localStorage.getItem("token");
       const response = await fetch(endpoint, {
         method: "POST",
         body: formData,
         credentials: "include",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || "Edit operation failed");
-      }
 
       const result = await response.json();
 
