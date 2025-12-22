@@ -141,37 +141,26 @@ export default function ContentLibraryPage() {
       try {
         // Fetch from all campaigns
         const { data: campaigns } = await api.get("/api/campaigns");
-        console.log('📸 Fetching edited images for', campaigns.length, 'campaigns');
 
         const allEditedPromises = campaigns.map(async (campaign: Campaign) => {
           try {
-            console.log(`📸 Fetching edited images for campaign ${campaign.id}...`);
             const res = await api.get(`/api/image-editor/history/${campaign.id}`);
-            console.log(`📸 Campaign ${campaign.id} response:`, res.data);
 
             // Transform the data to match the expected format
             const edits = res.data.edits || [];
-            console.log(`📸 Campaign ${campaign.id} - found ${edits.length} edits`);
 
             const mappedEdits = edits
-              .filter((edit: any) => {
-                const isValid = edit.success && edit.edited_image_path;
-                console.log(`📸 Edit ${edit.id}: success=${edit.success}, has_path=${!!edit.edited_image_path}, valid=${isValid}`);
-                return isValid;
-              })
+              .filter((edit: any) => edit.success && edit.edited_image_path)
               .map((edit: any) => {
                 // Construct public URL from R2 path
                 // Use the proxy endpoint to correctly handle R2 paths including /edited/ folder
                 let imageUrl = edit.edited_image_path;
-                console.log(`📸 Original image path:`, imageUrl);
 
                 // If it's not a full URL, use the proxy endpoint
                 if (!imageUrl.startsWith('http')) {
                   const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
                   imageUrl = `${apiBaseUrl}/api/images/proxy?url=${encodeURIComponent(imageUrl)}`;
                 }
-
-                console.log(`📸 Final image URL:`, imageUrl);
 
                 return {
                   id: edit.id,
@@ -191,21 +180,19 @@ export default function ContentLibraryPage() {
                 };
               });
 
-            console.log(`📸 Campaign ${campaign.id} - mapped ${mappedEdits.length} valid edits`);
             return mappedEdits;
-          } catch (error) {
-            console.error(`📸 Error fetching edits for campaign ${campaign.id}:`, error);
+          } catch (error: any) {
+            console.error(`Error fetching edits for campaign ${campaign.id}:`, error);
             return [];
           }
         });
 
         const allEditedArrays = await Promise.all(allEditedPromises);
         const flatEdited = allEditedArrays.flat();
-        console.log('📸 Total edited images found:', flatEdited.length);
         setAllEditedImages(flatEdited);
         return flatEdited;
       } catch (error) {
-        console.error('📸 Error in refetchEditedImages:', error);
+        console.error('Error in refetchEditedImages:', error);
         return [];
       }
     },
