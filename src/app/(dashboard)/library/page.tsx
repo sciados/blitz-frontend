@@ -445,6 +445,25 @@ export default function ContentLibraryPage() {
     }
   }
 
+  async function handleDeleteEditedImage(editId: number) {
+    setImageToDelete(editId);
+    setShowDeleteImageConfirm(true);
+  };
+
+  async function confirmDeleteEditedImage() {
+    if (!imageToDelete) return;
+
+    try {
+      await api.delete(`/api/image-editor/${imageToDelete}`);
+      toast.success("Edited image deleted successfully");
+      refetchEditedImages();
+      setIsLibraryModalOpen(false);
+      setImageToDelete(null);
+    } catch (err: any) {
+      toast.error(err.response?.data?.detail || "Failed to delete edited image");
+    }
+  }
+
   const handleDeleteVideo = (videoId: number) => {
     setVideoToDelete(videoId);
     setShowDeleteVideoConfirm(true);
@@ -1146,20 +1165,22 @@ export default function ContentLibraryPage() {
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                             </svg>
                           </button>
-                          {image.source !== 'edited' && (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (image.source === 'edited') {
+                                handleDeleteEditedImage(image.id);
+                              } else {
                                 handleDeleteImage(image.id);
-                              }}
-                              className="flex-1 text-xs px-2 py-1 bg-gray-600 hover:bg-red-700 text-white rounded transition flex items-center justify-center gap-1"
-                              title="Delete"
-                            >
-                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                              </svg>
-                            </button>
-                          )}
+                              }
+                            }}
+                            className="flex-1 text-xs px-2 py-1 bg-gray-600 hover:bg-red-700 text-white rounded transition flex items-center justify-center gap-1"
+                            title="Delete"
+                          >
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -1661,28 +1682,7 @@ export default function ContentLibraryPage() {
                     <span>AI Image Editor</span>
                   </button>
 
-                  {selectedLibraryImage.source === 'edited' ? (
-                    <button
-                      disabled
-                      className="px-6 py-2 bg-gray-400 text-white rounded-lg cursor-not-allowed flex items-center space-x-2"
-                      title="Edited images cannot be deleted from this view"
-                    >
-                      <svg
-                        className="w-5 h-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L18.364 5.636M5.636 18.364l12.728-12.728"
-                        />
-                      </svg>
-                      <span>Cannot Delete</span>
-                    </button>
-                  ) : isSeedImage(selectedLibraryImage) ? (
+                  {isSeedImage(selectedLibraryImage) ? (
                     <button
                       disabled
                       className="px-6 py-2 bg-gray-400 text-white rounded-lg cursor-not-allowed flex items-center space-x-2"
@@ -1705,7 +1705,13 @@ export default function ContentLibraryPage() {
                     </button>
                   ) : (
                     <button
-                      onClick={() => handleDeleteImage(selectedLibraryImage.id)}
+                      onClick={() => {
+                        if (selectedLibraryImage.source === 'edited') {
+                          handleDeleteEditedImage(selectedLibraryImage.id);
+                        } else {
+                          handleDeleteImage(selectedLibraryImage.id);
+                        }
+                      }}
                       className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition font-medium flex items-center space-x-2"
                     >
                       <svg
@@ -1793,7 +1799,15 @@ export default function ContentLibraryPage() {
           setShowDeleteImageConfirm(false);
           setImageToDelete(null);
         }}
-        onConfirm={confirmDeleteImage}
+        onConfirm={() => {
+          // Check if we're deleting an edited image by checking if imageToDelete exists in edited images
+          const isEditedImage = allEditedImages.some(img => img.id === imageToDelete);
+          if (isEditedImage) {
+            confirmDeleteEditedImage();
+          } else {
+            confirmDeleteImage();
+          }
+        }}
         title="Delete Image"
         message="Are you sure you want to delete this image? This action cannot be undone."
         type="danger"
