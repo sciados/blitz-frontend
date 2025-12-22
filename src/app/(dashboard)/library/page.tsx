@@ -152,18 +152,11 @@ export default function ContentLibraryPage() {
             const mappedEdits = edits
               .filter((edit: any) => edit.success && edit.edited_image_path)
               .map((edit: any) => {
-                // Construct public URL from R2 path
-                // The edited_image_path from database is like "campaigns/28/edited/file.png"
-                // But R2 storage folder is "campaignforge-storage/campaigns/28/edited/"
-                let imageUrl = edit.edited_image_path;
-
-                // If it's not a full URL, construct the full R2 public URL
-                if (!imageUrl.startsWith('http')) {
-                  // Prepend the R2 storage folder and construct the full URL
-                  // Format: https://[bucket].r2.dev/campaignforge-storage/campaigns/{id}/edited/{filename}
-                  const r2BucketUrl = 'https://pub-8b3d0a9c0e9f4c9d8a7b6c5d4e3f2a1b.r2.dev';
-                  imageUrl = `${r2BucketUrl}/campaignforge-storage/${imageUrl}`;
-                }
+                // Use the proxy endpoint for edited images since /edited/ folder requires authentication
+                // The proxy endpoint has R2 credentials and can fetch private files
+                const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+                const fullR2Path = `campaignforge-storage/${edit.edited_image_path}`;
+                const imageUrl = `${apiBaseUrl}/api/images/proxy?url=${encodeURIComponent(fullR2Path)}`;
 
                 return {
                   id: edit.id,
