@@ -154,10 +154,11 @@ export default function ContentLibraryPage() {
               .map((edit: any) => {
                 // Use the proxy endpoint for edited images since /edited/ folder requires authentication
                 // The proxy endpoint has R2 credentials and can fetch private files
-                // Need to use full R2 URL with protocol for the proxy endpoint
+                // Need to use full URL with domain to avoid browser encoding issues
                 const r2PublicUrl = 'https://pub-c0ddba9f039845bda33be436955187cb.r2.dev';
                 const fullR2Url = `${r2PublicUrl}/${edit.edited_image_path}`;
-                const imageUrl = `/api/images/proxy?url=${encodeURIComponent(fullR2Url)}`;
+                const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://blitzed.up.railway.app';
+                const imageUrl = `${apiBaseUrl}/api/images/proxy?url=${encodeURIComponent(fullR2Url)}`;
 
                 return {
                   id: edit.id,
