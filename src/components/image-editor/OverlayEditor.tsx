@@ -59,7 +59,7 @@ export function OverlayEditor({
     const img = new Image();
     // Use proxy endpoint to bypass CORS - need to use full URL with API base
     const apiBaseUrl =
-      process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+      process.env.NEXT_PUBLIC_API_BASE_URL || "https://blitzed.up.railway.app";
     const proxyUrl = `${apiBaseUrl}/api/images/proxy?url=${encodeURIComponent(
       originalImage
     )}`;
@@ -97,7 +97,7 @@ export function OverlayEditor({
     const img = new Image();
     // Use proxy endpoint to bypass CORS
     const apiBaseUrl =
-      process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+      process.env.NEXT_PUBLIC_API_BASE_URL || "https://blitzed.up.railway.app";
     const proxyUrl = `${apiBaseUrl}/api/images/proxy?url=${encodeURIComponent(
       originalImage
     )}`;

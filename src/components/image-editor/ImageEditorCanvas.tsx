@@ -41,8 +41,11 @@ export function ImageEditorCanvas({
 
     const img = new Image();
     // Use proxy endpoint to bypass CORS - need to use full URL with API base
-    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
-    const proxyUrl = `${apiBaseUrl}/api/images/proxy?url=${encodeURIComponent(originalImage)}`;
+    const apiBaseUrl =
+      process.env.NEXT_PUBLIC_API_BASE_URL || "https://blitzed.up.railway.app";
+    const proxyUrl = `${apiBaseUrl}/api/images/proxy?url=${encodeURIComponent(
+      originalImage
+    )}`;
     img.crossOrigin = "anonymous";
 
     img.onload = () => {
@@ -230,10 +233,7 @@ export function ImageEditorCanvas({
 
       <div className="flex-1 flex items-center justify-center bg-gray-50 rounded-lg border-2 border-dashed border-gray-300 overflow-auto">
         <div className="relative">
-          <canvas
-            ref={canvasRef}
-            className="shadow-lg rounded"
-          />
+          <canvas ref={canvasRef} className="shadow-lg rounded" />
 
           {needsMask && (
             <canvas
