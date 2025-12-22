@@ -369,14 +369,16 @@ export function OverlayEditor({
           </div>
         </div>
 
-        <canvas
-          ref={canvasRef}
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-          onMouseLeave={handleMouseUp}
-          className="border border-gray-300 rounded cursor-move max-w-full h-auto"
-        />
+        <div className="flex items-center justify-center bg-gray-50 rounded-lg border-2 border-dashed border-gray-300 overflow-auto" style={{ minHeight: '400px', maxHeight: '700px' }}>
+          <canvas
+            ref={canvasRef}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseUp}
+            className="shadow-lg rounded cursor-move"
+          />
+        </div>
 
         <div className="mt-4 p-3 bg-blue-50 rounded text-sm text-blue-800">
           <p className="font-semibold mb-1">💡 Tips:</p>

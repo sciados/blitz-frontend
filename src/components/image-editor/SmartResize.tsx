@@ -311,11 +311,10 @@ export function SmartResize({
         </div>
 
         {/* Canvas Preview */}
-        <div className="mb-4 flex justify-center border border-gray-300 rounded p-4 bg-gray-50">
+        <div className="mb-4 flex items-center justify-center bg-gray-50 rounded-lg border-2 border-dashed border-gray-300 overflow-auto" style={{ minHeight: '400px', maxHeight: '700px' }}>
           <canvas
             ref={canvasRef}
-            className="max-w-full max-h-[500px] shadow-lg"
-            style={{ objectFit: 'contain' }}
+            className="shadow-lg rounded"
           />
         </div>
 
