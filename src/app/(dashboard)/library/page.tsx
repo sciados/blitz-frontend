@@ -156,7 +156,7 @@ export default function ContentLibraryPage() {
                 // The proxy endpoint has R2 credentials and can fetch private files
                 // Need to use full R2 URL with protocol for the proxy endpoint
                 const r2PublicUrl = 'https://pub-c0ddba9f039845bda33be436955187cb.r2.dev';
-                const fullR2Url = `${r2PublicUrl}/campaignforge-storage/${edit.edited_image_path}`;
+                const fullR2Url = `${r2PublicUrl}/${edit.edited_image_path}`;
                 const imageUrl = `/api/images/proxy?url=${encodeURIComponent(fullR2Url)}`;
 
                 return {
