@@ -335,9 +335,17 @@ export default function ContentLibraryPage() {
 
   // Image handlers
   const handleImageClick = (image: LibraryImage, index: number) => {
-    setSelectedLibraryImage(image);
-    setCurrentImageIndex(index);
-    setIsLibraryModalOpen(true);
+    // Navigate directly to Image Editor instead of opening modal
+    const params = new URLSearchParams({
+      imageUrl: image.image_url,
+      campaignId: image.campaign_id.toString(),
+      imageId: image.id.toString()
+    });
+    // For edited images, also pass the original image path
+    if (image.metadata?.is_edited && image.metadata?.original_image_path) {
+      params.set('originalImagePath', image.metadata.original_image_path);
+    }
+    router.push(`/image-editor?${params.toString()}`);
   };
 
   function handlePreviousImage() {
