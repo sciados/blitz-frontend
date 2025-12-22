@@ -3,7 +3,9 @@
     "allow": [
       "Bash(git -C \"C:/Users/shaun/OneDrive/Documents/GitHub/blitz-frontend\" add .)",
       "Bash(git -C \"C:/Users/shaun/OneDrive/Documents/GitHub/blitz-frontend\" commit -m \"$(cat <<''EOF''\nfix: Add API base URL to image editor fetch requests\n\n- Prefix API endpoints with NEXT_PUBLIC_API_BASE_URL\n- Add Authorization header with Bearer token\n- Fixes 405 errors by calling backend instead of frontend\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
-      "Bash(git -C \"C:/Users/shaun/OneDrive/Documents/GitHub/blitz-frontend\" push origin main)"
+      "Bash(git -C \"C:/Users/shaun/OneDrive/Documents/GitHub/blitz-frontend\" push origin main)",
+      "Bash(git -C:*)",
+      "Bash(git -C \"C:/Users/shaun/OneDrive/Documents/GitHub/blitz-backend\" commit:*)"
     ],
     "deny": [],
     "ask": []
