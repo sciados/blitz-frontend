@@ -172,6 +172,7 @@ export default function ContentLibraryPage() {
                     is_edited: true,
                     operation_type: edit.operation_type,
                     original_image_path: edit.original_image_path,
+                    r2_url: fullR2Url,  // Store the actual R2 URL for editing
                     text_overlay: false
                   },
                   created_at: edit.created_at
@@ -362,8 +363,14 @@ export default function ContentLibraryPage() {
   // Image handlers
   const handleImageClick = (image: LibraryImage, index: number) => {
     // Navigate directly to Image Editor instead of opening modal
+    // For edited images, use the actual R2 URL (not the proxy URL)
+    let imageUrlToUse = image.image_url;
+    if (image.metadata?.is_edited && image.metadata?.r2_url) {
+      imageUrlToUse = image.metadata.r2_url;
+    }
+
     const params = new URLSearchParams({
-      imageUrl: image.image_url,
+      imageUrl: imageUrlToUse,
       campaignId: image.campaign_id.toString(),
       imageId: image.id.toString()
     });
@@ -1619,8 +1626,14 @@ export default function ContentLibraryPage() {
                   <button
                     onClick={() => {
                       // Don't encode here - let URLSearchParams handle it properly
+                      // For edited images, use the actual R2 URL (not the proxy URL)
+                      let imageUrlToUse = selectedLibraryImage.image_url;
+                      if (selectedLibraryImage.metadata?.is_edited && selectedLibraryImage.metadata?.r2_url) {
+                        imageUrlToUse = selectedLibraryImage.metadata.r2_url;
+                      }
+
                       const params = new URLSearchParams({
-                        imageUrl: selectedLibraryImage.image_url,
+                        imageUrl: imageUrlToUse,
                         campaignId: selectedLibraryImage.campaign_id.toString(),
                         imageId: selectedLibraryImage.id.toString()
                       });

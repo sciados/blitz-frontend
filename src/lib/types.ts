@@ -282,6 +282,7 @@ export type GeneratedImage = {
         is_edited?: boolean;  // Indicates if this is an edited image from the image editor
         operation_type?: string;  // Type of edit operation (inpainting, erase, etc.)
         original_image_path?: string;  // Path to the original image
+        r2_url?: string;  // Actual R2 URL for edited images (for re-editing)
     };
     ai_generation_cost?: number;
     created_at: string;
