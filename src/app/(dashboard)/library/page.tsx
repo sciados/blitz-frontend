@@ -17,7 +17,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useSearchParams, useRouter } from "next/navigation";
 import { api } from "src/lib/appClient";
 import { toast } from "sonner";
-import { GeneratedContent, Campaign, GeneratedImage } from "src/lib/types";
+import { GeneratedContent, Campaign, GeneratedImage, LibraryImage } from "src/lib/types";
 
 const CONTENT_TYPES = [
   { value: "all", label: "All Types", icon: "📚" },
@@ -62,12 +62,12 @@ export default function ContentLibraryPage() {
   const [imageFilter, setImageFilter] = useState<"all" | "original" | "edited" | "overlays">("all");
   const [videoFilter, setVideoFilter] = useState<"all" | "generated" | "overlays">("all");
   const [allImages, setAllImages] = useState<GeneratedImage[]>([]);
-  const [allEditedImages, setAllEditedImages] = useState<any[]>([]);
+  const [allEditedImages, setAllEditedImages] = useState<LibraryImage[]>([]);
   const [allVideos, setAllVideos] = useState<any[]>([]);
 
   // Modal state for library image viewer
   const [selectedLibraryImage, setSelectedLibraryImage] =
-    useState<GeneratedImage | null>(null);
+    useState<LibraryImage | null>(null);
   const [isLibraryModalOpen, setIsLibraryModalOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
@@ -247,7 +247,7 @@ export default function ContentLibraryPage() {
   });
 
   // Combine original and edited images
-  const combinedImages = [
+  const combinedImages: LibraryImage[] = [
     ...allImages.map(img => ({ ...img, source: 'original' as const })),
     ...allEditedImages.map(img => ({ ...img, source: 'edited' as const }))
   ];
@@ -334,7 +334,7 @@ export default function ContentLibraryPage() {
   };
 
   // Image handlers
-  const handleImageClick = (image: any, index: number) => {
+  const handleImageClick = (image: LibraryImage, index: number) => {
     setSelectedLibraryImage(image);
     setCurrentImageIndex(index);
     setIsLibraryModalOpen(true);

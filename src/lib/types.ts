@@ -279,9 +279,17 @@ export type GeneratedImage = {
         has_layers?: boolean;  // Indicates if this image has overlay layers
         text_overlay?: boolean;  // Indicates if this image has text overlay
         image_overlay?: boolean;  // Indicates if this image has image overlay/composite
+        is_edited?: boolean;  // Indicates if this is an edited image from the image editor
+        operation_type?: string;  // Type of edit operation (inpainting, erase, etc.)
+        original_image_path?: string;  // Path to the original image
     };
     ai_generation_cost?: number;
     created_at: string;
+};
+
+// Extended type for images in the content library (combines original and edited)
+export type LibraryImage = GeneratedImage & {
+    source: 'original' | 'edited';
 };
 
 export type ImageGenerateRequest = {
