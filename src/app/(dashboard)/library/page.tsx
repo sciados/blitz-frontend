@@ -154,9 +154,10 @@ export default function ContentLibraryPage() {
               .map((edit: any) => {
                 // Use the proxy endpoint for edited images since /edited/ folder requires authentication
                 // The proxy endpoint has R2 credentials and can fetch private files
-                const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
-                const fullR2Path = `campaignforge-storage/${edit.edited_image_path}`;
-                const imageUrl = `${apiBaseUrl}/api/images/proxy?url=${encodeURIComponent(fullR2Path)}`;
+                // Need to use full R2 URL with protocol for the proxy endpoint
+                const r2PublicUrl = 'https://pub-c0ddba9f039845bda33be436955187cb.r2.dev';
+                const fullR2Url = `${r2PublicUrl}/campaignforge-storage/${edit.edited_image_path}`;
+                const imageUrl = `/api/images/proxy?url=${encodeURIComponent(fullR2Url)}`;
 
                 return {
                   id: edit.id,
