@@ -59,9 +59,10 @@ export default function ContentLibraryPage() {
   const [activeLibraryTab, setActiveLibraryTab] = useState<"text" | "images" | "videos">(
     "text"
   );
-  const [imageFilter, setImageFilter] = useState<"all" | "original" | "overlays">("all");
+  const [imageFilter, setImageFilter] = useState<"all" | "original" | "edited" | "overlays">("all");
   const [videoFilter, setVideoFilter] = useState<"all" | "generated" | "overlays">("all");
   const [allImages, setAllImages] = useState<GeneratedImage[]>([]);
+  const [allEditedImages, setAllEditedImages] = useState<any[]>([]);
   const [allVideos, setAllVideos] = useState<any[]>([]);
 
   // Modal state for library image viewer
@@ -133,6 +134,57 @@ export default function ContentLibraryPage() {
     // Remove enabled condition so images load immediately with text content
   });
 
+  // Query to fetch edited images from image editor
+  const { refetch: refetchEditedImages } = useQuery({
+    queryKey: ["all-edited-images"],
+    queryFn: async () => {
+      // Fetch from all campaigns
+      const { data: campaigns } = await api.get("/api/campaigns");
+      const allEditedPromises = campaigns.map((campaign: Campaign) =>
+        api
+          .get(`/api/image-editor/history/${campaign.id}`)
+          .then((res) => {
+            // Transform the data to match the expected format
+            const edits = res.data.edits || [];
+            return edits
+              .filter((edit: any) => edit.success && edit.edited_image_path)
+              .map((edit: any) => {
+                // Construct public URL from R2 path
+                // R2 path format: campaigns/{id}/edited/filename.png
+                // Public URL format: https://pub-xxx.r2.dev/campaigns/{id}/edited/filename.png
+                let imageUrl = edit.edited_image_path;
+                if (!imageUrl.startsWith('http')) {
+                  const r2BucketUrl = 'https://pub-8b3d0a9c0e9f4c9d8a7b6c5d4e3f2a1b.r2.dev';
+                  imageUrl = `${r2BucketUrl}/${imageUrl}`;
+                }
+
+                return {
+                  id: edit.id,
+                  campaign_id: edit.campaign_id,
+                  image_url: imageUrl,
+                  image_type: `edited_${edit.operation_type}`,
+                  prompt: edit.operation_params?.prompt || edit.operation_params?.search_prompt || "Edited Image",
+                  provider: "Stability AI",
+                  aspect_ratio: "original",
+                  metadata: {
+                    is_edited: true,
+                    operation_type: edit.operation_type,
+                    original_image_path: edit.original_image_path,
+                    text_overlay: false
+                  },
+                  created_at: edit.created_at
+                };
+              });
+          })
+          .catch(() => [])
+      );
+      const allEditedArrays = await Promise.all(allEditedPromises);
+      const flatEdited = allEditedArrays.flat();
+      setAllEditedImages(flatEdited);
+      return flatEdited;
+    },
+  });
+
   // Query to fetch videos for the library - ONLY poll when videos tab is active
   const { refetch: refetchVideos } = useQuery({
     queryKey: ["all-videos"],
@@ -156,8 +208,9 @@ export default function ContentLibraryPage() {
   useEffect(() => {
     if (activeLibraryTab === "images") {
       refetchImages();
+      refetchEditedImages();
     }
-  }, [activeLibraryTab, refetchImages]);
+  }, [activeLibraryTab, refetchImages, refetchEditedImages]);
 
   // Refetch videos when tab changes to videos (for manual refresh if needed)
   useEffect(() => {
@@ -193,14 +246,24 @@ export default function ContentLibraryPage() {
     return true;
   });
 
-  // Filter images based on campaign
-  const filteredImages = allImages.filter((image) => {
+  // Combine original and edited images
+  const combinedImages = [
+    ...allImages.map(img => ({ ...img, source: 'original' as const })),
+    ...allEditedImages.map(img => ({ ...img, source: 'edited' as const }))
+  ];
+
+  // Filter images based on campaign and filter type
+  const filteredImages = combinedImages.filter((image) => {
     if (filterCampaignId && image.campaign_id !== filterCampaignId)
       return false;
     // Apply image type filter
     if (imageFilter === "original" && image.metadata?.text_overlay === true)
       return false;
+    if (imageFilter === "original" && image.metadata?.is_edited === true)
+      return false;
     if (imageFilter === "overlays" && image.metadata?.text_overlay !== true)
+      return false;
+    if (imageFilter === "edited" && image.metadata?.is_edited !== true)
       return false;
     return true;
   });
@@ -271,7 +334,7 @@ export default function ContentLibraryPage() {
   };
 
   // Image handlers
-  const handleImageClick = (image: GeneratedImage, index: number) => {
+  const handleImageClick = (image: any, index: number) => {
     setSelectedLibraryImage(image);
     setCurrentImageIndex(index);
     setIsLibraryModalOpen(true);
@@ -334,6 +397,7 @@ export default function ContentLibraryPage() {
       await api.delete(`/api/images/${imageToDelete}`);
       toast.success("Image deleted successfully");
       refetchImages();
+      refetchEditedImages();
       setIsLibraryModalOpen(false);
     } catch (err: any) {
       toast.error(err.response?.data?.detail || "Failed to delete image");
@@ -539,7 +603,7 @@ export default function ContentLibraryPage() {
                   : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
               }`}
             >
-              🖼️ Images ({allImages.length})
+              🖼️ Images ({allImages.length + allEditedImages.length})
             </button>
             <button
               onClick={() => setActiveLibraryTab("videos")}
@@ -566,7 +630,7 @@ export default function ContentLibraryPage() {
               >
                 <span>All Images</span>
                 <span className="text-xs px-2 py-0.5 bg-gray-200 dark:bg-gray-600 rounded-full">
-                  {allImages.length}
+                  {allImages.length + allEditedImages.length}
                 </span>
               </button>
               <button
@@ -579,7 +643,20 @@ export default function ContentLibraryPage() {
               >
                 <span>🖼️ Original</span>
                 <span className="text-xs px-2 py-0.5 bg-gray-200 dark:bg-gray-600 rounded-full">
-                  {allImages.filter((img) => img.metadata?.text_overlay !== true).length}
+                  {allImages.filter((img) => img.metadata?.text_overlay !== true && img.metadata?.is_edited !== true).length}
+                </span>
+              </button>
+              <button
+                onClick={() => setImageFilter("edited")}
+                className={`px-4 py-2 rounded-lg transition flex items-center gap-2 ${
+                  imageFilter === "edited"
+                    ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow"
+                    : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+                }`}
+              >
+                <span>🎨 Edited</span>
+                <span className="text-xs px-2 py-0.5 bg-gray-200 dark:bg-gray-600 rounded-full">
+                  {allEditedImages.length}
                 </span>
               </button>
               <button
@@ -894,13 +971,23 @@ export default function ContentLibraryPage() {
             /* Image Grid */
             <>
               {filteredImages.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {filteredImages.map((image, index) => (
-                    <div
-                      key={image.id}
-                      className="card rounded-lg overflow-hidden group cursor-pointer hover:shadow-lg transition-shadow"
-                      onClick={() => handleImageClick(image, index)}
+                <>
+                  <div className="mb-4 flex items-center justify-between">
+                    <p
+                      className="text-sm"
+                      style={{ color: "var(--text-secondary)" }}
                     >
+                      Showing {filteredImages.length} of {combinedImages.length}{" "}
+                      total images
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    {filteredImages.map((image, index) => (
+                      <div
+                        key={`${image.source}-${image.id}`}
+                        className="card rounded-lg overflow-hidden group cursor-pointer hover:shadow-lg transition-shadow"
+                        onClick={() => handleImageClick(image, index)}
+                      >
                       {/* Image */}
                       <div className="relative bg-gray-100 dark:bg-gray-800 aspect-square">
                         <img
@@ -915,7 +1002,13 @@ export default function ContentLibraryPage() {
                             console.log('Image metadata for ID', image.id, ':', image.metadata);
                           }
 
-                          if (image.metadata?.text_overlay) {
+                          if (image.metadata?.is_edited) {
+                            return (
+                              <div className="absolute top-3 right-3 bg-blue-600 to-blue-700 text-white px-2 py-1 rounded-full text-xs font-medium">
+                                EDITED ({image.metadata.operation_type})
+                              </div>
+                            );
+                          } else if (image.metadata?.text_overlay) {
                             return (
                               <div className="absolute top-3 right-3 bg-orange-600 to-orange-700 text-white px-2 py-1 rounded-full text-xs font-medium">
                                 OVERLAY
@@ -1012,23 +1105,26 @@ export default function ContentLibraryPage() {
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                             </svg>
                           </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteImage(image.id);
-                            }}
-                            className="flex-1 text-xs px-2 py-1 bg-gray-600 hover:bg-red-700 text-white rounded transition flex items-center justify-center gap-1"
-                            title="Delete"
-                          >
-                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
-                          </button>
+                          {image.source !== 'edited' && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteImage(image.id);
+                              }}
+                              className="flex-1 text-xs px-2 py-1 bg-gray-600 hover:bg-red-700 text-white rounded transition flex items-center justify-center gap-1"
+                              title="Delete"
+                            >
+                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            </button>
+                          )}
                         </div>
                       </div>
                     </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                </>
               ) : (
                 <div className="card rounded-lg p-12 text-center">
                   <svg
@@ -1372,7 +1468,13 @@ export default function ContentLibraryPage() {
                     console.log('Modal Image metadata for ID', selectedLibraryImage.id, ':', selectedLibraryImage.metadata);
                   }
 
-                  if (selectedLibraryImage.metadata?.text_overlay) {
+                  if (selectedLibraryImage.metadata?.is_edited) {
+                    return (
+                      <div className="absolute top-4 right-4 bg-blue-600 to-blue-700 text-white px-3 py-1 rounded-full text-sm font-medium">
+                        EDITED ({selectedLibraryImage.metadata.operation_type})
+                      </div>
+                    );
+                  } else if (selectedLibraryImage.metadata?.text_overlay) {
                     return (
                       <div className="absolute top-4 right-4 bg-orange-600 to-orange-700 text-white px-3 py-1 rounded-full text-sm font-medium">
                         OVERLAY
@@ -1488,6 +1590,10 @@ export default function ContentLibraryPage() {
                         campaignId: selectedLibraryImage.campaign_id.toString(),
                         imageId: selectedLibraryImage.id.toString()
                       });
+                      // For edited images, also pass the original image path
+                      if (selectedLibraryImage.metadata?.is_edited && selectedLibraryImage.metadata?.original_image_path) {
+                        params.set('originalImagePath', selectedLibraryImage.metadata.original_image_path);
+                      }
                       router.push(`/image-editor?${params.toString()}`);
                     }}
                     className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition font-medium flex items-center space-x-2"
@@ -1508,7 +1614,28 @@ export default function ContentLibraryPage() {
                     <span>AI Image Editor</span>
                   </button>
 
-                  {isSeedImage(selectedLibraryImage) ? (
+                  {selectedLibraryImage.source === 'edited' ? (
+                    <button
+                      disabled
+                      className="px-6 py-2 bg-gray-400 text-white rounded-lg cursor-not-allowed flex items-center space-x-2"
+                      title="Edited images cannot be deleted from this view"
+                    >
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L18.364 5.636M5.636 18.364l12.728-12.728"
+                        />
+                      </svg>
+                      <span>Cannot Delete</span>
+                    </button>
+                  ) : isSeedImage(selectedLibraryImage) ? (
                     <button
                       disabled
                       className="px-6 py-2 bg-gray-400 text-white rounded-lg cursor-not-allowed flex items-center space-x-2"
