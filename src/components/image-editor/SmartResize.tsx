@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState } from "react";
 
 interface SmartResizeProps {
   originalImage: string | null;
@@ -18,43 +18,187 @@ interface ResizePreset {
   icon: string;
 }
 
-type CropMode = 'cover' | 'contain' | 'fill';
-type FocusPoint = 'center' | 'top' | 'bottom' | 'left' | 'right';
+type CropMode = "cover" | "contain" | "fill";
+type FocusPoint = "center" | "top" | "bottom" | "left" | "right";
 
 const PRESETS: ResizePreset[] = [
   // Instagram
-  { id: 'ig-square', name: 'Square Post', platform: 'Instagram', width: 1080, height: 1080, description: '1:1 ratio', icon: '📷' },
-  { id: 'ig-portrait', name: 'Portrait Post', platform: 'Instagram', width: 1080, height: 1350, description: '4:5 ratio', icon: '📱' },
-  { id: 'ig-landscape', name: 'Landscape Post', platform: 'Instagram', width: 1080, height: 566, description: '1.91:1 ratio', icon: '🖼️' },
-  { id: 'ig-story', name: 'Story/Reels', platform: 'Instagram', width: 1080, height: 1920, description: '9:16 ratio', icon: '📲' },
-  
+  {
+    id: "ig-square",
+    name: "Square Post",
+    platform: "Instagram",
+    width: 1080,
+    height: 1080,
+    description: "1:1 ratio",
+    icon: "📷",
+  },
+  {
+    id: "ig-portrait",
+    name: "Portrait Post",
+    platform: "Instagram",
+    width: 1080,
+    height: 1350,
+    description: "4:5 ratio",
+    icon: "📱",
+  },
+  {
+    id: "ig-landscape",
+    name: "Landscape Post",
+    platform: "Instagram",
+    width: 1080,
+    height: 566,
+    description: "1.91:1 ratio",
+    icon: "🖼️",
+  },
+  {
+    id: "ig-story",
+    name: "Story/Reels",
+    platform: "Instagram",
+    width: 1080,
+    height: 1920,
+    description: "9:16 ratio",
+    icon: "📲",
+  },
+
   // Facebook
-  { id: 'fb-post', name: 'Post Image', platform: 'Facebook', width: 1200, height: 630, description: 'Link preview', icon: '👍' },
-  { id: 'fb-cover', name: 'Cover Photo', platform: 'Facebook', width: 820, height: 312, description: 'Profile cover', icon: '🎨' },
-  { id: 'fb-story', name: 'Story', platform: 'Facebook', width: 1080, height: 1920, description: '9:16 ratio', icon: '📖' },
-  
+  {
+    id: "fb-post",
+    name: "Post Image",
+    platform: "Facebook",
+    width: 1200,
+    height: 630,
+    description: "Link preview",
+    icon: "👍",
+  },
+  {
+    id: "fb-cover",
+    name: "Cover Photo",
+    platform: "Facebook",
+    width: 820,
+    height: 312,
+    description: "Profile cover",
+    icon: "🎨",
+  },
+  {
+    id: "fb-story",
+    name: "Story",
+    platform: "Facebook",
+    width: 1080,
+    height: 1920,
+    description: "9:16 ratio",
+    icon: "📖",
+  },
+
   // Twitter/X
-  { id: 'tw-post', name: 'Post Image', platform: 'Twitter', width: 1200, height: 675, description: '16:9 ratio', icon: '🐦' },
-  { id: 'tw-header', name: 'Header Photo', platform: 'Twitter', width: 1500, height: 500, description: '3:1 ratio', icon: '🎭' },
-  
+  {
+    id: "tw-post",
+    name: "Post Image",
+    platform: "Twitter",
+    width: 1200,
+    height: 675,
+    description: "16:9 ratio",
+    icon: "🐦",
+  },
+  {
+    id: "tw-header",
+    name: "Header Photo",
+    platform: "Twitter",
+    width: 1500,
+    height: 500,
+    description: "3:1 ratio",
+    icon: "🎭",
+  },
+
   // Pinterest
-  { id: 'pin-standard', name: 'Standard Pin', platform: 'Pinterest', width: 1000, height: 1500, description: '2:3 ratio', icon: '📌' },
-  { id: 'pin-long', name: 'Long Pin', platform: 'Pinterest', width: 1000, height: 2100, description: 'Tall format', icon: '📍' },
-  
+  {
+    id: "pin-standard",
+    name: "Standard Pin",
+    platform: "Pinterest",
+    width: 1000,
+    height: 1500,
+    description: "2:3 ratio",
+    icon: "📌",
+  },
+  {
+    id: "pin-long",
+    name: "Long Pin",
+    platform: "Pinterest",
+    width: 1000,
+    height: 2100,
+    description: "Tall format",
+    icon: "📍",
+  },
+
   // LinkedIn
-  { id: 'li-post', name: 'Post Image', platform: 'LinkedIn', width: 1200, height: 627, description: 'Link preview', icon: '💼' },
-  { id: 'li-banner', name: 'Banner', platform: 'LinkedIn', width: 1584, height: 396, description: 'Profile banner', icon: '🏢' },
-  
+  {
+    id: "li-post",
+    name: "Post Image",
+    platform: "LinkedIn",
+    width: 1200,
+    height: 627,
+    description: "Link preview",
+    icon: "💼",
+  },
+  {
+    id: "li-banner",
+    name: "Banner",
+    platform: "LinkedIn",
+    width: 1584,
+    height: 396,
+    description: "Profile banner",
+    icon: "🏢",
+  },
+
   // YouTube
-  { id: 'yt-thumbnail', name: 'Thumbnail', platform: 'YouTube', width: 1280, height: 720, description: '16:9 HD', icon: '▶️' },
-  { id: 'yt-banner', name: 'Channel Banner', platform: 'YouTube', width: 2560, height: 1440, description: 'Wide banner', icon: '🎬' },
-  
+  {
+    id: "yt-thumbnail",
+    name: "Thumbnail",
+    platform: "YouTube",
+    width: 1280,
+    height: 720,
+    description: "16:9 HD",
+    icon: "▶️",
+  },
+  {
+    id: "yt-banner",
+    name: "Channel Banner",
+    platform: "YouTube",
+    width: 2560,
+    height: 1440,
+    description: "Wide banner",
+    icon: "🎬",
+  },
+
   // TikTok
-  { id: 'tt-video', name: 'Video Cover', platform: 'TikTok', width: 1080, height: 1920, description: '9:16 ratio', icon: '🎵' },
-  
+  {
+    id: "tt-video",
+    name: "Video Cover",
+    platform: "TikTok",
+    width: 1080,
+    height: 1920,
+    description: "9:16 ratio",
+    icon: "🎵",
+  },
+
   // E-commerce
-  { id: 'ecom-square', name: 'Product Square', platform: 'E-commerce', width: 2000, height: 2000, description: 'High-res square', icon: '🛍️' },
-  { id: 'ecom-zoom', name: 'Product Detail', platform: 'E-commerce', width: 2500, height: 2500, description: 'Zoom detail', icon: '🔍' },
+  {
+    id: "ecom-square",
+    name: "Product Square",
+    platform: "E-commerce",
+    width: 2000,
+    height: 2000,
+    description: "High-res square",
+    icon: "🛍️",
+  },
+  {
+    id: "ecom-zoom",
+    name: "Product Detail",
+    platform: "E-commerce",
+    width: 2500,
+    height: 2500,
+    description: "Zoom detail",
+    icon: "🔍",
+  },
 ];
 
 export function SmartResize({
@@ -63,36 +207,56 @@ export function SmartResize({
   isProcessing,
 }: SmartResizeProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [selectedPreset, setSelectedPreset] = useState<ResizePreset | null>(null);
+  const [selectedPreset, setSelectedPreset] = useState<ResizePreset | null>(
+    null
+  );
   const [imageLoaded, setImageLoaded] = useState(false);
-  const [cropMode, setCropMode] = useState<CropMode>('cover');
-  const [focusPoint, setFocusPoint] = useState<FocusPoint>('center');
-  const [outputFormat, setOutputFormat] = useState<'png' | 'jpeg' | 'webp'>('png');
+  const [cropMode, setCropMode] = useState<CropMode>("cover");
+  const [focusPoint, setFocusPoint] = useState<FocusPoint>("center");
+  const [outputFormat, setOutputFormat] = useState<"png" | "jpeg" | "webp">(
+    "png"
+  );
   const [jpegQuality, setJpegQuality] = useState(90);
-  const [filterPlatform, setFilterPlatform] = useState<string>('All');
-  const [originalImageData, setOriginalImageData] = useState<HTMLImageElement | null>(null);
+  const [filterPlatform, setFilterPlatform] = useState<string>("All");
+  const [originalImageData, setOriginalImageData] =
+    useState<HTMLImageElement | null>(null);
 
   // Get unique platforms for filter
-  const platforms = ['All', ...Array.from(new Set(PRESETS.map(p => p.platform)))];
+  const platforms = [
+    "All",
+    ...Array.from(new Set(PRESETS.map((p) => p.platform))),
+  ];
 
   // Filter presets by platform
-  const filteredPresets = filterPlatform === 'All' 
-    ? PRESETS 
-    : PRESETS.filter(p => p.platform === filterPlatform);
+  const filteredPresets =
+    filterPlatform === "All"
+      ? PRESETS
+      : PRESETS.filter((p) => p.platform === filterPlatform);
 
   // Load original image
   useEffect(() => {
     if (!originalImage) return;
 
     const img = new Image();
-    img.crossOrigin = 'anonymous';
-    
+    // Use proxy endpoint to bypass CORS - need to use full URL with API base
+    const apiBaseUrl =
+      process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+    const proxyUrl = `${apiBaseUrl}/api/images/proxy?url=${encodeURIComponent(
+      originalImage
+    )}`;
+    img.crossOrigin = "anonymous";
+
     img.onload = () => {
       setOriginalImageData(img);
       setImageLoaded(true);
     };
 
-    img.src = originalImage;
+    img.onerror = () => {
+      console.error("Failed to load image");
+      setImageLoaded(false);
+    };
+
+    img.src = proxyUrl;
   }, [originalImage]);
 
   // Redraw when settings change
@@ -106,7 +270,7 @@ export function SmartResize({
     if (!canvasRef.current || !originalImageData || !selectedPreset) return;
 
     const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
     // Set canvas size to preset dimensions
@@ -114,7 +278,7 @@ export function SmartResize({
     canvas.height = selectedPreset.height;
 
     // Clear canvas
-    ctx.fillStyle = '#FFFFFF';
+    ctx.fillStyle = "#FFFFFF";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     const imgWidth = originalImageData.width;
@@ -124,7 +288,7 @@ export function SmartResize({
 
     let drawWidth, drawHeight, offsetX, offsetY;
 
-    if (cropMode === 'cover') {
+    if (cropMode === "cover") {
       // Cover - fill entire canvas, crop if needed
       if (imgRatio > canvasRatio) {
         // Image is wider
@@ -138,29 +302,28 @@ export function SmartResize({
 
       // Calculate offset based on focus point
       switch (focusPoint) {
-        case 'center':
+        case "center":
           offsetX = (canvas.width - drawWidth) / 2;
           offsetY = (canvas.height - drawHeight) / 2;
           break;
-        case 'top':
+        case "top":
           offsetX = (canvas.width - drawWidth) / 2;
           offsetY = 0;
           break;
-        case 'bottom':
+        case "bottom":
           offsetX = (canvas.width - drawWidth) / 2;
           offsetY = canvas.height - drawHeight;
           break;
-        case 'left':
+        case "left":
           offsetX = 0;
           offsetY = (canvas.height - drawHeight) / 2;
           break;
-        case 'right':
+        case "right":
           offsetX = canvas.width - drawWidth;
           offsetY = (canvas.height - drawHeight) / 2;
           break;
       }
-
-    } else if (cropMode === 'contain') {
+    } else if (cropMode === "contain") {
       // Contain - fit entire image, add padding if needed
       if (imgRatio > canvasRatio) {
         drawWidth = canvas.width;
@@ -172,7 +335,6 @@ export function SmartResize({
 
       offsetX = (canvas.width - drawWidth) / 2;
       offsetY = (canvas.height - drawHeight) / 2;
-
     } else {
       // Fill - stretch to exact dimensions
       drawWidth = canvas.width;
@@ -193,13 +355,13 @@ export function SmartResize({
     if (!canvasRef.current || !selectedPreset) return;
 
     let dataUrl: string;
-    
-    if (outputFormat === 'jpeg') {
-      dataUrl = canvasRef.current.toDataURL('image/jpeg', jpegQuality / 100);
-    } else if (outputFormat === 'webp') {
-      dataUrl = canvasRef.current.toDataURL('image/webp', jpegQuality / 100);
+
+    if (outputFormat === "jpeg") {
+      dataUrl = canvasRef.current.toDataURL("image/jpeg", jpegQuality / 100);
+    } else if (outputFormat === "webp") {
+      dataUrl = canvasRef.current.toDataURL("image/webp", jpegQuality / 100);
     } else {
-      dataUrl = canvasRef.current.toDataURL('image/png');
+      dataUrl = canvasRef.current.toDataURL("image/png");
     }
 
     onSave(dataUrl, `${selectedPreset.platform}-${selectedPreset.name}`);
@@ -210,19 +372,19 @@ export function SmartResize({
 
     let dataUrl: string;
     let extension: string;
-    
-    if (outputFormat === 'jpeg') {
-      dataUrl = canvasRef.current.toDataURL('image/jpeg', jpegQuality / 100);
-      extension = 'jpg';
-    } else if (outputFormat === 'webp') {
-      dataUrl = canvasRef.current.toDataURL('image/webp', jpegQuality / 100);
-      extension = 'webp';
+
+    if (outputFormat === "jpeg") {
+      dataUrl = canvasRef.current.toDataURL("image/jpeg", jpegQuality / 100);
+      extension = "jpg";
+    } else if (outputFormat === "webp") {
+      dataUrl = canvasRef.current.toDataURL("image/webp", jpegQuality / 100);
+      extension = "webp";
     } else {
-      dataUrl = canvasRef.current.toDataURL('image/png');
-      extension = 'png';
+      dataUrl = canvasRef.current.toDataURL("image/png");
+      extension = "png";
     }
 
-    const link = document.createElement('a');
+    const link = document.createElement("a");
     link.href = dataUrl;
     link.download = `${selectedPreset.id}-${Date.now()}.${extension}`;
     document.body.appendChild(link);
@@ -246,28 +408,32 @@ export function SmartResize({
 
         {/* Platform Filter */}
         <div className="mb-4">
-          <label className="block text-sm font-medium mb-2">Filter by Platform</label>
+          <label className="block text-sm font-medium mb-2">
+            Filter by Platform
+          </label>
           <select
             value={filterPlatform}
             onChange={(e) => setFilterPlatform(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
           >
-            {platforms.map(platform => (
-              <option key={platform} value={platform}>{platform}</option>
+            {platforms.map((platform) => (
+              <option key={platform} value={platform}>
+                {platform}
+              </option>
             ))}
           </select>
         </div>
 
         {/* Presets List */}
         <div className="space-y-2">
-          {filteredPresets.map(preset => (
+          {filteredPresets.map((preset) => (
             <button
               key={preset.id}
               onClick={() => handlePresetSelect(preset)}
               className={`w-full text-left px-3 py-3 rounded border-2 transition-all ${
                 selectedPreset?.id === preset.id
-                  ? 'border-blue-500 bg-blue-50'
-                  : 'border-gray-200 hover:border-gray-300 bg-white'
+                  ? "border-blue-500 bg-blue-50"
+                  : "border-gray-200 hover:border-gray-300 bg-white"
               }`}
             >
               <div className="flex items-start justify-between">
@@ -277,8 +443,12 @@ export function SmartResize({
                     <span className="font-semibold text-sm">{preset.name}</span>
                   </div>
                   <div className="text-xs text-gray-600">{preset.platform}</div>
-                  <div className="text-xs text-gray-500">{preset.width} × {preset.height}</div>
-                  <div className="text-xs text-gray-400">{preset.description}</div>
+                  <div className="text-xs text-gray-500">
+                    {preset.width} × {preset.height}
+                  </div>
+                  <div className="text-xs text-gray-400">
+                    {preset.description}
+                  </div>
                 </div>
               </div>
             </button>
@@ -290,7 +460,9 @@ export function SmartResize({
       <div className="flex-1 bg-white rounded-lg shadow-lg p-4">
         <div className="mb-4 flex items-center justify-between">
           <h3 className="font-semibold text-gray-900">
-            {selectedPreset ? `${selectedPreset.platform} - ${selectedPreset.name}` : 'Select a preset'}
+            {selectedPreset
+              ? `${selectedPreset.platform} - ${selectedPreset.name}`
+              : "Select a preset"}
           </h3>
           <div className="flex gap-2">
             <button
@@ -311,10 +483,11 @@ export function SmartResize({
         </div>
 
         {/* Canvas Preview */}
-        <div className="mb-4 flex items-center justify-center bg-gray-50 rounded-lg border-2 border-dashed border-gray-300 overflow-auto" style={{ minHeight: '400px', maxHeight: '700px' }}>
+        <div className="mb-4 flex justify-center border border-gray-300 rounded p-4 bg-gray-50">
           <canvas
             ref={canvasRef}
-            className="shadow-lg rounded"
+            className="max-w-full max-h-[500px] shadow-lg"
+            style={{ objectFit: "contain" }}
           />
         </div>
 
@@ -323,7 +496,9 @@ export function SmartResize({
           <div className="grid grid-cols-2 gap-4 mb-4">
             {/* Crop Mode */}
             <div>
-              <label className="block text-sm font-medium mb-2">Crop Mode</label>
+              <label className="block text-sm font-medium mb-2">
+                Crop Mode
+              </label>
               <select
                 value={cropMode}
                 onChange={(e) => setCropMode(e.target.value as CropMode)}
@@ -337,11 +512,13 @@ export function SmartResize({
 
             {/* Focus Point */}
             <div>
-              <label className="block text-sm font-medium mb-2">Focus Point</label>
+              <label className="block text-sm font-medium mb-2">
+                Focus Point
+              </label>
               <select
                 value={focusPoint}
                 onChange={(e) => setFocusPoint(e.target.value as FocusPoint)}
-                disabled={cropMode !== 'cover'}
+                disabled={cropMode !== "cover"}
                 className="w-full px-3 py-2 border border-gray-300 rounded text-sm disabled:opacity-50"
               >
                 <option value="center">Center</option>
@@ -367,7 +544,7 @@ export function SmartResize({
             </div>
 
             {/* Quality (for JPEG/WebP) */}
-            {(outputFormat === 'jpeg' || outputFormat === 'webp') && (
+            {(outputFormat === "jpeg" || outputFormat === "webp") && (
               <div>
                 <label className="block text-sm font-medium mb-2">
                   Quality: {jpegQuality}%
@@ -389,13 +566,28 @@ export function SmartResize({
         <div className="p-4 bg-blue-50 rounded text-sm">
           <p className="font-semibold text-blue-900 mb-2">💡 Quick Guide:</p>
           <ul className="text-blue-800 space-y-1 text-xs">
-            <li>• <strong>Cover:</strong> Fills entire canvas, may crop image</li>
-            <li>• <strong>Contain:</strong> Fits entire image, may add padding</li>
-            <li>• <strong>Fill:</strong> Stretches to exact size (may distort)</li>
-            <li>• <strong>Focus Point:</strong> Choose where to center when cropping</li>
-            <li>• <strong>PNG:</strong> Best for graphics with transparency</li>
-            <li>• <strong>JPEG:</strong> Best for photos, smaller file size</li>
-            <li>• <strong>WebP:</strong> Modern format, smaller than JPEG</li>
+            <li>
+              • <strong>Cover:</strong> Fills entire canvas, may crop image
+            </li>
+            <li>
+              • <strong>Contain:</strong> Fits entire image, may add padding
+            </li>
+            <li>
+              • <strong>Fill:</strong> Stretches to exact size (may distort)
+            </li>
+            <li>
+              • <strong>Focus Point:</strong> Choose where to center when
+              cropping
+            </li>
+            <li>
+              • <strong>PNG:</strong> Best for graphics with transparency
+            </li>
+            <li>
+              • <strong>JPEG:</strong> Best for photos, smaller file size
+            </li>
+            <li>
+              • <strong>WebP:</strong> Modern format, smaller than JPEG
+            </li>
           </ul>
         </div>
       </div>

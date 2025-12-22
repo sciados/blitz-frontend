@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState } from "react";
 
 interface OverlayEditorProps {
   originalImage: string | null;
@@ -53,12 +53,18 @@ export function OverlayEditor({
     if (!originalImage || !canvasRef.current) return;
 
     const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
     const img = new Image();
-    img.crossOrigin = 'anonymous';
-    
+    // Use proxy endpoint to bypass CORS - need to use full URL with API base
+    const apiBaseUrl =
+      process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+    const proxyUrl = `${apiBaseUrl}/api/images/proxy?url=${encodeURIComponent(
+      originalImage
+    )}`;
+    img.crossOrigin = "anonymous";
+
     img.onload = () => {
       canvas.width = img.width;
       canvas.height = img.height;
@@ -66,7 +72,12 @@ export function OverlayEditor({
       setImageLoaded(true);
     };
 
-    img.src = originalImage;
+    img.onerror = () => {
+      console.error("Failed to load image");
+      setImageLoaded(false);
+    };
+
+    img.src = proxyUrl;
   }, [originalImage]);
 
   // Redraw canvas whenever overlays change
@@ -80,26 +91,35 @@ export function OverlayEditor({
     if (!canvasRef.current || !originalImage) return;
 
     const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
     const img = new Image();
-    img.crossOrigin = 'anonymous';
-    
+    // Use proxy endpoint to bypass CORS
+    const apiBaseUrl =
+      process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+    const proxyUrl = `${apiBaseUrl}/api/images/proxy?url=${encodeURIComponent(
+      originalImage
+    )}`;
+    img.crossOrigin = "anonymous";
+
     img.onload = () => {
       // Clear canvas
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
+
       // Draw original image
       ctx.drawImage(img, 0, 0);
-      
+
       // Draw image overlays
-      imageOverlays.forEach(overlay => {
+      imageOverlays.forEach((overlay) => {
         ctx.save();
         ctx.globalAlpha = overlay.opacity;
-        ctx.translate(overlay.x + overlay.width / 2, overlay.y + overlay.height / 2);
+        ctx.translate(
+          overlay.x + overlay.width / 2,
+          overlay.y + overlay.height / 2
+        );
         ctx.rotate((overlay.rotation * Math.PI) / 180);
-        
+
         const overlayImg = new Image();
         overlayImg.src = overlay.imageData;
         ctx.drawImage(
@@ -109,25 +129,25 @@ export function OverlayEditor({
           overlay.width,
           overlay.height
         );
-        
+
         ctx.restore();
       });
-      
+
       // Draw text overlays
-      textOverlays.forEach(overlay => {
+      textOverlays.forEach((overlay) => {
         ctx.save();
         ctx.globalAlpha = overlay.opacity;
         ctx.translate(overlay.x, overlay.y);
         ctx.rotate((overlay.rotation * Math.PI) / 180);
-        
+
         // Set font
-        let fontStyle = '';
-        if (overlay.bold) fontStyle += 'bold ';
-        if (overlay.italic) fontStyle += 'italic ';
+        let fontStyle = "";
+        if (overlay.bold) fontStyle += "bold ";
+        if (overlay.italic) fontStyle += "italic ";
         ctx.font = `${fontStyle}${overlay.fontSize}px ${overlay.fontFamily}`;
-        
+
         // Background
-        if (overlay.backgroundColor !== 'transparent') {
+        if (overlay.backgroundColor !== "transparent") {
           const metrics = ctx.measureText(overlay.text);
           const padding = 10;
           ctx.fillStyle = overlay.backgroundColor;
@@ -138,42 +158,47 @@ export function OverlayEditor({
             overlay.fontSize + padding * 2
           );
         }
-        
+
         // Text
         ctx.fillStyle = overlay.color;
         ctx.fillText(overlay.text, 0, 0);
-        
+
         // Selection indicator
         if (selectedOverlay === overlay.id) {
-          ctx.strokeStyle = '#3B82F6';
+          ctx.strokeStyle = "#3B82F6";
           ctx.lineWidth = 2;
           const metrics = ctx.measureText(overlay.text);
-          ctx.strokeRect(-5, -overlay.fontSize - 5, metrics.width + 10, overlay.fontSize + 10);
+          ctx.strokeRect(
+            -5,
+            -overlay.fontSize - 5,
+            metrics.width + 10,
+            overlay.fontSize + 10
+          );
         }
-        
+
         ctx.restore();
       });
     };
 
-    img.src = originalImage;
+    img.src = proxyUrl;
   };
 
   const addTextOverlay = () => {
     const newOverlay: TextOverlay = {
       id: `text-${Date.now()}`,
-      text: 'Double-click to edit',
+      text: "Double-click to edit",
       x: 100,
       y: 100,
       fontSize: 48,
-      fontFamily: 'Arial',
-      color: '#FFFFFF',
-      backgroundColor: 'transparent',
+      fontFamily: "Arial",
+      color: "#FFFFFF",
+      backgroundColor: "transparent",
       bold: false,
       italic: false,
       rotation: 0,
       opacity: 1,
     };
-    
+
     setTextOverlays([...textOverlays, newOverlay]);
     setSelectedOverlay(newOverlay.id);
     setShowTextControls(true);
@@ -186,7 +211,7 @@ export function OverlayEditor({
     const reader = new FileReader();
     reader.onload = (event) => {
       const imageData = event.target?.result as string;
-      
+
       const newOverlay: ImageOverlay = {
         id: `image-${Date.now()}`,
         imageData,
@@ -197,36 +222,40 @@ export function OverlayEditor({
         rotation: 0,
         opacity: 1,
       };
-      
+
       setImageOverlays([...imageOverlays, newOverlay]);
       setSelectedOverlay(newOverlay.id);
       setShowImageControls(true);
     };
-    
+
     reader.readAsDataURL(file);
   };
 
   const updateTextOverlay = (id: string, updates: Partial<TextOverlay>) => {
-    setTextOverlays(textOverlays.map(overlay => 
-      overlay.id === id ? { ...overlay, ...updates } : overlay
-    ));
+    setTextOverlays(
+      textOverlays.map((overlay) =>
+        overlay.id === id ? { ...overlay, ...updates } : overlay
+      )
+    );
   };
 
   const updateImageOverlay = (id: string, updates: Partial<ImageOverlay>) => {
-    setImageOverlays(imageOverlays.map(overlay => 
-      overlay.id === id ? { ...overlay, ...updates } : overlay
-    ));
+    setImageOverlays(
+      imageOverlays.map((overlay) =>
+        overlay.id === id ? { ...overlay, ...updates } : overlay
+      )
+    );
   };
 
   const deleteOverlay = (id: string) => {
-    setTextOverlays(textOverlays.filter(o => o.id !== id));
-    setImageOverlays(imageOverlays.filter(o => o.id !== id));
+    setTextOverlays(textOverlays.filter((o) => o.id !== id));
+    setImageOverlays(imageOverlays.filter((o) => o.id !== id));
     setSelectedOverlay(null);
   };
 
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!canvasRef.current) return;
-    
+
     const canvas = canvasRef.current;
     const rect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / rect.width;
@@ -236,7 +265,7 @@ export function OverlayEditor({
 
     // Check if clicking on an overlay
     let found = false;
-    
+
     // Check text overlays
     for (const overlay of [...textOverlays].reverse()) {
       if (
@@ -253,7 +282,7 @@ export function OverlayEditor({
         break;
       }
     }
-    
+
     // Check image overlays
     if (!found) {
       for (const overlay of [...imageOverlays].reverse()) {
@@ -272,7 +301,7 @@ export function OverlayEditor({
         }
       }
     }
-    
+
     if (!found) {
       setSelectedOverlay(null);
       setShowTextControls(false);
@@ -291,17 +320,17 @@ export function OverlayEditor({
     const y = (e.clientY - rect.top) * scaleY;
 
     // Update text overlay position
-    const textOverlay = textOverlays.find(o => o.id === selectedOverlay);
+    const textOverlay = textOverlays.find((o) => o.id === selectedOverlay);
     if (textOverlay) {
       updateTextOverlay(selectedOverlay, { x, y });
     }
 
     // Update image overlay position
-    const imageOverlay = imageOverlays.find(o => o.id === selectedOverlay);
+    const imageOverlay = imageOverlays.find((o) => o.id === selectedOverlay);
     if (imageOverlay) {
-      updateImageOverlay(selectedOverlay, { 
-        x: x - imageOverlay.width / 2, 
-        y: y - imageOverlay.height / 2 
+      updateImageOverlay(selectedOverlay, {
+        x: x - imageOverlay.width / 2,
+        y: y - imageOverlay.height / 2,
       });
     }
   };
@@ -312,16 +341,16 @@ export function OverlayEditor({
 
   const handleSave = () => {
     if (!canvasRef.current) return;
-    const dataUrl = canvasRef.current.toDataURL('image/png');
+    const dataUrl = canvasRef.current.toDataURL("image/png");
     onSave(dataUrl);
   };
 
   const getSelectedTextOverlay = () => {
-    return textOverlays.find(o => o.id === selectedOverlay);
+    return textOverlays.find((o) => o.id === selectedOverlay);
   };
 
   const getSelectedImageOverlay = () => {
-    return imageOverlays.find(o => o.id === selectedOverlay);
+    return imageOverlays.find((o) => o.id === selectedOverlay);
   };
 
   if (!originalImage) {
@@ -369,16 +398,14 @@ export function OverlayEditor({
           </div>
         </div>
 
-        <div className="flex items-center justify-center bg-gray-50 rounded-lg border-2 border-dashed border-gray-300 overflow-auto" style={{ minHeight: '400px', maxHeight: '700px' }}>
-          <canvas
-            ref={canvasRef}
-            onMouseDown={handleMouseDown}
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseUp}
-            className="shadow-lg rounded cursor-move"
-          />
-        </div>
+        <canvas
+          ref={canvasRef}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
+          className="border border-gray-300 rounded cursor-move max-w-full h-auto"
+        />
 
         <div className="mt-4 p-3 bg-blue-50 rounded text-sm text-blue-800">
           <p className="font-semibold mb-1">💡 Tips:</p>
@@ -396,7 +423,8 @@ export function OverlayEditor({
 
         {!selectedOverlay && (
           <p className="text-sm text-gray-600">
-            Click "Add Text" or "Add Image" to start, or select an existing overlay to edit it.
+            Click "Add Text" or "Add Image" to start, or select an existing
+            overlay to edit it.
           </p>
         )}
 
@@ -417,29 +445,43 @@ export function OverlayEditor({
               <label className="block text-sm font-medium mb-1">Text</label>
               <textarea
                 value={selectedText.text}
-                onChange={(e) => updateTextOverlay(selectedText.id, { text: e.target.value })}
+                onChange={(e) =>
+                  updateTextOverlay(selectedText.id, { text: e.target.value })
+                }
                 rows={3}
                 className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">Font Size: {selectedText.fontSize}px</label>
+              <label className="block text-sm font-medium mb-1">
+                Font Size: {selectedText.fontSize}px
+              </label>
               <input
                 type="range"
                 min="12"
                 max="200"
                 value={selectedText.fontSize}
-                onChange={(e) => updateTextOverlay(selectedText.id, { fontSize: Number(e.target.value) })}
+                onChange={(e) =>
+                  updateTextOverlay(selectedText.id, {
+                    fontSize: Number(e.target.value),
+                  })
+                }
                 className="w-full"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">Font Family</label>
+              <label className="block text-sm font-medium mb-1">
+                Font Family
+              </label>
               <select
                 value={selectedText.fontFamily}
-                onChange={(e) => updateTextOverlay(selectedText.id, { fontFamily: e.target.value })}
+                onChange={(e) =>
+                  updateTextOverlay(selectedText.id, {
+                    fontFamily: e.target.value,
+                  })
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
               >
                 <option value="Arial">Arial</option>
@@ -454,20 +496,36 @@ export function OverlayEditor({
 
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="block text-sm font-medium mb-1">Text Color</label>
+                <label className="block text-sm font-medium mb-1">
+                  Text Color
+                </label>
                 <input
                   type="color"
                   value={selectedText.color}
-                  onChange={(e) => updateTextOverlay(selectedText.id, { color: e.target.value })}
+                  onChange={(e) =>
+                    updateTextOverlay(selectedText.id, {
+                      color: e.target.value,
+                    })
+                  }
                   className="w-full h-10 rounded"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Background</label>
+                <label className="block text-sm font-medium mb-1">
+                  Background
+                </label>
                 <input
                   type="color"
-                  value={selectedText.backgroundColor === 'transparent' ? '#000000' : selectedText.backgroundColor}
-                  onChange={(e) => updateTextOverlay(selectedText.id, { backgroundColor: e.target.value })}
+                  value={
+                    selectedText.backgroundColor === "transparent"
+                      ? "#000000"
+                      : selectedText.backgroundColor
+                  }
+                  onChange={(e) =>
+                    updateTextOverlay(selectedText.id, {
+                      backgroundColor: e.target.value,
+                    })
+                  }
                   className="w-full h-10 rounded"
                 />
               </div>
@@ -475,7 +533,11 @@ export function OverlayEditor({
 
             <div className="flex gap-2">
               <button
-                onClick={() => updateTextOverlay(selectedText.id, { backgroundColor: 'transparent' })}
+                onClick={() =>
+                  updateTextOverlay(selectedText.id, {
+                    backgroundColor: "transparent",
+                  })
+                }
                 className="flex-1 px-2 py-1 text-xs bg-gray-200 rounded hover:bg-gray-300"
               >
                 No Background
@@ -487,7 +549,11 @@ export function OverlayEditor({
                 <input
                   type="checkbox"
                   checked={selectedText.bold}
-                  onChange={(e) => updateTextOverlay(selectedText.id, { bold: e.target.checked })}
+                  onChange={(e) =>
+                    updateTextOverlay(selectedText.id, {
+                      bold: e.target.checked,
+                    })
+                  }
                   className="mr-2"
                 />
                 Bold
@@ -496,7 +562,11 @@ export function OverlayEditor({
                 <input
                   type="checkbox"
                   checked={selectedText.italic}
-                  onChange={(e) => updateTextOverlay(selectedText.id, { italic: e.target.checked })}
+                  onChange={(e) =>
+                    updateTextOverlay(selectedText.id, {
+                      italic: e.target.checked,
+                    })
+                  }
                   className="mr-2"
                 />
                 Italic
@@ -504,26 +574,38 @@ export function OverlayEditor({
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">Rotation: {selectedText.rotation}°</label>
+              <label className="block text-sm font-medium mb-1">
+                Rotation: {selectedText.rotation}°
+              </label>
               <input
                 type="range"
                 min="0"
                 max="360"
                 value={selectedText.rotation}
-                onChange={(e) => updateTextOverlay(selectedText.id, { rotation: Number(e.target.value) })}
+                onChange={(e) =>
+                  updateTextOverlay(selectedText.id, {
+                    rotation: Number(e.target.value),
+                  })
+                }
                 className="w-full"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">Opacity: {Math.round(selectedText.opacity * 100)}%</label>
+              <label className="block text-sm font-medium mb-1">
+                Opacity: {Math.round(selectedText.opacity * 100)}%
+              </label>
               <input
                 type="range"
                 min="0"
                 max="1"
                 step="0.1"
                 value={selectedText.opacity}
-                onChange={(e) => updateTextOverlay(selectedText.id, { opacity: Number(e.target.value) })}
+                onChange={(e) =>
+                  updateTextOverlay(selectedText.id, {
+                    opacity: Number(e.target.value),
+                  })
+                }
                 className="w-full"
               />
             </div>
@@ -544,50 +626,74 @@ export function OverlayEditor({
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">Width: {selectedImage.width}px</label>
+              <label className="block text-sm font-medium mb-1">
+                Width: {selectedImage.width}px
+              </label>
               <input
                 type="range"
                 min="50"
                 max="1000"
                 value={selectedImage.width}
-                onChange={(e) => updateImageOverlay(selectedImage.id, { width: Number(e.target.value) })}
+                onChange={(e) =>
+                  updateImageOverlay(selectedImage.id, {
+                    width: Number(e.target.value),
+                  })
+                }
                 className="w-full"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">Height: {selectedImage.height}px</label>
+              <label className="block text-sm font-medium mb-1">
+                Height: {selectedImage.height}px
+              </label>
               <input
                 type="range"
                 min="50"
                 max="1000"
                 value={selectedImage.height}
-                onChange={(e) => updateImageOverlay(selectedImage.id, { height: Number(e.target.value) })}
+                onChange={(e) =>
+                  updateImageOverlay(selectedImage.id, {
+                    height: Number(e.target.value),
+                  })
+                }
                 className="w-full"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">Rotation: {selectedImage.rotation}°</label>
+              <label className="block text-sm font-medium mb-1">
+                Rotation: {selectedImage.rotation}°
+              </label>
               <input
                 type="range"
                 min="0"
                 max="360"
                 value={selectedImage.rotation}
-                onChange={(e) => updateImageOverlay(selectedImage.id, { rotation: Number(e.target.value) })}
+                onChange={(e) =>
+                  updateImageOverlay(selectedImage.id, {
+                    rotation: Number(e.target.value),
+                  })
+                }
                 className="w-full"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">Opacity: {Math.round(selectedImage.opacity * 100)}%</label>
+              <label className="block text-sm font-medium mb-1">
+                Opacity: {Math.round(selectedImage.opacity * 100)}%
+              </label>
               <input
                 type="range"
                 min="0"
                 max="1"
                 step="0.1"
                 value={selectedImage.opacity}
-                onChange={(e) => updateImageOverlay(selectedImage.id, { opacity: Number(e.target.value) })}
+                onChange={(e) =>
+                  updateImageOverlay(selectedImage.id, {
+                    opacity: Number(e.target.value),
+                  })
+                }
                 className="w-full"
               />
             </div>
@@ -599,7 +705,7 @@ export function OverlayEditor({
           <div className="mt-6 pt-4 border-t border-gray-200">
             <h5 className="font-semibold text-sm mb-2">All Overlays</h5>
             <div className="space-y-2">
-              {textOverlays.map(overlay => (
+              {textOverlays.map((overlay) => (
                 <button
                   key={overlay.id}
                   onClick={() => {
@@ -609,14 +715,14 @@ export function OverlayEditor({
                   }}
                   className={`w-full text-left px-3 py-2 rounded text-sm ${
                     selectedOverlay === overlay.id
-                      ? 'bg-blue-100 border-2 border-blue-500'
-                      : 'bg-gray-50 border border-gray-200 hover:bg-gray-100'
+                      ? "bg-blue-100 border-2 border-blue-500"
+                      : "bg-gray-50 border border-gray-200 hover:bg-gray-100"
                   }`}
                 >
                   📝 {overlay.text.substring(0, 20)}...
                 </button>
               ))}
-              {imageOverlays.map(overlay => (
+              {imageOverlays.map((overlay) => (
                 <button
                   key={overlay.id}
                   onClick={() => {
@@ -626,8 +732,8 @@ export function OverlayEditor({
                   }}
                   className={`w-full text-left px-3 py-2 rounded text-sm ${
                     selectedOverlay === overlay.id
-                      ? 'bg-blue-100 border-2 border-blue-500'
-                      : 'bg-gray-50 border border-gray-200 hover:bg-gray-100'
+                      ? "bg-blue-100 border-2 border-blue-500"
+                      : "bg-gray-50 border border-gray-200 hover:bg-gray-100"
                   }`}
                 >
                   🖼️ Image Overlay
