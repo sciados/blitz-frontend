@@ -347,9 +347,85 @@ export function ImageEditorCanvas({
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
 
-      // Check if clicking on an overlay
-      // TODO: Implement hit testing for overlays
-      setSelectedOverlay(null);
+      // Implement hit testing for overlays
+      let found = false;
+
+      // Check text overlays (check in reverse order for proper z-index)
+      for (let i = textOverlays.length - 1; i >= 0; i--) {
+        const overlay = textOverlays[i];
+        const ctx = canvas.getContext('2d');
+        if (!ctx) continue;
+
+        // Set font to measure text
+        let fontStyle = '';
+        if (overlay.bold) fontStyle += 'bold ';
+        if (overlay.italic) fontStyle += 'italic ';
+        ctx.font = `${fontStyle}${overlay.fontSize}px ${overlay.fontFamily}`;
+
+        const metrics = ctx.measureText(overlay.text);
+        const textWidth = metrics.width;
+        const textHeight = overlay.fontSize;
+
+        // Apply rotation transform to check bounds
+        const angle = (overlay.rotation * Math.PI) / 180;
+        const cos = Math.cos(angle);
+        const sin = Math.sin(angle);
+
+        // Transform click point to overlay's local coordinate system
+        const localX = x - overlay.x;
+        const localY = y - overlay.y;
+        const rotatedX = localX * cos + localY * sin;
+        const rotatedY = -localX * sin + localY * cos;
+
+        // Check if click is within the rotated text bounds
+        if (
+          rotatedX >= -10 &&
+          rotatedX <= textWidth + 10 &&
+          rotatedY >= -textHeight - 10 &&
+          rotatedY <= 10
+        ) {
+          setSelectedOverlay(overlay.id);
+          setIsDraggingOverlay(true);
+          found = true;
+          break;
+        }
+      }
+
+      // Check image overlays if no text overlay was found
+      if (!found) {
+        for (let i = imageOverlays.length - 1; i >= 0; i--) {
+          const overlay = imageOverlays[i];
+
+          // Apply rotation transform
+          const angle = (overlay.rotation * Math.PI) / 180;
+          const cos = Math.cos(angle);
+          const sin = Math.sin(angle);
+
+          // Transform click point to overlay's local coordinate system
+          const localX = x - overlay.x;
+          const localY = y - overlay.y;
+          const rotatedX = localX * cos + localY * sin;
+          const rotatedY = -localX * sin + localY * cos;
+
+          // Check if click is within the rotated image bounds
+          if (
+            rotatedX >= -overlay.width / 2 - 10 &&
+            rotatedX <= overlay.width / 2 + 10 &&
+            rotatedY >= -overlay.height / 2 - 10 &&
+            rotatedY <= overlay.height / 2 + 10
+          ) {
+            setSelectedOverlay(overlay.id);
+            setIsDraggingOverlay(true);
+            found = true;
+            break;
+          }
+        }
+      }
+
+      // If no overlay was found, deselect
+      if (!found) {
+        setSelectedOverlay(null);
+      }
     } else if (needsMask) {
       startDrawing(e);
     }
@@ -364,21 +440,30 @@ export function ImageEditorCanvas({
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
 
-      // Move the selected overlay
-      setTextOverlays(
-        textOverlays.map((overlay) =>
-          overlay.id === selectedOverlay
-            ? { ...overlay, x, y }
-            : overlay
-        )
-      );
-      setImageOverlays(
-        imageOverlays.map((overlay) =>
-          overlay.id === selectedOverlay
-            ? { ...overlay, x, y }
-            : overlay
-        )
-      );
+      // Update text overlay position
+      const textOverlay = textOverlays.find(o => o.id === selectedOverlay);
+      if (textOverlay) {
+        setTextOverlays(
+          textOverlays.map((overlay) =>
+            overlay.id === selectedOverlay
+              ? { ...overlay, x, y }
+              : overlay
+          )
+        );
+        return;
+      }
+
+      // Update image overlay position (x, y are center points)
+      const imageOverlay = imageOverlays.find(o => o.id === selectedOverlay);
+      if (imageOverlay) {
+        setImageOverlays(
+          imageOverlays.map((overlay) =>
+            overlay.id === selectedOverlay
+              ? { ...overlay, x, y }
+              : overlay
+          )
+        );
+      }
     } else if (needsMask) {
       draw(e);
     }
