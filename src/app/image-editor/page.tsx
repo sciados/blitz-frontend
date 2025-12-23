@@ -220,16 +220,29 @@ export default function ImageEditorPage() {
     setSearchPrompt("");
   };
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     const imageToDownload = editedImage || originalImage;
     if (!imageToDownload) return;
 
-    const link = document.createElement("a");
-    link.href = imageToDownload;
-    link.download = `edited-${selectedEditTool}-${Date.now()}.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    try {
+      // Fetch the image as a blob (same approach as Content Library)
+      const response = await fetch(imageToDownload);
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `edited-${selectedEditTool}-${Date.now()}.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+
+      // Clean up the blob URL
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Download failed:", error);
+      alert("Failed to download image");
+    }
   };
 
   if (loading) {
