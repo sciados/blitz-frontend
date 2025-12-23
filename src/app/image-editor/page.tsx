@@ -216,9 +216,9 @@ export default function ImageEditorPage() {
         body: JSON.stringify({
           campaign_id: parseInt(campaignId),
           image_url: overlayImageDataUrl,
-          image_type: "overlay",
-          style: "custom",
-          aspect_ratio: "original",
+          image_type: "variation",
+          style: "modern",
+          aspect_ratio: "1:1",
           provider: "canvas",
           model: "overlay-editor",
           prompt: "Overlay edited image",
