@@ -60,7 +60,7 @@ function OverlayToolControls({ isProcessing }: OverlayToolControlsProps) {
   const addTextOverlay = () => {
     const canvasAPI = (window as any).imageEditorCanvas;
     if (canvasAPI) {
-      canvasAPI.addTextOverlay("Double-click to edit");
+      canvasAPI.addTextOverlay("Sample Text");
     }
   };
 

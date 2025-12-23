@@ -64,6 +64,8 @@ export function ImageEditorCanvas({
   const [imageOverlays, setImageOverlays] = useState<ImageOverlay[]>([]);
   const [selectedOverlay, setSelectedOverlay] = useState<string | null>(null);
   const [isDraggingOverlay, setIsDraggingOverlay] = useState(false);
+  const [editingTextId, setEditingTextId] = useState<string | null>(null);
+  const [editingTextValue, setEditingTextValue] = useState("");
 
   const needsMask = ["inpaint", "erase"].includes(selectedEditTool);
 
@@ -477,6 +479,92 @@ export function ImageEditorCanvas({
     }
   };
 
+  const handleCanvasDoubleClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (selectedEditTool !== "overlay") return;
+    if (!canvasRef.current) return;
+
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    // Check if double-clicking on a text overlay
+    for (let i = textOverlays.length - 1; i >= 0; i--) {
+      const overlay = textOverlays[i];
+      const ctx = canvas.getContext('2d');
+      if (!ctx) continue;
+
+      // Set font to measure text
+      let fontStyle = '';
+      if (overlay.bold) fontStyle += 'bold ';
+      if (overlay.italic) fontStyle += 'italic ';
+      ctx.font = `${fontStyle}${overlay.fontSize}px ${overlay.fontFamily}`;
+
+      const metrics = ctx.measureText(overlay.text);
+      const textWidth = metrics.width;
+      const textHeight = overlay.fontSize;
+
+      // Apply rotation transform to check bounds
+      const angle = (overlay.rotation * Math.PI) / 180;
+      const cos = Math.cos(angle);
+      const sin = Math.sin(angle);
+
+      // Transform click point to overlay's local coordinate system
+      const localX = x - overlay.x;
+      const localY = y - overlay.y;
+      const rotatedX = localX * cos + localY * sin;
+      const rotatedY = -localX * sin + localY * cos;
+
+      // Check if double-click is within the rotated text bounds
+      if (
+        rotatedX >= -10 &&
+        rotatedX <= textWidth + 10 &&
+        rotatedY >= -textHeight - 10 &&
+        rotatedY <= 10
+      ) {
+        // Start inline editing
+        setEditingTextId(overlay.id);
+        setEditingTextValue(overlay.text);
+        setSelectedOverlay(overlay.id);
+        break;
+      }
+    }
+  };
+
+  const handleEditingTextKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      // Save the text
+      setTextOverlays(
+        textOverlays.map(overlay =>
+          overlay.id === editingTextId
+            ? { ...overlay, text: editingTextValue }
+            : overlay
+        )
+      );
+      setEditingTextId(null);
+      setEditingTextValue("");
+    } else if (e.key === 'Escape') {
+      // Cancel editing
+      setEditingTextId(null);
+      setEditingTextValue("");
+    }
+  };
+
+  const handleEditingTextBlur = () => {
+    // Save on blur
+    if (editingTextId) {
+      setTextOverlays(
+        textOverlays.map(overlay =>
+          overlay.id === editingTextId
+            ? { ...overlay, text: editingTextValue }
+            : overlay
+        )
+      );
+    }
+    setEditingTextId(null);
+    setEditingTextValue("");
+  };
+
   const handleSaveOverlays = () => {
     if (canvasRef.current) {
       const dataUrl = canvasRef.current.toDataURL("image/png");
@@ -576,10 +664,58 @@ export function ImageEditorCanvas({
             onMouseMove={handleCanvasMouseMove}
             onMouseUp={handleCanvasMouseUp}
             onMouseLeave={handleCanvasMouseUp}
+            onDoubleClick={handleCanvasDoubleClick}
             className={`shadow-lg rounded ${
               selectedEditTool === "overlay" ? "cursor-move" : "cursor-crosshair"
             }`}
           />
+
+          {/* Inline Text Editor */}
+          {editingTextId && selectedEditTool === "overlay" && (
+            (() => {
+              const overlay = textOverlays.find(o => o.id === editingTextId);
+              if (!overlay) return null;
+
+              const canvas = canvasRef.current;
+              if (!canvas) return null;
+
+              const canvasRect = canvas.getBoundingClientRect();
+              const containerRect = containerRef.current?.getBoundingClientRect();
+              if (!containerRect) return null;
+
+              // Calculate position relative to container
+              const left = canvasRect.left - containerRect.left + overlay.x - 5;
+              const top = canvasRect.top - containerRect.top + overlay.y - overlay.fontSize - 5;
+
+              return (
+                <input
+                  type="text"
+                  value={editingTextValue}
+                  onChange={(e) => setEditingTextValue(e.target.value)}
+                  onKeyDown={handleEditingTextKeyDown}
+                  onBlur={handleEditingTextBlur}
+                  autoFocus
+                  style={{
+                    position: 'absolute',
+                    left: `${left}px`,
+                    top: `${top}px`,
+                    fontSize: `${overlay.fontSize}px`,
+                    fontFamily: overlay.fontFamily,
+                    fontWeight: overlay.bold ? 'bold' : 'normal',
+                    fontStyle: overlay.italic ? 'italic' : 'normal',
+                    color: overlay.color,
+                    backgroundColor: overlay.backgroundColor === 'transparent' ? 'rgba(255,255,255,0.9)' : overlay.backgroundColor,
+                    border: '2px solid #3B82F6',
+                    borderRadius: '4px',
+                    padding: '4px 8px',
+                    zIndex: 1000,
+                    outline: 'none',
+                    minWidth: '100px',
+                  }}
+                />
+              );
+            })()
+          )}
 
           {needsMask && (
             <canvas
