@@ -119,34 +119,6 @@ export function OverlayEditor({
 
       // Draw original image
       ctx.drawImage(img, 0, 0);
-    };
-
-    img.src = imageSrc;
-  };
-
-  const redrawCanvas = () => {
-    if (!canvasRef.current || !originalImage) return;
-
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-
-    // If the image URL is a proxy path (starts with /api/), construct the full URL
-    let imageSrc = originalImage;
-    if (originalImage.startsWith('/api/')) {
-      const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://blitzed.up.railway.app';
-      imageSrc = `${apiBaseUrl}${originalImage}`;
-    }
-
-    img.onload = () => {
-      // Clear canvas
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      // Draw original image
-      ctx.drawImage(img, 0, 0);
       
       // Draw image overlays
       imageOverlays.forEach(overlay => {
