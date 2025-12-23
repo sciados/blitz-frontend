@@ -582,11 +582,12 @@ export function ImageEditorCanvas({
       handleSaveOverlays,
       textOverlays,
       imageOverlays,
+      selectedOverlay,
       setTextOverlays,
       setImageOverlays,
       setSelectedOverlay,
     };
-  });
+  }, [textOverlays, imageOverlays, selectedOverlay]);
 
   if (!originalImage) {
     return (
