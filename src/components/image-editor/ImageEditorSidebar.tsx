@@ -397,6 +397,60 @@ export function ImageEditorSidebar({
             </div>
           </div>
         )}
+
+        {/* Overlay Settings */}
+        {selectedEditTool === "overlay" && (
+          <div className="space-y-4">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <h5 className="font-semibold text-sm text-blue-900 mb-2">
+                📝 Text & Image Overlays
+              </h5>
+              <p className="text-xs text-blue-800 mb-3">
+                Add text and image overlays to your image. No AI cost!
+              </p>
+
+              {/* Add Text Button */}
+              <button
+                onClick={() => {
+                  const canvasAPI = (window as any).imageEditorCanvas;
+                  if (canvasAPI) {
+                    canvasAPI.addTextOverlay("Sample Text");
+                  }
+                }}
+                disabled={isProcessing}
+                className="w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 text-sm font-medium mb-2"
+              >
+                ➕ Add Text
+              </button>
+
+              {/* Add Image Input */}
+              <label className="w-full px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 text-sm font-medium cursor-pointer flex items-center justify-center gap-2">
+                🖼️ Add Image
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const canvasAPI = (window as any).imageEditorCanvas;
+                      if (canvasAPI) {
+                        canvasAPI.addImageOverlay(file);
+                      }
+                    }
+                  }}
+                  disabled={isProcessing}
+                  className="hidden"
+                />
+              </label>
+            </div>
+
+            <div className="text-xs text-gray-600 space-y-1">
+              <p>• Click and drag overlays to move them</p>
+              <p>• Use the Generate button to save</p>
+              <p>• Perfect for watermarks & branding</p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

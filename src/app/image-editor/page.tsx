@@ -6,7 +6,6 @@ import { ImageEditorCanvas } from "src/components/image-editor/ImageEditorCanvas
 import { ImageEditorToolbar } from "src/components/image-editor/ImageEditorToolbar";
 import { ImageEditorSidebar } from "src/components/image-editor/ImageEditorSidebar";
 import { ToolSelector } from "src/components/image-editor/ToolSelector";
-import { OverlayEditor } from "src/components/image-editor/OverlayEditor";
 import { SmartResize } from "src/components/image-editor/SmartResize";
 
 export type EditTool =
@@ -332,6 +331,7 @@ export default function ImageEditorPage() {
                 selectedDrawTool={selectedDrawTool}
                 brushSize={brushSize}
                 onEdit={handleEdit}
+                onSaveOverlays={handleOverlaySave}
                 isProcessing={isProcessing}
               />
             </div>

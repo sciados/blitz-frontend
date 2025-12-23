@@ -10,7 +10,34 @@ interface ImageEditorCanvasProps {
   selectedDrawTool: "brush" | "eraser";
   brushSize: number;
   onEdit: (maskDataUrl?: string) => void;
+  onSaveOverlays?: (canvasDataUrl: string) => void;
   isProcessing: boolean;
+}
+
+interface TextOverlay {
+  id: string;
+  text: string;
+  x: number;
+  y: number;
+  fontSize: number;
+  fontFamily: string;
+  color: string;
+  backgroundColor: string;
+  bold: boolean;
+  italic: boolean;
+  rotation: number;
+  opacity: number;
+}
+
+interface ImageOverlay {
+  id: string;
+  imageData: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  rotation: number;
+  opacity: number;
 }
 
 export function ImageEditorCanvas({
@@ -20,6 +47,7 @@ export function ImageEditorCanvas({
   selectedDrawTool,
   brushSize,
   onEdit,
+  onSaveOverlays,
   isProcessing,
 }: ImageEditorCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -30,6 +58,12 @@ export function ImageEditorCanvas({
   const [showMask, setShowMask] = useState(true);
   const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
   const [displayScale, setDisplayScale] = useState(1);
+
+  // Overlay state
+  const [textOverlays, setTextOverlays] = useState<TextOverlay[]>([]);
+  const [imageOverlays, setImageOverlays] = useState<ImageOverlay[]>([]);
+  const [selectedOverlay, setSelectedOverlay] = useState<string | null>(null);
+  const [isDraggingOverlay, setIsDraggingOverlay] = useState(false);
 
   const needsMask = ["inpaint", "erase"].includes(selectedEditTool);
 
@@ -107,6 +141,105 @@ export function ImageEditorCanvas({
     img.src = proxyUrl;
   }, [originalImage]);
 
+  // Draw overlays when they change
+  useEffect(() => {
+    if (!canvasRef.current || !imageLoaded) return;
+
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    // Redraw the base image first
+    const img = new Image();
+    const apiBaseUrl =
+      process.env.NEXT_PUBLIC_API_BASE_URL || "https://blitzed.up.railway.app";
+    const proxyUrl = `${apiBaseUrl}/api/images/proxy?url=${encodeURIComponent(
+      originalImage || ""
+    )}`;
+    img.crossOrigin = "anonymous";
+
+    img.onload = () => {
+      // Clear canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Draw base image
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+      // Draw text overlays
+      textOverlays.forEach((overlay) => {
+        ctx.save();
+        ctx.globalAlpha = overlay.opacity;
+
+        // Apply transformations
+        ctx.translate(overlay.x, overlay.y);
+        ctx.rotate((overlay.rotation * Math.PI) / 180);
+
+        // Set font style
+        let fontStyle = "";
+        if (overlay.italic) fontStyle += "italic ";
+        if (overlay.bold) fontStyle += "bold ";
+        fontStyle += `${overlay.fontSize}px ${overlay.fontFamily}`;
+        ctx.font = fontStyle;
+        ctx.fillStyle = overlay.color;
+
+        // Draw text
+        ctx.fillText(overlay.text, 0, 0);
+
+        // Draw selection box if selected
+        if (selectedOverlay === overlay.id) {
+          const metrics = ctx.measureText(overlay.text);
+          const textWidth = metrics.width;
+          const textHeight = overlay.fontSize;
+
+          ctx.strokeStyle = "blue";
+          ctx.lineWidth = 2;
+          ctx.strokeRect(-5, -textHeight, textWidth + 10, textHeight + 10);
+        }
+
+        ctx.restore();
+      });
+
+      // Draw image overlays
+      imageOverlays.forEach((overlay) => {
+        const overlayImg = new Image();
+        overlayImg.onload = () => {
+          ctx.save();
+          ctx.globalAlpha = overlay.opacity;
+
+          // Apply transformations
+          ctx.translate(overlay.x, overlay.y);
+          ctx.rotate((overlay.rotation * Math.PI) / 180);
+
+          // Draw image
+          ctx.drawImage(
+            overlayImg,
+            0,
+            0,
+            overlay.width,
+            overlay.height
+          );
+
+          // Draw selection box if selected
+          if (selectedOverlay === overlay.id) {
+            ctx.strokeStyle = "blue";
+            ctx.lineWidth = 2;
+            ctx.strokeRect(
+              -5,
+              -5,
+              overlay.width + 10,
+              overlay.height + 10
+            );
+          }
+
+          ctx.restore();
+        };
+        overlayImg.src = overlay.imageData;
+      });
+    };
+
+    img.src = proxyUrl;
+  }, [textOverlays, imageOverlays, selectedOverlay, imageLoaded, originalImage]);
+
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!maskCanvasRef.current || isProcessing || !needsMask) return;
     setIsDrawing(true);
@@ -165,6 +298,123 @@ export function ImageEditorCanvas({
     setShowMask(!showMask);
   };
 
+  // Overlay functions
+  const addTextOverlay = (text: string) => {
+    const newOverlay: TextOverlay = {
+      id: `text-${Date.now()}`,
+      text: text || "Sample Text",
+      x: 50,
+      y: 100,
+      fontSize: 48,
+      fontFamily: "Arial",
+      color: "#ffffff",
+      backgroundColor: "transparent",
+      bold: true,
+      italic: false,
+      rotation: 0,
+      opacity: 1,
+    };
+    setTextOverlays([...textOverlays, newOverlay]);
+    setSelectedOverlay(newOverlay.id);
+  };
+
+  const addImageOverlay = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const imageData = e.target?.result as string;
+      const newOverlay: ImageOverlay = {
+        id: `image-${Date.now()}`,
+        imageData,
+        x: 100,
+        y: 100,
+        width: 200,
+        height: 200,
+        rotation: 0,
+        opacity: 1,
+      };
+      setImageOverlays([...imageOverlays, newOverlay]);
+      setSelectedOverlay(newOverlay.id);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleCanvasMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (selectedEditTool === "overlay") {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      // Check if clicking on an overlay
+      // TODO: Implement hit testing for overlays
+      setSelectedOverlay(null);
+    } else if (needsMask) {
+      startDrawing(e);
+    }
+  };
+
+  const handleCanvasMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (selectedEditTool === "overlay" && isDraggingOverlay && selectedOverlay) {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      // Move the selected overlay
+      setTextOverlays(
+        textOverlays.map((overlay) =>
+          overlay.id === selectedOverlay
+            ? { ...overlay, x, y }
+            : overlay
+        )
+      );
+      setImageOverlays(
+        imageOverlays.map((overlay) =>
+          overlay.id === selectedOverlay
+            ? { ...overlay, x, y }
+            : overlay
+        )
+      );
+    } else if (needsMask) {
+      draw(e);
+    }
+  };
+
+  const handleCanvasMouseUp = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (selectedEditTool === "overlay") {
+      setIsDraggingOverlay(false);
+    } else if (needsMask) {
+      stopDrawing();
+    }
+  };
+
+  const handleSaveOverlays = () => {
+    if (canvasRef.current) {
+      const dataUrl = canvasRef.current.toDataURL("image/png");
+      if (onSaveOverlays) {
+        onSaveOverlays(dataUrl);
+      }
+    }
+  };
+
+  // Export functions for parent component
+  useEffect(() => {
+    (window as any).imageEditorCanvas = {
+      addTextOverlay,
+      addImageOverlay,
+      handleSaveOverlays,
+      textOverlays,
+      imageOverlays,
+      setTextOverlays,
+      setImageOverlays,
+      setSelectedOverlay,
+    };
+  });
+
   if (!originalImage) {
     return (
       <div className="bg-white rounded-lg shadow-lg p-12 text-center">
@@ -189,6 +439,8 @@ export function ImageEditorCanvas({
         return "Describe the image to enhance it during upscaling";
       case "sketch-to-image":
         return "Describe what your sketch represents";
+      case "overlay":
+        return "Add text and image overlays. Use the controls on the left.";
       default:
         return "";
     }
@@ -233,7 +485,16 @@ export function ImageEditorCanvas({
 
       <div className="flex-1 flex items-center justify-center bg-gray-50 rounded-lg border-2 border-dashed border-gray-300 overflow-auto">
         <div className="relative">
-          <canvas ref={canvasRef} className="shadow-lg rounded" />
+          <canvas
+            ref={canvasRef}
+            onMouseDown={handleCanvasMouseDown}
+            onMouseMove={handleCanvasMouseMove}
+            onMouseUp={handleCanvasMouseUp}
+            onMouseLeave={handleCanvasMouseUp}
+            className={`shadow-lg rounded ${
+              selectedEditTool === "overlay" ? "cursor-move" : "cursor-crosshair"
+            }`}
+          />
 
           {needsMask && (
             <canvas
