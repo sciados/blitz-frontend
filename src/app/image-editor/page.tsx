@@ -190,8 +190,58 @@ export default function ImageEditorPage() {
     }
   };
 
-  const handleOverlaySave = (overlayImageDataUrl: string) => {
-    setEditedImage(overlayImageDataUrl);
+  const handleOverlaySave = async (overlayImageDataUrl: string) => {
+    if (!campaignId || !imageUrl) {
+      alert("Missing campaign ID or image URL");
+      return;
+    }
+
+    setIsProcessing(true);
+
+    try {
+      // Use environment variable for backend API URL
+      const apiBaseUrl =
+        process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+
+      // Convert data URL to blob
+      const response = await fetch(overlayImageDataUrl);
+      const blob = await response.blob();
+
+      // Create FormData
+      const formData = new FormData();
+      formData.append("image", blob, `overlay-${Date.now()}.png`);
+      formData.append("campaign_id", campaignId);
+      formData.append("metadata", JSON.stringify({
+        tool: "overlay",
+        original_image: imageUrl,
+        overlays: "text_and_image"
+      }));
+
+      const token = localStorage.getItem("token");
+      const uploadResponse = await fetch(`${apiBaseUrl}/api/content/images`, {
+        method: "POST",
+        body: formData,
+        credentials: "include",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const result = await uploadResponse.json();
+
+      if (result.success && result.image_url) {
+        setEditedImage(result.image_url);
+        setActiveImage(result.image_url); // Automatically switch to the edited image
+        alert("Overlay image saved successfully!");
+      } else {
+        throw new Error("Failed to save overlay image");
+      }
+    } catch (err) {
+      console.error("Overlay save error:", err);
+      alert(`Error saving overlay: ${err instanceof Error ? err.message : "Unknown error"}`);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const handleResizeSave = (resizedImageDataUrl: string, preset: string) => {

@@ -12,14 +12,20 @@ import { ContentViewModal } from "src/components/ContentViewModal";
 import { UnifiedEditorModal } from "src/components/UnifiedEditorModal";
 import { ConfirmationModal } from "src/components/ConfirmationModal";
 import { VideoEditorModal } from "src/components/VideoEditorModal";
+import { BatchProcessingModal } from "src/components/image-editor/BatchProcessingModal";
+import { ImageOptimizer } from "src/components/image-editor/ImageOptimizer";
+import { BatchImageOptimizer } from "src/components/image-editor/BatchImageOptimizer";
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams, useRouter } from "next/navigation";
 import { api } from "src/lib/appClient";
 import { toast } from "sonner";
-import { GeneratedContent, Campaign, GeneratedImage, LibraryImage } from "src/lib/types";
-import { BatchProcessingModal } from "src/components/image-editor/BatchProcessingModal";
-
+import {
+  GeneratedContent,
+  Campaign,
+  GeneratedImage,
+  LibraryImage,
+} from "src/lib/types";
 
 const CONTENT_TYPES = [
   { value: "all", label: "All Types", icon: "📚" },
@@ -58,11 +64,15 @@ export default function ContentLibraryPage() {
   const [allContent, setAllContent] = useState<GeneratedContent[]>([]);
 
   // Content Library Tab State
-  const [activeLibraryTab, setActiveLibraryTab] = useState<"text" | "images" | "videos">(
-    "text"
-  );
-  const [imageFilter, setImageFilter] = useState<"all" | "original" | "edited" | "overlays">("all");
-  const [videoFilter, setVideoFilter] = useState<"all" | "generated" | "overlays">("all");
+  const [activeLibraryTab, setActiveLibraryTab] = useState<
+    "text" | "images" | "videos"
+  >("text");
+  const [imageFilter, setImageFilter] = useState<
+    "all" | "original" | "edited" | "overlays"
+  >("all");
+  const [videoFilter, setVideoFilter] = useState<
+    "all" | "generated" | "overlays"
+  >("all");
   const [allImages, setAllImages] = useState<GeneratedImage[]>([]);
   const [allEditedImages, setAllEditedImages] = useState<LibraryImage[]>([]);
   const [allVideos, setAllVideos] = useState<any[]>([]);
@@ -85,17 +95,33 @@ export default function ContentLibraryPage() {
   // Thumbnail Selection Modal state
   const [showThumbnailModal, setShowThumbnailModal] = useState(false);
   const [thumbnailOptions, setThumbnailOptions] = useState<string[]>([]);
-  const [selectedVideoForThumbnail, setSelectedVideoForThumbnail] = useState<any>(null);
+  const [selectedVideoForThumbnail, setSelectedVideoForThumbnail] =
+    useState<any>(null);
   const [isGeneratingThumbnails, setIsGeneratingThumbnails] = useState(false);
-  const [videoDurationForThumbnail, setVideoDurationForThumbnail] = useState<number>(0);
+  const [videoDurationForThumbnail, setVideoDurationForThumbnail] =
+    useState<number>(0);
 
   // Confirmation modal state
-  const [showDeleteContentConfirm, setShowDeleteContentConfirm] = useState(false);
+  const [showDeleteContentConfirm, setShowDeleteContentConfirm] =
+    useState(false);
   const [showDeleteImageConfirm, setShowDeleteImageConfirm] = useState(false);
   const [showDeleteVideoConfirm, setShowDeleteVideoConfirm] = useState(false);
   const [contentToDelete, setContentToDelete] = useState<number | null>(null);
   const [imageToDelete, setImageToDelete] = useState<number | null>(null);
   const [videoToDelete, setVideoToDelete] = useState<number | null>(null);
+
+  // Batch Processing state
+  const [showBatchModal, setShowBatchModal] = useState(false);
+  const [selectedImageUrls, setSelectedImageUrls] = useState<string[]>([]);
+  const [batchCampaignId, setBatchCampaignId] = useState<number | null>(null);
+
+  // Image Optimizer state
+  const [showOptimizer, setShowOptimizer] = useState(false);
+  const [optimizerImageUrl, setOptimizerImageUrl] = useState<string>("");
+  const [optimizerImageName, setOptimizerImageName] = useState<string>("");
+
+  // Batch Optimizer state
+  const [showBatchOptimizer, setShowBatchOptimizer] = useState(false);
 
   // Fetch all content for the user
   const { refetch: refetchContent, isLoading } = useQuery({
@@ -146,7 +172,9 @@ export default function ContentLibraryPage() {
 
         const allEditedPromises = campaigns.map(async (campaign: Campaign) => {
           try {
-            const res = await api.get(`/api/image-editor/history/${campaign.id}`);
+            const res = await api.get(
+              `/api/image-editor/history/${campaign.id}`
+            );
 
             // Transform the data to match the expected format
             const edits = res.data.edits || [];
@@ -157,33 +185,44 @@ export default function ContentLibraryPage() {
                 // Use the proxy endpoint for edited images since /edited/ folder requires authentication
                 // The proxy endpoint has R2 credentials and can fetch private files
                 // Need to use full URL with domain to avoid browser encoding issues
-                const r2PublicUrl = 'https://pub-c0ddba9f039845bda33be436955187cb.r2.dev';
+                const r2PublicUrl =
+                  "https://pub-c0ddba9f039845bda33be436955187cb.r2.dev";
                 const fullR2Url = `${r2PublicUrl}/${edit.edited_image_path}`;
-                const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://blitzed.up.railway.app';
-                const imageUrl = `${apiBaseUrl}/api/images/proxy?url=${encodeURIComponent(fullR2Url)}`;
+                const apiBaseUrl =
+                  process.env.NEXT_PUBLIC_API_BASE_URL ||
+                  "https://blitzed.up.railway.app";
+                const imageUrl = `${apiBaseUrl}/api/images/proxy?url=${encodeURIComponent(
+                  fullR2Url
+                )}`;
 
                 return {
                   id: edit.id,
                   campaign_id: edit.campaign_id,
                   image_url: imageUrl,
                   image_type: `edited_${edit.operation_type}`,
-                  prompt: edit.operation_params?.prompt || edit.operation_params?.search_prompt || "Edited Image",
+                  prompt:
+                    edit.operation_params?.prompt ||
+                    edit.operation_params?.search_prompt ||
+                    "Edited Image",
                   provider: "Stability AI",
                   aspect_ratio: "original",
                   metadata: {
                     is_edited: true,
                     operation_type: edit.operation_type,
                     original_image_path: edit.original_image_path,
-                    r2_url: fullR2Url,  // Store the actual R2 URL for editing
-                    text_overlay: false
+                    r2_url: fullR2Url, // Store the actual R2 URL for editing
+                    text_overlay: false,
                   },
-                  created_at: edit.created_at
+                  created_at: edit.created_at,
                 };
               });
 
             return mappedEdits;
           } catch (error: any) {
-            console.error(`Error fetching edits for campaign ${campaign.id}:`, error);
+            console.error(
+              `Error fetching edits for campaign ${campaign.id}:`,
+              error
+            );
             return [];
           }
         });
@@ -193,12 +232,17 @@ export default function ContentLibraryPage() {
 
         // Deduplicate by image_url, keeping only the most recent for each unique image
         const uniqueEdits = flatEdited.reduce((acc: any[], current) => {
-          const existingIndex = acc.findIndex(item => item.image_url === current.image_url);
+          const existingIndex = acc.findIndex(
+            (item) => item.image_url === current.image_url
+          );
           if (existingIndex === -1) {
             acc.push(current);
           } else {
             // Keep the more recent one
-            if (new Date(current.created_at) > new Date(acc[existingIndex].created_at)) {
+            if (
+              new Date(current.created_at) >
+              new Date(acc[existingIndex].created_at)
+            ) {
               acc[existingIndex] = current;
             }
           }
@@ -208,7 +252,7 @@ export default function ContentLibraryPage() {
         setAllEditedImages(uniqueEdits);
         return uniqueEdits;
       } catch (error) {
-        console.error('Error in refetchEditedImages:', error);
+        console.error("Error in refetchEditedImages:", error);
         return [];
       }
     },
@@ -226,10 +270,6 @@ export default function ContentLibraryPage() {
     // Only poll when videos tab is active
     refetchInterval: activeLibraryTab === "videos" ? 5000 : false,
   });
-
-  const [showBatchModal, setShowBatchModal] = useState(false);
-  const [selectedImageUrls, setSelectedImageUrls] = useState<string[]>([]);
-  const [batchCampaignId, setBatchCampaignId] = useState<number | null>(null);
 
   // Debug log for tab changes
   useEffect(() => {
@@ -281,8 +321,8 @@ export default function ContentLibraryPage() {
 
   // Combine original and edited images
   const combinedImages: LibraryImage[] = [
-    ...allImages.map(img => ({ ...img, source: 'original' as const })),
-    ...allEditedImages.map(img => ({ ...img, source: 'edited' as const }))
+    ...allImages.map((img) => ({ ...img, source: "original" as const })),
+    ...allEditedImages.map((img) => ({ ...img, source: "edited" as const })),
   ];
 
   // Filter images based on campaign and filter type
@@ -344,7 +384,11 @@ export default function ContentLibraryPage() {
     }
     // Navigate to video generation page with campaign and script
     const campaignId = content.campaign_id;
-    router.push(`/content/video?campaign=${campaignId}&script=${encodeURIComponent(content.content_data.text)}`);
+    router.push(
+      `/content/video?campaign=${campaignId}&script=${encodeURIComponent(
+        content.content_data.text
+      )}`
+    );
   };
 
   const handleDeleteContent = async (contentId: number) => {
@@ -378,11 +422,11 @@ export default function ContentLibraryPage() {
     const params = new URLSearchParams({
       imageUrl: imageUrlToUse,
       campaignId: image.campaign_id.toString(),
-      imageId: image.id.toString()
+      imageId: image.id.toString(),
     });
     // For edited images, also pass the original image path
     if (image.metadata?.is_edited && image.metadata?.original_image_path) {
-      params.set('originalImagePath', image.metadata.original_image_path);
+      params.set("originalImagePath", image.metadata.original_image_path);
     }
     router.push(`/image-editor?${params.toString()}`);
   };
@@ -435,7 +479,7 @@ export default function ContentLibraryPage() {
   async function handleDeleteImage(imageId: number) {
     setImageToDelete(imageId);
     setShowDeleteImageConfirm(true);
-  };
+  }
 
   async function confirmDeleteImage() {
     if (!imageToDelete) return;
@@ -454,7 +498,7 @@ export default function ContentLibraryPage() {
   async function handleDeleteEditedImage(editId: number) {
     setImageToDelete(editId);
     setShowDeleteImageConfirm(true);
-  };
+  }
 
   async function confirmDeleteEditedImage() {
     if (!imageToDelete) return;
@@ -466,7 +510,9 @@ export default function ContentLibraryPage() {
       setIsLibraryModalOpen(false);
       setImageToDelete(null);
     } catch (err: any) {
-      toast.error(err.response?.data?.detail || "Failed to delete edited image");
+      toast.error(
+        err.response?.data?.detail || "Failed to delete edited image"
+      );
     }
   }
 
@@ -488,7 +534,11 @@ export default function ContentLibraryPage() {
   }
 
   // Video Editor handlers
-  const handleOpenVideoEditor = (videoUrl: string, campaignId: number, videoScript?: string) => {
+  const handleOpenVideoEditor = (
+    videoUrl: string,
+    campaignId: number,
+    videoScript?: string
+  ) => {
     setVideoEditorUrl(videoUrl);
     setVideoEditorCampaignId(campaignId);
     setVideoEditorScript(videoScript || "");
@@ -509,46 +559,54 @@ export default function ContentLibraryPage() {
     setThumbnailOptions([]); // Clear previous options
 
     try {
-      console.log('🎬 Starting thumbnail generation for video:', video.id);
-      console.log('📹 Video URL:', video.video_url);
+      console.log("🎬 Starting thumbnail generation for video:", video.id);
+      console.log("📹 Video URL:", video.video_url);
 
       // Use backend to get video duration (avoids CORS issues with R2)
-      console.log('📏 Getting video duration from backend...');
+      console.log("📏 Getting video duration from backend...");
       const durationResponse = await api.post("/api/videos/get-duration", {
-        video_url: video.video_url
+        video_url: video.video_url,
       });
 
       const videoDuration = durationResponse.data.duration;
       setVideoDurationForThumbnail(videoDuration);
-      console.log('📹 Video duration:', videoDuration, 'seconds');
+      console.log("📹 Video duration:", videoDuration, "seconds");
 
       // Call the API to generate thumbnails
-      console.log('🎨 Calling thumbnail options API...');
+      console.log("🎨 Calling thumbnail options API...");
       const response = await api.post("/api/videos/thumbnail-options", {
         video_url: video.video_url,
         video_duration: videoDuration,
-        campaign_id: video.campaign_id
+        campaign_id: video.campaign_id,
       });
 
-      console.log('✅ API response received:', response.data);
+      console.log("✅ API response received:", response.data);
       setThumbnailOptions(response.data.thumbnail_options || []);
-      console.log('📋 Set thumbnail options:', response.data.thumbnail_options?.length || 0);
+      console.log(
+        "📋 Set thumbnail options:",
+        response.data.thumbnail_options?.length || 0
+      );
 
-      if (!response.data.thumbnail_options || response.data.thumbnail_options.length === 0) {
-        console.warn('⚠️ No thumbnail options returned');
+      if (
+        !response.data.thumbnail_options ||
+        response.data.thumbnail_options.length === 0
+      ) {
+        console.warn("⚠️ No thumbnail options returned");
         toast.warning("No thumbnail options available for this video");
       }
-
     } catch (error: any) {
-      console.error('❌ Error in thumbnail generation:', error);
-      console.error('Error details:', {
+      console.error("❌ Error in thumbnail generation:", error);
+      console.error("Error details:", {
         message: error.message,
         stack: error.stack,
-        video: video?.id
+        video: video?.id,
       });
 
       // Show specific error message
-      const errorMsg = error.response?.data?.detail || error.message || "Failed to generate thumbnail options";
+      const errorMsg =
+        error.response?.data?.detail ||
+        error.message ||
+        "Failed to generate thumbnail options";
       toast.error(`Error: ${errorMsg}`);
 
       // Don't close modal immediately, let user try again
@@ -558,7 +616,10 @@ export default function ContentLibraryPage() {
     }
   };
 
-  const handleSelectThumbnailOption = async (thumbnailDataUrl: string, index: number) => {
+  const handleSelectThumbnailOption = async (
+    thumbnailDataUrl: string,
+    index: number
+  ) => {
     if (!selectedVideoForThumbnail) return;
 
     try {
@@ -566,18 +627,18 @@ export default function ContentLibraryPage() {
       // The thumbnail options are generated at specific timestamps
       const videoDuration = videoDurationForThumbnail || 5.0; // Use real duration, fallback to 5.0
       const thumbnailTimestamps = [
-        videoDuration * 0.1,  // 10% through video
-        videoDuration * 0.3,  // 30% through video
-        videoDuration * 0.5,  // 50% through video
-        videoDuration * 0.7,  // 70% through video
-        videoDuration * 0.9   // 90% through video
+        videoDuration * 0.1, // 10% through video
+        videoDuration * 0.3, // 30% through video
+        videoDuration * 0.5, // 50% through video
+        videoDuration * 0.7, // 70% through video
+        videoDuration * 0.9, // 90% through video
       ];
       const selectedTimestamp = thumbnailTimestamps[index] || 1.0;
 
       // Call backend to save the thumbnail
       await api.post("/api/videos/save-thumbnail", {
         video_id: selectedVideoForThumbnail.id,
-        thumbnail_timestamp: selectedTimestamp
+        thumbnail_timestamp: selectedTimestamp,
       });
 
       toast.success("Thumbnail saved successfully!");
@@ -609,6 +670,26 @@ export default function ContentLibraryPage() {
     warning: allContent.filter((c) => c.compliance_status === "warning").length,
     violation: allContent.filter((c) => c.compliance_status === "violation")
       .length,
+  };
+
+  // Toggle image selection for batch processing
+  const toggleImageSelection = (imageUrl: string) => {
+    setSelectedImageUrls((prev) =>
+      prev.includes(imageUrl)
+        ? prev.filter((url) => url !== imageUrl)
+        : [...prev, imageUrl]
+    );
+  };
+
+  // Select all visible images
+  const selectAllImages = () => {
+    const allUrls = filteredImages.map((img) => img.image_url);
+    setSelectedImageUrls(allUrls);
+  };
+
+  // Clear all selections
+  const clearSelection = () => {
+    setSelectedImageUrls([]);
   };
 
   return (
@@ -1057,23 +1138,117 @@ export default function ContentLibraryPage() {
               {filteredImages.length > 0 ? (
                 <>
                   <div className="mb-4 flex items-center justify-between">
-                    <p
-                      className="text-sm"
-                      style={{ color: "var(--text-secondary)" }}
-                    >
-                      Showing {filteredImages.length} of {combinedImages.length}{" "}
-                      total images
-                    </p>
+                    <div className="flex items-center gap-4">
+                      <p
+                        className="text-sm"
+                        style={{ color: "var(--text-secondary)" }}
+                      >
+                        Showing {filteredImages.length} of{" "}
+                        {combinedImages.length} total images
+                      </p>
+
+                      {selectedImageUrls.length > 0 && (
+                        <span className="text-sm font-medium text-blue-600">
+                          {selectedImageUrls.length} selected
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      {selectedImageUrls.length === 0 ? (
+                        <button
+                          onClick={selectAllImages}
+                          className="text-sm px-3 py-1.5 text-blue-600 hover:text-blue-700 border border-blue-600 rounded-lg hover:bg-blue-50 transition"
+                        >
+                          Select All
+                        </button>
+                      ) : (
+                        <>
+                          <button
+                            onClick={clearSelection}
+                            className="text-sm px-3 py-1.5 text-gray-600 hover:text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
+                          >
+                            Clear ({selectedImageUrls.length})
+                          </button>
+
+                          <button
+                            onClick={() => {
+                              setBatchCampaignId(filterCampaignId);
+                              setShowBatchModal(true);
+                            }}
+                            className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition flex items-center gap-2 font-medium"
+                          >
+                            <svg
+                              className="w-5 h-5"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M13 10V3L4 14h7v7l9-11h-7z"
+                              />
+                            </svg>
+                            Batch Process ({selectedImageUrls.length})
+                          </button>
+
+                          <button
+                            onClick={() => setShowBatchOptimizer(true)}
+                            className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition flex items-center gap-2 font-medium"
+                          >
+                            <svg
+                              className="w-5 h-5"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M13 10V3L4 14h7v7l9-11h-7z"
+                              />
+                            </svg>
+                            Optimize ({selectedImageUrls.length})
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                     {filteredImages.map((image, index) => (
                       <div
                         key={`${image.source}-${image.id}`}
-                        className="card rounded-lg overflow-hidden group cursor-pointer hover:shadow-lg transition-shadow"
-                        onClick={() => handleImageClick(image, index)}
+                        className="card rounded-lg overflow-hidden group hover:shadow-lg transition-shadow relative"
                       >
-                        {/* Image */}
-                        <div className="relative bg-gray-100 dark:bg-gray-800 aspect-square">
+                        {/* Selection Checkbox */}
+                        <div
+                          className="absolute top-2 left-2 z-10"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={selectedImageUrls.includes(
+                              image.image_url
+                            )}
+                            onChange={() =>
+                              toggleImageSelection(image.image_url)
+                            }
+                            className="w-5 h-5 cursor-pointer accent-blue-600"
+                          />
+                        </div>
+
+                        {/* Image - Make clickable only if not selecting */}
+                        <div
+                          className="relative bg-gray-100 dark:bg-gray-800 aspect-square cursor-pointer"
+                          onClick={() => {
+                            if (selectedImageUrls.length === 0) {
+                              handleImageClick(image, index);
+                            }
+                          }}
+                        >
                           <img
                             src={image.image_url}
                             alt={image.prompt}
@@ -1178,6 +1353,56 @@ export default function ContentLibraryPage() {
                                   strokeLinejoin="round"
                                   strokeWidth={2}
                                   d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                                />
+                              </svg>
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setOptimizerImageUrl(image.image_url);
+                                setOptimizerImageName(image.prompt || "image");
+                                setShowOptimizer(true);
+                              }}
+                              className="flex-1 text-xs px-2 py-1 bg-yellow-500 hover:bg-yellow-600 text-white rounded transition flex items-center justify-center gap-1"
+                              title="Optimize Image"
+                            >
+                              <svg
+                                className="w-3 h-3"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M13 10V3L4 14h7v7l9-11h-7z"
+                                />
+                              </svg>
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                router.push(
+                                  `/image-editor?imageUrl=${encodeURIComponent(
+                                    image.image_url
+                                  )}&campaignId=${image.campaign_id}`
+                                );
+                              }}
+                              className="flex-1 text-xs px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded transition flex items-center justify-center gap-1"
+                              title="Edit Image"
+                            >
+                              <svg
+                                className="w-3 h-3"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
                                 />
                               </svg>
                             </button>
@@ -2109,6 +2334,36 @@ export default function ContentLibraryPage() {
           </div>
         </div>
       )}
+
+      {/* Batch Processing Modal */}
+      <BatchProcessingModal
+        isOpen={showBatchModal}
+        onClose={() => {
+          setShowBatchModal(false);
+          setSelectedImageUrls([]);
+          refetchImages();
+        }}
+        selectedImages={selectedImageUrls}
+        campaignId={batchCampaignId || filterCampaignId || 1}
+      />
+
+      {/* Single Image Optimizer */}
+      <ImageOptimizer
+        isOpen={showOptimizer}
+        onClose={() => setShowOptimizer(false)}
+        imageUrl={optimizerImageUrl}
+        imageName={optimizerImageName}
+      />
+
+      {/* Batch Image Optimizer */}
+      <BatchImageOptimizer
+        isOpen={showBatchOptimizer}
+        onClose={() => {
+          setShowBatchOptimizer(false);
+          setSelectedImageUrls([]);
+        }}
+        imageUrls={selectedImageUrls}
+      />
     </AuthGate>
   );
 }
