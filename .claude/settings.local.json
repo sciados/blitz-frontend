@@ -8,7 +8,10 @@
       "Bash(git -C \"C:/Users/shaun/OneDrive/Documents/GitHub/blitz-backend\" commit:*)",
       "Bash(\"C:/Users/shaun/OneDrive/Documents/GitHub/blitz-backend/FORCE_REBUILD.txt\")",
       "Bash(while:*)",
-      "Bash(do:*)"
+      "Bash(do:*)",
+      "Bash(/tmp/image_gen_before.py:*)",
+      "Bash(/tmp/image_gen_after.py:*)",
+      "Bash(\"C:/Users/shaun/OneDrive/Documents/GitHub/blitz-backend/app/services/image_generator.py\")"
     ],
     "deny": [],
     "ask": []
