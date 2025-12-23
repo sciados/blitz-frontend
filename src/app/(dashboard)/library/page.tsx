@@ -155,8 +155,6 @@ export default function ContentLibraryPage() {
           .catch(() => [])
       );
       const allImageArrays = await Promise.all(allImagePromises);
-      console.log("📸 Total images fetched:", flatImages.length);
-      console.log("📸 Sample image metadata:", flatImages.slice(0, 3).map(img => ({ id: img.id, metadata: img.metadata })));
       const flatImages = allImageArrays.flat();
       setAllImages(flatImages);
       return flatImages;

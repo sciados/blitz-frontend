@@ -11,7 +11,8 @@
       "Bash(do:*)",
       "Bash(/tmp/image_gen_before.py:*)",
       "Bash(/tmp/image_gen_after.py:*)",
-      "Bash(\"C:/Users/shaun/OneDrive/Documents/GitHub/blitz-backend/app/services/image_generator.py\")"
+      "Bash(\"C:/Users/shaun/OneDrive/Documents/GitHub/blitz-backend/app/services/image_generator.py\")",
+      "Bash(/tmp/image_generator_clean.py)"
     ],
     "deny": [],
     "ask": []
