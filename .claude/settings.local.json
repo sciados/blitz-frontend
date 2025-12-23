@@ -6,7 +6,9 @@
       "Bash(git -C \"C:/Users/shaun/OneDrive/Documents/GitHub/blitz-frontend\" push origin main)",
       "Bash(git -C:*)",
       "Bash(git -C \"C:/Users/shaun/OneDrive/Documents/GitHub/blitz-backend\" commit:*)",
-      "Bash(\"C:/Users/shaun/OneDrive/Documents/GitHub/blitz-backend/FORCE_REBUILD.txt\")"
+      "Bash(\"C:/Users/shaun/OneDrive/Documents/GitHub/blitz-backend/FORCE_REBUILD.txt\")",
+      "Bash(while:*)",
+      "Bash(do:*)"
     ],
     "deny": [],
     "ask": []
