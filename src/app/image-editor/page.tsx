@@ -203,33 +203,32 @@ export default function ImageEditorPage() {
       const apiBaseUrl =
         process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 
-      // Convert data URL to blob
-      const response = await fetch(overlayImageDataUrl);
-      const blob = await response.blob();
-
-      // Create FormData
-      const formData = new FormData();
-      formData.append("image", blob, `overlay-${Date.now()}.png`);
-      formData.append("campaign_id", campaignId);
-      formData.append("metadata", JSON.stringify({
-        tool: "overlay",
-        original_image: imageUrl,
-        overlays: "text_and_image"
-      }));
-
       const token = localStorage.getItem("token");
-      const uploadResponse = await fetch(`${apiBaseUrl}/api/content/images`, {
+
+      // Upload the overlay image (data URL) to R2 storage first
+      const uploadResponse = await fetch(`${apiBaseUrl}/api/images/save-draft`, {
         method: "POST",
-        body: formData,
-        credentials: "include",
         headers: {
+          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
+        credentials: "include",
+        body: JSON.stringify({
+          campaign_id: parseInt(campaignId),
+          image_url: overlayImageDataUrl,
+          image_type: "overlay",
+          style: "custom",
+          aspect_ratio: "original",
+          provider: "canvas",
+          model: "overlay-editor",
+          prompt: "Overlay edited image",
+          custom_prompt: "User-added text and image overlays"
+        }),
       });
 
       const result = await uploadResponse.json();
 
-      if (result.success && result.image_url) {
+      if (result.id || result.image_url) {
         setEditedImage(result.image_url);
         setActiveImage(result.image_url); // Automatically switch to the edited image
         alert("Overlay image saved successfully!");
