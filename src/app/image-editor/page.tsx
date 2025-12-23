@@ -273,8 +273,7 @@ export default function ImageEditorPage() {
     );
   }
 
-  const isFullWidthTool =
-    selectedEditTool === "overlay" || selectedEditTool === "resize";
+  const isFullWidthTool = selectedEditTool === "resize";
 
   return (
     <div className="flex flex-col h-screen bg-gray-100">
@@ -317,13 +316,7 @@ export default function ImageEditorPage() {
 
         {/* Main Canvas/Editor Area */}
         <div className="flex-1 overflow-auto">
-          {selectedEditTool === "overlay" ? (
-            <OverlayEditor
-              originalImage={activeImage}
-              onSave={handleOverlaySave}
-              isProcessing={isProcessing}
-            />
-          ) : selectedEditTool === "resize" ? (
+          {selectedEditTool === "resize" ? (
             <SmartResize
               originalImage={activeImage}
               onSave={handleResizeSave}
@@ -338,6 +331,7 @@ export default function ImageEditorPage() {
                 selectedDrawTool={selectedDrawTool}
                 brushSize={brushSize}
                 onEdit={handleEdit}
+                onSaveOverlays={handleOverlaySave}
                 isProcessing={isProcessing}
               />
             </div>

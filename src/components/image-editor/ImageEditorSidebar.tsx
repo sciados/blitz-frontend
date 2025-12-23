@@ -109,30 +109,95 @@ export function ImageEditorSidebar({
 
   return (
     <div className="w-80 bg-white border-r border-gray-200 p-4 overflow-auto">
-      <h3 className="text-lg font-semibold mb-4">Edit Tools</h3>
+      {/* Tool Selector Grid - Hide for overlay tool */}
+      {selectedEditTool !== "overlay" && (
+        <>
+          <h3 className="text-lg font-semibold mb-4">Edit Tools</h3>
+          <div className="grid grid-cols-2 gap-2 mb-6">
+            {tools.map((tool) => (
+              <button
+                key={tool.id}
+                onClick={() => onEditToolChange(tool.id)}
+                disabled={isProcessing}
+                className={`p-3 rounded-lg border-2 transition-all text-left ${
+                  selectedEditTool === tool.id
+                    ? "border-blue-600 bg-blue-50"
+                    : "border-gray-200 hover:border-gray-300"
+                } disabled:opacity-50`}
+              >
+                <div className="text-2xl mb-1">{tool.icon}</div>
+                <div className="text-sm font-semibold">{tool.label}</div>
+                <div className="text-xs text-gray-600">{tool.description}</div>
+              </button>
+            ))}
+          </div>
+          <div className="border-t border-gray-200 pt-4">
+            <h4 className="text-sm font-semibold text-gray-700 mb-3">Settings</h4>
+          </div>
+        </>
+      )}
 
-      {/* Tool Selector Grid */}
-      <div className="grid grid-cols-2 gap-2 mb-6">
-        {tools.map((tool) => (
-          <button
-            key={tool.id}
-            onClick={() => onEditToolChange(tool.id)}
-            disabled={isProcessing}
-            className={`p-3 rounded-lg border-2 transition-all text-left ${
-              selectedEditTool === tool.id
-                ? "border-blue-600 bg-blue-50"
-                : "border-gray-200 hover:border-gray-300"
-            } disabled:opacity-50`}
-          >
-            <div className="text-2xl mb-1">{tool.icon}</div>
-            <div className="text-sm font-semibold">{tool.label}</div>
-            <div className="text-xs text-gray-600">{tool.description}</div>
-          </button>
-        ))}
-      </div>
+      {/* Overlay Tool - Full Width Layout */}
+      {selectedEditTool === "overlay" && (
+        <div>
+          <h3 className="text-lg font-semibold mb-4">📝 Overlay Editor</h3>
+          <div className="space-y-4">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <h5 className="font-semibold text-sm text-blue-900 mb-2">
+                Text & Image Overlays
+              </h5>
+              <p className="text-xs text-blue-800 mb-3">
+                Add text and image overlays to your image. No AI cost!
+              </p>
 
-      <div className="border-t border-gray-200 pt-4">
-        <h4 className="text-sm font-semibold text-gray-700 mb-3">Settings</h4>
+              {/* Add Text Button */}
+              <button
+                onClick={() => {
+                  const canvasAPI = (window as any).imageEditorCanvas;
+                  if (canvasAPI) {
+                    canvasAPI.addTextOverlay("Sample Text");
+                  }
+                }}
+                disabled={isProcessing}
+                className="w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 text-sm font-medium mb-2"
+              >
+                ➕ Add Text
+              </button>
+
+              {/* Add Image Input */}
+              <label className="w-full px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 text-sm font-medium cursor-pointer flex items-center justify-center gap-2">
+                🖼️ Add Image
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const canvasAPI = (window as any).imageEditorCanvas;
+                      if (canvasAPI) {
+                        canvasAPI.addImageOverlay(file);
+                      }
+                    }
+                  }}
+                  disabled={isProcessing}
+                  className="hidden"
+                />
+              </label>
+            </div>
+
+            <div className="text-xs text-gray-600 space-y-1">
+              <p>• Click and drag overlays to move them</p>
+              <p>• Use the right panel to edit properties</p>
+              <p>• Perfect for watermarks & branding</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Settings Panel - Hide for overlay tool */}
+      {selectedEditTool !== "overlay" && (
+        <div>
+          <h4 className="text-sm font-semibold text-gray-700 mb-3">Settings</h4>
 
         {/* Inpainting Settings */}
         {selectedEditTool === "inpaint" && (
@@ -397,61 +462,8 @@ export function ImageEditorSidebar({
             </div>
           </div>
         )}
-
-        {/* Overlay Settings */}
-        {selectedEditTool === "overlay" && (
-          <div className="space-y-4">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h5 className="font-semibold text-sm text-blue-900 mb-2">
-                📝 Text & Image Overlays
-              </h5>
-              <p className="text-xs text-blue-800 mb-3">
-                Add text and image overlays to your image. No AI cost!
-              </p>
-
-              {/* Add Text Button */}
-              <button
-                onClick={() => {
-                  const canvasAPI = (window as any).imageEditorCanvas;
-                  if (canvasAPI) {
-                    canvasAPI.addTextOverlay("Sample Text");
-                  }
-                }}
-                disabled={isProcessing}
-                className="w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 text-sm font-medium mb-2"
-              >
-                ➕ Add Text
-              </button>
-
-              {/* Add Image Input */}
-              <label className="w-full px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 text-sm font-medium cursor-pointer flex items-center justify-center gap-2">
-                🖼️ Add Image
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) {
-                      const canvasAPI = (window as any).imageEditorCanvas;
-                      if (canvasAPI) {
-                        canvasAPI.addImageOverlay(file);
-                      }
-                    }
-                  }}
-                  disabled={isProcessing}
-                  className="hidden"
-                />
-              </label>
-            </div>
-
-            <div className="text-xs text-gray-600 space-y-1">
-              <p>• Click and drag overlays to move them</p>
-              <p>• Use the Generate button to save</p>
-              <p>• Perfect for watermarks & branding</p>
-            </div>
-          </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
