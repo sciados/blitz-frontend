@@ -15,6 +15,8 @@ import { VideoEditorModal } from "src/components/VideoEditorModal";
 import { BatchProcessingModal } from "src/components/image-editor/BatchProcessingModal";
 import { ImageOptimizer } from "src/components/image-editor/ImageOptimizer";
 import { BatchImageOptimizer } from "src/components/image-editor/BatchImageOptimizer";
+import { ImageFilters } from "src/components/image-editor/ImageFilters";
+import { BatchFilters } from "src/components/image-editor/BatchFilters";
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -122,6 +124,14 @@ export default function ContentLibraryPage() {
 
   // Batch Optimizer state
   const [showBatchOptimizer, setShowBatchOptimizer] = useState(false);
+
+  // Filters state
+  const [showFilters, setShowFilters] = useState(false);
+  const [filtersImageUrl, setFiltersImageUrl] = useState<string>("");
+  const [filtersImageName, setFiltersImageName] = useState<string>("");
+
+  // Batch Filters state
+  const [showBatchFilters, setShowBatchFilters] = useState(false);
 
   // Fetch all content for the user
   const { refetch: refetchContent, isLoading } = useQuery({
@@ -1213,6 +1223,26 @@ export default function ContentLibraryPage() {
                             </svg>
                             Optimize ({selectedImageUrls.length})
                           </button>
+
+                          <button
+                            onClick={() => setShowBatchFilters(true)}
+                            className="px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-lg hover:from-pink-600 hover:to-purple-700 transition flex items-center gap-2 font-medium"
+                          >
+                            <svg
+                              className="w-5 h-5"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"
+                              />
+                            </svg>
+                            Apply Filter ({selectedImageUrls.length})
+                          </button>
                         </>
                       )}
                     </div>
@@ -1403,6 +1433,30 @@ export default function ContentLibraryPage() {
                                   strokeLinejoin="round"
                                   strokeWidth={2}
                                   d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                                />
+                              </svg>
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setFiltersImageUrl(image.image_url);
+                                setFiltersImageName(image.prompt || "image");
+                                setShowFilters(true);
+                              }}
+                              className="flex-1 text-xs px-2 py-1 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white rounded transition flex items-center justify-center gap-1"
+                              title="Apply Filters"
+                            >
+                              <svg
+                                className="w-3 h-3"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"
                                 />
                               </svg>
                             </button>
@@ -2360,6 +2414,24 @@ export default function ContentLibraryPage() {
         isOpen={showBatchOptimizer}
         onClose={() => {
           setShowBatchOptimizer(false);
+          setSelectedImageUrls([]);
+        }}
+        imageUrls={selectedImageUrls}
+      />
+
+      {/* Single Image Filters */}
+      <ImageFilters
+        isOpen={showFilters}
+        onClose={() => setShowFilters(false)}
+        imageUrl={filtersImageUrl}
+        imageName={filtersImageName}
+      />
+
+      {/* Batch Filters */}
+      <BatchFilters
+        isOpen={showBatchFilters}
+        onClose={() => {
+          setShowBatchFilters(false);
           setSelectedImageUrls([]);
         }}
         imageUrls={selectedImageUrls}
