@@ -18,6 +18,8 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { api } from "src/lib/appClient";
 import { toast } from "sonner";
 import { GeneratedContent, Campaign, GeneratedImage, LibraryImage } from "src/lib/types";
+import { BatchProcessingModal } from "src/components/image-editor/BatchProcessingModal";
+
 
 const CONTENT_TYPES = [
   { value: "all", label: "All Types", icon: "📚" },
@@ -224,6 +226,10 @@ export default function ContentLibraryPage() {
     // Only poll when videos tab is active
     refetchInterval: activeLibraryTab === "videos" ? 5000 : false,
   });
+
+  const [showBatchModal, setShowBatchModal] = useState(false);
+  const [selectedImageUrls, setSelectedImageUrls] = useState<string[]>([]);
+  const [batchCampaignId, setBatchCampaignId] = useState<number | null>(null);
 
   // Debug log for tab changes
   useEffect(() => {
@@ -703,7 +709,13 @@ export default function ContentLibraryPage() {
               >
                 <span>🖼️ Original</span>
                 <span className="text-xs px-2 py-0.5 bg-gray-200 dark:bg-gray-600 rounded-full">
-                  {allImages.filter((img) => img.metadata?.text_overlay !== true && img.metadata?.is_edited !== true).length}
+                  {
+                    allImages.filter(
+                      (img) =>
+                        img.metadata?.text_overlay !== true &&
+                        img.metadata?.is_edited !== true
+                    ).length
+                  }
                 </span>
               </button>
               <button
@@ -729,7 +741,11 @@ export default function ContentLibraryPage() {
               >
                 <span>✨ Text Overlays</span>
                 <span className="text-xs px-2 py-0.5 bg-gray-200 dark:bg-gray-600 rounded-full">
-                  {allImages.filter((img) => img.metadata?.text_overlay === true).length}
+                  {
+                    allImages.filter(
+                      (img) => img.metadata?.text_overlay === true
+                    ).length
+                  }
                 </span>
               </button>
             </div>
@@ -761,7 +777,11 @@ export default function ContentLibraryPage() {
               >
                 <span>📹 Generated</span>
                 <span className="text-xs px-2 py-0.5 bg-gray-200 dark:bg-gray-600 rounded-full">
-                  {allVideos.filter((vid) => vid.generation_mode !== "text_overlay").length}
+                  {
+                    allVideos.filter(
+                      (vid) => vid.generation_mode !== "text_overlay"
+                    ).length
+                  }
                 </span>
               </button>
               <button
@@ -774,7 +794,11 @@ export default function ContentLibraryPage() {
               >
                 <span>✨ Text Overlays</span>
                 <span className="text-xs px-2 py-0.5 bg-gray-200 dark:bg-gray-600 rounded-full">
-                  {allVideos.filter((vid) => vid.generation_mode === "text_overlay").length}
+                  {
+                    allVideos.filter(
+                      (vid) => vid.generation_mode === "text_overlay"
+                    ).length
+                  }
                 </span>
               </button>
             </div>
@@ -1048,142 +1072,198 @@ export default function ContentLibraryPage() {
                         className="card rounded-lg overflow-hidden group cursor-pointer hover:shadow-lg transition-shadow"
                         onClick={() => handleImageClick(image, index)}
                       >
-                      {/* Image */}
-                      <div className="relative bg-gray-100 dark:bg-gray-800 aspect-square">
-                        <img
-                          src={image.image_url}
-                          alt={image.prompt}
-                          className="w-full h-full object-cover"
-                        />
-                        {/* Badge - Different types */}
-                        {(() => {
-                          // Debug: Log metadata to console
-                          if (typeof window !== 'undefined' && image.metadata) {
-                            console.log('Image metadata for ID', image.id, ':', image.metadata);
-                          }
+                        {/* Image */}
+                        <div className="relative bg-gray-100 dark:bg-gray-800 aspect-square">
+                          <img
+                            src={image.image_url}
+                            alt={image.prompt}
+                            className="w-full h-full object-cover"
+                          />
+                          {/* Badge - Different types */}
+                          {(() => {
+                            // Debug: Log metadata to console
+                            if (
+                              typeof window !== "undefined" &&
+                              image.metadata
+                            ) {
+                              console.log(
+                                "Image metadata for ID",
+                                image.id,
+                                ":",
+                                image.metadata
+                              );
+                            }
 
-                          if (image.metadata?.is_edited) {
-                            return (
-                              <div className="absolute top-3 right-3 bg-blue-600 to-blue-700 text-white px-2 py-1 rounded-full text-xs font-medium">
-                                EDITED ({image.metadata.operation_type})
-                              </div>
-                            );
-                          } else if (image.metadata?.text_overlay) {
-                            return (
-                              <div className="absolute top-3 right-3 bg-orange-600 to-orange-700 text-white px-2 py-1 rounded-full text-xs font-medium">
-                                OVERLAY
-                              </div>
-                            );
-                          } else if (image.metadata?.image_overlay) {
-                            return (
-                              <div className="absolute top-3 right-3 bg-green-600 to-green-700 text-white px-2 py-1 rounded-full text-xs font-medium">
-                                LAYERS
-                              </div>
-                            );
-                          } else {
-                            return (
-                              <div className="absolute top-3 right-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white px-2 py-1 rounded-full text-xs font-medium">
-                                PREMIUM
-                              </div>
-                            );
-                          }
-                        })()}
-                        {/* Thumbnail Notice */}
-                        <div className="absolute top-3 left-3 bg-black/50 text-white px-2 py-1 rounded-full text-xs">
-                          ⬇ THUMB
+                            if (image.metadata?.is_edited) {
+                              return (
+                                <div className="absolute top-3 right-3 bg-blue-600 to-blue-700 text-white px-2 py-1 rounded-full text-xs font-medium">
+                                  EDITED ({image.metadata.operation_type})
+                                </div>
+                              );
+                            } else if (image.metadata?.text_overlay) {
+                              return (
+                                <div className="absolute top-3 right-3 bg-orange-600 to-orange-700 text-white px-2 py-1 rounded-full text-xs font-medium">
+                                  OVERLAY
+                                </div>
+                              );
+                            } else if (image.metadata?.image_overlay) {
+                              return (
+                                <div className="absolute top-3 right-3 bg-green-600 to-green-700 text-white px-2 py-1 rounded-full text-xs font-medium">
+                                  LAYERS
+                                </div>
+                              );
+                            } else {
+                              return (
+                                <div className="absolute top-3 right-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white px-2 py-1 rounded-full text-xs font-medium">
+                                  PREMIUM
+                                </div>
+                              );
+                            }
+                          })()}
+                          {/* Thumbnail Notice */}
+                          <div className="absolute top-3 left-3 bg-black/50 text-white px-2 py-1 rounded-full text-xs">
+                            ⬇ THUMB
+                          </div>
                         </div>
-                      </div>
 
-                      {/* Meta Info */}
-                      <div className="p-3">
-                        <div className="flex items-center justify-between mb-1">
-                          <span
-                            className="text-xs font-medium"
-                            style={{ color: "var(--text-primary)" }}
-                          >
-                            {image.image_type}
-                          </span>
-                          <span
-                            className="text-xs"
+                        {/* Meta Info */}
+                        <div className="p-3">
+                          <div className="flex items-center justify-between mb-1">
+                            <span
+                              className="text-xs font-medium"
+                              style={{ color: "var(--text-primary)" }}
+                            >
+                              {image.image_type}
+                            </span>
+                            <span
+                              className="text-xs"
+                              style={{ color: "var(--text-secondary)" }}
+                            >
+                              {image.aspect_ratio}
+                            </span>
+                          </div>
+                          <p
+                            className="text-xs line-clamp-2 mb-2"
                             style={{ color: "var(--text-secondary)" }}
                           >
-                            {image.aspect_ratio}
-                          </span>
-                        </div>
-                        <p
-                          className="text-xs line-clamp-2 mb-2"
-                          style={{ color: "var(--text-secondary)" }}
-                        >
-                          {image.prompt}
-                        </p>
-                        <div
-                          className="flex items-center justify-between text-xs"
-                          style={{ color: "var(--text-secondary)" }}
-                        >
-                          <span>{image.provider}</span>
-                          <span>
-                            {new Date(image.created_at).toLocaleDateString()}
-                          </span>
-                        </div>
-                        {/* Action Buttons */}
-                        <div className="flex items-center gap-1 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDownloadImage(image);
-                            }}
-                            className="flex-1 text-xs px-2 py-1 bg-green-600 hover:bg-green-700 text-white rounded transition flex items-center justify-center gap-1"
-                            title="Download"
+                            {image.prompt}
+                          </p>
+                          <div
+                            className="flex items-center justify-between text-xs"
+                            style={{ color: "var(--text-secondary)" }}
                           >
-                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                            </svg>
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              // TODO: Generate similar image
-                              toast.info("Generate Similar feature coming soon!");
-                            }}
-                            className="flex-1 text-xs px-2 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded transition flex items-center justify-center gap-1"
-                            title="Generate Similar"
-                          >
-                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                            </svg>
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              // Navigate to video generation with this image
-                              router.push(`/content/video?campaign=${image.campaign_id}&image=${encodeURIComponent(image.image_url)}`);
-                            }}
-                            className="flex-1 text-xs px-2 py-1 bg-red-600 hover:bg-red-700 text-white rounded transition flex items-center justify-center gap-1"
-                            title="Generate Video"
-                          >
-                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                            </svg>
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (image.source === 'edited') {
-                                handleDeleteEditedImage(image.id);
-                              } else {
-                                handleDeleteImage(image.id);
-                              }
-                            }}
-                            className="flex-1 text-xs px-2 py-1 bg-gray-600 hover:bg-red-700 text-white rounded transition flex items-center justify-center gap-1"
-                            title="Delete"
-                          >
-                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
-                          </button>
+                            <span>{image.provider}</span>
+                            <span>
+                              {new Date(image.created_at).toLocaleDateString()}
+                            </span>
+                          </div>
+                          {/* Action Buttons */}
+                          <div className="flex items-center gap-1 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDownloadImage(image);
+                              }}
+                              className="flex-1 text-xs px-2 py-1 bg-green-600 hover:bg-green-700 text-white rounded transition flex items-center justify-center gap-1"
+                              title="Download"
+                            >
+                              <svg
+                                className="w-3 h-3"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                                />
+                              </svg>
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                // TODO: Generate similar image
+                                toast.info(
+                                  "Generate Similar feature coming soon!"
+                                );
+                              }}
+                              className="flex-1 text-xs px-2 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded transition flex items-center justify-center gap-1"
+                              title="Generate Similar"
+                            >
+                              <svg
+                                className="w-3 h-3"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                                />
+                              </svg>
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                // Navigate to video generation with this image
+                                router.push(
+                                  `/content/video?campaign=${
+                                    image.campaign_id
+                                  }&image=${encodeURIComponent(
+                                    image.image_url
+                                  )}`
+                                );
+                              }}
+                              className="flex-1 text-xs px-2 py-1 bg-red-600 hover:bg-red-700 text-white rounded transition flex items-center justify-center gap-1"
+                              title="Generate Video"
+                            >
+                              <svg
+                                className="w-3 h-3"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+                                />
+                              </svg>
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (image.source === "edited") {
+                                  handleDeleteEditedImage(image.id);
+                                } else {
+                                  handleDeleteImage(image.id);
+                                }
+                              }}
+                              className="flex-1 text-xs px-2 py-1 bg-gray-600 hover:bg-red-700 text-white rounded transition flex items-center justify-center gap-1"
+                              title="Delete"
+                            >
+                              <svg
+                                className="w-3 h-3"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                />
+                              </svg>
+                            </button>
+                          </div>
                         </div>
                       </div>
-                    </div>
                     ))}
                   </div>
                 </>
@@ -1288,7 +1368,9 @@ export default function ContentLibraryPage() {
                             className="text-xs font-medium"
                             style={{ color: "var(--text-primary)" }}
                           >
-                            {video.generation_mode?.replace("_", " ").toUpperCase()}
+                            {video.generation_mode
+                              ?.replace("_", " ")
+                              .toUpperCase()}
                           </span>
                           <span
                             className="text-xs"
@@ -1324,9 +1406,24 @@ export default function ContentLibraryPage() {
                             className="flex-1 text-xs px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded transition flex items-center justify-center gap-1"
                             title="View Video"
                           >
-                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            <svg
+                              className="w-3 h-3"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
+                              />
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                              />
                             </svg>
                           </button>
                           <button
@@ -1337,21 +1434,45 @@ export default function ContentLibraryPage() {
                             className="flex-1 text-xs px-2 py-1 bg-yellow-600 hover:bg-yellow-700 text-white rounded transition flex items-center justify-center gap-1"
                             title="Select Thumbnail"
                           >
-                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            <svg
+                              className="w-3 h-3"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                              />
                             </svg>
                           </button>
                           {video.generation_mode !== "text_overlay" && (
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                handleOpenVideoEditor(video.video_url, video.campaign_id, video.prompt);
+                                handleOpenVideoEditor(
+                                  video.video_url,
+                                  video.campaign_id,
+                                  video.prompt
+                                );
                               }}
                               className="flex-1 text-xs px-2 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded transition flex items-center justify-center gap-1"
                               title="Add Text Overlays"
                             >
-                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                              <svg
+                                className="w-3 h-3"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"
+                                />
                               </svg>
                             </button>
                           )}
@@ -1359,13 +1480,25 @@ export default function ContentLibraryPage() {
                             onClick={(e) => {
                               e.stopPropagation();
                               // Generate similar video
-                              toast.info("Generate Similar feature coming soon!");
+                              toast.info(
+                                "Generate Similar feature coming soon!"
+                              );
                             }}
                             className="flex-1 text-xs px-2 py-1 bg-green-600 hover:bg-green-700 text-white rounded transition flex items-center justify-center gap-1"
                             title="Generate Similar"
                           >
-                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            <svg
+                              className="w-3 h-3"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                              />
                             </svg>
                           </button>
                           <button
@@ -1376,8 +1509,18 @@ export default function ContentLibraryPage() {
                             className="flex-1 text-xs px-2 py-1 bg-gray-600 hover:bg-red-700 text-white rounded transition flex items-center justify-center gap-1"
                             title="Delete"
                           >
-                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            <svg
+                              className="w-3 h-3"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                              />
                             </svg>
                           </button>
                         </div>
@@ -1526,8 +1669,16 @@ export default function ContentLibraryPage() {
                 {/* Badge - Different types */}
                 {(() => {
                   // Debug: Log metadata to console
-                  if (typeof window !== 'undefined' && selectedLibraryImage.metadata) {
-                    console.log('Modal Image metadata for ID', selectedLibraryImage.id, ':', selectedLibraryImage.metadata);
+                  if (
+                    typeof window !== "undefined" &&
+                    selectedLibraryImage.metadata
+                  ) {
+                    console.log(
+                      "Modal Image metadata for ID",
+                      selectedLibraryImage.id,
+                      ":",
+                      selectedLibraryImage.metadata
+                    );
                   }
 
                   if (selectedLibraryImage.metadata?.is_edited) {
@@ -1649,18 +1800,27 @@ export default function ContentLibraryPage() {
                       // Don't encode here - let URLSearchParams handle it properly
                       // For edited images, use the actual R2 URL (not the proxy URL)
                       let imageUrlToUse = selectedLibraryImage.image_url;
-                      if (selectedLibraryImage.metadata?.is_edited && selectedLibraryImage.metadata?.r2_url) {
+                      if (
+                        selectedLibraryImage.metadata?.is_edited &&
+                        selectedLibraryImage.metadata?.r2_url
+                      ) {
                         imageUrlToUse = selectedLibraryImage.metadata.r2_url;
                       }
 
                       const params = new URLSearchParams({
                         imageUrl: imageUrlToUse,
                         campaignId: selectedLibraryImage.campaign_id.toString(),
-                        imageId: selectedLibraryImage.id.toString()
+                        imageId: selectedLibraryImage.id.toString(),
                       });
                       // For edited images, also pass the original image path
-                      if (selectedLibraryImage.metadata?.is_edited && selectedLibraryImage.metadata?.original_image_path) {
-                        params.set('originalImagePath', selectedLibraryImage.metadata.original_image_path);
+                      if (
+                        selectedLibraryImage.metadata?.is_edited &&
+                        selectedLibraryImage.metadata?.original_image_path
+                      ) {
+                        params.set(
+                          "originalImagePath",
+                          selectedLibraryImage.metadata.original_image_path
+                        );
                       }
                       router.push(`/image-editor?${params.toString()}`);
                     }}
@@ -1706,7 +1866,7 @@ export default function ContentLibraryPage() {
                   ) : (
                     <button
                       onClick={() => {
-                        if (selectedLibraryImage.source === 'edited') {
+                        if (selectedLibraryImage.source === "edited") {
                           handleDeleteEditedImage(selectedLibraryImage.id);
                         } else {
                           handleDeleteImage(selectedLibraryImage.id);
@@ -1766,7 +1926,9 @@ export default function ContentLibraryPage() {
                 new_image_url: image.image_url,
                 campaign_id: image.campaign_id,
               });
-              toast.success("New edited version saved! Original image preserved.");
+              toast.success(
+                "New edited version saved! Original image preserved."
+              );
               setShowUnifiedEditor(false);
               setIsLibraryModalOpen(false);
               refetchImages();
@@ -1801,7 +1963,9 @@ export default function ContentLibraryPage() {
         }}
         onConfirm={() => {
           // Check if we're deleting an edited image by checking if imageToDelete exists in edited images
-          const isEditedImage = allEditedImages.some(img => img.id === imageToDelete);
+          const isEditedImage = allEditedImages.some(
+            (img) => img.id === imageToDelete
+          );
           if (isEditedImage) {
             confirmDeleteEditedImage();
           } else {
@@ -1865,8 +2029,18 @@ export default function ContentLibraryPage() {
                 }}
                 className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
             </div>
@@ -1874,7 +2048,9 @@ export default function ContentLibraryPage() {
             {isGeneratingThumbnails ? (
               <div className="text-center py-12">
                 <div className="animate-spin h-12 w-12 border-4 border-red-600 border-t-transparent rounded-full mx-auto mb-4"></div>
-                <p style={{ color: "var(--text-secondary)" }}>Generating thumbnail options...</p>
+                <p style={{ color: "var(--text-secondary)" }}>
+                  Generating thumbnail options...
+                </p>
               </div>
             ) : thumbnailOptions.length > 0 ? (
               <>
@@ -1882,24 +2058,31 @@ export default function ContentLibraryPage() {
                   Choose a thumbnail for your video:
                 </p>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                  {thumbnailOptions.map((thumbnailDataUrl: string, index: number) => (
-                    <div
-                      key={index}
-                      onClick={() => handleSelectThumbnailOption(thumbnailDataUrl, index)}
-                      className="cursor-pointer rounded-lg overflow-hidden border-2 border-transparent hover:border-blue-500 transition-all transform hover:scale-105"
-                    >
-                      <img
-                        src={thumbnailDataUrl}
-                        alt={`Thumbnail option ${index + 1}`}
-                        className="w-full aspect-video object-cover"
-                      />
-                      <div className="p-2 bg-gray-100 dark:bg-gray-800 text-center">
-                        <span className="text-xs font-medium" style={{ color: "var(--text-primary)" }}>
-                          Option {index + 1}
-                        </span>
+                  {thumbnailOptions.map(
+                    (thumbnailDataUrl: string, index: number) => (
+                      <div
+                        key={index}
+                        onClick={() =>
+                          handleSelectThumbnailOption(thumbnailDataUrl, index)
+                        }
+                        className="cursor-pointer rounded-lg overflow-hidden border-2 border-transparent hover:border-blue-500 transition-all transform hover:scale-105"
+                      >
+                        <img
+                          src={thumbnailDataUrl}
+                          alt={`Thumbnail option ${index + 1}`}
+                          className="w-full aspect-video object-cover"
+                        />
+                        <div className="p-2 bg-gray-100 dark:bg-gray-800 text-center">
+                          <span
+                            className="text-xs font-medium"
+                            style={{ color: "var(--text-primary)" }}
+                          >
+                            Option {index + 1}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    )
+                  )}
                 </div>
               </>
             ) : (
@@ -1918,7 +2101,9 @@ export default function ContentLibraryPage() {
                     d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                   />
                 </svg>
-                <p style={{ color: "var(--text-secondary)" }}>No thumbnail options available</p>
+                <p style={{ color: "var(--text-secondary)" }}>
+                  No thumbnail options available
+                </p>
               </div>
             )}
           </div>

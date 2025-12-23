@@ -646,11 +646,11 @@ export function ImageEditorCanvas({
               </>
             )}
             <button
-              onClick={handleGenerate}
+              onClick={selectedEditTool === "overlay" ? handleSaveOverlays : handleGenerate}
               disabled={isProcessing || !imageLoaded}
               className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
             >
-              {isProcessing ? "Processing..." : "Generate"}
+              {isProcessing ? "Processing..." : selectedEditTool === "overlay" ? "Save" : "Generate"}
             </button>
           </div>
         </div>
