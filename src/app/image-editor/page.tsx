@@ -127,10 +127,15 @@ export default function ImageEditorPage() {
     const file = event.target.files?.[0];
     if (file && file.type.startsWith("image/")) {
       setUploadedImageFile(file);
-      // Create a local URL for the uploaded file
-      const url = URL.createObjectURL(file);
-      setOriginalImage(url);
-      setActiveImage(url);
+
+      // Convert to data URL (base64) for persistence across page reloads
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const dataUrl = e.target?.result as string;
+        setOriginalImage(dataUrl);
+        setActiveImage(dataUrl);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
