@@ -48,21 +48,7 @@ export default function DashboardPage() {
   return (
     <AuthGate requiredRole="user">
       <div className="p-6 space-y-6">
-        {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold text-[var(--text-primary)]">
-            Dashboard
-          </h1>
-          <p className="text-[var(--text-secondary)] mt-2">
-            {isProductCreator
-              ? "Manage your products and track affiliate performance."
-              : isBusinessOwner
-              ? "Promote your business and grow your affiliate network."
-              : "Manage your campaigns and content."}
-          </p>
-        </div>
-
-        {/* Conditional Dashboard Cards */}
+        {/* Conditional Dashboard */}
         {isProductCreator ? (
           <ProductCreatorDashboard />
         ) : isBusinessOwner ? (
@@ -1114,192 +1100,54 @@ function AffiliateMarketerDashboard() {
 
   return (
     <>
-      {/* Quick Stats Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
-        <div className="card p-4 border-l-4 border-blue-500">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-[var(--text-secondary)] mb-1">
-                Total Campaigns
-              </p>
-              <p
-                className={`text-3xl text-white-600 dark:text-white-400 ${getUsageColor(
-                  stats?.totalCampaigns || 0,
-                  usageLimits?.limits?.campaigns
-                )}`}
-              >
-                {formatUsage(
-                  stats?.totalCampaigns || 0,
-                  usageLimits?.limits?.campaigns
-                )}
-              </p>
-              {usageLimits?.limits?.campaigns && (
-                <div className="mt-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
-                  <div
-                    className="bg-blue-500 h-1.5 rounded-full transition-all"
-                    style={{
-                      width: `${getProgress(
-                        stats?.totalCampaigns || 0,
-                        usageLimits?.limits?.campaigns
-                      )}%`,
-                    }}
-                  />
-                </div>
-              )}
-            </div>
-            <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-              <span className="text-2xl">📢</span>
-            </div>
-          </div>
+      {/* Header Row with Stats */}
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-2">
+        {/* Title */}
+        <div>
+          <h1 className="text-3xl font-bold text-[var(--text-primary)]">
+            Dashboard
+          </h1>
+          <p className="text-[var(--text-secondary)] mt-1">
+            Manage your campaigns and content.
+          </p>
         </div>
 
-        <div className="card p-4 border-l-4 border-green-500">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-[var(--text-secondary)] mb-1">
-                Active Campaigns
-              </p>
-              <p
-                className={`text-3xl text-white-600 dark:text-white-400 ${getUsageColor(
-                  stats?.activeCampaigns || 0,
-                  usageLimits?.limits?.campaigns
-                )}`}
-              >
-                {formatUsage(
-                  stats?.activeCampaigns || 0,
-                  usageLimits?.limits?.active_campaigns
-                )}
-              </p>
-              {usageLimits?.limits?.campaigns && (
-                <div className="mt-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
-                  <div
-                    className="bg-blue-500 h-1.5 rounded-full transition-all"
-                    style={{
-                      width: `${getProgress(
-                        stats?.activeCampaigns || 0,
-                        usageLimits?.limits?.active_campaigns
-                      )}%`,
-                    }}
-                  />
-                </div>
-              )}
-            </div>
-            <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
-              <span className="text-2xl">✓</span>
-            </div>
+        {/* Compact Stats */}
+        <div className="flex flex-wrap gap-2">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+            <span className="text-sm">📢</span>
+            <span className="text-xs text-[var(--text-secondary)]">Campaigns</span>
+            <span className="text-sm font-semibold text-blue-600 dark:text-blue-400">
+              {formatUsage(stats?.totalCampaigns || 0, usageLimits?.limits?.campaigns)}
+            </span>
           </div>
-        </div>
-
-        <div className="card p-4 border-l-4 border-purple-500">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-[var(--text-secondary)] mb-1">
-                Text Content
-              </p>
-              <p
-                className={`text-3xl text-white-600 dark:text-white-400 ${getUsageColor(
-                  usageLimits?.usage?.text_content || 0,
-                  usageLimits?.limits?.text_content
-                )}`}
-              >
-                {formatUsage(
-                  usageLimits?.usage?.text_content ||
-                    stats?.textContentPieces ||
-                    0,
-                  usageLimits?.limits?.text_content
-                )}
-              </p>
-              {usageLimits?.limits?.text_content && (
-                <div className="mt-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
-                  <div
-                    className="bg-purple-500 h-1.5 rounded-full transition-all"
-                    style={{
-                      width: `${getProgress(
-                        usageLimits?.usage?.text_content || 0,
-                        usageLimits?.limits?.text_content
-                      )}%`,
-                    }}
-                  />
-                </div>
-              )}
-            </div>
-            <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
-              <span className="text-2xl">✍️</span>
-            </div>
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
+            <span className="text-sm">✓</span>
+            <span className="text-xs text-[var(--text-secondary)]">Active</span>
+            <span className="text-sm font-semibold text-green-600 dark:text-green-400">
+              {formatUsage(stats?.activeCampaigns || 0, usageLimits?.limits?.active_campaigns)}
+            </span>
           </div>
-        </div>
-
-        <div className="card p-4 border-l-4 border-pink-500">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-[var(--text-secondary)] mb-1">
-                Images
-              </p>
-              <p
-                className={`text-3xl text-white-600 dark:text-white-400 ${getUsageColor(
-                  usageLimits?.usage?.images || 0,
-                  usageLimits?.limits?.images
-                )}`}
-              >
-                {formatUsage(
-                  usageLimits?.usage?.images || stats?.imageContentPieces || 0,
-                  usageLimits?.limits?.images
-                )}
-              </p>
-              {usageLimits?.limits?.images && (
-                <div className="mt-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
-                  <div
-                    className="bg-pink-500 h-1.5 rounded-full transition-all"
-                    style={{
-                      width: `${getProgress(
-                        usageLimits?.usage?.images || 0,
-                        usageLimits?.limits?.images
-                      )}%`,
-                    }}
-                  />
-                </div>
-              )}
-            </div>
-            <div className="w-12 h-12 bg-pink-100 dark:bg-pink-900/30 rounded-lg flex items-center justify-center">
-              <span className="text-2xl">🖼️</span>
-            </div>
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800">
+            <span className="text-sm">✍️</span>
+            <span className="text-xs text-[var(--text-secondary)]">Text</span>
+            <span className="text-sm font-semibold text-purple-600 dark:text-purple-400">
+              {formatUsage(usageLimits?.usage?.text_content || stats?.textContentPieces || 0, usageLimits?.limits?.text_content)}
+            </span>
           </div>
-        </div>
-
-        <div className="card p-4 border-l-4 border-red-500">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-[var(--text-secondary)] mb-1">
-                Videos
-              </p>
-              <p
-                className={`text-3xl text-white-600 dark:text-white-400 ${getUsageColor(
-                  usageLimits?.usage?.videos || 0,
-                  usageLimits?.limits?.videos
-                )}`}
-              >
-                {formatUsage(
-                  usageLimits?.usage?.videos || stats?.videoContentPieces || 0,
-                  usageLimits?.limits?.videos
-                )}
-              </p>
-              {usageLimits?.limits?.videos && (
-                <div className="mt-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
-                  <div
-                    className="bg-red-500 h-1.5 rounded-full transition-all"
-                    style={{
-                      width: `${getProgress(
-                        usageLimits?.usage?.videos || 0,
-                        usageLimits?.limits?.videos
-                      )}%`,
-                    }}
-                  />
-                </div>
-              )}
-            </div>
-            <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center">
-              <span className="text-2xl">🎬</span>
-            </div>
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-pink-50 dark:bg-pink-900/20 border border-pink-200 dark:border-pink-800">
+            <span className="text-sm">🖼️</span>
+            <span className="text-xs text-[var(--text-secondary)]">Images</span>
+            <span className="text-sm font-semibold text-pink-600 dark:text-pink-400">
+              {formatUsage(usageLimits?.usage?.images || stats?.imageContentPieces || 0, usageLimits?.limits?.images)}
+            </span>
+          </div>
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+            <span className="text-sm">🎬</span>
+            <span className="text-xs text-[var(--text-secondary)]">Videos</span>
+            <span className="text-sm font-semibold text-red-600 dark:text-red-400">
+              {formatUsage(usageLimits?.usage?.videos || stats?.videoContentPieces || 0, usageLimits?.limits?.videos)}
+            </span>
           </div>
         </div>
       </div>
