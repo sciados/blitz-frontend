@@ -602,7 +602,11 @@ export function ImageEditorCanvas({
 
   // Get canvas with filters applied (baked into pixel data)
   const getCanvasWithFilters = () => {
-    if (!canvasRef.current) return null;
+    console.log("ImageEditorCanvas: getCanvasWithFilters called", { filterSettings, hasCanvasRef: !!canvasRef.current });
+    if (!canvasRef.current) {
+      console.error("ImageEditorCanvas: canvasRef.current is null");
+      return null;
+    }
 
     const sourceCanvas = canvasRef.current;
     const tempCanvas = document.createElement('canvas');
@@ -610,7 +614,10 @@ export function ImageEditorCanvas({
     tempCanvas.height = sourceCanvas.height;
     const tempCtx = tempCanvas.getContext('2d');
 
-    if (!tempCtx) return null;
+    if (!tempCtx) {
+      console.error("ImageEditorCanvas: tempCtx is null");
+      return null;
+    }
 
     // Build CSS filter string
     let filterString = 'none';
@@ -623,13 +630,16 @@ export function ImageEditorCanvas({
       const vignette = filterSettings.vignette ? `drop-shadow(0 0 ${filterSettings.vignette}px rgba(0,0,0,0.5))` : '';
 
       filterString = `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%) hue-rotate(${temperature}deg) sepia(${tint}%) ${vignette}`;
+      console.log("ImageEditorCanvas: applying filter", filterString);
     }
 
     // Apply filter and draw
     tempCtx.filter = filterString;
     tempCtx.drawImage(sourceCanvas, 0, 0);
 
-    return tempCanvas.toDataURL("image/png");
+    const dataUrl = tempCanvas.toDataURL("image/png");
+    console.log("ImageEditorCanvas: created data URL", { dataUrlLength: dataUrl?.length });
+    return dataUrl;
   };
 
   // Export functions for parent component

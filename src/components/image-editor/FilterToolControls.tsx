@@ -141,9 +141,17 @@ export function FilterToolControls({ isProcessing, onApplyFilter }: FilterToolCo
   const handleApply = () => {
     // Convert canvas with filters applied to data URL
     const canvasAPI = (window as any).imageEditorCanvas;
+    console.log("FilterToolControls: handleApply called", { canvasAPI, hasGetCanvasWithFilters: canvasAPI?.getCanvasWithFilters });
     if (canvasAPI && canvasAPI.getCanvasWithFilters) {
       const filteredDataUrl = canvasAPI.getCanvasWithFilters();
-      onApplyFilter(filteredDataUrl);
+      console.log("FilterToolControls: got data URL", filteredDataUrl);
+      if (filteredDataUrl) {
+        onApplyFilter(filteredDataUrl);
+      } else {
+        console.error("FilterToolControls: getCanvasWithFilters returned null/undefined");
+      }
+    } else {
+      console.error("FilterToolControls: canvasAPI or getCanvasWithFilters not available", { canvasAPI });
     }
   };
 
