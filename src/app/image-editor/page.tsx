@@ -58,17 +58,109 @@ export default function ImageEditorPage() {
   const [outpaintDown, setOutpaintDown] = useState(0);
   const [creativity, setCreativity] = useState(0.5);
 
+  // Selection interface state
+  const [selectedCampaignId, setSelectedCampaignId] = useState<string>("");
+  const [uploadedImageFile, setUploadedImageFile] = useState<File | null>(null);
+  const [availableImages, setAvailableImages] = useState<any[]>([]);
+  const [availableCampaigns, setAvailableCampaigns] = useState<any[]>([]);
+
   useEffect(() => {
-    if (!imageUrl || !campaignId) {
-      setError("Missing required parameters: imageUrl and campaignId");
+    // If both parameters are provided, load the image directly
+    if (imageUrl && campaignId) {
+      setOriginalImage(imageUrl);
+      setActiveImage(imageUrl);
       setLoading(false);
+    } else {
+      // No parameters - show selection interface and fetch campaigns
+      setLoading(false);
+      fetchCampaigns();
+    }
+  }, [imageUrl, campaignId]);
+
+  // Fetch campaigns for selection
+  const fetchCampaigns = async () => {
+    try {
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(`${apiBaseUrl}/api/campaigns`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        credentials: "include",
+      });
+
+      const data = await response.json();
+      setAvailableCampaigns(data || []);
+    } catch (error) {
+      console.error("Failed to fetch campaigns:", error);
+    }
+  };
+
+  // Handle campaign selection
+  const handleCampaignSelect = async (campaignId: string) => {
+    setSelectedCampaignId(campaignId);
+
+    if (campaignId) {
+      try {
+        const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+        const token = localStorage.getItem("token");
+
+        // Fetch images for this campaign
+        const response = await fetch(`${apiBaseUrl}/api/content/campaign/${campaignId}/images`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          credentials: "include",
+        });
+
+        const data = await response.json();
+        setAvailableImages(data.images || []);
+      } catch (error) {
+        console.error("Failed to fetch images:", error);
+      }
+    }
+  };
+
+  // Handle file upload
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file && file.type.startsWith("image/")) {
+      setUploadedImageFile(file);
+      // Create a local URL for the uploaded file
+      const url = URL.createObjectURL(file);
+      setOriginalImage(url);
+      setActiveImage(url);
+    }
+  };
+
+  // Handle image selection from campaign
+  const handleImageSelect = (imageUrl: string) => {
+    setOriginalImage(imageUrl);
+    setActiveImage(imageUrl);
+  };
+
+  // Start editing with selected campaign and image
+  const startEditing = () => {
+    if (!selectedCampaignId) {
+      alert("Please select a campaign");
       return;
     }
 
-    setOriginalImage(imageUrl);
-    setActiveImage(imageUrl); // Set the original as the initial active image
-    setLoading(false);
-  }, [imageUrl, campaignId]);
+    if (!originalImage) {
+      alert("Please select or upload an image");
+      return;
+    }
+
+    // Update URL with selected parameters
+    const params = new URLSearchParams(window.location.search);
+    params.set("campaignId", selectedCampaignId);
+    params.set("imageUrl", originalImage);
+    window.history.replaceState({}, "", `${window.location.pathname}?${params.toString()}`);
+
+    // Update state
+    window.location.reload();
+  };
 
   const handleEdit = async (maskDataUrl?: string) => {
     if (!campaignId || !imageUrl) {
@@ -434,6 +526,143 @@ export default function ImageEditorPage() {
           >
             Go Back
           </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Show selection interface if no campaign or image is selected
+  if (!imageUrl || !campaignId) {
+    return (
+      <div className="p-6 bg-gray-50 min-h-screen">
+        <div className="max-w-6xl mx-auto">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold mb-2" style={{ color: "var(--text-primary)" }}>
+              AI Image Editor
+            </h1>
+            <p style={{ color: "var(--text-secondary)" }}>
+              Select a campaign and image to start editing, or upload your own image
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Campaign Selection */}
+            <div className="card rounded-lg p-6">
+              <h2 className="text-xl font-semibold mb-4" style={{ color: "var(--text-primary)" }}>
+                Select Campaign
+              </h2>
+              <select
+                value={selectedCampaignId}
+                onChange={(e) => handleCampaignSelect(e.target.value)}
+                className="w-full px-4 py-2 border border-[var(--border-color)] rounded-lg bg-[var(--bg-secondary)] text-[var(--text-primary)]"
+              >
+                <option value="">Choose a campaign...</option>
+                {availableCampaigns.map((campaign) => (
+                  <option key={campaign.id} value={campaign.id}>
+                    {campaign.name} (ID: {campaign.id})
+                  </option>
+                ))}
+              </select>
+
+              {selectedCampaignId && availableImages.length > 0 && (
+                <div className="mt-4">
+                  <h3 className="text-sm font-medium mb-2" style={{ color: "var(--text-primary)" }}>
+                    Or select an existing image:
+                  </h3>
+                  <div className="grid grid-cols-3 gap-2 max-h-64 overflow-y-auto">
+                    {availableImages.map((img) => (
+                      <div
+                        key={img.id}
+                        className="cursor-pointer border-2 border-transparent hover:border-blue-500 rounded overflow-hidden"
+                        onClick={() => handleImageSelect(img.image_url)}
+                      >
+                        <img
+                          src={img.image_url}
+                          alt="Campaign image"
+                          className="w-full h-24 object-cover"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* File Upload */}
+            <div className="card rounded-lg p-6">
+              <h2 className="text-xl font-semibold mb-4" style={{ color: "var(--text-primary)" }}>
+                Upload Image
+              </h2>
+              <div className="border-2 border-dashed border-[var(--border-color)] rounded-lg p-8 text-center">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                  id="file-upload"
+                />
+                <label
+                  htmlFor="file-upload"
+                  className="cursor-pointer flex flex-col items-center"
+                >
+                  <svg
+                    className="w-12 h-12 mb-4 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                    />
+                  </svg>
+                  <span className="text-sm text-gray-600">
+                    Click to upload an image from your computer
+                  </span>
+                </label>
+              </div>
+
+              {uploadedImageFile && (
+                <div className="mt-4">
+                  <p className="text-sm text-gray-600">
+                    Selected: {uploadedImageFile.name}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Preview and Start Button */}
+          {originalImage && (
+            <div className="card rounded-lg p-6 mt-6">
+              <h2 className="text-xl font-semibold mb-4" style={{ color: "var(--text-primary)" }}>
+                Preview
+              </h2>
+              <div className="flex items-center gap-4">
+                <img
+                  src={originalImage}
+                  alt="Selected"
+                  className="max-w-xs max-h-64 rounded-lg shadow"
+                />
+                <div className="flex-1">
+                  <button
+                    onClick={startEditing}
+                    disabled={!selectedCampaignId}
+                    className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed font-semibold"
+                  >
+                    Start Editing
+                  </button>
+                  {!selectedCampaignId && (
+                    <p className="text-sm text-red-600 mt-2">
+                      Please select a campaign to continue
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );

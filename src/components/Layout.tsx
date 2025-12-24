@@ -311,9 +311,8 @@ export default function Layout({ children }: LayoutProps) {
     return [
       { href: "/dashboard", label: "Dashboard", icon: "🏠" },
       { href: "/products", label: "Product Library", icon: "📦" },
-            { href: "/image-editor", label: "AI Image Editor", icon: "🎨" },
       { href: "/campaigns", label: "Campaigns", icon: "📢" },
-            { href: "/image-editor", label: "AI Image Editor", icon: "🎨" },
+      { href: "/image-editor", label: "AI Image Editor", icon: "🎨" },
       {
         href: "/content",
         label: "Content",
