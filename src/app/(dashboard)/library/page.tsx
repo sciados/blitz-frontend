@@ -364,40 +364,11 @@ export default function ContentLibraryPage() {
     ...allEditedImages.map((img) => ({ ...img, source: "edited" as const })),
   ];
 
-  // Debug: Log all combined images
-  if (typeof window !== "undefined") {
-    console.log("=== COMBINED IMAGES DEBUG ===");
-    console.log("Total combined images:", combinedImages.length);
-    console.log("Original images:", allImages.length);
-    console.log("Edited images:", allEditedImages.length);
-    combinedImages.forEach((img, i) => {
-      console.log(`Image ${i + 1}:`, {
-        id: img.id,
-        source: img.source,
-        edit_tool: img.metadata?.edit_tool,
-        text_overlay: img.metadata?.text_overlay,
-        image_overlay: img.metadata?.image_overlay,
-        operation_type: img.metadata?.operation_type,
-      });
-    });
-    console.log("=== END COMBINED IMAGES DEBUG ===");
-  }
-
   // Filter images based on campaign and filter type
   const filteredImages = combinedImages.filter((image) => {
     // Campaign filter check
-    if (filterCampaignId && image.campaign_id !== filterCampaignId) {
-      // Debug: log if campaign filter is excluding overlay images
-      if (typeof window !== "undefined" && imageFilter === "overlays" &&
-          (image.metadata?.text_overlay === true || image.metadata?.image_overlay === true)) {
-        console.log("Overlays filter - image excluded by campaign filter:", {
-          id: image.id,
-          imageCampaignId: image.campaign_id,
-          selectedCampaignFilter: filterCampaignId,
-        });
-      }
+    if (filterCampaignId && image.campaign_id !== filterCampaignId)
       return false;
-    }
     // Apply image type filter
     if (imageFilter === "original" && image.metadata?.text_overlay === true)
       return false;
@@ -412,18 +383,8 @@ export default function ContentLibraryPage() {
     if (imageFilter === "overlays") {
       const hasTextOverlay = image.metadata?.text_overlay === true;
       const hasImageOverlay = image.metadata?.image_overlay === true;
-      // Debug logging for overlays filter
-      if (typeof window !== "undefined" && (hasTextOverlay || hasImageOverlay)) {
-        console.log("Overlays filter - image passes:", {
-          id: image.id,
-          hasTextOverlay,
-          hasImageOverlay,
-          text_overlay_value: image.metadata?.text_overlay,
-          image_overlay_value: image.metadata?.image_overlay,
-          edit_tool: image.metadata?.edit_tool,
-        });
-      }
-      if (!hasTextOverlay && !hasImageOverlay)
+      const hasEditToolOverlay = image.metadata?.edit_tool === 'overlay';
+      if (!hasTextOverlay && !hasImageOverlay && !hasEditToolOverlay)
         return false;
     }
     if (imageFilter === "inpaint" && image.metadata?.edit_tool !== "inpaint")
@@ -432,24 +393,6 @@ export default function ContentLibraryPage() {
       return false;
     return true;
   });
-
-  // Debug: Log overlay images when overlays filter is selected
-  if (imageFilter === "overlays" && typeof window !== "undefined") {
-    const overlayImages = combinedImages.filter(
-      (img) => img.metadata?.text_overlay === true || img.metadata?.image_overlay === true
-    );
-    console.log("Overlay images for filter:", imageFilter, overlayImages.length);
-    overlayImages.forEach((img, i) => {
-      console.log(`Overlay image ${i + 1}:`, {
-        id: img.id,
-        text_overlay: img.metadata?.text_overlay,
-        image_overlay: img.metadata?.image_overlay,
-        edit_tool: img.metadata?.edit_tool,
-        operation_type: img.metadata?.operation_type,
-        source: img.source,
-      });
-    });
-  }
 
   // Filter videos based on campaign
   const filteredVideos = allVideos.filter((video) => {
@@ -956,7 +899,7 @@ export default function ContentLibraryPage() {
                 <span className="text-xs px-2 py-0.5 bg-gray-200 dark:bg-gray-600 rounded-full">
                   {
                     combinedImages.filter(
-                      (img) => img.metadata?.text_overlay === true || img.metadata?.image_overlay === true
+                      (img) => img.metadata?.text_overlay === true || img.metadata?.image_overlay === true || img.metadata?.edit_tool === 'overlay'
                     ).length
                   }
                 </span>
