@@ -79,6 +79,14 @@ export default function ContentLibraryPage() {
   const [allEditedImages, setAllEditedImages] = useState<LibraryImage[]>([]);
   const [allVideos, setAllVideos] = useState<any[]>([]);
 
+  // Read tab from URL params (e.g., /library?tab=images)
+  useEffect(() => {
+    const tabParam = searchParams.get("tab");
+    if (tabParam === "images" || tabParam === "videos" || tabParam === "text") {
+      setActiveLibraryTab(tabParam);
+    }
+  }, [searchParams]);
+
   // Modal state for library image viewer
   const [selectedLibraryImage, setSelectedLibraryImage] =
     useState<LibraryImage | null>(null);

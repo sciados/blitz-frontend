@@ -1,5 +1,7 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+
 interface ImageEditorToolbarProps {
   selectedTool: 'brush' | 'eraser';
   onToolChange: (tool: 'brush' | 'eraser') => void;
@@ -7,7 +9,6 @@ interface ImageEditorToolbarProps {
   onBrushSizeChange: (size: number) => void;
   onReset: () => void;
   onDownload: () => void;
-  onBack?: () => void;
   isProcessing: boolean;
 }
 
@@ -18,17 +19,13 @@ export function ImageEditorToolbar({
   onBrushSizeChange,
   onReset,
   onDownload,
-  onBack,
   isProcessing,
 }: ImageEditorToolbarProps) {
+  const router = useRouter();
+
   const handleBack = () => {
-    if (onBack) {
-      onBack();
-    } else {
-      // Default: go back to selection interface by clearing URL params
-      window.history.replaceState({}, "", window.location.pathname);
-      window.location.reload();
-    }
+    // Navigate to Content Library with Images tab active
+    router.push("/library?tab=images");
   };
 
   return (
@@ -40,7 +37,7 @@ export function ImageEditorToolbar({
             onClick={handleBack}
             disabled={isProcessing}
             className="flex items-center gap-2 px-3 py-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors disabled:opacity-50"
-            title="Back to image selection"
+            title="Back to Content Library"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
