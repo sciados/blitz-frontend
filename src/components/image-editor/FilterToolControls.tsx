@@ -121,7 +121,10 @@ export function FilterToolControls({ isProcessing, onApplyFilter }: FilterToolCo
   useEffect(() => {
     const canvasAPI = (window as any).imageEditorCanvas;
     if (canvasAPI && canvasAPI.applyFilter) {
+      console.log("FilterToolControls: Applying filter settings:", settings);
       canvasAPI.applyFilter(settings);
+    } else {
+      console.warn("FilterToolControls: Canvas API not available or applyFilter method missing");
     }
   }, [settings]);
 

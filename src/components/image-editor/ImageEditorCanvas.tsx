@@ -84,15 +84,18 @@ export function ImageEditorCanvas({
 
   // Apply filter to canvas
   const applyFilter = (settings: typeof filterSettings) => {
+    console.log("ImageEditorCanvas: applyFilter called with settings:", settings);
     setFilterSettings(settings);
+    console.log("ImageEditorCanvas: filterSettings state updated");
   };
 
   // Expose applyFilter to window for FilterToolControls
   useEffect(() => {
-    (window as any).imageEditorCanvas = {
-      applyFilter,
-    };
-  }, []);
+    if (!(window as any).imageEditorCanvas) {
+      (window as any).imageEditorCanvas = {};
+    }
+    (window as any).imageEditorCanvas.applyFilter = applyFilter;
+  }, [applyFilter]);
 
   // Load image onto canvas
   useEffect(() => {
@@ -601,17 +604,18 @@ export function ImageEditorCanvas({
 
   // Export functions for parent component
   useEffect(() => {
-    (window as any).imageEditorCanvas = {
-      addTextOverlay,
-      addImageOverlay,
-      handleSaveOverlays,
-      textOverlays,
-      imageOverlays,
-      selectedOverlay,
-      setTextOverlays,
-      setImageOverlays,
-      setSelectedOverlay,
-    };
+    if (!(window as any).imageEditorCanvas) {
+      (window as any).imageEditorCanvas = {};
+    }
+    (window as any).imageEditorCanvas.addTextOverlay = addTextOverlay;
+    (window as any).imageEditorCanvas.addImageOverlay = addImageOverlay;
+    (window as any).imageEditorCanvas.handleSaveOverlays = handleSaveOverlays;
+    (window as any).imageEditorCanvas.textOverlays = textOverlays;
+    (window as any).imageEditorCanvas.imageOverlays = imageOverlays;
+    (window as any).imageEditorCanvas.selectedOverlay = selectedOverlay;
+    (window as any).imageEditorCanvas.setTextOverlays = setTextOverlays;
+    (window as any).imageEditorCanvas.setImageOverlays = setImageOverlays;
+    (window as any).imageEditorCanvas.setSelectedOverlay = setSelectedOverlay;
   }, [textOverlays, imageOverlays, selectedOverlay]);
 
   if (!originalImage) {
@@ -640,6 +644,8 @@ export function ImageEditorCanvas({
         return "Describe what your sketch represents";
       case "overlay":
         return "Add text and image overlays. Use the controls on the left.";
+      case "filters":
+        return "Apply color filters and presets to your image. Preview updates in real-time.";
       default:
         return "";
     }
@@ -670,13 +676,15 @@ export function ImageEditorCanvas({
                 </button>
               </>
             )}
-            <button
-              onClick={selectedEditTool === "overlay" ? handleSaveOverlays : handleGenerate}
-              disabled={isProcessing || !imageLoaded}
-              className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
-            >
-              {isProcessing ? "Processing..." : selectedEditTool === "overlay" ? "Save" : "Generate"}
-            </button>
+            {selectedEditTool !== "filters" && (
+              <button
+                onClick={selectedEditTool === "overlay" ? handleSaveOverlays : handleGenerate}
+                disabled={isProcessing || !imageLoaded}
+                className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
+              >
+                {isProcessing ? "Processing..." : selectedEditTool === "overlay" ? "Save" : "Generate"}
+              </button>
+            )}
           </div>
         </div>
         <p className="text-sm text-gray-600">{getToolDescription()}</p>
