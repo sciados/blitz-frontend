@@ -213,9 +213,24 @@ export default function ContentLibraryPage() {
                   fullR2Url
                 )}`;
 
+                // Map operation_type to the correct edit_tool value
+                // This must match what the badge display shows
+                const operationTypeMap: Record<string, string> = {
+                  'edited_text_overlay': 'overlay',
+                  'edited_image_overlay': 'overlay',
+                  'edited_layers': 'overlay',
+                  'edited_filters': 'filters',
+                  'edited_resize': 'resize',
+                  'edited_inpaint': 'inpaint',
+                  'edited_erase': 'erase',
+                };
+
+                const editTool = operationTypeMap[edit.operation_type] || edit.operation_type.replace('edited_', '');
+
                 // Determine if this is an overlay operation
-                const isTextOverlay = edit.operation_type === 'edited_text_overlay';
-                const isImageOverlay = edit.operation_type === 'edited_image_overlay' || edit.operation_type === 'edited_layers';
+                const isOverlayOperation = edit.operation_type === 'edited_text_overlay' ||
+                                          edit.operation_type === 'edited_image_overlay' ||
+                                          edit.operation_type === 'edited_layers';
 
                 return {
                   id: edit.id,
@@ -230,12 +245,12 @@ export default function ContentLibraryPage() {
                   aspect_ratio: "original",
                   metadata: {
                     is_edited: true,
-                    edit_tool: edit.operation_type.replace('edited_', ''),
+                    edit_tool: editTool,
                     operation_type: edit.operation_type,
                     original_image_path: edit.original_image_path,
                     r2_url: fullR2Url, // Store the actual R2 URL for editing
-                    text_overlay: isTextOverlay,
-                    image_overlay: isImageOverlay,
+                    text_overlay: edit.operation_type === 'edited_text_overlay',
+                    image_overlay: isOverlayOperation && edit.operation_type !== 'edited_text_overlay',
                   },
                   created_at: edit.created_at,
                 };
