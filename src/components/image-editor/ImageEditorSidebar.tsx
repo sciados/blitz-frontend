@@ -2,6 +2,7 @@
 
 import { EditTool } from "src/app/image-editor/page";
 import { useState, useEffect } from "react";
+import { FilterToolControls } from "src/components/image-editor/FilterToolControls";
 
 interface TextOverlay {
   id: string;
@@ -504,8 +505,8 @@ export function ImageEditorSidebar({
 
   return (
     <div className="w-80 bg-white border-r border-gray-200 p-4 overflow-auto">
-      {/* Tool Selector Grid - Hide for overlay tool */}
-      {selectedEditTool !== "overlay" && (
+      {/* Tool Selector Grid - Hide for overlay and filters tools */}
+      {selectedEditTool !== "overlay" && selectedEditTool !== "filters" && (
         <>
           <h3 className="text-lg font-semibold mb-4">Edit Tools</h3>
           <div className="grid grid-cols-2 gap-2 mb-6">
@@ -537,8 +538,13 @@ export function ImageEditorSidebar({
         <OverlayToolControls isProcessing={isProcessing} />
       )}
 
-      {/* Settings Panel - Hide for overlay tool */}
-      {selectedEditTool !== "overlay" && (
+      {/* Filters Tool - Full Width Layout */}
+      {selectedEditTool === "filters" && (
+        <FilterToolControls isProcessing={isProcessing} onApplyFilter={(settings) => console.log("Apply filter:", settings)} />
+      )}
+
+      {/* Settings Panel - Hide for overlay and filters tools */}
+      {selectedEditTool !== "overlay" && selectedEditTool !== "filters" && (
         <div>
           <h4 className="text-sm font-semibold text-gray-700 mb-3">Settings</h4>
 
