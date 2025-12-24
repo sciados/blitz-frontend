@@ -226,6 +226,7 @@ export default function ContentLibraryPage() {
                   aspect_ratio: "original",
                   metadata: {
                     is_edited: true,
+                    edit_tool: edit.operation_type,
                     operation_type: edit.operation_type,
                     original_image_path: edit.original_image_path,
                     r2_url: fullR2Url, // Store the actual R2 URL for editing
@@ -350,13 +351,15 @@ export default function ContentLibraryPage() {
     // Apply image type filter
     if (imageFilter === "original" && image.metadata?.text_overlay === true)
       return false;
+    if (imageFilter === "original" && image.metadata?.image_overlay === true)
+      return false;
     if (imageFilter === "original" && image.metadata?.edit_tool)
       return false;
     if (imageFilter === "filters" && image.metadata?.edit_tool !== "filters")
       return false;
     if (imageFilter === "resize" && image.metadata?.edit_tool !== "resize")
       return false;
-    if (imageFilter === "overlays" && image.metadata?.text_overlay !== true)
+    if (imageFilter === "overlays" && image.metadata?.text_overlay !== true && image.metadata?.image_overlay !== true)
       return false;
     if (imageFilter === "inpaint" && image.metadata?.edit_tool !== "inpaint")
       return false;
@@ -815,10 +818,11 @@ export default function ContentLibraryPage() {
                 <span>🖼️ Original</span>
                 <span className="text-xs px-2 py-0.5 bg-gray-200 dark:bg-gray-600 rounded-full">
                   {
-                    allImages.filter(
+                    combinedImages.filter(
                       (img) =>
                         img.metadata?.text_overlay !== true &&
-                        !img.metadata?.edit_tool
+                        !img.metadata?.edit_tool &&
+                        img.source === "original"
                     ).length
                   }
                 </span>
@@ -868,8 +872,8 @@ export default function ContentLibraryPage() {
                 <span>✨ Text Overlays</span>
                 <span className="text-xs px-2 py-0.5 bg-gray-200 dark:bg-gray-600 rounded-full">
                   {
-                    allImages.filter(
-                      (img) => img.metadata?.text_overlay === true
+                    combinedImages.filter(
+                      (img) => img.metadata?.text_overlay === true || img.metadata?.image_overlay === true
                     ).length
                   }
                 </span>
