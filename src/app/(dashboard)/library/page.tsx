@@ -387,7 +387,7 @@ export default function ContentLibraryPage() {
     if (imageFilter === "overlays") {
       const hasTextOverlay = image.metadata?.text_overlay === true;
       const hasImageOverlay = image.metadata?.image_overlay === true;
-      const hasEditToolOverlay = image.metadata?.edit_tool === "overlays";
+      const hasEditToolOverlay = image.metadata?.edit_tool === "overlay";
       if (!hasTextOverlay && !hasImageOverlay && !hasEditToolOverlay)
         return false;
     }
@@ -906,7 +906,7 @@ export default function ContentLibraryPage() {
                       (img) =>
                         img.metadata?.text_overlay === true ||
                         img.metadata?.image_overlay === true ||
-                        img.metadata?.edit_tool === "overlays"
+                        img.metadata?.edit_tool === "overlay"
                     ).length
                   }
                 </span>
