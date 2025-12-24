@@ -216,21 +216,24 @@ export default function ContentLibraryPage() {
                 // Map operation_type to the correct edit_tool value
                 // This must match what the badge display shows
                 const operationTypeMap: Record<string, string> = {
-                  'edited_text_overlay': 'overlay',
-                  'edited_image_overlay': 'overlay',
-                  'edited_layers': 'overlay',
-                  'edited_filters': 'filters',
-                  'edited_resize': 'resize',
-                  'edited_inpaint': 'inpaint',
-                  'edited_erase': 'erase',
+                  edited_text_overlay: "overlay",
+                  edited_image_overlay: "overlay",
+                  edited_layers: "overlay",
+                  edited_filters: "filters",
+                  edited_resize: "resize",
+                  edited_inpaint: "inpaint",
+                  edited_erase: "erase",
                 };
 
-                const editTool = operationTypeMap[edit.operation_type] || edit.operation_type.replace('edited_', '');
+                const editTool =
+                  operationTypeMap[edit.operation_type] ||
+                  edit.operation_type.replace("edited_", "");
 
                 // Determine if this is an overlay operation
-                const isOverlayOperation = edit.operation_type === 'edited_text_overlay' ||
-                                          edit.operation_type === 'edited_image_overlay' ||
-                                          edit.operation_type === 'edited_layers';
+                const isOverlayOperation =
+                  edit.operation_type === "edited_text_overlay" ||
+                  edit.operation_type === "edited_image_overlay" ||
+                  edit.operation_type === "edited_layers";
 
                 return {
                   id: edit.id,
@@ -249,8 +252,10 @@ export default function ContentLibraryPage() {
                     operation_type: edit.operation_type,
                     original_image_path: edit.original_image_path,
                     r2_url: fullR2Url, // Store the actual R2 URL for editing
-                    text_overlay: edit.operation_type === 'edited_text_overlay',
-                    image_overlay: isOverlayOperation && edit.operation_type !== 'edited_text_overlay',
+                    text_overlay: edit.operation_type === "edited_text_overlay",
+                    image_overlay:
+                      isOverlayOperation &&
+                      edit.operation_type !== "edited_text_overlay",
                   },
                   created_at: edit.created_at,
                 };
@@ -374,8 +379,7 @@ export default function ContentLibraryPage() {
       return false;
     if (imageFilter === "original" && image.metadata?.image_overlay === true)
       return false;
-    if (imageFilter === "original" && image.metadata?.edit_tool)
-      return false;
+    if (imageFilter === "original" && image.metadata?.edit_tool) return false;
     if (imageFilter === "filters" && image.metadata?.edit_tool !== "filters")
       return false;
     if (imageFilter === "resize" && image.metadata?.edit_tool !== "resize")
@@ -383,7 +387,7 @@ export default function ContentLibraryPage() {
     if (imageFilter === "overlays") {
       const hasTextOverlay = image.metadata?.text_overlay === true;
       const hasImageOverlay = image.metadata?.image_overlay === true;
-      const hasEditToolOverlay = image.metadata?.edit_tool === 'overlay';
+      const hasEditToolOverlay = image.metadata?.edit_tool === "overlays";
       if (!hasTextOverlay && !hasImageOverlay && !hasEditToolOverlay)
         return false;
     }
@@ -899,7 +903,10 @@ export default function ContentLibraryPage() {
                 <span className="text-xs px-2 py-0.5 bg-gray-200 dark:bg-gray-600 rounded-full">
                   {
                     combinedImages.filter(
-                      (img) => img.metadata?.text_overlay === true || img.metadata?.image_overlay === true || img.metadata?.edit_tool === 'overlay'
+                      (img) =>
+                        img.metadata?.text_overlay === true ||
+                        img.metadata?.image_overlay === true ||
+                        img.metadata?.edit_tool === "overlays"
                     ).length
                   }
                 </span>
@@ -1407,7 +1414,9 @@ export default function ContentLibraryPage() {
                                 erase: "Erase",
                                 overlay: "Overlays",
                               };
-                              const toolName = toolNames[image.metadata.edit_tool] || image.metadata.edit_tool.toUpperCase();
+                              const toolName =
+                                toolNames[image.metadata.edit_tool] ||
+                                image.metadata.edit_tool.toUpperCase();
                               return (
                                 <div className="absolute top-3 right-3 bg-blue-600 to-blue-700 text-white px-2 py-1 rounded-full text-xs font-medium">
                                   {toolName}
@@ -2077,7 +2086,9 @@ export default function ContentLibraryPage() {
                       erase: "Erase",
                       overlay: "Overlays",
                     };
-                    const toolName = toolNames[selectedLibraryImage.metadata.edit_tool] || selectedLibraryImage.metadata.edit_tool.toUpperCase();
+                    const toolName =
+                      toolNames[selectedLibraryImage.metadata.edit_tool] ||
+                      selectedLibraryImage.metadata.edit_tool.toUpperCase();
                     return (
                       <div className="absolute top-4 right-4 bg-blue-600 to-blue-700 text-white px-3 py-1 rounded-full text-sm font-medium">
                         {toolName}
