@@ -102,13 +102,20 @@ export function ImageEditorCanvas({
     }
 
     const img = new Image();
-    // Use proxy endpoint to bypass CORS - need to use full URL with API base
-    const apiBaseUrl =
-      process.env.NEXT_PUBLIC_API_BASE_URL || "https://blitzed.up.railway.app";
-    const proxyUrl = `${apiBaseUrl}/api/images/proxy?url=${encodeURIComponent(
-      originalImage
-    )}`;
+    // Use proxy endpoint for remote URLs, but use blob URLs directly for uploaded files
+    let imageSrc = originalImage;
+
+    // Only use proxy for HTTP/HTTPS URLs (not for blob: URLs from file uploads)
+    if (!originalImage.startsWith('blob:') && !originalImage.startsWith('data:')) {
+      const apiBaseUrl =
+        process.env.NEXT_PUBLIC_API_BASE_URL || "https://blitzed.up.railway.app";
+      imageSrc = `${apiBaseUrl}/api/images/proxy?url=${encodeURIComponent(
+        originalImage
+      )}`;
+    }
+
     img.crossOrigin = "anonymous";
+    img.src = imageSrc;
 
     img.onload = () => {
       // Get canvas references
@@ -165,8 +172,6 @@ export function ImageEditorCanvas({
     img.onerror = () => {
       setImageLoaded(false);
     };
-
-    img.src = proxyUrl;
   }, [originalImage]);
 
   // Draw overlays when they change
@@ -179,12 +184,19 @@ export function ImageEditorCanvas({
 
     // Redraw the base image first
     const img = new Image();
-    const apiBaseUrl =
-      process.env.NEXT_PUBLIC_API_BASE_URL || "https://blitzed.up.railway.app";
-    const proxyUrl = `${apiBaseUrl}/api/images/proxy?url=${encodeURIComponent(
-      originalImage || ""
-    )}`;
+    let imageSrc = originalImage || "";
+
+    // Only use proxy for HTTP/HTTPS URLs (not for blob: URLs from file uploads)
+    if (originalImage && !originalImage.startsWith('blob:') && !originalImage.startsWith('data:')) {
+      const apiBaseUrl =
+        process.env.NEXT_PUBLIC_API_BASE_URL || "https://blitzed.up.railway.app";
+      imageSrc = `${apiBaseUrl}/api/images/proxy?url=${encodeURIComponent(
+        originalImage
+      )}`;
+    }
+
     img.crossOrigin = "anonymous";
+    img.src = imageSrc;
 
     img.onload = () => {
       // Clear canvas
@@ -264,8 +276,6 @@ export function ImageEditorCanvas({
         overlayImg.src = overlay.imageData;
       });
     };
-
-    img.src = proxyUrl;
   }, [textOverlays, imageOverlays, selectedOverlay, imageLoaded, originalImage]);
 
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
