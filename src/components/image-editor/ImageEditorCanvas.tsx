@@ -632,7 +632,7 @@ export function ImageEditorCanvas({
     const contrast = (filterSettings?.contrast || 0) / 100;
     const saturation = (filterSettings?.saturation || 0) / 100;
     const temperature = (filterSettings?.temperature || 0) * 0.7 / 100;
-    const tint = (filterSettings?.tint || 0) > 0 ? (filterSettings.tint * 0.3 / 100) : 0;
+    const tint = (filterSettings?.tint || 0) > 0 ? ((filterSettings?.tint || 0) * 0.3 / 100) : 0;
 
     // Apply pixel-level filters
     for (let i = 0; i < sourceData.data.length; i += 4) {
@@ -790,7 +790,7 @@ export function ImageEditorCanvas({
                    contrast(${100 + (filterSettings.contrast || 0)}%)
                    saturate(${100 + (filterSettings.saturation || 0)}%)
                    hue-rotate(${(filterSettings.temperature || 0) * 0.7}deg)
-                   sepia(${(filterSettings.tint || 0) > 0 ? filterSettings.tint * 0.3 : 0}%)
+                   sepia(${(filterSettings.tint || 0) > 0 ? filterSettings?.tint * 0.3 : 0}%)
                    ${filterSettings.vignette ? `drop-shadow(0 0 ${filterSettings.vignette}px rgba(0,0,0,0.5))` : ''}`
                 : 'none',
             }}
