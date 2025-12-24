@@ -494,6 +494,12 @@ export function ImageEditorSidebar({
       icon: "📐",
       description: "Smart resize & format",
     },
+    {
+      id: "filters",
+      label: "Filters",
+      icon: "🎭",
+      description: "Apply color filters",
+    },
   ];
 
   return (

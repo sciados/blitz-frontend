@@ -101,6 +101,16 @@ export function ToolSelector({ selectedTool }: ToolSelectorProps) {
         "E-commerce product images",
       ],
     },
+    filters: {
+      name: "Filters & Color",
+      description: "Apply preset filters and adjust colors",
+      useCases: [
+        "Apply vintage or cinematic looks",
+        "Adjust brightness and contrast",
+        "Change color temperature",
+        "Fine-tune shadows and highlights",
+      ],
+    },
   };
 
   const info = toolInfo[selectedTool];

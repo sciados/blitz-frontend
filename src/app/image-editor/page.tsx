@@ -8,6 +8,7 @@ import { ImageEditorSidebar } from "src/components/image-editor/ImageEditorSideb
 import { ToolSelector } from "src/components/image-editor/ToolSelector";
 import { OverlayEditor } from "src/components/image-editor/OverlayEditor";
 import { SmartResize } from "src/components/image-editor/SmartResize";
+import { ImageFilters } from "src/components/image-editor/ImageFilters";
 
 export type EditTool =
   | "inpaint"
@@ -18,7 +19,8 @@ export type EditTool =
   | "upscale"
   | "sketch-to-image"
   | "overlay"
-  | "resize";
+  | "resize"
+  | "filters";
 
 export default function ImageEditorPage() {
   const searchParams = useSearchParams();
@@ -248,6 +250,11 @@ export default function ImageEditorPage() {
     setActiveImage(resizedImageDataUrl); // Automatically switch to the resized image
   };
 
+  const handleFilterSave = (filteredImageDataUrl: string) => {
+    setEditedImage(filteredImageDataUrl);
+    setActiveImage(filteredImageDataUrl); // Automatically switch to the filtered image
+  };
+
   // Switch active image for editing
   const switchToOriginal = () => {
     if (originalImage) {
@@ -322,7 +329,7 @@ export default function ImageEditorPage() {
     );
   }
 
-  const isFullWidthTool = selectedEditTool === "resize";
+  const isFullWidthTool = selectedEditTool === "resize" || selectedEditTool === "filters";
 
   return (
     <div className="flex flex-col h-screen bg-gray-100">
@@ -370,6 +377,14 @@ export default function ImageEditorPage() {
               originalImage={activeImage}
               onSave={handleResizeSave}
               isProcessing={isProcessing}
+            />
+) : selectedEditTool === "filters" ? (
+            <ImageFilters
+              isOpen={true}
+              onClose={() => {}}
+              onSave={handleFilterSave}
+              imageUrl={activeImage || ""}
+              imageName="filtered-image"
             />
           ) : (
             <div className="flex items-center justify-center h-full">

@@ -6,6 +6,7 @@ import { X, Download, RotateCcw, Sliders } from "lucide-react";
 interface ImageFiltersProps {
   isOpen: boolean;
   onClose: () => void;
+  onSave?: (imageDataUrl: string) => void;
   imageUrl: string;
   imageName?: string;
 }
@@ -116,12 +117,7 @@ const filterPresets: FilterPreset[] = [
   },
 ];
 
-export function ImageFilters({
-  isOpen,
-  onClose,
-  imageUrl,
-  imageName = "image",
-}: ImageFiltersProps) {
+export function ImageFilters({  isOpen,  onClose,  onSave,  imageUrl,  imageName = "image",}: ImageFiltersProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [originalImage, setOriginalImage] = useState<HTMLImageElement | null>(null);
   const [settings, setSettings] = useState<FilterSettings>(defaultSettings);
@@ -590,7 +586,7 @@ export function ImageFilters({
               className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center gap-2 font-medium"
             >
               <Download size={20} />
-              Download Filtered Image
+              {onSave ? "Save Filtered Image" : "Download Filtered Image"}
             </button>
           </div>
         </div>
