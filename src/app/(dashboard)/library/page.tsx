@@ -1309,46 +1309,6 @@ export default function ContentLibraryPage() {
                             </svg>
                             Batch Process ({selectedImageUrls.length})
                           </button>
-
-                          <button
-                            onClick={() => setShowBatchOptimizer(true)}
-                            className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition flex items-center gap-2 font-medium"
-                          >
-                            <svg
-                              className="w-5 h-5"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M13 10V3L4 14h7v7l9-11h-7z"
-                              />
-                            </svg>
-                            Optimize ({selectedImageUrls.length})
-                          </button>
-
-                          <button
-                            onClick={() => setShowBatchFilters(true)}
-                            className="px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-lg hover:from-pink-600 hover:to-purple-700 transition flex items-center gap-2 font-medium"
-                          >
-                            <svg
-                              className="w-5 h-5"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"
-                              />
-                            </svg>
-                            Apply Filter ({selectedImageUrls.length})
-                          </button>
                         </>
                       )}
                     </div>
@@ -1506,30 +1466,6 @@ export default function ContentLibraryPage() {
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setOptimizerImageUrl(image.image_url);
-                                setOptimizerImageName(image.prompt || "image");
-                                setShowOptimizer(true);
-                              }}
-                              className="flex-1 text-xs px-2 py-1 bg-yellow-500 hover:bg-yellow-600 text-white rounded transition flex items-center justify-center gap-1"
-                              title="Optimize Image"
-                            >
-                              <svg
-                                className="w-3 h-3"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M13 10V3L4 14h7v7l9-11h-7z"
-                                />
-                              </svg>
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
                                 router.push(
                                   `/image-editor?imageUrl=${encodeURIComponent(
                                     image.image_url
@@ -1550,30 +1486,6 @@ export default function ContentLibraryPage() {
                                   strokeLinejoin="round"
                                   strokeWidth={2}
                                   d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                                />
-                              </svg>
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setFiltersImageUrl(image.image_url);
-                                setFiltersImageName(image.prompt || "image");
-                                setShowFilters(true);
-                              }}
-                              className="flex-1 text-xs px-2 py-1 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white rounded transition flex items-center justify-center gap-1"
-                              title="Apply Filters"
-                            >
-                              <svg
-                                className="w-3 h-3"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"
                                 />
                               </svg>
                             </button>
