@@ -819,7 +819,7 @@ export default function ContentLibraryPage() {
               >
                 <span>🎨 Edited</span>
                 <span className="text-xs px-2 py-0.5 bg-gray-200 dark:bg-gray-600 rounded-full">
-                  {allEditedImages.length}
+                  {allEditedImages.length + allImages.filter((img) => img.metadata?.is_edited === true).length}
                 </span>
               </button>
               <button

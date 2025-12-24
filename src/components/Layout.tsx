@@ -421,7 +421,7 @@ export default function Layout({ children }: LayoutProps) {
           {/* Right: User Info + Upgrade + Profile Dropdown */}
           <div className="flex items-center space-x-4">
             {/* Upgrade Button for Non-Pro Affiliates */}
-            {userInfo?.affiliate_tier !== "pro" &&
+            {!isProUser(userInfo) &&
               (userInfo?.role === "affiliate" || userInfo?.user_type === "Affiliate") && (
                 <Link
                   href="/billing/subscribe"
