@@ -1116,37 +1116,56 @@ function AffiliateMarketerDashboard() {
         <div className="flex flex-wrap gap-2">
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
             <span className="text-sm">📢</span>
-            <span className="text-xs text-[var(--text-secondary)]">Campaigns</span>
+            <span className="text-xs text-[var(--text-secondary)]">
+              Campaigns
+            </span>
             <span className="text-sm font-semibold text-blue-600 dark:text-blue-400">
-              {formatUsage(stats?.totalCampaigns || 0, usageLimits?.limits?.campaigns)}
+              {formatUsage(
+                stats?.totalCampaigns || 0,
+                usageLimits?.limits?.campaigns
+              )}
             </span>
           </div>
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
             <span className="text-sm">✓</span>
             <span className="text-xs text-[var(--text-secondary)]">Active</span>
             <span className="text-sm font-semibold text-green-600 dark:text-green-400">
-              {formatUsage(stats?.activeCampaigns || 0, usageLimits?.limits?.active_campaigns)}
+              {formatUsage(
+                stats?.activeCampaigns || 0,
+                usageLimits?.limits?.active_campaigns
+              )}
             </span>
           </div>
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800">
             <span className="text-sm">✍️</span>
             <span className="text-xs text-[var(--text-secondary)]">Text</span>
             <span className="text-sm font-semibold text-purple-600 dark:text-purple-400">
-              {formatUsage(usageLimits?.usage?.text_content || stats?.textContentPieces || 0, usageLimits?.limits?.text_content)}
+              {formatUsage(
+                usageLimits?.usage?.text_content ||
+                  stats?.textContentPieces ||
+                  0,
+                usageLimits?.limits?.text_content
+              )}
             </span>
           </div>
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-pink-50 dark:bg-pink-900/20 border border-pink-200 dark:border-pink-800">
             <span className="text-sm">🖼️</span>
             <span className="text-xs text-[var(--text-secondary)]">Images</span>
             <span className="text-sm font-semibold text-pink-600 dark:text-pink-400">
-              {formatUsage(usageLimits?.usage?.images || stats?.imageContentPieces || 0, usageLimits?.limits?.images)}
+              {formatUsage(
+                usageLimits?.usage?.images || stats?.imageContentPieces || 0,
+                usageLimits?.limits?.images
+              )}
             </span>
           </div>
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
             <span className="text-sm">🎬</span>
             <span className="text-xs text-[var(--text-secondary)]">Videos</span>
             <span className="text-sm font-semibold text-red-600 dark:text-red-400">
-              {formatUsage(usageLimits?.usage?.videos || stats?.videoContentPieces || 0, usageLimits?.limits?.videos)}
+              {formatUsage(
+                usageLimits?.usage?.videos || stats?.videoContentPieces || 0,
+                usageLimits?.limits?.videos
+              )}
             </span>
           </div>
         </div>
@@ -1328,7 +1347,7 @@ function GettingStartedJourney() {
     {
       id: 1,
       title: "Browse Products",
-      description: "Explore products, get links & create campaigns",
+      description: "Explore products, create campaigns",
       icon: "📦",
       href: "/products" as const,
       color: "purple",
