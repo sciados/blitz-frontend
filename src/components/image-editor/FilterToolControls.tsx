@@ -149,18 +149,29 @@ export function FilterToolControls({ isProcessing, onApplyFilter }: FilterToolCo
 
         {/* Preset Grid */}
         <div className="grid grid-cols-3 gap-2 mb-4">
-          {filterPresets.map((preset) => (
-            <button
-              key={preset.name}
-              onClick={() => applyPreset(preset)}
-              disabled={isProcessing}
-              className="p-2 border-2 border-gray-200 rounded-lg hover:border-blue-500 transition disabled:opacity-50 disabled:cursor-not-allowed"
-              title={preset.description}
-            >
-              <div className="text-2xl mb-1">{preset.icon}</div>
-              <div className="text-xs font-medium text-gray-700">{preset.name}</div>
-            </button>
-          ))}
+          {filterPresets.map((preset) => {
+            // Check if current settings match this preset
+            const isSelected = JSON.stringify({ ...defaultSettings, ...preset.settings }) === JSON.stringify(settings);
+
+            return (
+              <button
+                key={preset.name}
+                onClick={() => applyPreset(preset)}
+                disabled={isProcessing}
+                className={`p-2 border-2 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed ${
+                  isSelected
+                    ? "border-blue-600 bg-blue-50"
+                    : "border-gray-200 hover:border-blue-500"
+                }`}
+                title={preset.description}
+              >
+                <div className="text-2xl mb-1">{preset.icon}</div>
+                <div className={`text-xs font-medium ${isSelected ? "text-blue-700" : "text-gray-700"}`}>
+                  {preset.name}
+                </div>
+              </button>
+            );
+          })}
         </div>
       </div>
 

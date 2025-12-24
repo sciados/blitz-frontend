@@ -69,6 +69,31 @@ export function ImageEditorCanvas({
 
   const needsMask = ["inpaint", "erase"].includes(selectedEditTool);
 
+  // Filter state
+  const [filterSettings, setFilterSettings] = useState<{
+    brightness: number;
+    contrast: number;
+    saturation: number;
+    temperature: number;
+    tint: number;
+    exposure: number;
+    highlights: number;
+    shadows: number;
+    vignette: number;
+  } | null>(null);
+
+  // Apply filter to canvas
+  const applyFilter = (settings: typeof filterSettings) => {
+    setFilterSettings(settings);
+  };
+
+  // Expose applyFilter to window for FilterToolControls
+  useEffect(() => {
+    (window as any).imageEditorCanvas = {
+      applyFilter,
+    };
+  }, []);
+
   // Load image onto canvas
   useEffect(() => {
     if (!originalImage || !canvasRef.current || !maskCanvasRef.current) {
@@ -669,6 +694,16 @@ export function ImageEditorCanvas({
             className={`shadow-lg rounded ${
               selectedEditTool === "overlay" ? "cursor-move" : "cursor-crosshair"
             }`}
+            style={{
+              filter: filterSettings
+                ? `brightness(${100 + (filterSettings.brightness || 0)}%)
+                   contrast(${100 + (filterSettings.contrast || 0)}%)
+                   saturate(${100 + (filterSettings.saturation || 0)}%)
+                   hue-rotate(${(filterSettings.temperature || 0) * 0.7}deg)
+                   sepia(${(filterSettings.tint || 0) > 0 ? filterSettings.tint * 0.3 : 0}%)
+                   ${filterSettings.vignette ? `drop-shadow(0 0 ${filterSettings.vignette}px rgba(0,0,0,0.5))` : ''}`
+                : 'none',
+            }}
           />
 
           {/* Inline Text Editor */}
