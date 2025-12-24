@@ -1371,7 +1371,7 @@ function GettingStartedJourney() {
     {
       id: 3,
       title: "Publish Content",
-      description: "Connect your social media accounts (Coming Soon)",
+      description: "(Coming Soon)",
       icon: "🔗",
       href: "#" as const,
       color: "orange",
