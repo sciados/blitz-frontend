@@ -70,7 +70,7 @@ export default function ContentLibraryPage() {
     "text" | "images" | "videos"
   >("text");
   const [imageFilter, setImageFilter] = useState<
-    "all" | "original" | "edited" | "overlays"
+    "all" | "original" | "filters" | "resize" | "overlays" | "inpaint" | "erase"
   >("all");
   const [videoFilter, setVideoFilter] = useState<
     "all" | "generated" | "overlays"
@@ -350,11 +350,17 @@ export default function ContentLibraryPage() {
     // Apply image type filter
     if (imageFilter === "original" && image.metadata?.text_overlay === true)
       return false;
-    if (imageFilter === "original" && image.metadata?.is_edited === true)
+    if (imageFilter === "original" && image.metadata?.edit_tool)
+      return false;
+    if (imageFilter === "filters" && image.metadata?.edit_tool !== "filters")
+      return false;
+    if (imageFilter === "resize" && image.metadata?.edit_tool !== "resize")
       return false;
     if (imageFilter === "overlays" && image.metadata?.text_overlay !== true)
       return false;
-    if (imageFilter === "edited" && image.metadata?.is_edited !== true)
+    if (imageFilter === "inpaint" && image.metadata?.edit_tool !== "inpaint")
+      return false;
+    if (imageFilter === "erase" && image.metadata?.edit_tool !== "erase")
       return false;
     return true;
   });
@@ -784,7 +790,7 @@ export default function ContentLibraryPage() {
 
           {/* Image Sub-Tabs */}
           {activeLibraryTab === "images" && (
-            <div className="flex space-x-1 mb-6 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg w-fit">
+            <div className="flex flex-wrap gap-1 mb-6 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg">
               <button
                 onClick={() => setImageFilter("all")}
                 className={`px-4 py-2 rounded-lg transition flex items-center gap-2 ${
@@ -812,22 +818,43 @@ export default function ContentLibraryPage() {
                     allImages.filter(
                       (img) =>
                         img.metadata?.text_overlay !== true &&
-                        img.metadata?.is_edited !== true
+                        !img.metadata?.edit_tool
                     ).length
                   }
                 </span>
               </button>
               <button
-                onClick={() => setImageFilter("edited")}
+                onClick={() => setImageFilter("filters")}
                 className={`px-4 py-2 rounded-lg transition flex items-center gap-2 ${
-                  imageFilter === "edited"
+                  imageFilter === "filters"
                     ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow"
                     : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
                 }`}
               >
-                <span>🎨 Edited</span>
+                <span>🎨 Filters</span>
                 <span className="text-xs px-2 py-0.5 bg-gray-200 dark:bg-gray-600 rounded-full">
-                  {allEditedImages.length + allImages.filter((img) => img.metadata?.is_edited === true).length}
+                  {
+                    combinedImages.filter(
+                      (img) => img.metadata?.edit_tool === "filters"
+                    ).length
+                  }
+                </span>
+              </button>
+              <button
+                onClick={() => setImageFilter("resize")}
+                className={`px-4 py-2 rounded-lg transition flex items-center gap-2 ${
+                  imageFilter === "resize"
+                    ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow"
+                    : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+                }`}
+              >
+                <span>📐 Resize</span>
+                <span className="text-xs px-2 py-0.5 bg-gray-200 dark:bg-gray-600 rounded-full">
+                  {
+                    combinedImages.filter(
+                      (img) => img.metadata?.edit_tool === "resize"
+                    ).length
+                  }
                 </span>
               </button>
               <button
@@ -843,6 +870,40 @@ export default function ContentLibraryPage() {
                   {
                     allImages.filter(
                       (img) => img.metadata?.text_overlay === true
+                    ).length
+                  }
+                </span>
+              </button>
+              <button
+                onClick={() => setImageFilter("inpaint")}
+                className={`px-4 py-2 rounded-lg transition flex items-center gap-2 ${
+                  imageFilter === "inpaint"
+                    ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow"
+                    : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+                }`}
+              >
+                <span>🖌️ Inpaint</span>
+                <span className="text-xs px-2 py-0.5 bg-gray-200 dark:bg-gray-600 rounded-full">
+                  {
+                    combinedImages.filter(
+                      (img) => img.metadata?.edit_tool === "inpaint"
+                    ).length
+                  }
+                </span>
+              </button>
+              <button
+                onClick={() => setImageFilter("erase")}
+                className={`px-4 py-2 rounded-lg transition flex items-center gap-2 ${
+                  imageFilter === "erase"
+                    ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow"
+                    : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+                }`}
+              >
+                <span>🧹 Erase</span>
+                <span className="text-xs px-2 py-0.5 bg-gray-200 dark:bg-gray-600 rounded-full">
+                  {
+                    combinedImages.filter(
+                      (img) => img.metadata?.edit_tool === "erase"
                     ).length
                   }
                 </span>
@@ -1307,10 +1368,19 @@ export default function ContentLibraryPage() {
                               );
                             }
 
-                            if (image.metadata?.is_edited) {
+                            if (image.metadata?.edit_tool) {
+                              // Map edit_tool to display name
+                              const toolNames: Record<string, string> = {
+                                filters: "Filters",
+                                resize: "Resize",
+                                inpaint: "Inpaint",
+                                erase: "Erase",
+                                overlay: "Overlay",
+                              };
+                              const toolName = toolNames[image.metadata.edit_tool] || image.metadata.edit_tool.toUpperCase();
                               return (
                                 <div className="absolute top-3 right-3 bg-blue-600 to-blue-700 text-white px-2 py-1 rounded-full text-xs font-medium">
-                                  EDITED ({image.metadata.operation_type})
+                                  {toolName}
                                 </div>
                               );
                             } else if (image.metadata?.text_overlay) {
@@ -1968,10 +2038,19 @@ export default function ContentLibraryPage() {
                     );
                   }
 
-                  if (selectedLibraryImage.metadata?.is_edited) {
+                  if (selectedLibraryImage.metadata?.edit_tool) {
+                    // Map edit_tool to display name
+                    const toolNames: Record<string, string> = {
+                      filters: "Filters",
+                      resize: "Resize",
+                      inpaint: "Inpaint",
+                      erase: "Erase",
+                      overlay: "Overlay",
+                    };
+                    const toolName = toolNames[selectedLibraryImage.metadata.edit_tool] || selectedLibraryImage.metadata.edit_tool.toUpperCase();
                     return (
                       <div className="absolute top-4 right-4 bg-blue-600 to-blue-700 text-white px-3 py-1 rounded-full text-sm font-medium">
-                        EDITED ({selectedLibraryImage.metadata.operation_type})
+                        {toolName}
                       </div>
                     );
                   } else if (selectedLibraryImage.metadata?.text_overlay) {
