@@ -51,8 +51,9 @@ export default function Layout({ children }: LayoutProps) {
   const queryClient = useQueryClient(); // Initialize query client for cache management
 
   const [profileOpen, setProfileOpen] = useState(false);
-  const [leftSidebarOpen, setLeftSidebarOpen] = useState(true);
-  const [rightSidebarOpen, setRightSidebarOpen] = useState(true);
+  // Initialize sidebars as closed by default, then load from localStorage
+  const [leftSidebarOpen, setLeftSidebarOpen] = useState(false);
+  const [rightSidebarOpen, setRightSidebarOpen] = useState(false);
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>(
     {}
@@ -85,6 +86,35 @@ export default function Layout({ children }: LayoutProps) {
       }));
     }
   }, [pathname]);
+
+  // Load sidebar states from localStorage on mount
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedLeftSidebar = localStorage.getItem("leftSidebarOpen");
+      const savedRightSidebar = localStorage.getItem("rightSidebarOpen");
+
+      if (savedLeftSidebar !== null) {
+        setLeftSidebarOpen(savedLeftSidebar === "true");
+      }
+      if (savedRightSidebar !== null) {
+        setRightSidebarOpen(savedRightSidebar === "true");
+      }
+    }
+  }, []);
+
+  // Save left sidebar state to localStorage when it changes
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("leftSidebarOpen", leftSidebarOpen.toString());
+    }
+  }, [leftSidebarOpen]);
+
+  // Save right sidebar state to localStorage when it changes
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("rightSidebarOpen", rightSidebarOpen.toString());
+    }
+  }, [rightSidebarOpen]);
 
   // Fetch user info on mount (only if token exists)
   useEffect(() => {
