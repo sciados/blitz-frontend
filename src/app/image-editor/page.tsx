@@ -67,8 +67,17 @@ export default function ImageEditorPage() {
   useEffect(() => {
     // If both parameters are provided, load the image directly
     if (imageUrl && campaignId) {
-      setOriginalImage(imageUrl);
-      setActiveImage(imageUrl);
+      // Check if imageUrl is "uploaded" - meaning we should get it from sessionStorage
+      if (imageUrl === "uploaded") {
+        const storedImage = sessionStorage.getItem("uploadedImageData");
+        if (storedImage) {
+          setOriginalImage(storedImage);
+          setActiveImage(storedImage);
+        }
+      } else {
+        setOriginalImage(imageUrl);
+        setActiveImage(imageUrl);
+      }
       setLoading(false);
     } else {
       // No parameters - show selection interface and fetch campaigns
@@ -160,7 +169,15 @@ export default function ImageEditorPage() {
     // Update URL with selected parameters
     const params = new URLSearchParams(window.location.search);
     params.set("campaignId", selectedCampaignId);
-    params.set("imageUrl", originalImage);
+
+    // If it's an uploaded file (data URL), store in sessionStorage to avoid URI_TOO_LONG
+    if (originalImage.startsWith("data:")) {
+      sessionStorage.setItem("uploadedImageData", originalImage);
+      params.set("imageUrl", "uploaded");
+    } else {
+      params.set("imageUrl", originalImage);
+    }
+
     window.history.replaceState({}, "", `${window.location.pathname}?${params.toString()}`);
 
     // Update state
