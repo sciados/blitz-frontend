@@ -226,7 +226,7 @@ export default function ContentLibraryPage() {
                   aspect_ratio: "original",
                   metadata: {
                     is_edited: true,
-                    edit_tool: edit.operation_type,
+                    edit_tool: edit.operation_type.replace('edited_', ''),
                     operation_type: edit.operation_type,
                     original_image_path: edit.original_image_path,
                     r2_url: fullR2Url, // Store the actual R2 URL for editing
