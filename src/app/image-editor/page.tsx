@@ -184,7 +184,6 @@ export default function ImageEditorPage() {
         throw new Error("Failed to generate edited image");
       }
     } catch (err) {
-      console.error("Edit error:", err);
       alert(`Error: ${err instanceof Error ? err.message : "Unknown error"}`);
     } finally {
       setIsProcessing(false);
@@ -237,7 +236,6 @@ export default function ImageEditorPage() {
         throw new Error("Failed to save overlay image");
       }
     } catch (err) {
-      console.error("Overlay save error:", err);
       alert(`Error saving overlay: ${err instanceof Error ? err.message : "Unknown error"}`);
     } finally {
       setIsProcessing(false);
@@ -293,7 +291,6 @@ export default function ImageEditorPage() {
         throw new Error("Failed to save filtered image");
       }
     } catch (err) {
-      console.error("Filter save error:", err);
       alert(`Error saving filtered image: ${err instanceof Error ? err.message : "Unknown error"}`);
     } finally {
       setIsProcessing(false);
@@ -342,7 +339,6 @@ export default function ImageEditorPage() {
       // Clean up the blob URL
       URL.revokeObjectURL(url);
     } catch (error) {
-      console.error("Download failed:", error);
       alert("Failed to download image");
     }
   };
@@ -387,7 +383,7 @@ export default function ImageEditorPage() {
         onBrushSizeChange={setBrushSize}
         onReset={handleReset}
         onDownload={handleDownload}
-        isProcessing={isProcessing}
+            isProcessing={isProcessing}
       />
 
       <div className="flex flex-1 overflow-hidden">
@@ -412,6 +408,7 @@ export default function ImageEditorPage() {
             onOutpaintUpChange={setOutpaintUp}
             onOutpaintDownChange={setOutpaintDown}
             onCreativityChange={setCreativity}
+            onFilterSave={handleFilterSave}
             isProcessing={isProcessing}
           />
         )}
@@ -422,7 +419,7 @@ export default function ImageEditorPage() {
             <SmartResize
               originalImage={activeImage}
               onSave={handleResizeSave}
-              isProcessing={isProcessing}
+            isProcessing={isProcessing}
             />
           ) : (
             <div className="flex items-center justify-center h-full">
@@ -434,7 +431,7 @@ export default function ImageEditorPage() {
                 brushSize={brushSize}
                 onEdit={handleEdit}
                 onSaveOverlays={handleOverlaySave}
-                isProcessing={isProcessing}
+            isProcessing={isProcessing}
               />
             </div>
           )}

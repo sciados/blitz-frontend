@@ -602,9 +602,7 @@ export function ImageEditorCanvas({
 
   // Get canvas with filters applied (baked into pixel data)
   const getCanvasWithFilters = () => {
-    console.log("ImageEditorCanvas: getCanvasWithFilters called", { filterSettings, hasCanvasRef: !!canvasRef.current });
     if (!canvasRef.current) {
-      console.error("ImageEditorCanvas: canvasRef.current is null");
       return null;
     }
 
@@ -615,7 +613,6 @@ export function ImageEditorCanvas({
     const tempCtx = tempCanvas.getContext('2d');
 
     if (!tempCtx) {
-      console.error("ImageEditorCanvas: tempCtx is null");
       return null;
     }
 
@@ -630,7 +627,6 @@ export function ImageEditorCanvas({
       const vignette = filterSettings.vignette ? `drop-shadow(0 0 ${filterSettings.vignette}px rgba(0,0,0,0.5))` : '';
 
       filterString = `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%) hue-rotate(${temperature}deg) sepia(${tint}%) ${vignette}`;
-      console.log("ImageEditorCanvas: applying filter", filterString);
     }
 
     // Apply filter and draw
@@ -638,7 +634,6 @@ export function ImageEditorCanvas({
     tempCtx.drawImage(sourceCanvas, 0, 0);
 
     const dataUrl = tempCanvas.toDataURL("image/png");
-    console.log("ImageEditorCanvas: created data URL", { dataUrlLength: dataUrl?.length });
     return dataUrl;
   };
 

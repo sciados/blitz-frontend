@@ -141,24 +141,16 @@ export function FilterToolControls({ isProcessing, onApplyFilter }: FilterToolCo
   const handleApply = () => {
     // Convert canvas with filters applied to data URL
     const canvasAPI = (window as any).imageEditorCanvas;
-    console.log("FilterToolControls: handleApply called", { canvasAPI, hasGetCanvasWithFilters: canvasAPI?.getCanvasWithFilters });
-    console.log("FilterToolControls: onApplyFilter function", typeof onApplyFilter);
     if (canvasAPI && canvasAPI.getCanvasWithFilters) {
       const filteredDataUrl = canvasAPI.getCanvasWithFilters();
-      console.log("FilterToolControls: got data URL", filteredDataUrl);
       if (filteredDataUrl) {
-        console.log("FilterToolControls: calling onApplyFilter...");
         try {
           onApplyFilter(filteredDataUrl);
-          console.log("FilterToolControls: onApplyFilter called successfully");
         } catch (error) {
-          console.error("FilterToolControls: error calling onApplyFilter", error);
         }
       } else {
-        console.error("FilterToolControls: getCanvasWithFilters returned null/undefined");
       }
     } else {
-      console.error("FilterToolControls: canvasAPI or getCanvasWithFilters not available", { canvasAPI });
     }
   };
 
