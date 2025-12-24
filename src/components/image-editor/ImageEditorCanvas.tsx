@@ -696,7 +696,7 @@ export function ImageEditorCanvas({
     (window as any).imageEditorCanvas.setTextOverlays = setTextOverlays;
     (window as any).imageEditorCanvas.setImageOverlays = setImageOverlays;
     (window as any).imageEditorCanvas.setSelectedOverlay = setSelectedOverlay;
-  }, [textOverlays, imageOverlays, selectedOverlay]);
+  }, [textOverlays, imageOverlays, selectedOverlay, filterSettings]);
 
   if (!originalImage) {
     return (
