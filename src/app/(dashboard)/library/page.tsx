@@ -889,7 +889,7 @@ export default function ContentLibraryPage() {
                     : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
                 }`}
               >
-                <span>✨ Text Overlays</span>
+                <span>✨ Overlays</span>
                 <span className="text-xs px-2 py-0.5 bg-gray-200 dark:bg-gray-600 rounded-full">
                   {
                     combinedImages.filter(
@@ -1399,7 +1399,7 @@ export default function ContentLibraryPage() {
                                 resize: "Resize",
                                 inpaint: "Inpaint",
                                 erase: "Erase",
-                                overlay: "Overlay",
+                                overlay: "Overlays",
                               };
                               const toolName = toolNames[image.metadata.edit_tool] || image.metadata.edit_tool.toUpperCase();
                               return (
@@ -1410,13 +1410,13 @@ export default function ContentLibraryPage() {
                             } else if (image.metadata?.text_overlay) {
                               return (
                                 <div className="absolute top-3 right-3 bg-orange-600 to-orange-700 text-white px-2 py-1 rounded-full text-xs font-medium">
-                                  OVERLAY
+                                  Overlays
                                 </div>
                               );
                             } else if (image.metadata?.image_overlay) {
                               return (
                                 <div className="absolute top-3 right-3 bg-green-600 to-green-700 text-white px-2 py-1 rounded-full text-xs font-medium">
-                                  LAYERS
+                                  Overlays
                                 </div>
                               );
                             } else {
@@ -2069,7 +2069,7 @@ export default function ContentLibraryPage() {
                       resize: "Resize",
                       inpaint: "Inpaint",
                       erase: "Erase",
-                      overlay: "Overlay",
+                      overlay: "Overlays",
                     };
                     const toolName = toolNames[selectedLibraryImage.metadata.edit_tool] || selectedLibraryImage.metadata.edit_tool.toUpperCase();
                     return (
@@ -2080,13 +2080,13 @@ export default function ContentLibraryPage() {
                   } else if (selectedLibraryImage.metadata?.text_overlay) {
                     return (
                       <div className="absolute top-4 right-4 bg-orange-600 to-orange-700 text-white px-3 py-1 rounded-full text-sm font-medium">
-                        OVERLAY
+                        Overlays
                       </div>
                     );
                   } else if (selectedLibraryImage.metadata?.image_overlay) {
                     return (
                       <div className="absolute top-4 right-4 bg-green-600 to-green-700 text-white px-3 py-1 rounded-full text-sm font-medium">
-                        LAYERS
+                        Overlays
                       </div>
                     );
                   } else {
