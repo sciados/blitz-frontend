@@ -607,24 +607,13 @@ export function ImageEditorCanvas({
     }
 
     const sourceCanvas = canvasRef.current;
-    const tempCanvas = document.createElement('canvas');
-    tempCanvas.width = sourceCanvas.width;
-    tempCanvas.height = sourceCanvas.height;
-    const tempCtx = tempCanvas.getContext('2d');
-
-    if (!tempCtx) {
-      return null;
-    }
-
-    // Apply pixel-level filters directly to ensure they're baked into the saved image
-    const imageData = tempCtx.createImageData(sourceCanvas.width, sourceCanvas.height);
     const sourceCtx = sourceCanvas.getContext('2d');
 
     if (!sourceCtx) {
       return null;
     }
 
-    // Get source pixels
+    // Get source pixels first
     const sourceData = sourceCtx.getImageData(0, 0, sourceCanvas.width, sourceCanvas.height);
 
     // Build filter values
@@ -634,7 +623,7 @@ export function ImageEditorCanvas({
     const temperature = (filterSettings?.temperature || 0) * 0.7 / 100;
     const tint = (filterSettings?.tint || 0) > 0 ? ((filterSettings?.tint || 0) * 0.3 / 100) : 0;
 
-    // Apply pixel-level filters
+    // Apply pixel-level filters directly to the source data
     for (let i = 0; i < sourceData.data.length; i += 4) {
       let r = sourceData.data[i];
       let g = sourceData.data[i + 1];
@@ -670,14 +659,23 @@ export function ImageEditorCanvas({
         b = b + (tb - b) * tint;
       }
 
-      imageData.data[i] = Math.max(0, Math.min(255, r));
-      imageData.data[i + 1] = Math.max(0, Math.min(255, g));
-      imageData.data[i + 2] = Math.max(0, Math.min(255, b));
-      imageData.data[i + 3] = sourceData.data[i + 3]; // Alpha channel
+      sourceData.data[i] = Math.max(0, Math.min(255, r));
+      sourceData.data[i + 1] = Math.max(0, Math.min(255, g));
+      sourceData.data[i + 2] = Math.max(0, Math.min(255, b));
+      // Alpha channel (sourceData.data[i + 3]) remains unchanged
     }
 
-    // Put modified pixels
-    tempCtx.putImageData(imageData, 0, 0);
+    // Create temp canvas and put modified pixels
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = sourceCanvas.width;
+    tempCanvas.height = sourceCanvas.height;
+    const tempCtx = tempCanvas.getContext('2d');
+
+    if (!tempCtx) {
+      return null;
+    }
+
+    tempCtx.putImageData(sourceData, 0, 0);
 
     const dataUrl = tempCanvas.toDataURL("image/png");
     return dataUrl;
