@@ -225,7 +225,12 @@ export default function ImageEditorPage() {
           provider: "canvas",
           model: "overlay-editor",
           prompt: "Overlay edited image",
-          custom_prompt: "User-added text and image overlays"
+          custom_prompt: "User-added text and image overlays",
+          metadata: {
+            is_edited: true,
+            edit_type: "overlay",
+            edit_tool: "overlay"
+          }
         }),
       });
 
@@ -245,9 +250,60 @@ export default function ImageEditorPage() {
     }
   };
 
-  const handleResizeSave = (resizedImageDataUrl: string, preset: string) => {
+  const handleResizeSave = async (resizedImageDataUrl: string, preset: string) => {
+    if (!campaignId || !imageUrl) {
+      alert("Missing campaign ID or image URL");
+      return;
+    }
+
     setEditedImage(resizedImageDataUrl);
     setActiveImage(resizedImageDataUrl); // Automatically switch to the resized image
+
+    setIsProcessing(true);
+
+    try {
+      const apiBaseUrl =
+        process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+
+      const token = localStorage.getItem("token");
+
+      // Save resized image with metadata marking it as edited
+      const uploadResponse = await fetch(`${apiBaseUrl}/api/images/save-draft`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          campaign_id: parseInt(campaignId),
+          image_url: resizedImageDataUrl,
+          image_type: "variation",
+          style: "modern",
+          aspect_ratio: "1:1",
+          provider: "canvas",
+          model: "resize-editor",
+          prompt: `Resized image (${preset})`,
+          custom_prompt: `User-resized image to ${preset}`,
+          metadata: {
+            is_edited: true,
+            edit_type: "resize",
+            edit_tool: "resize",
+            preset: preset
+          }
+        }),
+      });
+
+      const result = await uploadResponse.json();
+
+      if (!result.id && !result.image_url) {
+        throw new Error("Failed to save resized image");
+      }
+    } catch (err) {
+      console.error(`Error saving resized image: ${err instanceof Error ? err.message : "Unknown error"}`);
+    } finally {
+      setIsProcessing(false);
+    }
   };
   const handleFilterSave = async (filteredImageDataUrl: string) => {
     if (!campaignId || !imageUrl) {
@@ -268,7 +324,7 @@ export default function ImageEditorPage() {
 
       const token = localStorage.getItem("token");
 
-      // Upload the filtered image to R2 storage (background save)
+      // Save with metadata marking it as edited
       const uploadResponse = await fetch(`${apiBaseUrl}/api/images/save-draft`, {
         method: "POST",
         headers: {
@@ -285,14 +341,18 @@ export default function ImageEditorPage() {
           provider: "canvas",
           model: "filter-editor",
           prompt: "Filter applied",
-          custom_prompt: "User-applied color filters"
+          custom_prompt: "User-applied color filters",
+          metadata: {
+            is_edited: true,
+            edit_type: "filter",
+            edit_tool: "filters"
+          }
         }),
       });
 
       const result = await uploadResponse.json();
 
       if (result.id || result.image_url) {
-        // Keep the preview image (no need to update again)
         console.log("Filtered image saved successfully!");
       } else {
         throw new Error("Failed to save filtered image");
