@@ -110,7 +110,7 @@ const filterPresets: FilterPreset[] = [
 
 interface FilterToolControlsProps {
   isProcessing: boolean;
-  onApplyFilter: (settings: FilterSettings) => void;
+  onApplyFilter: (dataUrl: string) => void;
 }
 
 export function FilterToolControls({ isProcessing, onApplyFilter }: FilterToolControlsProps) {
@@ -121,10 +121,7 @@ export function FilterToolControls({ isProcessing, onApplyFilter }: FilterToolCo
   useEffect(() => {
     const canvasAPI = (window as any).imageEditorCanvas;
     if (canvasAPI && canvasAPI.applyFilter) {
-      console.log("FilterToolControls: Applying filter settings:", settings);
       canvasAPI.applyFilter(settings);
-    } else {
-      console.warn("FilterToolControls: Canvas API not available or applyFilter method missing");
     }
   }, [settings]);
 
@@ -142,7 +139,12 @@ export function FilterToolControls({ isProcessing, onApplyFilter }: FilterToolCo
   };
 
   const handleApply = () => {
-    onApplyFilter(settings);
+    // Convert canvas with filters applied to data URL
+    const canvasAPI = (window as any).imageEditorCanvas;
+    if (canvasAPI && canvasAPI.getCanvasWithFilters) {
+      const filteredDataUrl = canvasAPI.getCanvasWithFilters();
+      onApplyFilter(filteredDataUrl);
+    }
   };
 
   return (
@@ -368,7 +370,7 @@ export function FilterToolControls({ isProcessing, onApplyFilter }: FilterToolCo
           disabled={isProcessing}
           className="flex-1 px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 text-sm font-medium"
         >
-          {isProcessing ? "Applying..." : "Apply Filter"}
+          {isProcessing ? "Saving..." : "Apply & Save"}
         </button>
       </div>
 

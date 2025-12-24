@@ -32,6 +32,7 @@ interface ImageOverlay {
 
 interface OverlayToolControlsProps {
   isProcessing: boolean;
+  onFilterSave?: (dataUrl: string) => void;
 }
 
 function OverlayToolControls({ isProcessing }: OverlayToolControlsProps) {
@@ -412,6 +413,7 @@ interface ImageEditorSidebarProps {
   onOutpaintDownChange: (value: number) => void;
   onCreativityChange: (value: number) => void;
   isProcessing: boolean;
+  onFilterSave?: (dataUrl: string) => void;
 }
 
 export function ImageEditorSidebar({
@@ -434,6 +436,7 @@ export function ImageEditorSidebar({
   onOutpaintDownChange,
   onCreativityChange,
   isProcessing,
+  onFilterSave,
 }: ImageEditorSidebarProps) {
   const tools: {
     id: EditTool;
@@ -540,7 +543,7 @@ export function ImageEditorSidebar({
 
       {/* Filters Tool - Full Width Layout */}
       {selectedEditTool === "filters" && (
-        <FilterToolControls isProcessing={isProcessing} onApplyFilter={(settings) => console.log("Apply filter:", settings)} />
+        <FilterToolControls isProcessing={isProcessing} onApplyFilter={onFilterSave || (() => {})} />
       )}
 
       {/* Settings Panel - Hide for overlay and filters tools */}

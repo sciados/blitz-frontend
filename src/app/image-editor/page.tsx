@@ -248,6 +248,57 @@ export default function ImageEditorPage() {
     setEditedImage(resizedImageDataUrl);
     setActiveImage(resizedImageDataUrl); // Automatically switch to the resized image
   };
+  const handleFilterSave = async (filteredImageDataUrl: string) => {
+    if (!campaignId || !imageUrl) {
+      alert("Missing campaign ID or image URL");
+      return;
+    }
+
+    setIsProcessing(true);
+
+    try {
+      const apiBaseUrl =
+        process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+
+      const token = localStorage.getItem("token");
+
+      // Upload the filtered image to R2 storage
+      const uploadResponse = await fetch(`${apiBaseUrl}/api/images/save-draft`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          campaign_id: parseInt(campaignId),
+          image_url: filteredImageDataUrl,
+          image_type: "variation",
+          style: "modern",
+          aspect_ratio: "1:1",
+          provider: "canvas",
+          model: "filter-editor",
+          prompt: "Filter applied",
+          custom_prompt: "User-applied color filters"
+        }),
+      });
+
+      const result = await uploadResponse.json();
+
+      if (result.id || result.image_url) {
+        setEditedImage(result.image_url);
+        setActiveImage(result.image_url);
+        alert("Filtered image saved successfully!");
+      } else {
+        throw new Error("Failed to save filtered image");
+      }
+    } catch (err) {
+      console.error("Filter save error:", err);
+      alert(`Error saving filtered image: ${err instanceof Error ? err.message : "Unknown error"}`);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
 
   // Switch active image for editing

@@ -84,9 +84,7 @@ export function ImageEditorCanvas({
 
   // Apply filter to canvas
   const applyFilter = (settings: typeof filterSettings) => {
-    console.log("ImageEditorCanvas: applyFilter called with settings:", settings);
     setFilterSettings(settings);
-    console.log("ImageEditorCanvas: filterSettings state updated");
   };
 
   // Expose applyFilter to window for FilterToolControls
@@ -602,6 +600,38 @@ export function ImageEditorCanvas({
     }
   };
 
+  // Get canvas with filters applied (baked into pixel data)
+  const getCanvasWithFilters = () => {
+    if (!canvasRef.current) return null;
+
+    const sourceCanvas = canvasRef.current;
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = sourceCanvas.width;
+    tempCanvas.height = sourceCanvas.height;
+    const tempCtx = tempCanvas.getContext('2d');
+
+    if (!tempCtx) return null;
+
+    // Build CSS filter string
+    let filterString = 'none';
+    if (filterSettings) {
+      const brightness = 100 + (filterSettings.brightness || 0);
+      const contrast = 100 + (filterSettings.contrast || 0);
+      const saturation = 100 + (filterSettings.saturation || 0);
+      const temperature = (filterSettings.temperature || 0) * 0.7;
+      const tint = (filterSettings.tint || 0) > 0 ? filterSettings.tint * 0.3 : 0;
+      const vignette = filterSettings.vignette ? `drop-shadow(0 0 ${filterSettings.vignette}px rgba(0,0,0,0.5))` : '';
+
+      filterString = `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%) hue-rotate(${temperature}deg) sepia(${tint}%) ${vignette}`;
+    }
+
+    // Apply filter and draw
+    tempCtx.filter = filterString;
+    tempCtx.drawImage(sourceCanvas, 0, 0);
+
+    return tempCanvas.toDataURL("image/png");
+  };
+
   // Export functions for parent component
   useEffect(() => {
     if (!(window as any).imageEditorCanvas) {
@@ -610,6 +640,7 @@ export function ImageEditorCanvas({
     (window as any).imageEditorCanvas.addTextOverlay = addTextOverlay;
     (window as any).imageEditorCanvas.addImageOverlay = addImageOverlay;
     (window as any).imageEditorCanvas.handleSaveOverlays = handleSaveOverlays;
+    (window as any).imageEditorCanvas.getCanvasWithFilters = getCanvasWithFilters;
     (window as any).imageEditorCanvas.textOverlays = textOverlays;
     (window as any).imageEditorCanvas.imageOverlays = imageOverlays;
     (window as any).imageEditorCanvas.selectedOverlay = selectedOverlay;
