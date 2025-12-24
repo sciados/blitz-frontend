@@ -303,15 +303,7 @@ export default function Layout({ children }: LayoutProps) {
       return [
         { href: "/dashboard", label: "Dashboard", icon: "🏠" },
         { href: "/campaigns", label: "Business Campaigns", icon: "📢" },
-        {
-          href: "/content",
-          label: "Content",
-          icon: "✍️",
-          children: [
-            { href: "/content", label: "Generate Content", icon: "⚡" },
-            { href: "/library", label: "Content Library", icon: "📚" },
-          ],
-        },
+        { href: "/library", label: "Content", icon: "✍️" },
         { href: "/intelligence", label: "Intelligence", icon: "🧠" },
         { href: "/analytics", label: "Analytics", icon: "📈" },
         { href: "/affiliates", label: "Networking", icon: "👥" },
@@ -343,15 +335,7 @@ export default function Layout({ children }: LayoutProps) {
       { href: "/products", label: "Product Library", icon: "📦" },
       { href: "/campaigns", label: "Campaigns", icon: "📢" },
       { href: "/image-editor", label: "AI Image Editor", icon: "🎨" },
-      {
-        href: "/content",
-        label: "Content",
-        icon: "✍️",
-        children: [
-          { href: "/content", label: "Generate Content", icon: "⚡" },
-          { href: "/library", label: "Content Library", icon: "📚" },
-        ],
-      },
+      { href: "/library", label: "Content", icon: "✍️" },
       { href: "/intelligence", label: "Intelligence", icon: "🧠" },
       { href: "/analytics", label: "Analytics", icon: "📈" },
       {
