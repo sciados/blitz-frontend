@@ -213,6 +213,10 @@ export default function ContentLibraryPage() {
                   fullR2Url
                 )}`;
 
+                // Determine if this is an overlay operation
+                const isTextOverlay = edit.operation_type === 'edited_text_overlay';
+                const isImageOverlay = edit.operation_type === 'edited_image_overlay' || edit.operation_type === 'edited_layers';
+
                 return {
                   id: edit.id,
                   campaign_id: edit.campaign_id,
@@ -230,7 +234,8 @@ export default function ContentLibraryPage() {
                     operation_type: edit.operation_type,
                     original_image_path: edit.original_image_path,
                     r2_url: fullR2Url, // Store the actual R2 URL for editing
-                    text_overlay: false,
+                    text_overlay: isTextOverlay,
+                    image_overlay: isImageOverlay,
                   },
                   created_at: edit.created_at,
                 };
