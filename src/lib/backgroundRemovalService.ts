@@ -1,14 +1,23 @@
 // src/lib/backgroundRemovalService.ts
 // Client-side background removal using Transformers.js + RMBG-1.4
 
-import { pipeline, RawImage, type PipelineType } from '@huggingface/transformers';
+// IMPORTANT: Use browser-only imports to avoid Node.js dependencies
+import { pipeline, env } from '@huggingface/transformers';
+
+// Configure to use browser environment only
+if (typeof window !== 'undefined') {
+  // Disable local model loading (use CDN only)
+  env.allowLocalModels = false;
+  // Use remote models from Hugging Face CDN
+  env.allowRemoteModels = true;
+}
 
 /**
  * Background Removal Service using Transformers.js
  * Runs 100% client-side with RMBG-1.4 model
  */
 class BackgroundRemovalService {
-  private segmentator: PipelineType | null = null;
+  private segmentator: any = null;
   private isInitializing = false;
   private initPromise: Promise<void> | null = null;
 
@@ -44,15 +53,10 @@ class BackgroundRemovalService {
 
     try {
       // Load the image segmentation pipeline with RMBG-1.4
+      // Model will be automatically downloaded from Hugging Face CDN
       this.segmentator = await pipeline(
         'image-segmentation',
-        'briaai/RMBG-1.4',
-        {
-          // Use quantized model for smaller size (~45MB)
-          quantized: true,
-          // Cache model in browser
-          cache_dir: './.cache/transformers',
-        }
+        'briaai/RMBG-1.4'
       );
 
       console.log('✅ RMBG-1.4 model loaded successfully');
@@ -99,8 +103,11 @@ class BackgroundRemovalService {
     options.onProgress?.(20);
 
     try {
+      // Dynamically import RawImage to avoid Node.js dependencies
+      const { RawImage } = await import('@huggingface/transformers');
+
       // Load image
-      let image: RawImage;
+      let image: any;
 
       if (typeof imageSource === 'string') {
         // URL or data URL
