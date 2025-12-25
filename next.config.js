@@ -23,16 +23,24 @@ const nextConfig = {
             type: 'asset/resource',
         });
 
-        // CRITICAL: Exclude ONNX Runtime from optimization (minification)
-        config.optimization = {
-            ...config.optimization,
-            minimizer: config.optimization.minimizer?.map((minimizer) => {
-                if (minimizer.constructor.name === 'TerserPlugin') {
-                    minimizer.options.exclude = /onnxruntime-web|ort\..*\.mjs/;
+        // CRITICAL FIX: Configure Terser to skip ONNX Runtime files completely
+        if (!isServer && config.optimization && config.optimization.minimizer) {
+            const TerserPlugin = require('terser-webpack-plugin');
+
+            config.optimization.minimizer = config.optimization.minimizer.map((plugin) => {
+                if (plugin instanceof TerserPlugin) {
+                    return new TerserPlugin({
+                        ...plugin.options,
+                        exclude: [
+                            /onnxruntime-web/,
+                            /ort\..*\.mjs$/,
+                            /ort\..*\.js$/,
+                        ],
+                    });
                 }
-                return minimizer;
-            }),
-        };
+                return plugin;
+            });
+        }
 
         // Client-side only: add fallbacks for Node.js modules
         if (!isServer) {
