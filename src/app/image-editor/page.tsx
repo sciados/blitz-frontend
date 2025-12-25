@@ -35,6 +35,7 @@ export default function ImageEditorPage() {
   const [editedImage, setEditedImage] = useState<string | null>(null);
   const [activeImage, setActiveImage] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [hasTransparency, setHasTransparency] = useState(false);
 
   // Filter preview state - shows filtered image before saving to R2
   const [filterPreviewImage, setFilterPreviewImage] = useState<string | null>(null);
@@ -98,6 +99,58 @@ export default function ImageEditorPage() {
       }
     }
   }, [imageUrl, campaignId]);
+
+  // Detect transparency in active image
+  const checkImageTransparency = (imageUrl: string): Promise<boolean> => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext("2d", { willReadFrequently: true });
+
+        if (!ctx) {
+          resolve(false);
+          return;
+        }
+
+        // Draw image on canvas
+        ctx.drawImage(img, 0, 0);
+
+        // Get image data
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+
+        // Check for any transparent pixels (alpha < 255)
+        let hasTransparency = false;
+        for (let i = 3; i < data.length; i += 4) {
+          if (data[i] < 255) {
+            hasTransparency = true;
+            break;
+          }
+        }
+
+        resolve(hasTransparency);
+      };
+
+      img.onerror = () => resolve(false);
+      img.src = imageUrl;
+    });
+  };
+
+  // Check transparency when active image changes
+  useEffect(() => {
+    if (activeImage) {
+      checkImageTransparency(activeImage).then((hasTrans) => {
+        setHasTransparency(hasTrans);
+      });
+    } else {
+      setHasTransparency(false);
+    }
+  }, [activeImage]);
 
   // Handle campaign selection
   const handleCampaignSelect = (campaignId: string) => {
@@ -681,6 +734,7 @@ export default function ImageEditorPage() {
               onApplyCollage={handleApplyCollage}
               currentImageUrl={activeImage}
               isProcessing={isProcessing}
+              hasTransparency={hasTransparency}
             />
           )}
 

@@ -417,6 +417,7 @@ interface ImageEditorSidebarProps {
   onFilterSave?: (dataUrl: string) => void;
   onApplyCollage?: (dataUrl: string) => void;
   currentImageUrl?: string | null;
+  hasTransparency?: boolean;
 }
 
 export function ImageEditorSidebar({
@@ -442,8 +443,9 @@ export function ImageEditorSidebar({
   onFilterSave,
   onApplyCollage,
   currentImageUrl,
+  hasTransparency = false,
 }: ImageEditorSidebarProps) {
-  const tools: {
+  const allTools: {
     id: EditTool;
     label: string;
     icon: string;
@@ -517,12 +519,40 @@ export function ImageEditorSidebar({
     },
   ];
 
+  // Filter out inpaint and erase tools if image has transparency
+  const tools = hasTransparency
+    ? allTools.filter(tool => tool.id !== "inpaint" && tool.id !== "erase")
+    : allTools;
+
+  // If transparency is detected and current tool is inpaint or erase, switch to background-remove
+  useEffect(() => {
+    if (hasTransparency && (selectedEditTool === "inpaint" || selectedEditTool === "erase")) {
+      onEditToolChange("background-remove");
+    }
+  }, [hasTransparency, selectedEditTool, onEditToolChange]);
+
   return (
     <div className="w-80 bg-white border-r border-gray-200 p-4 overflow-auto">
       {/* Tool Selector Grid - Hide for overlay and filters tools */}
       {selectedEditTool !== "overlay" && selectedEditTool !== "filters" && (
         <>
           <h3 className="text-lg font-semibold mb-4">Edit Tools</h3>
+          {hasTransparency && (
+            <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+              <div className="flex items-start gap-2">
+                <div className="text-amber-600 text-lg">⚠️</div>
+                <div>
+                  <p className="text-sm font-semibold text-amber-800">
+                    Transparent Background Detected
+                  </p>
+                  <p className="text-xs text-amber-700 mt-1">
+                    Inpaint and Erase tools are disabled on images with transparency.
+                    Please use a non-transparent image for these features.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
           <div className="grid grid-cols-2 gap-2 mb-6">
             {tools.map((tool) => (
               <button
