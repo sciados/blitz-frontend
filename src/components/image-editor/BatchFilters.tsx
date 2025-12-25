@@ -103,6 +103,31 @@ export function BatchFilters({ isOpen, onClose, imageUrls }: BatchFiltersProps) 
   const [progress, setProgress] = useState(0);
   const [results, setResults] = useState<ProcessedImage[]>([]);
 
+  // Helper function to get proxied image URL
+  const getProxiedImageUrl = (imageUrl: string) => {
+    if (!imageUrl) return '';
+    if (imageUrl.startsWith('/api/') || imageUrl.includes('/api/images/proxy')) return imageUrl;
+
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+    let finalApiUrl = apiBaseUrl;
+
+    if (!finalApiUrl && typeof window !== 'undefined') {
+      const hostname = window.location.hostname;
+      if (hostname === 'blitz.ws') {
+        finalApiUrl = 'https://api.blitz.ws';
+      } else if (hostname.includes('localhost') || hostname.includes('127.0.0.1')) {
+        finalApiUrl = 'http://localhost:8000';
+      }
+    }
+
+    if (!finalApiUrl) {
+      console.warn('NEXT_PUBLIC_API_BASE_URL not configured, using direct URL');
+      return imageUrl;
+    }
+
+    return `${finalApiUrl}/api/images/proxy?url=${encodeURIComponent(imageUrl)}`;
+  };
+
   const applyFiltersToImage = async (
     imageUrl: string,
     filterSettings: FilterSettings,
@@ -247,7 +272,7 @@ export function BatchFilters({ isOpen, onClose, imageUrls }: BatchFiltersProps) 
       };
 
       img.onerror = () => reject(new Error(`Failed to load image: ${imageUrl}`));
-      img.src = imageUrl;
+      img.src = getProxiedImageUrl(imageUrl);
     });
   };
 

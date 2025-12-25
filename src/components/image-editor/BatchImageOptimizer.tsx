@@ -131,7 +131,7 @@ export function BatchImageOptimizer({
         };
 
         img.onerror = () => reject(new Error(`Failed to load image: ${url}`));
-        img.src = url;
+        img.src = getProxiedImageUrl(url);
       } catch (err) {
         reject(err);
       }
