@@ -13,7 +13,10 @@
       "Bash(/tmp/image_gen_after.py:*)",
       "Bash(\"C:/Users/shaun/OneDrive/Documents/GitHub/blitz-backend/app/services/image_generator.py\")",
       "Bash(/tmp/image_generator_clean.py)",
-      "Bash(tee:*)"
+      "Bash(tee:*)",
+      "Bash(npm ls:*)",
+      "Bash(npm view:*)",
+      "Bash(npm install:*)"
     ],
     "deny": [],
     "ask": []
