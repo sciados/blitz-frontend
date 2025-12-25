@@ -111,6 +111,16 @@ export function ToolSelector({ selectedTool }: ToolSelectorProps) {
         "Fine-tune shadows and highlights",
       ],
     },
+    collage: {
+      name: "Collage Maker",
+      description: "Combine multiple images into layouts",
+      useCases: [
+        "Create Instagram grid posts",
+        "Before/after comparisons",
+        "Product showcases",
+        "Multi-image stories",
+      ],
+    },
   };
 
   const info = toolInfo[selectedTool];

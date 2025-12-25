@@ -3,6 +3,7 @@
 import { EditTool } from "src/app/image-editor/page";
 import { useState, useEffect } from "react";
 import { FilterToolControls } from "src/components/image-editor/FilterToolControls";
+import { CollageToolControls } from "src/components/image-editor/CollageToolControls";
 
 interface TextOverlay {
   id: string;
@@ -414,6 +415,8 @@ interface ImageEditorSidebarProps {
   onCreativityChange: (value: number) => void;
   isProcessing: boolean;
   onFilterSave?: (dataUrl: string) => void;
+  onApplyCollage?: (dataUrl: string) => void;
+  currentImageUrl?: string | null;
 }
 
 export function ImageEditorSidebar({
@@ -437,6 +440,8 @@ export function ImageEditorSidebar({
   onCreativityChange,
   isProcessing,
   onFilterSave,
+  onApplyCollage,
+  currentImageUrl,
 }: ImageEditorSidebarProps) {
   const tools: {
     id: EditTool;
@@ -504,6 +509,12 @@ export function ImageEditorSidebar({
       icon: "🎭",
       description: "Apply color filters",
     },
+    {
+      id: "collage",
+      label: "Collage",
+      icon: "🖼️",
+      description: "Combine multiple images",
+    },
   ];
 
   return (
@@ -546,8 +557,17 @@ export function ImageEditorSidebar({
         <FilterToolControls isProcessing={isProcessing} onApplyFilter={onFilterSave || (() => {})} />
       )}
 
-      {/* Settings Panel - Hide for overlay and filters tools */}
-      {selectedEditTool !== "overlay" && selectedEditTool !== "filters" && (
+      {/* Collage Tool - Full Width Layout */}
+      {selectedEditTool === "collage" && onApplyCollage && (
+        <CollageToolControls 
+          isProcessing={isProcessing} 
+          currentImageUrl={currentImageUrl || ""}
+          onApplyCollage={onApplyCollage}
+        />
+      )}
+
+      {/* Settings Panel - Hide for overlay, filters, and collage tools */}
+      {selectedEditTool !== "overlay" && selectedEditTool !== "filters" && selectedEditTool !== "collage" && (
         <div>
           <h4 className="text-sm font-semibold text-gray-700 mb-3">Settings</h4>
 

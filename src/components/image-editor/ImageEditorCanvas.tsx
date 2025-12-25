@@ -87,13 +87,70 @@ export function ImageEditorCanvas({
     setFilterSettings(settings);
   };
 
-  // Expose applyFilter to window for FilterToolControls
+  // Collage state
+  const [collageSettings, setCollageSettings] = useState<any>(null);
+
+  // Apply collage to canvas (simplified version - just preview)
+  const applyCollage = (settings: any) => {
+    setCollageSettings(settings);
+    // The actual collage rendering will be done client-side
+    // This is just to track the settings
+  };
+
+  // Get collage canvas - creates the final collage
+  const getCollageCanvas = () => {
+    if (!collageSettings) return null;
+
+    const { layout, images, spacing, backgroundColor, canvasSize } = collageSettings;
+    
+    // Create temp canvas for collage
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = canvasSize.width;
+    tempCanvas.height = canvasSize.height;
+    const ctx = tempCanvas.getContext('2d');
+    
+    if (!ctx) return null;
+
+    // Fill background
+    ctx.fillStyle = backgroundColor;
+    ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+
+    // Simple layout rendering (basic grid)
+    const cols = layout.includes('3x3') ? 3 : layout.includes('3x2') ? 3 : layout.includes('2x2') ? 2 : 2;
+    const rows = layout.includes('3x3') ? 3 : layout.includes('3x2') ? 2 : layout.includes('2x2') ? 2 : 1;
+    
+    const cellWidth = (tempCanvas.width - (cols + 1) * spacing) / cols;
+    const cellHeight = (tempCanvas.height - (rows + 1) * spacing) / rows;
+
+    // Draw images in grid
+    images.forEach((imgSrc: string, index: number) => {
+      if (index >= cols * rows) return;
+      
+      const col = index % cols;
+      const row = Math.floor(index / cols);
+      
+      const x = spacing + col * (cellWidth + spacing);
+      const y = spacing + row * (cellHeight + spacing);
+
+      const img = new Image();
+      img.src = imgSrc;
+      
+      // Draw image to fit cell
+      ctx.drawImage(img, x, y, cellWidth, cellHeight);
+    });
+
+    return tempCanvas.toDataURL("image/png");
+  };
+
+  // Expose applyFilter and collage methods to window
   useEffect(() => {
     if (!(window as any).imageEditorCanvas) {
       (window as any).imageEditorCanvas = {};
     }
     (window as any).imageEditorCanvas.applyFilter = applyFilter;
-  }, [applyFilter]);
+    (window as any).imageEditorCanvas.applyCollage = applyCollage;
+    (window as any).imageEditorCanvas.getCollageCanvas = getCollageCanvas;
+  }, [applyFilter, collageSettings]);
 
   // Load image onto canvas
   useEffect(() => {
