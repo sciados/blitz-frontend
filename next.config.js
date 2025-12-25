@@ -8,37 +8,38 @@ const nextConfig = {
         NEXT_PUBLIC_API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL
     },
 
-    // Webpack configuration for ONNX Runtime and WebAssembly
+    // Webpack configuration for WebAssembly and AI packages
     webpack: (config, { isServer }) => {
-        // Enable WebAssembly support for AI models
+        // Enable WebAssembly support
         config.experiments = {
             ...config.experiments,
             asyncWebAssembly: true,
             layers: true,
         };
 
-        // Handle .wasm files
+        // Handle .wasm files as resources
         config.module.rules.push({
             test: /\.wasm$/,
             type: 'asset/resource',
         });
 
-        // Fix for canvas and other node modules in client-side
+        // Client-side only: add fallbacks for Node.js modules
         if (!isServer) {
             config.resolve.fallback = {
                 ...config.resolve.fallback,
                 fs: false,
                 path: false,
                 crypto: false,
+                stream: false,
+                buffer: false,
             };
         }
 
         return config;
     },
 
-    // Transpile packages that need ESM support
+    // Only transpile background-removal, NOT onnxruntime-web
     transpilePackages: [
-        'onnxruntime-web',
         '@imgly/background-removal'
     ],
 };
