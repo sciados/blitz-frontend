@@ -147,9 +147,11 @@ export default function ContentLibraryPage() {
     useState(false);
   const [showDeleteImageConfirm, setShowDeleteImageConfirm] = useState(false);
   const [showDeleteVideoConfirm, setShowDeleteVideoConfirm] = useState(false);
+  const [showBatchDeleteConfirm, setShowBatchDeleteConfirm] = useState(false);
   const [contentToDelete, setContentToDelete] = useState<number | null>(null);
   const [imageToDelete, setImageToDelete] = useState<number | null>(null);
   const [videoToDelete, setVideoToDelete] = useState<number | null>(null);
+  const [batchDeleteCount, setBatchDeleteCount] = useState(0);
 
   // Batch Processing state
   const [showBatchModal, setShowBatchModal] = useState(false);
@@ -623,6 +625,39 @@ export default function ContentLibraryPage() {
       toast.error(err.response?.data?.detail || "Failed to delete video");
     }
   }
+
+  // Batch Delete Handler
+  const handleBatchDelete = () => {
+    setBatchDeleteCount(selectedImageUrls.length);
+    setShowBatchDeleteConfirm(true);
+  };
+
+  const confirmBatchDelete = async () => {
+    try {
+      // Get the image IDs from the selected URLs
+      const imageIds: number[] = [];
+
+      for (const imageUrl of selectedImageUrls) {
+        const image = combinedImages.find((img) => img.image_url === imageUrl);
+        if (image && image.id) {
+          imageIds.push(image.id);
+        }
+      }
+
+      // Delete each image
+      for (const imageId of imageIds) {
+        await api.delete(`/api/images/${imageId}`);
+      }
+
+      toast.success(`Successfully deleted ${imageIds.length} image(s)`);
+      setSelectedImageUrls([]);
+      setShowBatchDeleteConfirm(false);
+      refetchImages();
+      refetchEditedImages();
+    } catch (err: any) {
+      toast.error(err.response?.data?.detail || "Failed to delete images");
+    }
+  };
 
   // Video Editor handlers
   const handleOpenVideoEditor = (
@@ -1319,6 +1354,26 @@ export default function ContentLibraryPage() {
                             className="text-sm px-3 py-1.5 text-gray-600 hover:text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
                           >
                             Clear ({selectedImageUrls.length})
+                          </button>
+
+                          <button
+                            onClick={handleBatchDelete}
+                            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition flex items-center gap-2 font-medium"
+                          >
+                            <svg
+                              className="w-5 h-5"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                              />
+                            </svg>
+                            Delete ({selectedImageUrls.length})
                           </button>
 
                           <button
@@ -2394,6 +2449,20 @@ export default function ContentLibraryPage() {
         message="Are you sure you want to delete this video? This action cannot be undone."
         type="danger"
         confirmText="Delete"
+      />
+
+      {/* Batch Delete Confirmation */}
+      <ConfirmationModal
+        isOpen={showBatchDeleteConfirm}
+        onClose={() => {
+          setShowBatchDeleteConfirm(false);
+          setBatchDeleteCount(0);
+        }}
+        onConfirm={confirmBatchDelete}
+        title="Delete Multiple Images"
+        message={`Are you sure you want to delete ${batchDeleteCount} image(s)? This action cannot be undone.`}
+        type="danger"
+        confirmText="Delete All"
       />
 
       {/* Video Editor Modal */}
