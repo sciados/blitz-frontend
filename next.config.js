@@ -9,7 +9,7 @@ const nextConfig = {
     },
 
     // Webpack configuration for WebAssembly and AI packages
-    webpack: (config, { isServer }) => {
+    webpack: (config, { isServer, webpack }) => {
         // Enable WebAssembly support
         config.experiments = {
             ...config.experiments,
@@ -23,16 +23,15 @@ const nextConfig = {
             type: 'asset/resource',
         });
 
+        // CRITICAL: Ignore onnxruntime-node to prevent it from being bundled
+        config.plugins.push(
+            new webpack.IgnorePlugin({
+                resourceRegExp: /^onnxruntime-node$/,
+            })
+        );
+
         // Client-side only: add fallbacks for Node.js modules
         if (!isServer) {
-            // Exclude Node.js-only packages from client bundle
-            config.resolve.alias = {
-                ...config.resolve.alias,
-                // Prevent onnxruntime-node from being bundled in browser
-                'onnxruntime-node': false,
-                'sharp': false,
-            };
-
             config.resolve.fallback = {
                 ...config.resolve.fallback,
                 fs: false,
