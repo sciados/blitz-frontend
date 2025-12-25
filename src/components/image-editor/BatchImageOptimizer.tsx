@@ -27,12 +27,37 @@ export function BatchImageOptimizer({
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [results, setResults] = useState<OptimizedImage[]>([]);
-  
+
   // Settings
   const [targetFormat, setTargetFormat] = useState<"jpeg" | "png" | "webp">("jpeg");
   const [quality, setQuality] = useState(85);
   const [maxWidth, setMaxWidth] = useState<number>(1920);
   const [maxHeight, setMaxHeight] = useState<number>(1080);
+
+  // Helper function to get proxied image URL
+  const getProxiedImageUrl = (imageUrl: string) => {
+    if (!imageUrl) return '';
+    if (imageUrl.startsWith('/api/') || imageUrl.includes('/api/images/proxy')) return imageUrl;
+
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+    let finalApiUrl = apiBaseUrl;
+
+    if (!finalApiUrl && typeof window !== 'undefined') {
+      const hostname = window.location.hostname;
+      if (hostname === 'blitz.ws') {
+        finalApiUrl = 'https://api.blitz.ws';
+      } else if (hostname.includes('localhost') || hostname.includes('127.0.0.1')) {
+        finalApiUrl = 'http://localhost:8000';
+      }
+    }
+
+    if (!finalApiUrl) {
+      console.warn('NEXT_PUBLIC_API_BASE_URL not configured, using direct URL');
+      return imageUrl;
+    }
+
+    return `${finalApiUrl}/api/images/proxy?url=${encodeURIComponent(imageUrl)}`;
+  };
 
   const formatBytes = (bytes: number) => {
     if (bytes === 0) return "0 Bytes";
@@ -49,8 +74,8 @@ export function BatchImageOptimizer({
         img.crossOrigin = "anonymous";
 
         img.onload = async () => {
-          // Get original size
-          const response = await fetch(url);
+          // Get original size via proxy to avoid CORS
+          const response = await fetch(getProxiedImageUrl(url));
           const blob = await response.blob();
           const originalSize = blob.size;
 

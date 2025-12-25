@@ -29,6 +29,31 @@ export function BatchBackgroundRemoval({
   const [results, setResults] = useState<ProcessedImage[]>([]);
   const [modelLoaded, setModelLoaded] = useState(false);
 
+  // Helper function to get proxied image URL
+  const getProxiedImageUrl = (imageUrl: string) => {
+    if (!imageUrl) return '';
+    if (imageUrl.startsWith('/api/') || imageUrl.includes('/api/images/proxy')) return imageUrl;
+
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+    let finalApiUrl = apiBaseUrl;
+
+    if (!finalApiUrl && typeof window !== 'undefined') {
+      const hostname = window.location.hostname;
+      if (hostname === 'blitz.ws') {
+        finalApiUrl = 'https://api.blitz.ws';
+      } else if (hostname.includes('localhost') || hostname.includes('127.0.0.1')) {
+        finalApiUrl = 'http://localhost:8000';
+      }
+    }
+
+    if (!finalApiUrl) {
+      console.warn('NEXT_PUBLIC_API_BASE_URL not configured, using direct URL');
+      return imageUrl;
+    }
+
+    return `${finalApiUrl}/api/images/proxy?url=${encodeURIComponent(imageUrl)}`;
+  };
+
   const processImage = async (
     url: string,
     index: number
@@ -36,8 +61,8 @@ export function BatchBackgroundRemoval({
     try {
       setCurrentImage(index + 1);
 
-      // Fetch image as blob
-      const response = await fetch(url);
+      // Fetch image as blob via proxy to avoid CORS
+      const response = await fetch(getProxiedImageUrl(url));
       const imageBlob = await response.blob();
 
       // Remove background using client-side AI

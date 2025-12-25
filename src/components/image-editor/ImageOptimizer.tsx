@@ -27,12 +27,37 @@ export function ImageOptimizer({
 }: ImageOptimizerProps) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [result, setResult] = useState<OptimizationResult | null>(null);
-  
+
   // Optimization settings
   const [targetFormat, setTargetFormat] = useState<"jpeg" | "png" | "webp">("jpeg");
   const [quality, setQuality] = useState(85);
   const [maxWidth, setMaxWidth] = useState<number | null>(null);
   const [maxHeight, setMaxHeight] = useState<number | null>(null);
+
+  // Helper function to get proxied image URL
+  const getProxiedImageUrl = (url: string) => {
+    if (!url) return '';
+    if (url.startsWith('/api/') || url.includes('/api/images/proxy')) return url;
+
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+    let finalApiUrl = apiBaseUrl;
+
+    if (!finalApiUrl && typeof window !== 'undefined') {
+      const hostname = window.location.hostname;
+      if (hostname === 'blitz.ws') {
+        finalApiUrl = 'https://api.blitz.ws';
+      } else if (hostname.includes('localhost') || hostname.includes('127.0.0.1')) {
+        finalApiUrl = 'http://localhost:8000';
+      }
+    }
+
+    if (!finalApiUrl) {
+      console.warn('NEXT_PUBLIC_API_BASE_URL not configured, using direct URL');
+      return url;
+    }
+
+    return `${finalApiUrl}/api/images/proxy?url=${encodeURIComponent(url)}`;
+  };
 
   const formatBytes = (bytes: number) => {
     if (bytes === 0) return "0 Bytes";
@@ -47,18 +72,18 @@ export function ImageOptimizer({
     setResult(null);
 
     try {
-      // Load the image
+      // Load the image via proxy
       const img = new Image();
       img.crossOrigin = "anonymous";
-      
+
       await new Promise((resolve, reject) => {
         img.onload = resolve;
         img.onerror = reject;
-        img.src = imageUrl;
+        img.src = getProxiedImageUrl(imageUrl);
       });
 
-      // Calculate original size (approximate from data URL)
-      const response = await fetch(imageUrl);
+      // Calculate original size (approximate from data URL) via proxy
+      const response = await fetch(getProxiedImageUrl(imageUrl));
       const blob = await response.blob();
       const originalSize = blob.size;
 
