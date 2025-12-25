@@ -5,7 +5,7 @@ const nextConfig = {
         typedRoutes: true
     },
     env: {
-        NEXT_PUBLIC_API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL
+        NEXT_PUBLIC_API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.blitz.ws'
     },
 
     // Webpack configuration for WebAssembly and AI packages

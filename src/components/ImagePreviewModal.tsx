@@ -28,9 +28,38 @@ export function ImagePreviewModal({
 
   if (!isOpen) return null;
 
+  // Helper function to get proxied image URL
+  const getProxiedImageUrl = (imageUrl: string) => {
+    if (!imageUrl) return '';
+    // If already a proxy URL or API route, return as-is
+    if (imageUrl.startsWith('/api/') || imageUrl.includes('/api/images/proxy')) return imageUrl;
+
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+    let finalApiUrl = apiBaseUrl;
+
+    // If no API base URL configured, try to infer from current domain
+    if (!finalApiUrl && typeof window !== 'undefined') {
+      const hostname = window.location.hostname;
+      if (hostname === 'blitz.ws') {
+        finalApiUrl = 'https://api.blitz.ws';
+      } else if (hostname.includes('localhost') || hostname.includes('127.0.0.1')) {
+        finalApiUrl = 'http://localhost:8000';
+      }
+    }
+
+    // If still no API base URL, log warning and return original
+    if (!finalApiUrl) {
+      console.warn('NEXT_PUBLIC_API_BASE_URL not configured and cannot infer API URL, images may have CORS issues');
+      console.warn('Current hostname:', typeof window !== 'undefined' ? window.location.hostname : 'server');
+      return imageUrl;
+    }
+
+    return `${finalApiUrl}/api/images/proxy?url=${encodeURIComponent(imageUrl)}`;
+  };
+
   const handleDownload = async (image: GeneratedImage) => {
     try {
-      const response = await fetch(image.image_url);
+      const response = await fetch(getProxiedImageUrl(image.image_url));
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
