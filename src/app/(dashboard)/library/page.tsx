@@ -283,6 +283,7 @@ export default function ContentLibraryPage() {
                   edited_resize: "resize",
                   edited_inpaint: "inpaint",
                   edited_erase: "erase",
+                  background_removal: "transparent",
                 };
 
                 const editTool =
@@ -299,13 +300,16 @@ export default function ContentLibraryPage() {
                   id: edit.id,
                   campaign_id: edit.campaign_id,
                   image_url: imageUrl,
-                  image_type: `edited_${edit.operation_type}`,
+                  image_type: edit.operation_type === "background_removal" ? "transparent" : `edited_${edit.operation_type}`,
                   prompt:
                     edit.operation_params?.prompt ||
                     edit.operation_params?.search_prompt ||
                     "Edited Image",
                   provider: "Stability AI",
                   aspect_ratio: "original",
+                  // Include transparency and lineage tracking
+                  has_transparency: edit.has_transparency || false,
+                  parent_image_id: edit.parent_image_id || null,
                   metadata: {
                     is_edited: true,
                     edit_tool: editTool,
@@ -1580,6 +1584,7 @@ export default function ContentLibraryPage() {
                                 inpaint: "Inpaint",
                                 erase: "Erase",
                                 overlay: "Overlays",
+                                transparent: "TRANSPARENT",
                               };
                               const toolName =
                                 toolNames[image.metadata.edit_tool] ||
