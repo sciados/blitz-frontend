@@ -2,6 +2,8 @@
 
 import { useRef, useEffect, useState } from "react";
 import { EditTool } from "src/app/image-editor/page";
+import { useBackgroundRemoval } from "src/hooks/useBackgroundRemoval";
+import { toast } from "sonner";
 
 interface ImageEditorCanvasProps {
   originalImage: string | null;
@@ -69,6 +71,14 @@ export function ImageEditorCanvas({
 
   const needsMask = ["inpaint", "erase"].includes(selectedEditTool);
 
+  // Background removal hook
+  const {
+    removeBackgroundToDataURL,
+    isProcessing: isBgRemovalProcessing,
+    progress: bgRemovalProgress,
+    initialize: initializeBgRemoval,
+  } = useBackgroundRemoval();
+
   // Filter state
   const [filterSettings, setFilterSettings] = useState<{
     brightness: number;
@@ -101,14 +111,15 @@ export function ImageEditorCanvas({
   const getCollageCanvas = () => {
     if (!collageSettings) return null;
 
-    const { layout, images, spacing, backgroundColor, canvasSize } = collageSettings;
-    
+    const { layout, images, spacing, backgroundColor, canvasSize } =
+      collageSettings;
+
     // Create temp canvas for collage
-    const tempCanvas = document.createElement('canvas');
+    const tempCanvas = document.createElement("canvas");
     tempCanvas.width = canvasSize.width;
     tempCanvas.height = canvasSize.height;
-    const ctx = tempCanvas.getContext('2d');
-    
+    const ctx = tempCanvas.getContext("2d");
+
     if (!ctx) return null;
 
     // Fill background
@@ -116,25 +127,37 @@ export function ImageEditorCanvas({
     ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
 
     // Simple layout rendering (basic grid)
-    const cols = layout.includes('3x3') ? 3 : layout.includes('3x2') ? 3 : layout.includes('2x2') ? 2 : 2;
-    const rows = layout.includes('3x3') ? 3 : layout.includes('3x2') ? 2 : layout.includes('2x2') ? 2 : 1;
-    
+    const cols = layout.includes("3x3")
+      ? 3
+      : layout.includes("3x2")
+      ? 3
+      : layout.includes("2x2")
+      ? 2
+      : 2;
+    const rows = layout.includes("3x3")
+      ? 3
+      : layout.includes("3x2")
+      ? 2
+      : layout.includes("2x2")
+      ? 2
+      : 1;
+
     const cellWidth = (tempCanvas.width - (cols + 1) * spacing) / cols;
     const cellHeight = (tempCanvas.height - (rows + 1) * spacing) / rows;
 
     // Draw images in grid
     images.forEach((imgSrc: string, index: number) => {
       if (index >= cols * rows) return;
-      
+
       const col = index % cols;
       const row = Math.floor(index / cols);
-      
+
       const x = spacing + col * (cellWidth + spacing);
       const y = spacing + row * (cellHeight + spacing);
 
       const img = new Image();
       img.src = imgSrc;
-      
+
       // Draw image to fit cell
       ctx.drawImage(img, x, y, cellWidth, cellHeight);
     });
@@ -150,6 +173,12 @@ export function ImageEditorCanvas({
     (window as any).imageEditorCanvas.applyFilter = applyFilter;
     (window as any).imageEditorCanvas.applyCollage = applyCollage;
     (window as any).imageEditorCanvas.getCollageCanvas = getCollageCanvas;
+
+    // Pre-load the background removal model when component mounts
+    // This happens in the background, so it's ready when user needs it
+    initializeBgRemoval().catch((err) => {
+      console.warn("Background removal model preload failed:", err);
+    });
   }, [applyFilter, collageSettings]);
 
   // Load image onto canvas
@@ -163,9 +192,13 @@ export function ImageEditorCanvas({
     let imageSrc = originalImage;
 
     // Only use proxy for HTTP/HTTPS URLs (not for blob: URLs from file uploads)
-    if (!originalImage.startsWith('blob:') && !originalImage.startsWith('data:')) {
+    if (
+      !originalImage.startsWith("blob:") &&
+      !originalImage.startsWith("data:")
+    ) {
       const apiBaseUrl =
-        process.env.NEXT_PUBLIC_API_BASE_URL || "https://blitzed.up.railway.app";
+        process.env.NEXT_PUBLIC_API_BASE_URL ||
+        "https://blitzed.up.railway.app";
       imageSrc = `${apiBaseUrl}/api/images/proxy?url=${encodeURIComponent(
         originalImage
       )}`;
@@ -244,9 +277,14 @@ export function ImageEditorCanvas({
     let imageSrc = originalImage || "";
 
     // Only use proxy for HTTP/HTTPS URLs (not for blob: URLs from file uploads)
-    if (originalImage && !originalImage.startsWith('blob:') && !originalImage.startsWith('data:')) {
+    if (
+      originalImage &&
+      !originalImage.startsWith("blob:") &&
+      !originalImage.startsWith("data:")
+    ) {
       const apiBaseUrl =
-        process.env.NEXT_PUBLIC_API_BASE_URL || "https://blitzed.up.railway.app";
+        process.env.NEXT_PUBLIC_API_BASE_URL ||
+        "https://blitzed.up.railway.app";
       imageSrc = `${apiBaseUrl}/api/images/proxy?url=${encodeURIComponent(
         originalImage
       )}`;
@@ -308,24 +346,13 @@ export function ImageEditorCanvas({
           ctx.rotate((overlay.rotation * Math.PI) / 180);
 
           // Draw image
-          ctx.drawImage(
-            overlayImg,
-            0,
-            0,
-            overlay.width,
-            overlay.height
-          );
+          ctx.drawImage(overlayImg, 0, 0, overlay.width, overlay.height);
 
           // Draw selection box if selected
           if (selectedOverlay === overlay.id) {
             ctx.strokeStyle = "blue";
             ctx.lineWidth = 2;
-            ctx.strokeRect(
-              -5,
-              -5,
-              overlay.width + 10,
-              overlay.height + 10
-            );
+            ctx.strokeRect(-5, -5, overlay.width + 10, overlay.height + 10);
           }
 
           ctx.restore();
@@ -333,7 +360,13 @@ export function ImageEditorCanvas({
         overlayImg.src = overlay.imageData;
       });
     };
-  }, [textOverlays, imageOverlays, selectedOverlay, imageLoaded, originalImage]);
+  }, [
+    textOverlays,
+    imageOverlays,
+    selectedOverlay,
+    imageLoaded,
+    originalImage,
+  ]);
 
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!maskCanvasRef.current || isProcessing || !needsMask) return;
@@ -380,7 +413,56 @@ export function ImageEditorCanvas({
     );
   };
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
+    // Handle background removal client-side
+    if (selectedEditTool === "background-remove") {
+      if (!originalImage) {
+        toast.error("No image loaded");
+        return;
+      }
+
+      try {
+        // Show progress toast
+        const toastId = toast.loading("Removing background...", {
+          description: "Processing image with AI",
+        });
+
+        // Remove background using Transformers.js
+        const resultDataUrl = await removeBackgroundToDataURL(originalImage);
+
+        toast.dismiss(toastId);
+        toast.success("Background removed!", {
+          description: "Click Save to store the result",
+        });
+
+        // Load result onto canvas
+        const img = new Image();
+        img.onload = () => {
+          if (canvasRef.current) {
+            const ctx = canvasRef.current.getContext("2d");
+            if (ctx) {
+              ctx.clearRect(
+                0,
+                0,
+                canvasRef.current.width,
+                canvasRef.current.height
+              );
+              ctx.drawImage(img, 0, 0);
+            }
+          }
+        };
+        img.src = resultDataUrl;
+      } catch (error) {
+        console.error("Background removal failed:", error);
+        toast.error("Background removal failed", {
+          description:
+            error instanceof Error ? error.message : "Please try again",
+        });
+      }
+      return;
+    }
+
+    // Original code for other tools
     if (needsMask && maskCanvasRef.current) {
       const maskDataUrl = maskCanvasRef.current.toDataURL("image/png");
       onEdit(maskDataUrl);
@@ -448,13 +530,13 @@ export function ImageEditorCanvas({
       // Check text overlays (check in reverse order for proper z-index)
       for (let i = textOverlays.length - 1; i >= 0; i--) {
         const overlay = textOverlays[i];
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext("2d");
         if (!ctx) continue;
 
         // Set font to measure text
-        let fontStyle = '';
-        if (overlay.bold) fontStyle += 'bold ';
-        if (overlay.italic) fontStyle += 'italic ';
+        let fontStyle = "";
+        if (overlay.bold) fontStyle += "bold ";
+        if (overlay.italic) fontStyle += "italic ";
         ctx.font = `${fontStyle}${overlay.fontSize}px ${overlay.fontFamily}`;
 
         const metrics = ctx.measureText(overlay.text);
@@ -527,7 +609,11 @@ export function ImageEditorCanvas({
   };
 
   const handleCanvasMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (selectedEditTool === "overlay" && isDraggingOverlay && selectedOverlay) {
+    if (
+      selectedEditTool === "overlay" &&
+      isDraggingOverlay &&
+      selectedOverlay
+    ) {
       const canvas = canvasRef.current;
       if (!canvas) return;
 
@@ -536,26 +622,22 @@ export function ImageEditorCanvas({
       const y = e.clientY - rect.top;
 
       // Update text overlay position
-      const textOverlay = textOverlays.find(o => o.id === selectedOverlay);
+      const textOverlay = textOverlays.find((o) => o.id === selectedOverlay);
       if (textOverlay) {
         setTextOverlays(
           textOverlays.map((overlay) =>
-            overlay.id === selectedOverlay
-              ? { ...overlay, x, y }
-              : overlay
+            overlay.id === selectedOverlay ? { ...overlay, x, y } : overlay
           )
         );
         return;
       }
 
       // Update image overlay position (x, y are center points)
-      const imageOverlay = imageOverlays.find(o => o.id === selectedOverlay);
+      const imageOverlay = imageOverlays.find((o) => o.id === selectedOverlay);
       if (imageOverlay) {
         setImageOverlays(
           imageOverlays.map((overlay) =>
-            overlay.id === selectedOverlay
-              ? { ...overlay, x, y }
-              : overlay
+            overlay.id === selectedOverlay ? { ...overlay, x, y } : overlay
           )
         );
       }
@@ -584,13 +666,13 @@ export function ImageEditorCanvas({
     // Check if double-clicking on a text overlay
     for (let i = textOverlays.length - 1; i >= 0; i--) {
       const overlay = textOverlays[i];
-      const ctx = canvas.getContext('2d');
+      const ctx = canvas.getContext("2d");
       if (!ctx) continue;
 
       // Set font to measure text
-      let fontStyle = '';
-      if (overlay.bold) fontStyle += 'bold ';
-      if (overlay.italic) fontStyle += 'italic ';
+      let fontStyle = "";
+      if (overlay.bold) fontStyle += "bold ";
+      if (overlay.italic) fontStyle += "italic ";
       ctx.font = `${fontStyle}${overlay.fontSize}px ${overlay.fontFamily}`;
 
       const metrics = ctx.measureText(overlay.text);
@@ -624,11 +706,13 @@ export function ImageEditorCanvas({
     }
   };
 
-  const handleEditingTextKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
+  const handleEditingTextKeyDown = (
+    e: React.KeyboardEvent<HTMLInputElement>
+  ) => {
+    if (e.key === "Enter") {
       // Save the text
       setTextOverlays(
-        textOverlays.map(overlay =>
+        textOverlays.map((overlay) =>
           overlay.id === editingTextId
             ? { ...overlay, text: editingTextValue }
             : overlay
@@ -636,7 +720,7 @@ export function ImageEditorCanvas({
       );
       setEditingTextId(null);
       setEditingTextValue("");
-    } else if (e.key === 'Escape') {
+    } else if (e.key === "Escape") {
       // Cancel editing
       setEditingTextId(null);
       setEditingTextValue("");
@@ -647,7 +731,7 @@ export function ImageEditorCanvas({
     // Save on blur
     if (editingTextId) {
       setTextOverlays(
-        textOverlays.map(overlay =>
+        textOverlays.map((overlay) =>
           overlay.id === editingTextId
             ? { ...overlay, text: editingTextValue }
             : overlay
@@ -674,21 +758,29 @@ export function ImageEditorCanvas({
     }
 
     const sourceCanvas = canvasRef.current;
-    const sourceCtx = sourceCanvas.getContext('2d');
+    const sourceCtx = sourceCanvas.getContext("2d");
 
     if (!sourceCtx) {
       return null;
     }
 
     // Get source pixels first
-    const sourceData = sourceCtx.getImageData(0, 0, sourceCanvas.width, sourceCanvas.height);
+    const sourceData = sourceCtx.getImageData(
+      0,
+      0,
+      sourceCanvas.width,
+      sourceCanvas.height
+    );
 
     // Build filter values
     const brightness = (filterSettings?.brightness || 0) / 100;
     const contrast = (filterSettings?.contrast || 0) / 100;
     const saturation = (filterSettings?.saturation || 0) / 100;
-    const temperature = (filterSettings?.temperature || 0) * 0.7 / 100;
-    const tint = (filterSettings?.tint || 0) > 0 ? ((filterSettings?.tint || 0) * 0.3 / 100) : 0;
+    const temperature = ((filterSettings?.temperature || 0) * 0.7) / 100;
+    const tint =
+      (filterSettings?.tint || 0) > 0
+        ? ((filterSettings?.tint || 0) * 0.3) / 100
+        : 0;
 
     // Apply pixel-level filters directly to the source data
     for (let i = 0; i < sourceData.data.length; i += 4) {
@@ -697,9 +789,9 @@ export function ImageEditorCanvas({
       let b = sourceData.data[i + 2];
 
       // Brightness
-      r = Math.max(0, Math.min(255, r + (255 * brightness)));
-      g = Math.max(0, Math.min(255, g + (255 * brightness)));
-      b = Math.max(0, Math.min(255, b + (255 * brightness)));
+      r = Math.max(0, Math.min(255, r + 255 * brightness));
+      g = Math.max(0, Math.min(255, g + 255 * brightness));
+      b = Math.max(0, Math.min(255, b + 255 * brightness));
 
       // Contrast
       r = ((r / 255 - 0.5) * (1 + contrast) + 0.5) * 255;
@@ -713,8 +805,8 @@ export function ImageEditorCanvas({
       b = gray + (b - gray) * (1 + saturation);
 
       // Temperature (red/blue shift)
-      r = Math.max(0, Math.min(255, r + (255 * temperature)));
-      b = Math.max(0, Math.min(255, b - (255 * temperature)));
+      r = Math.max(0, Math.min(255, r + 255 * temperature));
+      b = Math.max(0, Math.min(255, b - 255 * temperature));
 
       // Tint (sepia effect)
       if (tint > 0) {
@@ -733,10 +825,10 @@ export function ImageEditorCanvas({
     }
 
     // Create temp canvas and put modified pixels
-    const tempCanvas = document.createElement('canvas');
+    const tempCanvas = document.createElement("canvas");
     tempCanvas.width = sourceCanvas.width;
     tempCanvas.height = sourceCanvas.height;
-    const tempCtx = tempCanvas.getContext('2d');
+    const tempCtx = tempCanvas.getContext("2d");
 
     if (!tempCtx) {
       return null;
@@ -756,7 +848,8 @@ export function ImageEditorCanvas({
     (window as any).imageEditorCanvas.addTextOverlay = addTextOverlay;
     (window as any).imageEditorCanvas.addImageOverlay = addImageOverlay;
     (window as any).imageEditorCanvas.handleSaveOverlays = handleSaveOverlays;
-    (window as any).imageEditorCanvas.getCanvasWithFilters = getCanvasWithFilters;
+    (window as any).imageEditorCanvas.getCanvasWithFilters =
+      getCanvasWithFilters;
     (window as any).imageEditorCanvas.textOverlays = textOverlays;
     (window as any).imageEditorCanvas.imageOverlays = imageOverlays;
     (window as any).imageEditorCanvas.selectedOverlay = selectedOverlay;
@@ -825,11 +918,21 @@ export function ImageEditorCanvas({
             )}
             {selectedEditTool !== "filters" && (
               <button
-                onClick={selectedEditTool === "overlay" ? handleSaveOverlays : handleGenerate}
-                disabled={isProcessing || !imageLoaded}
+                onClick={
+                  selectedEditTool === "overlay"
+                    ? handleSaveOverlays
+                    : handleGenerate
+                }
+                disabled={isProcessing || isBgRemovalProcessing || !imageLoaded}
                 className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
               >
-                {isProcessing ? "Processing..." : selectedEditTool === "overlay" ? "Save" : "Generate"}
+                {isProcessing || isBgRemovalProcessing
+                  ? selectedEditTool === "background-remove"
+                    ? `Removing... ${Math.round(bgRemovalProgress)}%`
+                    : "Processing..."
+                  : selectedEditTool === "overlay"
+                  ? "Save"
+                  : "Generate"}
               </button>
             )}
           </div>
@@ -847,7 +950,9 @@ export function ImageEditorCanvas({
             onMouseLeave={handleCanvasMouseUp}
             onDoubleClick={handleCanvasDoubleClick}
             className={`shadow-lg rounded ${
-              selectedEditTool === "overlay" ? "cursor-move" : "cursor-crosshair"
+              selectedEditTool === "overlay"
+                ? "cursor-move"
+                : "cursor-crosshair"
             }`}
             style={{
               filter: filterSettings
@@ -855,28 +960,43 @@ export function ImageEditorCanvas({
                    contrast(${100 + (filterSettings.contrast || 0)}%)
                    saturate(${100 + (filterSettings.saturation || 0)}%)
                    hue-rotate(${(filterSettings.temperature || 0) * 0.7}deg)
-                   sepia(${(filterSettings.tint || 0) > 0 ? filterSettings?.tint * 0.3 : 0}%)
-                   ${filterSettings.vignette ? `drop-shadow(0 0 ${filterSettings.vignette}px rgba(0,0,0,0.5))` : ''}`
-                : 'none',
+                   sepia(${
+                     (filterSettings.tint || 0) > 0
+                       ? filterSettings?.tint * 0.3
+                       : 0
+                   }%)
+                   ${
+                     filterSettings.vignette
+                       ? `drop-shadow(0 0 ${filterSettings.vignette}px rgba(0,0,0,0.5))`
+                       : ""
+                   }`
+                : "none",
             }}
           />
 
           {/* Inline Text Editor */}
-          {editingTextId && selectedEditTool === "overlay" && (
+          {editingTextId &&
+            selectedEditTool === "overlay" &&
             (() => {
-              const overlay = textOverlays.find(o => o.id === editingTextId);
+              const overlay = textOverlays.find((o) => o.id === editingTextId);
               if (!overlay) return null;
 
               const canvas = canvasRef.current;
               if (!canvas) return null;
 
               const canvasRect = canvas.getBoundingClientRect();
-              const containerRect = containerRef.current?.getBoundingClientRect();
+              const containerRect =
+                containerRef.current?.getBoundingClientRect();
               if (!containerRect) return null;
 
               // Calculate position relative to container
               const left = canvasRect.left - containerRect.left + overlay.x - 5;
-              const top = canvasRect.top - containerRect.top + overlay.y - overlay.fontSize - 5;
+              const top =
+                canvasRect.top -
+                containerRect.top +
+                overlay.y -
+                overlay.fontSize -
+                5;
 
               return (
                 <input
@@ -887,26 +1007,28 @@ export function ImageEditorCanvas({
                   onBlur={handleEditingTextBlur}
                   autoFocus
                   style={{
-                    position: 'absolute',
+                    position: "absolute",
                     left: `${left}px`,
                     top: `${top}px`,
                     fontSize: `${overlay.fontSize}px`,
                     fontFamily: overlay.fontFamily,
-                    fontWeight: overlay.bold ? 'bold' : 'normal',
-                    fontStyle: overlay.italic ? 'italic' : 'normal',
+                    fontWeight: overlay.bold ? "bold" : "normal",
+                    fontStyle: overlay.italic ? "italic" : "normal",
                     color: overlay.color,
-                    backgroundColor: overlay.backgroundColor === 'transparent' ? 'rgba(255,255,255,0.9)' : overlay.backgroundColor,
-                    border: '2px solid #3B82F6',
-                    borderRadius: '4px',
-                    padding: '4px 8px',
+                    backgroundColor:
+                      overlay.backgroundColor === "transparent"
+                        ? "rgba(255,255,255,0.9)"
+                        : overlay.backgroundColor,
+                    border: "2px solid #3B82F6",
+                    borderRadius: "4px",
+                    padding: "4px 8px",
                     zIndex: 1000,
-                    outline: 'none',
-                    minWidth: '100px',
+                    outline: "none",
+                    minWidth: "100px",
                   }}
                 />
               );
-            })()
-          )}
+            })()}
 
           {needsMask && (
             <canvas
