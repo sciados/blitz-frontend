@@ -1,7 +1,16 @@
+// BatchProcessingModal
+
 "use client";
 
 import { useState } from "react";
-import { X, Upload, Loader2, Download, CheckCircle, XCircle } from "lucide-react";
+import {
+  X,
+  Upload,
+  Loader2,
+  Download,
+  CheckCircle,
+  XCircle,
+} from "lucide-react";
 
 interface BatchProcessingModalProps {
   isOpen: boolean;
@@ -93,14 +102,17 @@ export function BatchProcessingModal({
       formData.append("image_urls", JSON.stringify(selectedImages));
 
       const token = localStorage.getItem("token");
-      const response = await fetch(`${apiBaseUrl}/api/image-editor/batch-process`, {
-        method: "POST",
-        body: formData,
-        credentials: "include",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await fetch(
+        `${apiBaseUrl}/api/image-editor/batch-process`,
+        {
+          method: "POST",
+          body: formData,
+          credentials: "include",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       const result = await response.json();
 
@@ -160,7 +172,8 @@ export function BatchProcessingModal({
               Batch Processing
             </h2>
             <p className="text-sm text-gray-600 mt-1">
-              Process {selectedImages.length} image{selectedImages.length !== 1 ? "s" : ""} at once
+              Process {selectedImages.length} image
+              {selectedImages.length !== 1 ? "s" : ""} at once
             </p>
           </div>
           <button
@@ -301,9 +314,12 @@ export function BatchProcessingModal({
                   <div className="flex items-center gap-3 mb-3">
                     <Loader2 className="animate-spin text-blue-600" size={24} />
                     <div className="flex-1">
-                      <p className="font-medium text-blue-900">Processing images...</p>
+                      <p className="font-medium text-blue-900">
+                        Processing images...
+                      </p>
                       <p className="text-sm text-blue-700">
-                        This may take several minutes depending on the number of images
+                        This may take several minutes depending on the number of
+                        images
                       </p>
                     </div>
                   </div>
@@ -324,7 +340,9 @@ export function BatchProcessingModal({
                 <div className="p-4 bg-green-50 rounded-lg border border-green-200">
                   <div className="flex items-center gap-2 mb-1">
                     <CheckCircle className="text-green-600" size={20} />
-                    <span className="font-semibold text-green-900">Successful</span>
+                    <span className="font-semibold text-green-900">
+                      Successful
+                    </span>
                   </div>
                   <p className="text-2xl font-bold text-green-700">
                     {results.processed.length}
@@ -401,7 +419,8 @@ export function BatchProcessingModal({
           {!results ? (
             <>
               <p className="text-sm text-gray-500">
-                {selectedImages.length} image{selectedImages.length !== 1 ? "s" : ""} selected
+                {selectedImages.length} image
+                {selectedImages.length !== 1 ? "s" : ""} selected
               </p>
               <div className="flex gap-3">
                 <button
