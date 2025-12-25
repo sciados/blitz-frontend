@@ -10,7 +10,6 @@
     "postinstall": "sh -c 'echo \"Postinstall complete\"'"
   },
   "dependencies": {
-    "@huggingface/transformers": "^3.8.1",
     "@imgly/background-removal": "^1.4.5",
     "@tanstack/react-query": "5.59.15",
     "axios": "1.7.7",

@@ -5,11 +5,11 @@ const nextConfig = {
         typedRoutes: true
     },
     env: {
-        NEXT_PUBLIC_API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL
+        NEXT_PUBLIC_API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.blitz.ws'
     },
 
     // Webpack configuration for WebAssembly and AI packages
-    webpack: (config, { isServer, webpack }) => {
+    webpack: (config, { isServer }) => {
         // Enable WebAssembly support
         config.experiments = {
             ...config.experiments,
@@ -22,13 +22,6 @@ const nextConfig = {
             test: /\.wasm$/,
             type: 'asset/resource',
         });
-
-        // CRITICAL: Ignore onnxruntime-node to prevent it from being bundled
-        config.plugins.push(
-            new webpack.IgnorePlugin({
-                resourceRegExp: /^onnxruntime-node$/,
-            })
-        );
 
         // Client-side only: add fallbacks for Node.js modules
         if (!isServer) {
@@ -45,7 +38,7 @@ const nextConfig = {
         return config;
     },
 
-    // Only transpile background-removal, NOT onnxruntime-web
+    // Only transpile background-removal
     transpilePackages: [
         '@imgly/background-removal'
     ],
