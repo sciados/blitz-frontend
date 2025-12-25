@@ -101,7 +101,7 @@ export default function ContentLibraryPage() {
     "text" | "images" | "videos"
   >("text");
   const [imageFilter, setImageFilter] = useState<
-    "all" | "original" | "filters" | "resize" | "overlays" | "inpaint" | "erase"
+    "all" | "original" | "filters" | "resize" | "overlays" | "inpaint" | "erase" | "transparent" | "lineage"
   >("all");
   const [videoFilter, setVideoFilter] = useState<
     "all" | "generated" | "overlays"
@@ -430,6 +430,10 @@ export default function ContentLibraryPage() {
     if (imageFilter === "inpaint" && image.metadata?.edit_tool !== "inpaint")
       return false;
     if (imageFilter === "erase" && image.metadata?.edit_tool !== "erase")
+      return false;
+    if (imageFilter === "transparent" && image.has_transparency !== true)
+      return false;
+    if (imageFilter === "lineage" && (image.parent_image_id === null || image.parent_image_id === undefined))
       return false;
     return true;
   });
@@ -1014,6 +1018,40 @@ export default function ContentLibraryPage() {
                   }
                 </span>
               </button>
+              <button
+                onClick={() => setImageFilter("transparent")}
+                className={`px-4 py-2 rounded-lg transition flex items-center gap-2 ${
+                  imageFilter === "transparent"
+                    ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow"
+                    : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+                }`}
+              >
+                <span>🔍 Transparent</span>
+                <span className="text-xs px-2 py-0.5 bg-gray-200 dark:bg-gray-600 rounded-full">
+                  {
+                    combinedImages.filter(
+                      (img) => img.has_transparency === true
+                    ).length
+                  }
+                </span>
+              </button>
+              <button
+                onClick={() => setImageFilter("lineage")}
+                className={`px-4 py-2 rounded-lg transition flex items-center gap-2 ${
+                  imageFilter === "lineage"
+                    ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow"
+                    : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+                }`}
+              >
+                <span>🌳 Lineage</span>
+                <span className="text-xs px-2 py-0.5 bg-gray-200 dark:bg-gray-600 rounded-full">
+                  {
+                    combinedImages.filter(
+                      (img) => img.parent_image_id !== null && img.parent_image_id !== undefined
+                    ).length
+                  }
+                </span>
+              </button>
             </div>
           )}
 
@@ -1542,6 +1580,19 @@ export default function ContentLibraryPage() {
                               );
                             }
                           })()}
+                          {/* Additional Badges for Transparency and Lineage */}
+                          <div className="absolute top-12 right-3 flex flex-col gap-1">
+                            {image.has_transparency && (
+                              <div className="bg-cyan-500 to-cyan-600 text-white px-2 py-1 rounded-full text-xs font-medium shadow-lg">
+                                🔍 TRANSPARENT
+                              </div>
+                            )}
+                            {image.parent_image_id && (
+                              <div className="bg-amber-500 to-amber-600 text-white px-2 py-1 rounded-full text-xs font-medium shadow-lg">
+                                🌳 EDIT
+                              </div>
+                            )}
+                          </div>
                           {/* Thumbnail Notice */}
                           <div className="absolute top-3 left-3 bg-black/50 text-white px-2 py-1 rounded-full text-xs">
                             ⬇ THUMB

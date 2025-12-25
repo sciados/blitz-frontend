@@ -269,6 +269,10 @@ export type GeneratedImage = {
     thumbnail_url: string | null;
     provider: string;
     model: string;
+    // Parent-child relationship for tracking image lineage
+    parent_image_id?: number | null;
+    // Transparency detection
+    has_transparency?: boolean;
     metadata: {
         width: number;
         height: number;
