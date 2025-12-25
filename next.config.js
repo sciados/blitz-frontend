@@ -23,6 +23,17 @@ const nextConfig = {
             type: 'asset/resource',
         });
 
+        // CRITICAL: Exclude ONNX Runtime from optimization (minification)
+        config.optimization = {
+            ...config.optimization,
+            minimizer: config.optimization.minimizer?.map((minimizer) => {
+                if (minimizer.constructor.name === 'TerserPlugin') {
+                    minimizer.options.exclude = /onnxruntime-web|ort\..*\.mjs/;
+                }
+                return minimizer;
+            }),
+        };
+
         // Client-side only: add fallbacks for Node.js modules
         if (!isServer) {
             config.resolve.fallback = {
