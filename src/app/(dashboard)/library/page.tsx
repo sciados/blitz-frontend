@@ -17,6 +17,7 @@ import { ImageOptimizer } from "src/components/image-editor/ImageOptimizer";
 import { BatchImageOptimizer } from "src/components/image-editor/BatchImageOptimizer";
 import { ImageFilters } from "src/components/image-editor/ImageFilters";
 import { BatchFilters } from "src/components/image-editor/BatchFilters";
+import { BatchBackgroundRemoval } from "src/components/image-editor/BatchBackgroundRemoval";
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -140,6 +141,9 @@ export default function ContentLibraryPage() {
 
   // Batch Filters state
   const [showBatchFilters, setShowBatchFilters] = useState(false);
+
+  // Batch Background Removal state
+  const [showBatchBgRemoval, setShowBatchBgRemoval] = useState(false);
 
   // Fetch all content for the user
   const { refetch: refetchContent, isLoading } = useQuery({
@@ -1328,6 +1332,17 @@ export default function ContentLibraryPage() {
                           </button>
 
                           <button
+                            onClick={() => setShowBatchBgRemoval(true)}
+                            className="px-4 py-2 bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-lg hover:from-green-700 hover:to-blue-700 transition flex items-center gap-2 font-medium shadow-md"
+                          >
+                            <span className="text-lg">🪄</span>
+                            Remove Backgrounds ({selectedImageUrls.length})
+                            <span className="text-xs bg-white/20 px-2 py-0.5 rounded">
+                              FREE
+                            </span>
+                          </button>
+
+                          <button
                             onClick={() => {
                               setBatchCampaignId(filterCampaignId);
                               setShowBatchModal(true);
@@ -2512,6 +2527,16 @@ export default function ContentLibraryPage() {
         isOpen={showBatchFilters}
         onClose={() => {
           setShowBatchFilters(false);
+          setSelectedImageUrls([]);
+        }}
+        imageUrls={selectedImageUrls}
+      />
+
+      {/* Batch Background Removal */}
+      <BatchBackgroundRemoval
+        isOpen={showBatchBgRemoval}
+        onClose={() => {
+          setShowBatchBgRemoval(false);
           setSelectedImageUrls([]);
         }}
         imageUrls={selectedImageUrls}

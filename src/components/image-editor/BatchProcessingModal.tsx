@@ -1,4 +1,4 @@
-// BatchProcessingModal
+// BatchProcessingModal - Updated (Background Remove moved to free client-side version)
 
 "use client";
 
@@ -10,12 +10,13 @@ import {
   Download,
   CheckCircle,
   XCircle,
+  Info,
 } from "lucide-react";
 
 interface BatchProcessingModalProps {
   isOpen: boolean;
   onClose: () => void;
-  selectedImages: string[]; // Array of image URLs
+  selectedImages: string[];
   campaignId: number;
 }
 
@@ -37,7 +38,7 @@ export function BatchProcessingModal({
   selectedImages,
   campaignId,
 }: BatchProcessingModalProps) {
-  const [selectedTool, setSelectedTool] = useState<string>("background-remove");
+  const [selectedTool, setSelectedTool] = useState<string>("upscale");
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [results, setResults] = useState<{
@@ -52,9 +53,13 @@ export function BatchProcessingModal({
   const [creativity, setCreativity] = useState(0.35);
 
   const tools = [
-    { value: "background-remove", label: "Remove Background", icon: "🎭" },
-    { value: "upscale", label: "Upscale (2x)", icon: "🔍" },
-    { value: "search-replace", label: "Search & Replace", icon: "🔄" },
+    { value: "upscale", label: "Upscale (2x)", icon: "🔍", cost: "$0.10" },
+    {
+      value: "search-replace",
+      label: "Search & Replace",
+      icon: "🔄",
+      cost: "$0.04",
+    },
   ];
 
   const handleProcess = async () => {
@@ -63,8 +68,11 @@ export function BatchProcessingModal({
     setResults(null);
 
     try {
-      const apiBaseUrl =
-        process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+      if (!apiBaseUrl) {
+        throw new Error("API base URL not configured");
+      }
 
       // Build operation params based on selected tool
       const operationParams: any = {
@@ -136,7 +144,6 @@ export function BatchProcessingModal({
   const handleDownloadAll = async () => {
     if (!results || results.processed.length === 0) return;
 
-    // Download each image individually
     for (const image of results.processed) {
       try {
         const response = await fetch(image.edited_url);
@@ -151,8 +158,6 @@ export function BatchProcessingModal({
         document.body.removeChild(a);
 
         URL.revokeObjectURL(url);
-
-        // Small delay between downloads
         await new Promise((resolve) => setTimeout(resolve, 500));
       } catch (error) {
         console.error(`Failed to download ${image.filename}:`, error);
@@ -160,20 +165,24 @@ export function BatchProcessingModal({
     }
   };
 
+  const estimatedCost =
+    selectedTool === "upscale"
+      ? selectedImages.length * 0.1
+      : selectedImages.length * 0.04;
+
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-        {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div>
             <h2 className="text-2xl font-bold text-gray-900">
-              Batch Processing
+              Batch AI Processing
             </h2>
             <p className="text-sm text-gray-600 mt-1">
               Process {selectedImages.length} image
-              {selectedImages.length !== 1 ? "s" : ""} at once
+              {selectedImages.length !== 1 ? "s" : ""} with AI
             </p>
           </div>
           <button
@@ -185,147 +194,186 @@ export function BatchProcessingModal({
           </button>
         </div>
 
-        {/* Content */}
         <div className="flex-1 overflow-auto p-6">
           {!results ? (
             <>
-              {/* Tool Selection */}
+              <div className="mb-6 p-4 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg border border-green-200">
+                <div className="flex items-start gap-3">
+                  <Info className="text-blue-600 mt-0.5" size={20} />
+                  <div>
+                    <p className="font-semibold text-gray-900 mb-1">
+                      💡 Looking for Background Removal?
+                    </p>
+                    <p className="text-sm text-gray-700">
+                      We now have a <strong>FREE client-side</strong> batch
+                      background removal tool! Use the "Batch Background Removal
+                      (FREE)" option instead to save{" "}
+                      <strong>
+                        ${(selectedImages.length * 0.04).toFixed(2)}
+                      </strong>{" "}
+                      on these {selectedImages.length} images.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 mb-3">
-                  Select Tool
+                  Select AI Tool
                 </label>
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-2 gap-3">
                   {tools.map((tool) => (
                     <button
                       key={tool.value}
                       onClick={() => setSelectedTool(tool.value)}
                       disabled={isProcessing}
-                      className={`p-4 border-2 rounded-lg text-center transition-all ${
+                      className={`p-4 border-2 rounded-lg transition-all ${
                         selectedTool === tool.value
-                          ? "border-blue-500 bg-blue-50 text-blue-700"
-                          : "border-gray-200 hover:border-gray-300"
+                          ? "border-blue-600 bg-blue-50"
+                          : "border-gray-200 hover:border-blue-500"
                       } disabled:opacity-50`}
                     >
                       <div className="text-3xl mb-2">{tool.icon}</div>
-                      <div className="text-sm font-medium">{tool.label}</div>
+                      <div className="text-sm font-medium text-gray-900">
+                        {tool.label}
+                      </div>
+                      <div className="text-xs text-gray-600 mt-1">
+                        {tool.cost} per image
+                      </div>
                     </button>
                   ))}
                 </div>
               </div>
 
-              {/* Tool-Specific Parameters */}
-              {selectedTool === "upscale" && (
-                <div className="space-y-4 mb-6 p-4 bg-gray-50 rounded-lg">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Prompt *
-                    </label>
-                    <textarea
-                      value={prompt}
-                      onChange={(e) => setPrompt(e.target.value)}
-                      disabled={isProcessing}
-                      placeholder="Describe the image to enhance upscaling quality..."
-                      rows={3}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Negative Prompt
-                    </label>
-                    <input
-                      type="text"
-                      value={negativePrompt}
-                      onChange={(e) => setNegativePrompt(e.target.value)}
-                      disabled={isProcessing}
-                      placeholder="What to avoid..."
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Creativity: {creativity.toFixed(2)}
-                    </label>
-                    <input
-                      type="range"
-                      value={creativity}
-                      onChange={(e) => setCreativity(Number(e.target.value))}
-                      disabled={isProcessing}
-                      min="0"
-                      max="0.35"
-                      step="0.05"
-                      className="w-full"
-                    />
-                    <div className="flex justify-between text-xs text-gray-500 mt-1">
-                      <span>Conservative</span>
-                      <span>Creative</span>
+              <div className="space-y-4">
+                {selectedTool === "upscale" && (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Prompt *
+                      </label>
+                      <textarea
+                        value={prompt}
+                        onChange={(e) => setPrompt(e.target.value)}
+                        disabled={isProcessing}
+                        placeholder="Describe what you want to enhance (e.g., 'professional product photo, high detail')"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                        rows={2}
+                      />
                     </div>
-                  </div>
-                </div>
-              )}
 
-              {selectedTool === "search-replace" && (
-                <div className="space-y-4 mb-6 p-4 bg-gray-50 rounded-lg">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Search For *
-                    </label>
-                    <input
-                      type="text"
-                      value={searchPrompt}
-                      onChange={(e) => setSearchPrompt(e.target.value)}
-                      disabled={isProcessing}
-                      placeholder="e.g., 'the car'"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Replace With *
-                    </label>
-                    <input
-                      type="text"
-                      value={prompt}
-                      onChange={(e) => setPrompt(e.target.value)}
-                      disabled={isProcessing}
-                      placeholder="e.g., 'a bicycle'"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Negative Prompt
-                    </label>
-                    <input
-                      type="text"
-                      value={negativePrompt}
-                      onChange={(e) => setNegativePrompt(e.target.value)}
-                      disabled={isProcessing}
-                      placeholder="What to avoid..."
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50"
-                    />
-                  </div>
-                </div>
-              )}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Negative Prompt (Optional)
+                      </label>
+                      <input
+                        type="text"
+                        value={negativePrompt}
+                        onChange={(e) => setNegativePrompt(e.target.value)}
+                        disabled={isProcessing}
+                        placeholder="What to avoid (e.g., 'blurry, low quality')"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      />
+                    </div>
 
-              {/* Processing Status */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Creativity: {creativity}
+                      </label>
+                      <input
+                        type="range"
+                        min="0"
+                        max="1"
+                        step="0.05"
+                        value={creativity}
+                        onChange={(e) => setCreativity(Number(e.target.value))}
+                        disabled={isProcessing}
+                        className="w-full"
+                      />
+                      <div className="flex justify-between text-xs text-gray-500 mt-1">
+                        <span>More faithful (0)</span>
+                        <span>More creative (1)</span>
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {selectedTool === "search-replace" && (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Search Prompt *
+                      </label>
+                      <input
+                        type="text"
+                        value={searchPrompt}
+                        onChange={(e) => setSearchPrompt(e.target.value)}
+                        disabled={isProcessing}
+                        placeholder="What to find (e.g., 'red car')"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Replace With *
+                      </label>
+                      <input
+                        type="text"
+                        value={prompt}
+                        onChange={(e) => setPrompt(e.target.value)}
+                        disabled={isProcessing}
+                        placeholder="What to replace it with (e.g., 'blue car')"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Negative Prompt (Optional)
+                      </label>
+                      <input
+                        type="text"
+                        value={negativePrompt}
+                        onChange={(e) => setNegativePrompt(e.target.value)}
+                        disabled={isProcessing}
+                        placeholder="What to avoid"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      />
+                    </div>
+                  </>
+                )}
+              </div>
+
+              <div className="mt-6 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                <p className="text-sm font-medium text-yellow-900 mb-1">
+                  💰 Estimated Cost
+                </p>
+                <p className="text-2xl font-bold text-yellow-700">
+                  ${estimatedCost.toFixed(2)}
+                </p>
+                <p className="text-xs text-yellow-700 mt-1">
+                  {selectedImages.length} images × $
+                  {selectedTool === "upscale" ? "0.10" : "0.04"} per image
+                </p>
+              </div>
+
               {isProcessing && (
                 <div className="mt-6 p-4 bg-blue-50 rounded-lg">
                   <div className="flex items-center gap-3 mb-3">
                     <Loader2 className="animate-spin text-blue-600" size={24} />
                     <div className="flex-1">
                       <p className="font-medium text-blue-900">
-                        Processing images...
+                        Processing images with AI...
                       </p>
                       <p className="text-sm text-blue-700">
-                        This may take several minutes depending on the number of
-                        images
+                        This may take several minutes
                       </p>
                     </div>
                   </div>
                   <div className="w-full bg-blue-200 rounded-full h-2">
                     <div
-                      className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                      className="bg-blue-600 h-2 rounded-full transition-all"
                       style={{ width: `${progress}%` }}
                     />
                   </div>
@@ -333,53 +381,56 @@ export function BatchProcessingModal({
               )}
             </>
           ) : (
-            /* Results */
             <div className="space-y-6">
-              {/* Summary */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-4">
                 <div className="p-4 bg-green-50 rounded-lg border border-green-200">
                   <div className="flex items-center gap-2 mb-1">
                     <CheckCircle className="text-green-600" size={20} />
-                    <span className="font-semibold text-green-900">
-                      Successful
-                    </span>
+                    <span className="text-sm text-green-900">Successful</span>
                   </div>
-                  <p className="text-2xl font-bold text-green-700">
+                  <p className="text-3xl font-bold text-green-700">
                     {results.processed.length}
                   </p>
                 </div>
-                <div className="p-4 bg-red-50 rounded-lg border border-red-200">
-                  <div className="flex items-center gap-2 mb-1">
-                    <XCircle className="text-red-600" size={20} />
-                    <span className="font-semibold text-red-900">Failed</span>
+
+                {results.failed.length > 0 && (
+                  <div className="p-4 bg-red-50 rounded-lg border border-red-200">
+                    <div className="flex items-center gap-2 mb-1">
+                      <XCircle className="text-red-600" size={20} />
+                      <span className="text-sm text-red-900">Failed</span>
+                    </div>
+                    <p className="text-3xl font-bold text-red-700">
+                      {results.failed.length}
+                    </p>
                   </div>
-                  <p className="text-2xl font-bold text-red-700">
-                    {results.failed.length}
+                )}
+
+                <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                  <p className="text-sm text-yellow-900 mb-1">Cost</p>
+                  <p className="text-3xl font-bold text-yellow-700">
+                    ${estimatedCost.toFixed(2)}
                   </p>
                 </div>
               </div>
 
-              {/* Processed Images */}
               {results.processed.length > 0 && (
                 <div>
                   <h3 className="font-semibold text-gray-900 mb-3">
-                    Processed Images
+                    Processed Images ({results.processed.length})
                   </h3>
-                  <div className="grid grid-cols-3 gap-3 max-h-96 overflow-auto">
-                    {results.processed.map((image, idx) => (
+                  <div className="grid grid-cols-4 gap-3 max-h-96 overflow-auto">
+                    {results.processed.map((img, idx) => (
                       <div
                         key={idx}
                         className="border border-gray-200 rounded-lg overflow-hidden"
                       >
                         <img
-                          src={image.edited_url}
+                          src={img.edited_url}
                           alt={`Processed ${idx + 1}`}
                           className="w-full h-32 object-cover"
                         />
-                        <div className="p-2 bg-gray-50">
-                          <p className="text-xs text-gray-600 truncate">
-                            {image.filename}
-                          </p>
+                        <div className="p-2 bg-green-50">
+                          <CheckCircle size={14} className="text-green-600" />
                         </div>
                       </div>
                     ))}
@@ -387,24 +438,21 @@ export function BatchProcessingModal({
                 </div>
               )}
 
-              {/* Failed Images */}
               {results.failed.length > 0 && (
                 <div>
                   <h3 className="font-semibold text-red-900 mb-3">
-                    Failed Images
+                    Failed Images ({results.failed.length})
                   </h3>
-                  <div className="space-y-2 max-h-48 overflow-auto">
-                    {results.failed.map((image, idx) => (
+                  <div className="space-y-2">
+                    {results.failed.map((img, idx) => (
                       <div
                         key={idx}
                         className="p-3 bg-red-50 rounded border border-red-200"
                       >
-                        <p className="text-sm text-red-900 font-medium truncate">
-                          {image.original_url}
+                        <p className="text-sm text-red-900 font-medium">
+                          Image {idx + 1}
                         </p>
-                        <p className="text-xs text-red-700 mt-1">
-                          {image.error}
-                        </p>
+                        <p className="text-xs text-red-700 mt-1">{img.error}</p>
                       </div>
                     ))}
                   </div>
@@ -414,13 +462,11 @@ export function BatchProcessingModal({
           )}
         </div>
 
-        {/* Footer */}
         <div className="flex items-center justify-between p-6 border-t border-gray-200">
           {!results ? (
             <>
               <p className="text-sm text-gray-500">
-                {selectedImages.length} image
-                {selectedImages.length !== 1 ? "s" : ""} selected
+                {selectedImages.length} images selected
               </p>
               <div className="flex gap-3">
                 <button
@@ -443,7 +489,7 @@ export function BatchProcessingModal({
                   ) : (
                     <>
                       <Upload size={20} />
-                      Process All
+                      Process All (${estimatedCost.toFixed(2)})
                     </>
                   )}
                 </button>
@@ -452,7 +498,7 @@ export function BatchProcessingModal({
           ) : (
             <>
               <p className="text-sm text-green-600 font-medium">
-                ✓ Batch processing complete!
+                ✓ Processing complete!
               </p>
               <div className="flex gap-3">
                 <button
