@@ -55,32 +55,48 @@ export default function ContentLibraryPage() {
 
   // Helper function to get proxied image URL
   const getProxiedImageUrl = (imageUrl: string) => {
-    if (!imageUrl) return '';
+    if (!imageUrl) return "";
     // If already a proxy URL or API route, return as-is
-    if (imageUrl.startsWith('/api/') || imageUrl.includes('/api/images/proxy')) return imageUrl;
+    if (imageUrl.startsWith("/api/") || imageUrl.includes("/api/images/proxy"))
+      return imageUrl;
 
     const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
     let finalApiUrl = apiBaseUrl;
 
     // If no API base URL configured, try to infer from current domain
-    if (!finalApiUrl && typeof window !== 'undefined') {
+    if (!finalApiUrl && typeof window !== "undefined") {
       const hostname = window.location.hostname;
-      if (hostname === 'blitz.ws') {
-        finalApiUrl = 'https://api.blitz.ws';
-      } else if (hostname.includes('localhost') || hostname.includes('127.0.0.1')) {
-        finalApiUrl = 'http://localhost:8000';
+      if (hostname === "blitz.ws") {
+        finalApiUrl = "https://api.blitz.ws";
+      } else if (
+        hostname.includes("localhost") ||
+        hostname.includes("127.0.0.1")
+      ) {
+        finalApiUrl = "http://localhost:8000";
       }
     }
 
     // If still no API base URL, log warning and return original
     if (!finalApiUrl) {
-      console.warn('NEXT_PUBLIC_API_BASE_URL not configured and cannot infer API URL, images may have CORS issues');
-      console.warn('Current hostname:', typeof window !== 'undefined' ? window.location.hostname : 'server');
+      console.warn(
+        "NEXT_PUBLIC_API_BASE_URL not configured and cannot infer API URL, images may have CORS issues"
+      );
+      console.warn(
+        "Current hostname:",
+        typeof window !== "undefined" ? window.location.hostname : "server"
+      );
       return imageUrl;
     }
 
-    console.log('Using proxy for image:', imageUrl.substring(0, 100), 'via', finalApiUrl);
-    return `${finalApiUrl}/api/images/proxy?url=${encodeURIComponent(imageUrl)}`;
+    console.log(
+      "Using proxy for image:",
+      imageUrl.substring(0, 100),
+      "via",
+      finalApiUrl
+    );
+    return `${finalApiUrl}/api/images/proxy?url=${encodeURIComponent(
+      imageUrl
+    )}`;
   };
 
   const [filterCampaignId, setFilterCampaignId] = useState<number | null>(
@@ -101,7 +117,15 @@ export default function ContentLibraryPage() {
     "text" | "images" | "videos"
   >("text");
   const [imageFilter, setImageFilter] = useState<
-    "all" | "original" | "filters" | "resize" | "overlays" | "inpaint" | "erase" | "transparent" | "lineage"
+    | "all"
+    | "original"
+    | "filters"
+    | "resize"
+    | "overlays"
+    | "inpaint"
+    | "erase"
+    | "transparent"
+    | "lineage"
   >("all");
   const [videoFilter, setVideoFilter] = useState<
     "all" | "generated" | "overlays"
@@ -433,7 +457,10 @@ export default function ContentLibraryPage() {
       return false;
     if (imageFilter === "transparent" && image.has_transparency !== true)
       return false;
-    if (imageFilter === "lineage" && (image.parent_image_id === null || image.parent_image_id === undefined))
+    if (
+      imageFilter === "lineage" &&
+      (image.parent_image_id === null || image.parent_image_id === undefined)
+    )
       return false;
     return true;
   });
@@ -905,7 +932,7 @@ export default function ContentLibraryPage() {
                     : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
                 }`}
               >
-                <span>All Images</span>
+                <span>All</span>
                 <span className="text-xs px-2 py-0.5 bg-gray-200 dark:bg-gray-600 rounded-full">
                   {allImages.length + allEditedImages.length}
                 </span>
@@ -1047,7 +1074,9 @@ export default function ContentLibraryPage() {
                 <span className="text-xs px-2 py-0.5 bg-gray-200 dark:bg-gray-600 rounded-full">
                   {
                     combinedImages.filter(
-                      (img) => img.parent_image_id !== null && img.parent_image_id !== undefined
+                      (img) =>
+                        img.parent_image_id !== null &&
+                        img.parent_image_id !== undefined
                     ).length
                   }
                 </span>
