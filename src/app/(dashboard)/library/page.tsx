@@ -53,6 +53,14 @@ export default function ContentLibraryPage() {
   const router = useRouter();
   const urlCampaignId = searchParams.get("campaign");
 
+  // Helper function to get proxied image URL
+  const getProxiedImageUrl = (imageUrl: string) => {
+    if (!imageUrl || imageUrl.startsWith('/api/')) return imageUrl;
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+    if (!apiBaseUrl) return imageUrl;
+    return `${apiBaseUrl}/api/images/proxy?url=${encodeURIComponent(imageUrl)}`;
+  };
+
   const [filterCampaignId, setFilterCampaignId] = useState<number | null>(
     urlCampaignId ? Number(urlCampaignId) : null
   );
@@ -510,7 +518,7 @@ export default function ContentLibraryPage() {
 
   async function handleDownloadImage(image: GeneratedImage) {
     try {
-      const response = await fetch(image.image_url);
+      const response = await fetch(getProxiedImageUrl(image.image_url));
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -1401,7 +1409,7 @@ export default function ContentLibraryPage() {
                           }}
                         >
                           <img
-                            src={image.image_url}
+                            src={getProxiedImageUrl(image.image_url)}
                             alt={image.prompt}
                             className="w-full h-full object-cover"
                           />
@@ -2024,7 +2032,7 @@ export default function ContentLibraryPage() {
                   } flex items-center justify-center`}
                 >
                   <img
-                    src={selectedLibraryImage.image_url}
+                    src={getProxiedImageUrl(selectedLibraryImage.image_url)}
                     alt={selectedLibraryImage.prompt}
                     className="w-full h-full object-contain"
                   />

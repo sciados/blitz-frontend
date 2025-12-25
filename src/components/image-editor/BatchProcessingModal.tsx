@@ -62,6 +62,14 @@ export function BatchProcessingModal({
     },
   ];
 
+  // Helper function to get proxied image URL
+  const getProxiedImageUrl = (imageUrl: string) => {
+    if (!imageUrl || imageUrl.startsWith('/api/')) return imageUrl;
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+    if (!apiBaseUrl) return imageUrl;
+    return `${apiBaseUrl}/api/images/proxy?url=${encodeURIComponent(imageUrl)}`;
+  };
+
   const handleProcess = async () => {
     setIsProcessing(true);
     setProgress(0);
@@ -146,7 +154,7 @@ export function BatchProcessingModal({
 
     for (const image of results.processed) {
       try {
-        const response = await fetch(image.edited_url);
+        const response = await fetch(getProxiedImageUrl(image.edited_url));
         const blob = await response.blob();
         const url = URL.createObjectURL(blob);
 
@@ -425,7 +433,7 @@ export function BatchProcessingModal({
                         className="border border-gray-200 rounded-lg overflow-hidden"
                       >
                         <img
-                          src={img.edited_url}
+                          src={getProxiedImageUrl(img.edited_url)}
                           alt={`Processed ${idx + 1}`}
                           className="w-full h-32 object-cover"
                         />
