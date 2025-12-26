@@ -498,6 +498,7 @@ interface ImageEditorSidebarProps {
   onApplyTemplate?: (templateData: any) => void;
   currentImageUrl?: string | null;
   hasTransparency?: boolean;
+  selectedImages?: { id: string; url: string; prompt: string }[];
 }
 
 export function ImageEditorSidebar({
@@ -525,6 +526,7 @@ export function ImageEditorSidebar({
   onApplyTemplate,
   currentImageUrl,
   hasTransparency = false,
+  selectedImages = [],
 }: ImageEditorSidebarProps) {
   const allTools: {
     id: EditTool;
@@ -664,6 +666,7 @@ export function ImageEditorSidebar({
           isProcessing={isProcessing}
           currentImageUrl={currentImageUrl || ""}
           onApplyCollage={onApplyCollage}
+          selectedImages={selectedImages}
         />
       )}
 

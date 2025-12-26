@@ -689,6 +689,31 @@ export default function ContentLibraryPage() {
     setShowBatchDeleteConfirm(true);
   };
 
+  // Make Collage Handler
+  const handleMakeCollage = () => {
+    if (selectedImageUrls.length < 2) {
+      toast.error("Please select at least 2 images to create a collage");
+      return;
+    }
+
+    // Store selected images for collage in sessionStorage
+    const selectedImagesData = combinedImages
+      .filter(img => selectedImageUrls.includes(img.image_url))
+      .map(img => ({
+        url: img.image_url,
+        prompt: img.prompt || "Campaign Image"
+      }));
+
+    sessionStorage.setItem('collageSelectedImages', JSON.stringify(selectedImagesData));
+
+    // Navigate to image editor with collage tool
+    const firstImage = combinedImages.find(img => selectedImageUrls.includes(img.image_url));
+    if (firstImage) {
+      const campaignId = firstImage.campaign_id || "";
+      router.push(`/image-editor?imageUrl=${encodeURIComponent(firstImage.image_url)}&campaignId=${campaignId}&tool=collage`);
+    }
+  };
+
   const confirmBatchDelete = async () => {
     try {
       // Get the image IDs from the selected URLs
@@ -1507,6 +1532,26 @@ export default function ContentLibraryPage() {
                               />
                             </svg>
                             Apply Filter ({selectedImageUrls.length})
+                          </button>
+
+                          <button
+                            onClick={handleMakeCollage}
+                            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition flex items-center gap-2 font-medium"
+                          >
+                            <svg
+                              className="w-5 h-5"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"
+                              />
+                            </svg>
+                            Make Collage ({selectedImageUrls.length})
                           </button>
 
                           <button

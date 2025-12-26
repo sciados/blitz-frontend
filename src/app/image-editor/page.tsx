@@ -31,6 +31,7 @@ export default function ImageEditorPage() {
   const searchParams = useSearchParams();
   const imageUrl = searchParams.get("imageUrl");
   const campaignId = searchParams.get("campaignId");
+  const initialTool = searchParams.get("tool") as EditTool | null;
 
   const [originalImage, setOriginalImage] = useState<string | null>(null);
   const [editedImage, setEditedImage] = useState<string | null>(null);
@@ -44,7 +45,9 @@ export default function ImageEditorPage() {
   );
 
   // Tool states
-  const [selectedEditTool, setSelectedEditTool] = useState<EditTool>("inpaint");
+  const [selectedEditTool, setSelectedEditTool] = useState<EditTool>(
+    initialTool === "collage" ? "collage" : "inpaint"
+  );
   const [selectedDrawTool, setSelectedDrawTool] = useState<"brush" | "eraser">(
     "brush"
   );
@@ -68,6 +71,26 @@ export default function ImageEditorPage() {
   // Selection interface state
   const [selectedCampaignId, setSelectedCampaignId] = useState<string>("");
   const [uploadedImageFile, setUploadedImageFile] = useState<File | null>(null);
+
+  // Collage selected images from Content Library
+  const [collageSelectedImages, setCollageSelectedImages] = useState<{ id: string; url: string; prompt: string }[]>([]);
+
+  // Load selected images from sessionStorage when collage tool is used
+  useEffect(() => {
+    if (selectedEditTool === "collage") {
+      const stored = sessionStorage.getItem('collageSelectedImages');
+      if (stored) {
+        try {
+          const images = JSON.parse(stored);
+          setCollageSelectedImages(images);
+          // Clear from sessionStorage after reading
+          sessionStorage.removeItem('collageSelectedImages');
+        } catch (e) {
+          console.error("Failed to parse collage selected images:", e);
+        }
+      }
+    }
+  }, [selectedEditTool]);
 
   // React Query: Fetch campaigns
   const { data: availableCampaigns = [], isLoading: isLoadingCampaigns } =
@@ -884,6 +907,7 @@ export default function ImageEditorPage() {
               currentImageUrl={activeImage}
               isProcessing={isProcessing}
               hasTransparency={hasTransparency}
+              selectedImages={collageSelectedImages}
             />
           )}
 
