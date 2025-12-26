@@ -1225,11 +1225,20 @@ export function ImageEditorCanvas({
             />
           )}
 
-          {!imageLoaded && (
+          {!imageLoaded && originalImage && !["collage", "template"].includes(selectedEditTool) && (
             <div className="absolute inset-0 flex items-center justify-center bg-gray-50 bg-opacity-90">
               <div className="text-center">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
                 <p className="mt-4 text-gray-600">Loading image...</p>
+              </div>
+            </div>
+          )}
+
+          {!imageLoaded && !originalImage && ["collage", "template"].includes(selectedEditTool) && (
+            <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+              <div className="text-center text-gray-500">
+                <p className="text-lg font-medium">Select a layout to preview collage</p>
+                <p className="text-sm mt-2">Choose images and a layout from the sidebar</p>
               </div>
             </div>
           )}
