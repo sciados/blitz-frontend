@@ -120,7 +120,7 @@ export default function ImageEditorPage() {
     queryKey: ["current-campaign-images", campaignId],
     queryFn: async () => {
       if (!campaignId) return [];
-      const res = await api.get(`/api/content/campaign/${campaignId}/images`);
+      const res = await api.get(`/api/images/campaign/${campaignId}`);
       return res.data.images || [];
     },
     enabled: !!campaignId && !!imageUrl,
