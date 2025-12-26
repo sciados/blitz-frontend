@@ -4,7 +4,7 @@ import { EditTool } from "src/app/image-editor/page";
 import { useState, useEffect } from "react";
 import { FilterToolControls } from "src/components/image-editor/FilterToolControls";
 import { CollageToolControls } from "src/components/image-editor/CollageToolControls";
-import { TemplateToolControls } from "src/components/image-editor/Templatetoolcontrols";
+import { TemplateToolControls } from "src/components/image-editor/TemplateToolControls";
 
 interface TextOverlay {
   id: string;
