@@ -24,7 +24,9 @@ export function getProxiedImageUrl(imageUrl: string): string {
 
   if (match && match[1]) {
     const r2Path = match[1];
-    const proxyUrl = `/api/images/proxy?url=${encodeURIComponent(r2Path)}`;
+    // Use backend API base URL to create absolute proxy URL
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://blitzed.up.railway.app';
+    const proxyUrl = `${apiBaseUrl}/api/images/proxy?url=${encodeURIComponent(r2Path)}`;
     console.log("🔍 getProxiedImageUrl:", { original: imageUrl, proxy: proxyUrl });
     return proxyUrl;
   }

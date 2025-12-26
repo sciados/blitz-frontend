@@ -211,10 +211,10 @@ export function CollageToolControls({
         </label>
 
         {/* Selected Images Count */}
-        {(selectedImages.length > 0 || uploadedImages.length > 0) && (
+        {uploadedImages.length > 0 && (
           <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-center">
             <p className="text-sm font-semibold text-green-800">
-              ✓ {selectedImages.length + uploadedImages.length} images ready for collage
+              ✓ {uploadedImages.length} image{uploadedImages.length !== 1 ? 's' : ''} ready for collage
             </p>
           </div>
         )}
