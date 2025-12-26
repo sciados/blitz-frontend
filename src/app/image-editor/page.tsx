@@ -92,6 +92,24 @@ export default function ImageEditorPage() {
     enabled: !!selectedCampaignId && (!imageUrl || !campaignId),
   });
 
+  // React Query: Fetch images for current campaign (when editing a specific image)
+  const { data: currentCampaignImages = [] } = useQuery({
+    queryKey: ["current-campaign-images", campaignId],
+    queryFn: async () => {
+      if (!campaignId) return [];
+      const res = await api.get(`/api/content/campaign/${campaignId}/images`);
+      return res.data.images || [];
+    },
+    enabled: !!campaignId && !!imageUrl,
+  });
+
+  // Format images for collage tool
+  const collageImages = currentCampaignImages.map((img: any) => ({
+    id: img.id || img.image_url,
+    url: img.image_url,
+    prompt: img.prompt || "Campaign Image",
+  }));
+
   // Load image from URL params
   useEffect(() => {
     if (imageUrl && campaignId) {

@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { getProxiedImageUrl } from "src/utils/imageProxy";
-import { toast } from "sonner";
 
 interface CollageLayout {
   id: string;
@@ -84,12 +83,14 @@ interface CollageToolControlsProps {
   isProcessing: boolean;
   currentImageUrl: string;
   onApplyCollage: (dataUrl: string) => void;
+  selectedImages?: { id: string; url: string; prompt: string }[];
 }
 
-export function CollageToolControls({ 
-  isProcessing, 
+export function CollageToolControls({
+  isProcessing,
   currentImageUrl,
-  onApplyCollage 
+  onApplyCollage,
+  selectedImages = []
 }: CollageToolControlsProps) {
   const [selectedLayout, setSelectedLayout] = useState<CollageLayout | null>(null);
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
@@ -97,41 +98,13 @@ export function CollageToolControls({
   const [spacing, setSpacing] = useState(10);
   const [backgroundColor, setBackgroundColor] = useState("#FFFFFF");
 
-  // Add current image as first image when component mounts
+  // Initialize with current image if available
   useEffect(() => {
-    if (currentImageUrl) {
-      console.log("🔍 CollageTool: Current image URL:", currentImageUrl);
-      if (uploadedImages.length === 0) {
-        // Convert R2 URL to proxy URL for CORS compliance
-        const proxiedUrl = getProxiedImageUrl(currentImageUrl);
-        console.log("🔍 CollageTool: Proxy URL:", proxiedUrl);
-        setUploadedImages([proxiedUrl]);
-        console.log("✅ CollageTool: Added image to uploadedImages");
-      }
-    } else {
-      console.log("⚠️ CollageTool: No currentImageUrl");
+    if (currentImageUrl && uploadedImages.length === 0) {
+      const proxiedUrl = getProxiedImageUrl(currentImageUrl);
+      setUploadedImages([proxiedUrl]);
     }
   }, [currentImageUrl]);
-
-  // Log uploadedImages changes
-  useEffect(() => {
-    console.log("📊 CollageTool: uploadedImages changed:", uploadedImages);
-  }, [uploadedImages]);
-
-  // Listen for library selection events
-  useEffect(() => {
-    const handleLibrarySelection = (event: any) => {
-      const { onSelect } = event.detail;
-      if (onSelect) {
-        // Store the callback for later use
-        (window as any).collageImageSelectCallback = onSelect;
-        toast.info("Image library opened - select an image");
-      }
-    };
-
-    window.addEventListener('openImageLibrary', handleLibrarySelection);
-    return () => window.removeEventListener('openImageLibrary', handleLibrarySelection);
-  }, []);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -191,28 +164,20 @@ export function CollageToolControls({
       <div>
         <h3 className="text-sm font-semibold text-gray-900 mb-3">Select Images</h3>
 
-        {/* Add Images Buttons */}
-        <div className="grid grid-cols-2 gap-2 mb-4">
-          <button
-            onClick={() => {
-              // Trigger library selection
-              const event = new CustomEvent('openImageLibrary', {
-                detail: { onSelect: (imageUrl: string) => {
-                  const proxiedUrl = getProxiedImageUrl(imageUrl);
-                  setUploadedImages(prev => [...prev, proxiedUrl]);
-                  toast.success("Image added from library");
-                }}
-              });
-              window.dispatchEvent(event);
-            }}
-            disabled={isProcessing}
-            className="px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 text-sm font-medium flex items-center justify-center gap-2"
-          >
-            📚 Add from Library
-          </button>
+        {/* Info about image selection */}
+        <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg mb-4">
+          <p className="text-sm text-blue-800">
+            💡 <strong>Select images first</strong> from the Content Library using the checkboxes,
+            then open the Collage tool to create your layout.
+          </p>
+          <p className="text-xs text-blue-700 mt-1">
+            Or upload images directly:
+          </p>
+        </div>
 
-          <label className="px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 text-sm font-medium cursor-pointer flex items-center justify-center gap-2">
-            💾 Browse Computer
+        {/* Upload Button */}
+        <label className="block w-full">
+          <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-blue-500 transition mb-3">
             <input
               type="file"
               multiple
@@ -221,37 +186,22 @@ export function CollageToolControls({
               className="hidden"
               disabled={isProcessing}
             />
-          </label>
-        </div>
-
-        <div className="text-xs text-gray-600 mb-3 text-center">
-          {uploadedImages.length} image{uploadedImages.length !== 1 ? 's' : ''} selected
-        </div>
-
-        {/* Uploaded Images Preview */}
-        {uploadedImages.length > 0 && (
-          <div className="grid grid-cols-3 gap-2 mb-4">
-            {uploadedImages.map((img, index) => (
-              <div key={index} className="relative group">
-                <img
-                  src={img}
-                  alt={`Upload ${index + 1}`}
-                  className="w-full h-20 object-cover rounded border-2 border-gray-200"
-                  onLoad={() => console.log(`✅ CollageTool: Image ${index} loaded successfully`)}
-                  onError={(e) => {
-                    console.error(`❌ CollageTool: Failed to load image ${index}:`, img);
-                    (e.target as HTMLImageElement).src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik00MCA0MEMzMi4zMTc0IDQwIDI1IDMzLjE4MjYgMjUgMjVDMjUgMTYuODE3NCAzMi4zMTc0IDEwIDQwIDEwQzQ3LjY4MjYgMTAgNTUgMTYuODE3NCA1NSAyNUM1NSAzMy4xODI2IDQ3LjY4MjYgNDAgNDAgNDBaIiBmaWxsPSIjOUI5QkExIi8+CjxwYXRoIGQ9Ik00NSA1NUw1NSA2MEw2MCA2MEw2MCA1NUw1NSA1NVoiIGZpbGw9IiM5QjlCQTEiLz4KPC9zdmc+';
-                  }}
-                />
-                <button
-                  onClick={() => removeImage(index)}
-                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition text-xs"
-                  title="Remove image"
-                >
-                  ✕
-                </button>
+            <div className="text-gray-600">
+              <div className="text-2xl mb-2">📁</div>
+              <div className="text-sm">Click to upload images</div>
+              <div className="text-xs text-gray-500 mt-1">
+                {uploadedImages.length} image{uploadedImages.length !== 1 ? 's' : ''} uploaded
               </div>
-            ))}
+            </div>
+          </div>
+        </label>
+
+        {/* Selected Images Count */}
+        {(selectedImages.length > 0 || uploadedImages.length > 0) && (
+          <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-center">
+            <p className="text-sm font-semibold text-green-800">
+              ✓ {selectedImages.length + uploadedImages.length} images ready for collage
+            </p>
           </div>
         )}
       </div>
@@ -379,8 +329,8 @@ export function CollageToolControls({
       <div className="p-3 bg-blue-50 rounded text-xs text-blue-800">
         <p className="font-semibold mb-1">💡 Tips:</p>
         <ul className="space-y-1">
-          <li>• Upload {selectedLayout ? selectedLayout.slots : 2}+ images for layouts</li>
-          <li>• First image is your current image</li>
+          <li>• Select {selectedLayout ? selectedLayout.slots : 2}+ images from library</li>
+          <li>• Choose a layout below</li>
           <li>• Preview updates in real-time</li>
           <li>• Click Apply to save collage</li>
         </ul>
