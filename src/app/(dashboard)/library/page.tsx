@@ -1627,7 +1627,7 @@ export default function ContentLibraryPage() {
                             } else {
                               return (
                                 <div className="absolute top-3 right-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white px-2 py-1 rounded-full text-xs font-medium">
-                                  PREMIUM
+                                  GENERATED
                                 </div>
                               );
                             }
