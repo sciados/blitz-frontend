@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { getProxiedImageUrl } from "src/utils/imageProxy";
+import { toast } from "sonner";
 
 interface CollageLayout {
   id: string;
@@ -98,12 +99,39 @@ export function CollageToolControls({
 
   // Add current image as first image when component mounts
   useEffect(() => {
-    if (currentImageUrl && uploadedImages.length === 0) {
-      // Convert R2 URL to proxy URL for CORS compliance
-      const proxiedUrl = getProxiedImageUrl(currentImageUrl);
-      setUploadedImages([proxiedUrl]);
+    if (currentImageUrl) {
+      console.log("🔍 CollageTool: Current image URL:", currentImageUrl);
+      if (uploadedImages.length === 0) {
+        // Convert R2 URL to proxy URL for CORS compliance
+        const proxiedUrl = getProxiedImageUrl(currentImageUrl);
+        console.log("🔍 CollageTool: Proxy URL:", proxiedUrl);
+        setUploadedImages([proxiedUrl]);
+        console.log("✅ CollageTool: Added image to uploadedImages");
+      }
+    } else {
+      console.log("⚠️ CollageTool: No currentImageUrl");
     }
   }, [currentImageUrl]);
+
+  // Log uploadedImages changes
+  useEffect(() => {
+    console.log("📊 CollageTool: uploadedImages changed:", uploadedImages);
+  }, [uploadedImages]);
+
+  // Listen for library selection events
+  useEffect(() => {
+    const handleLibrarySelection = (event: any) => {
+      const { onSelect } = event.detail;
+      if (onSelect) {
+        // Store the callback for later use
+        (window as any).collageImageSelectCallback = onSelect;
+        toast.info("Image library opened - select an image");
+      }
+    };
+
+    window.addEventListener('openImageLibrary', handleLibrarySelection);
+    return () => window.removeEventListener('openImageLibrary', handleLibrarySelection);
+  }, []);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -161,29 +189,43 @@ export function CollageToolControls({
   return (
     <div className="space-y-4">
       <div>
-        <h3 className="text-sm font-semibold text-gray-900 mb-3">Upload Images</h3>
-        
-        {/* Image Upload */}
-        <div className="mb-4">
-          <label className="block w-full">
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:border-blue-500 transition">
-              <input
-                type="file"
-                multiple
-                accept="image/*"
-                onChange={handleImageUpload}
-                className="hidden"
-                disabled={isProcessing}
-              />
-              <div className="text-gray-600">
-                <div className="text-2xl mb-2">📁</div>
-                <div className="text-sm">Click to upload images</div>
-                <div className="text-xs text-gray-500 mt-1">
-                  {uploadedImages.length} image{uploadedImages.length !== 1 ? 's' : ''} uploaded
-                </div>
-              </div>
-            </div>
+        <h3 className="text-sm font-semibold text-gray-900 mb-3">Select Images</h3>
+
+        {/* Add Images Buttons */}
+        <div className="grid grid-cols-2 gap-2 mb-4">
+          <button
+            onClick={() => {
+              // Trigger library selection
+              const event = new CustomEvent('openImageLibrary', {
+                detail: { onSelect: (imageUrl: string) => {
+                  const proxiedUrl = getProxiedImageUrl(imageUrl);
+                  setUploadedImages(prev => [...prev, proxiedUrl]);
+                  toast.success("Image added from library");
+                }}
+              });
+              window.dispatchEvent(event);
+            }}
+            disabled={isProcessing}
+            className="px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 text-sm font-medium flex items-center justify-center gap-2"
+          >
+            📚 Add from Library
+          </button>
+
+          <label className="px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 text-sm font-medium cursor-pointer flex items-center justify-center gap-2">
+            💾 Browse Computer
+            <input
+              type="file"
+              multiple
+              accept="image/*"
+              onChange={handleImageUpload}
+              className="hidden"
+              disabled={isProcessing}
+            />
           </label>
+        </div>
+
+        <div className="text-xs text-gray-600 mb-3 text-center">
+          {uploadedImages.length} image{uploadedImages.length !== 1 ? 's' : ''} selected
         </div>
 
         {/* Uploaded Images Preview */}
@@ -191,14 +233,20 @@ export function CollageToolControls({
           <div className="grid grid-cols-3 gap-2 mb-4">
             {uploadedImages.map((img, index) => (
               <div key={index} className="relative group">
-                <img 
-                  src={img} 
+                <img
+                  src={img}
                   alt={`Upload ${index + 1}`}
                   className="w-full h-20 object-cover rounded border-2 border-gray-200"
+                  onLoad={() => console.log(`✅ CollageTool: Image ${index} loaded successfully`)}
+                  onError={(e) => {
+                    console.error(`❌ CollageTool: Failed to load image ${index}:`, img);
+                    (e.target as HTMLImageElement).src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik00MCA0MEMzMi4zMTc0IDQwIDI1IDMzLjE4MjYgMjUgMjVDMjUgMTYuODE3NCAzMi4zMTc0IDEwIDQwIDEwQzQ3LjY4MjYgMTAgNTUgMTYuODE3NCA1NSAyNUM1NSAzMy4xODI2IDQ3LjY4MjYgNDAgNDAgNDBaIiBmaWxsPSIjOUI5QkExIi8+CjxwYXRoIGQ9Ik00NSA1NUw1NSA2MEw2MCA2MEw2MCA1NUw1NSA1NVoiIGZpbGw9IiM5QjlCQTEiLz4KPC9zdmc+';
+                  }}
                 />
                 <button
                   onClick={() => removeImage(index)}
                   className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition text-xs"
+                  title="Remove image"
                 >
                   ✕
                 </button>
