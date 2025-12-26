@@ -82,7 +82,11 @@ export default function ImageEditorPage() {
       if (stored) {
         try {
           const images = JSON.parse(stored);
-          setCollageSelectedImages(images);
+          // Remove the first image from selected images since it's already the currentImageUrl
+          // This prevents double-counting the same image
+          const remainingImages = images.slice(1);
+          setCollageSelectedImages(remainingImages);
+          console.log("📦 Collage: Loaded", images.length, "selected images, using", remainingImages.length, "remaining (first is current image)");
           // Clear from sessionStorage after reading
           sessionStorage.removeItem('collageSelectedImages');
         } catch (e) {
