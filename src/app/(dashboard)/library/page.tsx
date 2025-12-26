@@ -1592,14 +1592,16 @@ export default function ContentLibraryPage() {
                               );
                             }
 
-                            if (image.metadata?.edit_tool && image.metadata.edit_tool !== "transparent") {
-                              // Map edit_tool to display name
+                            if (image.metadata?.edit_tool) {
+                              // Map edit_tool to display name - show the last tool used
                               const toolNames: Record<string, string> = {
                                 filters: "Filters",
                                 resize: "Resize",
                                 inpaint: "Inpaint",
                                 erase: "Erase",
                                 overlay: "Overlays",
+                                background_removal: "TRANSPARENT",
+                                transparent: "TRANSPARENT",
                               };
                               const toolName =
                                 toolNames[image.metadata.edit_tool] ||
@@ -1607,21 +1609,6 @@ export default function ContentLibraryPage() {
                               return (
                                 <div className="absolute top-3 right-3 bg-blue-600 to-blue-700 text-white px-2 py-1 rounded-full text-xs font-medium">
                                   {toolName}
-                                </div>
-                              );
-                            } else if (image.metadata?.edit_tool === "background_removal") {
-                              // Don't show a main badge for transparent images - the cyan badge below is sufficient
-                              return null;
-                            } else if (image.metadata?.text_overlay) {
-                              return (
-                                <div className="absolute top-3 right-3 bg-orange-600 to-orange-700 text-white px-2 py-1 rounded-full text-xs font-medium">
-                                  Overlays
-                                </div>
-                              );
-                            } else if (image.metadata?.image_overlay) {
-                              return (
-                                <div className="absolute top-3 right-3 bg-green-600 to-green-700 text-white px-2 py-1 rounded-full text-xs font-medium">
-                                  Overlays
                                 </div>
                               );
                             } else {
@@ -1632,14 +1619,6 @@ export default function ContentLibraryPage() {
                               );
                             }
                           })()}
-                          {/* Additional Badges for Transparency and Lineage */}
-                          <div className="absolute top-12 right-3 flex flex-col gap-1">
-                            {image.has_transparency && (
-                              <div className="bg-cyan-500 to-cyan-600 text-white px-2 py-1 rounded-full text-xs font-medium shadow-lg">
-                                🔍 TRANSPARENT
-                              </div>
-                            )}
-                          </div>
                           {/* Thumbnail Notice */}
                           <div className="absolute top-3 left-3 bg-black/50 text-white px-2 py-1 rounded-full text-xs">
                             ⬇ THUMB
