@@ -295,6 +295,7 @@ export default function ContentLibraryPage() {
                   erase: "erase", // Backend uses "erase"
                   background_removal: "transparent",
                   collage: "collage", // Backend uses "collage"
+                  template: "template", // Template tool saves as "template"
                 };
 
                 const editTool =
@@ -1683,6 +1684,7 @@ export default function ContentLibraryPage() {
                                 background_removal: "TRANSPARENT",
                                 transparent: "TRANSPARENT",
                                 collage: "Collage",
+                                template: "Template",
                               };
                               const toolName =
                                 toolNames[image.metadata.edit_tool] ||
@@ -2296,6 +2298,7 @@ export default function ContentLibraryPage() {
                       erase: "Erase",
                       overlay: "Overlays",
                       collage: "Collage",
+                      template: "Template",
                     };
                     const toolName =
                       toolNames[selectedLibraryImage.metadata.edit_tool] ||
