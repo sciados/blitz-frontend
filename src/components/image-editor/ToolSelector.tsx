@@ -121,6 +121,16 @@ export function ToolSelector({ selectedTool }: ToolSelectorProps) {
         "Multi-image stories",
       ],
     },
+    template: {
+      name: "Template Tool",
+      description: "Apply pre-designed templates to images",
+      useCases: [
+        "Social media post templates",
+        "Instagram story templates",
+        "YouTube thumbnail templates",
+        "Marketing material layouts",
+      ],
+    },
   };
 
   const info = toolInfo[selectedTool];
