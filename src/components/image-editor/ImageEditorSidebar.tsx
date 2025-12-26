@@ -623,51 +623,26 @@ export function ImageEditorSidebar({
 
   return (
     <div className="w-80 bg-white border-r border-gray-200 p-4 overflow-auto">
-      {/* Tool Selector Grid - Hide for overlay and filters tools */}
-      {selectedEditTool !== "overlay" && selectedEditTool !== "filters" && (
-        <>
-          <h3 className="text-lg font-semibold mb-4">Edit Tools</h3>
-          {hasTransparency && (
-            <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-              <div className="flex items-start gap-2">
-                <div className="text-amber-600 text-lg">⚠️</div>
-                <div>
-                  <p className="text-sm font-semibold text-amber-800">
-                    Transparent Background Detected
-                  </p>
-                  <p className="text-xs text-amber-700 mt-1">
-                    Inpaint and Erase tools are disabled on images with
-                    transparency. Please use a non-transparent image for these
-                    features.
-                  </p>
-                </div>
-              </div>
+      {/* Tool Selector Grid - Always hidden when a tool is selected */}
+      {/* Tool selection is now done via the toolbar at the top */}
+
+      {/* Transparency Warning - Show when needed */}
+      {hasTransparency && (
+        <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+          <div className="flex items-start gap-2">
+            <div className="text-amber-600 text-lg">⚠️</div>
+            <div>
+              <p className="text-sm font-semibold text-amber-800">
+                Transparent Background Detected
+              </p>
+              <p className="text-xs text-amber-700 mt-1">
+                Inpaint and Erase tools are disabled on images with
+                transparency. Please use a non-transparent image for these
+                features.
+              </p>
             </div>
-          )}
-          <div className="grid grid-cols-2 gap-2 mb-6">
-            {tools.map((tool) => (
-              <button
-                key={tool.id}
-                onClick={() => onEditToolChange(tool.id)}
-                disabled={isProcessing}
-                className={`p-3 rounded-lg border-2 transition-all text-left ${
-                  selectedEditTool === tool.id
-                    ? "border-blue-600 bg-blue-50"
-                    : "border-gray-200 hover:border-gray-300"
-                } disabled:opacity-50`}
-              >
-                <div className="text-2xl mb-1">{tool.icon}</div>
-                <div className="text-sm font-semibold">{tool.label}</div>
-                <div className="text-xs text-gray-600">{tool.description}</div>
-              </button>
-            ))}
           </div>
-          <div className="border-t border-gray-200 pt-4">
-            <h4 className="text-sm font-semibold text-gray-700 mb-3">
-              Settings
-            </h4>
-          </div>
-        </>
+        </div>
       )}
 
       {/* Overlay Tool - Full Width Layout */}

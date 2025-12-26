@@ -469,6 +469,19 @@ export default function ContentLibraryPage() {
     return true;
   });
 
+  // Sort images: Premium (is_enhanced) first, then by newest
+  const sortedImages = filteredImages.sort((a, b) => {
+    // Premium images first
+    const aIsPremium = a.metadata?.is_enhanced === true;
+    const bIsPremium = b.metadata?.is_enhanced === true;
+
+    if (aIsPremium && !bIsPremium) return -1;
+    if (!aIsPremium && bIsPremium) return 1;
+
+    // Then sort by newest
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  });
+
   // Filter videos based on campaign
   const filteredVideos = allVideos.filter((video) => {
     if (filterCampaignId && video.campaign_id !== filterCampaignId)
@@ -517,6 +530,25 @@ export default function ContentLibraryPage() {
         content.content_data.text
       )}`
     );
+  };
+
+  // Handle keyboard navigation for images
+  const currentImageIndex = selectedLibraryImage
+    ? sortedImages.findIndex((img) => img.id === selectedLibraryImage.id)
+    : -1;
+
+  const handlePreviousImage = () => {
+    if (currentImageIndex > 0) {
+      const newIndex = currentImageIndex - 1;
+      setSelectedLibraryImage(sortedImages[newIndex]);
+    }
+  };
+
+  const handleNextImage = () => {
+    if (currentImageIndex < sortedImages.length - 1) {
+      const newIndex = currentImageIndex + 1;
+      setSelectedLibraryImage(sortedImages[newIndex]);
+    }
   };
 
   const handleDeleteContent = async (contentId: number) => {
@@ -568,7 +600,7 @@ export default function ContentLibraryPage() {
   }
 
   function handleNextImage() {
-    if (currentImageIndex < filteredImages.length - 1) {
+    if (currentImageIndex < sortedImages.length - 1) {
       const newIndex = currentImageIndex + 1;
       setCurrentImageIndex(newIndex);
       setSelectedLibraryImage(filteredImages[newIndex]);
@@ -844,7 +876,7 @@ export default function ContentLibraryPage() {
 
   // Select all visible images
   const selectAllImages = () => {
-    const allUrls = filteredImages.map((img) => img.image_url);
+    const allUrls = sortedImages.map((img) => img.image_url);
     setSelectedImageUrls(allUrls);
   };
 
@@ -1391,7 +1423,7 @@ export default function ContentLibraryPage() {
           ) : activeLibraryTab === "images" ? (
             /* Image Grid */
             <>
-              {filteredImages.length > 0 ? (
+              {sortedImages.length > 0 ? (
                 <>
                   <div className="mb-4 flex items-center justify-between">
                     <div className="flex items-center gap-4">
@@ -1399,7 +1431,7 @@ export default function ContentLibraryPage() {
                         className="text-sm"
                         style={{ color: "var(--text-secondary)" }}
                       >
-                        Showing {filteredImages.length} of{" "}
+                        Showing {sortedImages.length} of{" "}
                         {combinedImages.length} total images
                       </p>
 
@@ -1525,7 +1557,7 @@ export default function ContentLibraryPage() {
                     </div>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                    {filteredImages.map((image, index) => (
+                    {sortedImages.map((image, index) => (
                       <div
                         key={`${image.source}-${image.id}`}
                         className="card rounded-lg overflow-hidden group hover:shadow-lg transition-shadow relative"
@@ -2147,12 +2179,12 @@ export default function ContentLibraryPage() {
                   >
                     Premium Image
                   </h2>
-                  {filteredImages.length > 1 && (
+                  {sortedImages.length > 1 && (
                     <p
                       className="text-sm mt-1"
                       style={{ color: "var(--text-secondary)" }}
                     >
-                      {currentImageIndex + 1} of {filteredImages.length}
+                      {currentImageIndex + 1} of {sortedImages.length}
                     </p>
                   )}
                 </div>
@@ -2253,7 +2285,7 @@ export default function ContentLibraryPage() {
                 })()}
 
                 {/* Navigation Arrows */}
-                {filteredImages.length > 1 && (
+                {sortedImages.length > 1 && (
                   <>
                     {/* Previous Button */}
                     {currentImageIndex > 0 && (
@@ -2279,7 +2311,7 @@ export default function ContentLibraryPage() {
                     )}
 
                     {/* Next Button */}
-                    {currentImageIndex < filteredImages.length - 1 && (
+                    {currentImageIndex < sortedImages.length - 1 && (
                       <button
                         onClick={handleNextImage}
                         className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center transition-colors"

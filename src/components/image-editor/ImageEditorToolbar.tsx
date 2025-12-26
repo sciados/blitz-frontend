@@ -2,9 +2,13 @@
 
 import { useRouter } from "next/navigation";
 
+import { EditTool } from "src/app/image-editor/page";
+
 interface ImageEditorToolbarProps {
-  selectedTool: 'brush' | 'eraser';
-  onToolChange: (tool: 'brush' | 'eraser') => void;
+  selectedDrawTool: 'brush' | 'eraser';
+  onDrawToolChange: (tool: 'brush' | 'eraser') => void;
+  selectedEditTool: EditTool;
+  onEditToolChange: (tool: EditTool) => void;
   brushSize: number;
   onBrushSizeChange: (size: number) => void;
   onReset: () => void;
@@ -13,8 +17,10 @@ interface ImageEditorToolbarProps {
 }
 
 export function ImageEditorToolbar({
-  selectedTool,
-  onToolChange,
+  selectedDrawTool,
+  onDrawToolChange,
+  selectedEditTool,
+  onEditToolChange,
   brushSize,
   onBrushSizeChange,
   onReset,
@@ -27,6 +33,24 @@ export function ImageEditorToolbar({
     // Navigate to Content Library with Images tab active
     router.push("/library?tab=images");
   };
+
+  // Edit tool options with labels
+  const editTools: { id: EditTool; label: string; icon: string }[] = [
+    { id: "inpaint", label: "Inpaint", icon: "🎨" },
+    { id: "erase", label: "Erase", icon: "🧹" },
+    { id: "background-remove", label: "Remove BG", icon: "🖼️" },
+    { id: "search-replace", label: "Replace", icon: "🔄" },
+    { id: "outpaint", label: "Extend", icon: "↔️" },
+    { id: "upscale", label: "Upscale", icon: "⬆️" },
+    { id: "sketch-to-image", label: "Sketch", icon: "✏️" },
+    { id: "overlay", label: "Overlay", icon: "📝" },
+    { id: "resize", label: "Resize", icon: "📐" },
+    { id: "filters", label: "Filters", icon: "🎭" },
+    { id: "collage", label: "Collage", icon: "🖼️" },
+    { id: "template", label: "Templates", icon: "📋" },
+  ];
+
+  const selectedEditToolInfo = editTools.find(t => t.id === selectedEditTool);
 
   return (
     <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-3">
@@ -47,12 +71,29 @@ export function ImageEditorToolbar({
 
           <h1 className="text-xl font-bold text-gray-900 dark:text-white">Image Editor</h1>
 
-          {/* Tool Selection */}
+          {/* Edit Tool Selection */}
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Tool:</span>
+            <select
+              value={selectedEditTool}
+              onChange={(e) => onEditToolChange(e.target.value as EditTool)}
+              disabled={isProcessing}
+              className="px-3 py-2 rounded font-medium transition-colors bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 min-w-[140px]"
+            >
+              {editTools.map((tool) => (
+                <option key={tool.id} value={tool.id}>
+                  {tool.icon} {tool.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Draw Tool Selection */}
           <div className="flex gap-2">
             <button
-              onClick={() => onToolChange('brush')}
+              onClick={() => onDrawToolChange('brush')}
               className={`px-4 py-2 rounded font-medium transition-colors ${
-                selectedTool === 'brush'
+                selectedDrawTool === 'brush'
                   ? 'bg-blue-600 text-white'
                   : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600'
               }`}
@@ -60,9 +101,9 @@ export function ImageEditorToolbar({
               🖌️ Brush
             </button>
             <button
-              onClick={() => onToolChange('eraser')}
+              onClick={() => onDrawToolChange('eraser')}
               className={`px-4 py-2 rounded font-medium transition-colors ${
-                selectedTool === 'eraser'
+                selectedDrawTool === 'eraser'
                   ? 'bg-blue-600 text-white'
                   : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600'
               }`}

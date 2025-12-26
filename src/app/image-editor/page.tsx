@@ -803,8 +803,10 @@ export default function ImageEditorPage() {
       <div className="flex flex-col h-screen bg-gray-100 dark:bg-gray-900">
         {/* Top Toolbar */}
         <ImageEditorToolbar
-          selectedTool={selectedDrawTool}
-          onToolChange={setSelectedDrawTool}
+          selectedDrawTool={selectedDrawTool}
+          onDrawToolChange={setSelectedDrawTool}
+          selectedEditTool={selectedEditTool}
+          onEditToolChange={setSelectedEditTool}
           brushSize={brushSize}
           onBrushSizeChange={setBrushSize}
           onReset={handleReset}
