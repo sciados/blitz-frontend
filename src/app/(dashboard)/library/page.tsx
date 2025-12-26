@@ -533,20 +533,20 @@ export default function ContentLibraryPage() {
   };
 
   // Handle keyboard navigation for images
-  const currentImageIndex = selectedLibraryImage
+  const currentImageIndexInSortedList = selectedLibraryImage
     ? sortedImages.findIndex((img) => img.id === selectedLibraryImage.id)
     : -1;
 
   const handlePreviousImage = () => {
-    if (currentImageIndex > 0) {
-      const newIndex = currentImageIndex - 1;
+    if (currentImageIndexInSortedList > 0) {
+      const newIndex = currentImageIndexInSortedList - 1;
       setSelectedLibraryImage(sortedImages[newIndex]);
     }
   };
 
   const handleNextImage = () => {
-    if (currentImageIndex < sortedImages.length - 1) {
-      const newIndex = currentImageIndex + 1;
+    if (currentImageIndexInSortedList < sortedImages.length - 1) {
+      const newIndex = currentImageIndexInSortedList + 1;
       setSelectedLibraryImage(sortedImages[newIndex]);
     }
   };
@@ -590,22 +590,6 @@ export default function ContentLibraryPage() {
     }
     router.push(`/image-editor?${params.toString()}`);
   };
-
-  function handlePreviousImage() {
-    if (currentImageIndex > 0) {
-      const newIndex = currentImageIndex - 1;
-      setCurrentImageIndex(newIndex);
-      setSelectedLibraryImage(filteredImages[newIndex]);
-    }
-  }
-
-  function handleNextImage() {
-    if (currentImageIndex < sortedImages.length - 1) {
-      const newIndex = currentImageIndex + 1;
-      setCurrentImageIndex(newIndex);
-      setSelectedLibraryImage(filteredImages[newIndex]);
-    }
-  }
 
   async function handleDownloadImage(image: GeneratedImage) {
     try {
@@ -2184,7 +2168,7 @@ export default function ContentLibraryPage() {
                       className="text-sm mt-1"
                       style={{ color: "var(--text-secondary)" }}
                     >
-                      {currentImageIndex + 1} of {sortedImages.length}
+                      {currentImageIndexInSortedList + 1} of {sortedImages.length}
                     </p>
                   )}
                 </div>
@@ -2288,7 +2272,7 @@ export default function ContentLibraryPage() {
                 {sortedImages.length > 1 && (
                   <>
                     {/* Previous Button */}
-                    {currentImageIndex > 0 && (
+                    {currentImageIndexInSortedList > 0 && (
                       <button
                         onClick={handlePreviousImage}
                         className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center transition-colors"
@@ -2311,7 +2295,7 @@ export default function ContentLibraryPage() {
                     )}
 
                     {/* Next Button */}
-                    {currentImageIndex < sortedImages.length - 1 && (
+                    {currentImageIndexInSortedList < sortedImages.length - 1 && (
                       <button
                         onClick={handleNextImage}
                         className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center transition-colors"
