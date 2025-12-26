@@ -1,0 +1,34 @@
+/**
+ * Utility for proxying image URLs to avoid CORS issues
+ * Converts R2 URLs to proxy endpoint URLs with CORS headers
+ */
+
+export function getProxiedImageUrl(imageUrl: string): string {
+  if (!imageUrl) return "";
+
+  // If already a proxy URL, return as-is
+  if (imageUrl.includes("/api/images/proxy")) {
+    return imageUrl;
+  }
+
+  // If it's a data URL (base64), return as-is
+  if (imageUrl.startsWith("data:")) {
+    return imageUrl;
+  }
+
+  // Extract the R2 path from the full URL
+  // e.g., https://pub-c0ddba9f039845bda33be436955187cb.r2.dev/campaigns/28/image.png
+  // -> /campaigns/28/image.png
+  const r2UrlPattern = /^https?:\/\/[^/]+(\/.*)$/;
+  const match = imageUrl.match(r2UrlPattern);
+
+  if (match && match[1]) {
+    const r2Path = match[1];
+    const proxyUrl = `/api/images/proxy?url=${encodeURIComponent(r2Path)}`;
+    console.log("🔍 getProxiedImageUrl:", { original: imageUrl, proxy: proxyUrl });
+    return proxyUrl;
+  }
+
+  console.log("⚠️ getProxiedImageUrl: Could not parse URL:", imageUrl);
+  return imageUrl;
+}

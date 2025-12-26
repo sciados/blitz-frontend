@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { getProxiedImageUrl } from "src/app/(dashboard)/library/page";
+import { getProxiedImageUrl } from "src/utils/imageProxy";
 
 interface Template {
   id: string;

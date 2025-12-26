@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getProxiedImageUrl } from "src/app/(dashboard)/library/page";
+import { getProxiedImageUrl } from "src/utils/imageProxy";
 
 interface CollageLayout {
   id: string;
