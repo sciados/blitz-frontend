@@ -139,19 +139,25 @@ export function CollageToolControls({
     setUploadedImages(prev => prev.filter((_, i) => i !== index));
   };
 
-  const handleLayoutSelect = (layout: CollageLayout) => {
+  const handleLayoutSelect = async (layout: CollageLayout) => {
     setSelectedLayout(layout);
-    
+
+    console.log("📐 Layout selected:", layout.pattern, "with", uploadedImages.length, "images");
+
     // Auto-generate collage preview on canvas
     const canvasAPI = (window as any).imageEditorCanvas;
     if (canvasAPI && canvasAPI.applyCollage) {
-      canvasAPI.applyCollage({
+      console.log("🎨 Calling applyCollage with images:", uploadedImages.slice(0, layout.slots));
+      await canvasAPI.applyCollage({
         layout: layout.pattern,
         images: uploadedImages.slice(0, layout.slots),
         spacing,
         backgroundColor,
         canvasSize
       });
+      console.log("✅ applyCollage completed");
+    } else {
+      console.error("❌ canvasAPI.applyCollage not available");
     }
   };
 
