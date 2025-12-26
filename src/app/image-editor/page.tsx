@@ -83,11 +83,9 @@ export default function ImageEditorPage() {
       if (stored) {
         try {
           const images = JSON.parse(stored);
-          // Remove the first image from selected images since it's already the currentImageUrl
-          // This prevents double-counting the same image
-          const remainingImages = images.slice(1);
-          setCollageSelectedImages(remainingImages);
-          console.log("📦 Collage: Loaded", images.length, "selected images, using", remainingImages.length, "remaining (first is current image)");
+          // Use all selected images for collage (no initial image loaded on canvas)
+          setCollageSelectedImages(images);
+          console.log("📦 Collage: Loaded", images.length, "selected images");
           // Clear from sessionStorage after reading
           sessionStorage.removeItem('collageSelectedImages');
         } catch (e) {
@@ -572,8 +570,10 @@ export default function ImageEditorPage() {
       const result = await uploadResponse.json();
 
       if (result.success && result.image_url) {
-        setEditedImage(result.image_url);
-        setActiveImage(result.image_url);
+        // Use proxied URL for collage to avoid CORS when displaying
+        const displayUrl = getProxiedImageUrl(result.image_url);
+        setEditedImage(displayUrl);
+        setActiveImage(displayUrl);
         toast.success("Collage created and saved successfully!");
       } else {
         throw new Error("Failed to save collage image");
