@@ -103,50 +103,69 @@ export function ImageEditorCanvas({
 
   // Apply collage to canvas - renders preview immediately
   const applyCollage = async (settings: any) => {
+    console.log("🎨 applyCollage called with settings:", settings);
     setCollageSettings(settings);
 
     // Render preview to main canvas
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas) {
+      console.error("❌ Canvas ref not available");
+      return;
+    }
 
     const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+    if (!ctx) {
+      console.error("❌ Could not get 2D context");
+      return;
+    }
 
     const { layout, images, spacing, backgroundColor, canvasSize } = settings;
+    console.log("📐 Layout:", layout, "Images:", images.length, "Size:", canvasSize);
 
     // Update canvas size
     canvas.width = canvasSize.width;
     canvas.height = canvasSize.height;
     setImageSize({ width: canvasSize.width, height: canvasSize.height });
+    console.log("📏 Canvas size set to:", canvasSize.width, "x", canvasSize.height);
 
     // Fill background
     ctx.fillStyle = backgroundColor;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+    console.log("🎨 Background filled with:", backgroundColor);
 
     // Calculate grid
     const cols = layout.includes("3x3") ? 3 : layout.includes("3x2") ? 3 : layout.includes("2x2") ? 2 : 2;
     const rows = layout.includes("3x3") ? 3 : layout.includes("3x2") ? 2 : layout.includes("2x2") ? 2 : 1;
+    console.log("📊 Grid:", cols, "x", rows);
 
     const cellWidth = (canvas.width - (cols + 1) * spacing) / cols;
     const cellHeight = (canvas.height - (rows + 1) * spacing) / rows;
+    console.log("📦 Cell size:", cellWidth, "x", cellHeight);
 
     // Load and draw images
     try {
+      console.log("⏳ Loading images...");
       const loadedImages = await Promise.all(
-        images.slice(0, cols * rows).map((imgSrc: string) => loadImageWithCORS(imgSrc))
+        images.slice(0, cols * rows).map((imgSrc: string, i: number) => {
+          console.log(`  Loading image ${i}:`, imgSrc.substring(0, 80) + "...");
+          return loadImageWithCORS(imgSrc);
+        })
       );
+      console.log("✅ All images loaded:", loadedImages.length);
 
       loadedImages.forEach((img: HTMLImageElement, index: number) => {
         const col = index % cols;
         const row = Math.floor(index / cols);
         const x = spacing + col * (cellWidth + spacing);
         const y = spacing + row * (cellHeight + spacing);
+        console.log(`  Drawing image ${index} at (${x}, ${y})`);
         ctx.drawImage(img, x, y, cellWidth, cellHeight);
       });
 
       setImageLoaded(true);
+      console.log("✅ Collage preview rendered, imageLoaded set to true");
     } catch (err) {
-      console.error("Failed to load collage images for preview:", err);
+      console.error("❌ Failed to load collage images for preview:", err);
     }
   };
 
