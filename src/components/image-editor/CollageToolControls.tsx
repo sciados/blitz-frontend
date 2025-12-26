@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { getProxiedImageUrl } from "src/app/(dashboard)/library/page";
 
 interface CollageLayout {
   id: string;
@@ -98,7 +99,9 @@ export function CollageToolControls({
   // Add current image as first image when component mounts
   useEffect(() => {
     if (currentImageUrl && uploadedImages.length === 0) {
-      setUploadedImages([currentImageUrl]);
+      // Convert R2 URL to proxy URL for CORS compliance
+      const proxiedUrl = getProxiedImageUrl(currentImageUrl);
+      setUploadedImages([proxiedUrl]);
     }
   }, [currentImageUrl]);
 
@@ -306,7 +309,9 @@ export function CollageToolControls({
         <button
           onClick={() => {
             setSelectedLayout(null);
-            setUploadedImages([currentImageUrl]);
+            // Convert R2 URL to proxy URL for CORS compliance
+            const proxiedUrl = getProxiedImageUrl(currentImageUrl);
+            setUploadedImages([proxiedUrl]);
           }}
           disabled={isProcessing}
           className="flex-1 px-3 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 disabled:opacity-50 text-sm font-medium"

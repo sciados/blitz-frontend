@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { getProxiedImageUrl } from "src/app/(dashboard)/library/page";
 
 interface Template {
   id: string;
@@ -724,7 +725,7 @@ export function TemplateToolControls({
         ...el,
         ...(customizations[el.id] || {}),
       })),
-      currentImage: currentImageUrl,
+      currentImage: currentImageUrl ? getProxiedImageUrl(currentImageUrl) : null,
     };
 
     onApplyTemplate(finalTemplate);
