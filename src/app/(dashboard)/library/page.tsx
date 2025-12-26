@@ -1609,6 +1609,9 @@ export default function ContentLibraryPage() {
                                   {toolName}
                                 </div>
                               );
+                            } else if (image.metadata?.edit_tool === "background_removal") {
+                              // Don't show a main badge for transparent images - the cyan badge below is sufficient
+                              return null;
                             } else if (image.metadata?.text_overlay) {
                               return (
                                 <div className="absolute top-3 right-3 bg-orange-600 to-orange-700 text-white px-2 py-1 rounded-full text-xs font-medium">
@@ -1634,11 +1637,6 @@ export default function ContentLibraryPage() {
                             {image.has_transparency && (
                               <div className="bg-cyan-500 to-cyan-600 text-white px-2 py-1 rounded-full text-xs font-medium shadow-lg">
                                 🔍 TRANSPARENT
-                              </div>
-                            )}
-                            {image.parent_image_id && (
-                              <div className="bg-amber-500 to-amber-600 text-white px-2 py-1 rounded-full text-xs font-medium shadow-lg">
-                                🌳 EDIT
                               </div>
                             )}
                           </div>
