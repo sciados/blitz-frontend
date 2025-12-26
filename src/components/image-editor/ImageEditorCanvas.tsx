@@ -90,11 +90,64 @@ export function ImageEditorCanvas({
   // Collage state
   const [collageSettings, setCollageSettings] = useState<any>(null);
 
-  // Apply collage to canvas (simplified version - just preview)
-  const applyCollage = (settings: any) => {
+  // Helper to load image with CORS
+  const loadImageWithCORS = (imgSrc: string): Promise<HTMLImageElement> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => resolve(img);
+      img.onerror = (e) => reject(e);
+      img.src = imgSrc;
+    });
+  };
+
+  // Apply collage to canvas - renders preview immediately
+  const applyCollage = async (settings: any) => {
     setCollageSettings(settings);
-    // The actual collage rendering will be done client-side
-    // This is just to track the settings
+
+    // Render preview to main canvas
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const { layout, images, spacing, backgroundColor, canvasSize } = settings;
+
+    // Update canvas size
+    canvas.width = canvasSize.width;
+    canvas.height = canvasSize.height;
+    setImageSize({ width: canvasSize.width, height: canvasSize.height });
+
+    // Fill background
+    ctx.fillStyle = backgroundColor;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Calculate grid
+    const cols = layout.includes("3x3") ? 3 : layout.includes("3x2") ? 3 : layout.includes("2x2") ? 2 : 2;
+    const rows = layout.includes("3x3") ? 3 : layout.includes("3x2") ? 2 : layout.includes("2x2") ? 2 : 1;
+
+    const cellWidth = (canvas.width - (cols + 1) * spacing) / cols;
+    const cellHeight = (canvas.height - (rows + 1) * spacing) / rows;
+
+    // Load and draw images
+    try {
+      const loadedImages = await Promise.all(
+        images.slice(0, cols * rows).map((imgSrc: string) => loadImageWithCORS(imgSrc))
+      );
+
+      loadedImages.forEach((img: HTMLImageElement, index: number) => {
+        const col = index % cols;
+        const row = Math.floor(index / cols);
+        const x = spacing + col * (cellWidth + spacing);
+        const y = spacing + row * (cellHeight + spacing);
+        ctx.drawImage(img, x, y, cellWidth, cellHeight);
+      });
+
+      setImageLoaded(true);
+    } catch (err) {
+      console.error("Failed to load collage images for preview:", err);
+    }
   };
 
   // Get collage canvas - creates the final collage (async to properly load images)
@@ -135,20 +188,9 @@ export function ImageEditorCanvas({
     const cellWidth = (tempCanvas.width - (cols + 1) * spacing) / cols;
     const cellHeight = (tempCanvas.height - (rows + 1) * spacing) / rows;
 
-    // Load all images first with proper CORS handling
-    const loadImage = (imgSrc: string): Promise<HTMLImageElement> => {
-      return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.crossOrigin = "anonymous";
-        img.onload = () => resolve(img);
-        img.onerror = (e) => reject(e);
-        img.src = imgSrc;
-      });
-    };
-
-    // Load all images in parallel
+    // Load all images in parallel using shared helper
     const loadedImages = await Promise.all(
-      images.slice(0, cols * rows).map((imgSrc: string) => loadImage(imgSrc))
+      images.slice(0, cols * rows).map((imgSrc: string) => loadImageWithCORS(imgSrc))
     );
 
     // Draw images in grid
