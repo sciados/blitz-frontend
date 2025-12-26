@@ -108,23 +108,30 @@ export function ImageEditorCanvas({
 
     // Wait for canvas ref to be available (with retry)
     let attempts = 0;
-    const maxAttempts = 10;
+    const maxAttempts = 50; // Increased attempts
     const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+    console.log("🔍 Canvas ref current value:", canvasRef.current);
 
     while (attempts < maxAttempts) {
       const canvas = canvasRef.current;
+      console.log(`🔎 Attempt ${attempts}: canvas =`, canvas);
       if (canvas) {
         // Canvas is ready, proceed with collage
+        console.log("✅ Canvas found! Proceeding with collage render");
         break;
       }
       attempts++;
-      console.log(`⏳ Waiting for canvas ref... attempt ${attempts}/${maxAttempts}`);
-      await delay(100);
+      if (attempts <= 5 || attempts % 5 === 0) {
+        console.log(`⏳ Waiting for canvas ref... attempt ${attempts}/${maxAttempts}`);
+      }
+      await delay(50); // Faster retries (50ms instead of 100ms)
     }
 
     const canvas = canvasRef.current;
     if (!canvas) {
-      console.error("❌ Canvas ref not available after waiting");
+      console.error("❌ Canvas ref not available after waiting", maxAttempts, "attempts");
+      console.error("🔍 Canvas element exists in DOM?", document.querySelector('canvas'));
       return;
     }
 
@@ -434,6 +441,15 @@ export function ImageEditorCanvas({
 
     return tempCanvas.toDataURL("image/png");
   };
+
+  // Debug: Track canvas ref availability
+  useEffect(() => {
+    console.log("🔍 Canvas ref status:", {
+      hasRef: !!canvasRef.current,
+      tool: selectedEditTool,
+      hasOriginalImage: !!originalImage
+    });
+  }, [canvasRef.current, selectedEditTool, originalImage]);
 
   // Expose applyFilter, collage, and template methods to window
   useEffect(() => {
@@ -1074,7 +1090,9 @@ export function ImageEditorCanvas({
     (window as any).imageEditorCanvas.setSelectedOverlay = setSelectedOverlay;
   }, [textOverlays, imageOverlays, selectedOverlay, filterSettings]);
 
-  if (!originalImage) {
+  // For collage and template tools, allow rendering without an original image
+  if (!originalImage && !["collage", "template"].includes(selectedEditTool)) {
+    console.log("🚫 Early return: originalImage =", originalImage, "tool =", selectedEditTool);
     return (
       <div className="bg-white rounded-lg shadow-lg p-12 text-center">
         <p className="text-gray-500">No image loaded</p>
@@ -1269,12 +1287,15 @@ export function ImageEditorCanvas({
           )}
 
           {!imageLoaded && !originalImage && ["collage", "template"].includes(selectedEditTool) && (
-            <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
-              <div className="text-center text-gray-500">
-                <p className="text-lg font-medium">Select a layout to preview collage</p>
-                <p className="text-sm mt-2">Choose images and a layout from the sidebar</p>
+            <>
+              {console.log("📋 Showing collage/template message: imageLoaded =", imageLoaded, "originalImage =", originalImage, "tool =", selectedEditTool)}
+              <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+                <div className="text-center text-gray-500">
+                  <p className="text-lg font-medium">Select a layout to preview collage</p>
+                  <p className="text-sm mt-2">Choose images and a layout from the sidebar</p>
+                </div>
               </div>
-            </div>
+            </>
           )}
 
           {isProcessing && (
