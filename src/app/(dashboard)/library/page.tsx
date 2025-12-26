@@ -133,6 +133,7 @@ export default function ContentLibraryPage() {
     | "erase"
     | "transparent"
     | "lineage"
+    | "collage"
   >("all");
   const [videoFilter, setVideoFilter] = useState<
     "all" | "generated" | "overlays"
@@ -289,8 +290,11 @@ export default function ContentLibraryPage() {
                   edited_filters: "filters",
                   edited_resize: "resize",
                   edited_inpaint: "inpaint",
+                  inpainting: "inpaint", // Backend uses "inpainting"
                   edited_erase: "erase",
+                  erase: "erase", // Backend uses "erase"
                   background_removal: "transparent",
+                  collage: "collage", // Backend uses "collage"
                 };
 
                 const editTool =
@@ -472,6 +476,8 @@ export default function ContentLibraryPage() {
       imageFilter === "lineage" &&
       (image.parent_image_id === null || image.parent_image_id === undefined)
     )
+      return false;
+    if (imageFilter === "collage" && image.metadata?.edit_tool !== "collage")
       return false;
     return true;
   });
@@ -1134,6 +1140,23 @@ export default function ContentLibraryPage() {
                   }
                 </span>
               </button>
+              <button
+                onClick={() => setImageFilter("collage")}
+                className={`px-4 py-2 rounded-lg transition flex items-center gap-2 ${
+                  imageFilter === "collage"
+                    ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow"
+                    : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+                }`}
+              >
+                <span>🧩 Collage</span>
+                <span className="text-xs px-2 py-0.5 bg-gray-200 dark:bg-gray-600 rounded-full">
+                  {
+                    combinedImages.filter(
+                      (img) => img.metadata?.edit_tool === "collage"
+                    ).length
+                  }
+                </span>
+              </button>
             </div>
           )}
 
@@ -1659,6 +1682,7 @@ export default function ContentLibraryPage() {
                                 overlay: "Overlays",
                                 background_removal: "TRANSPARENT",
                                 transparent: "TRANSPARENT",
+                                collage: "Collage",
                               };
                               const toolName =
                                 toolNames[image.metadata.edit_tool] ||
@@ -2271,6 +2295,7 @@ export default function ContentLibraryPage() {
                       inpaint: "Inpaint",
                       erase: "Erase",
                       overlay: "Overlays",
+                      collage: "Collage",
                     };
                     const toolName =
                       toolNames[selectedLibraryImage.metadata.edit_tool] ||
