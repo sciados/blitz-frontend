@@ -155,18 +155,23 @@ export function CollageToolControls({
     }
   };
 
-  const handleApply = () => {
+  const handleApply = async () => {
     if (!selectedLayout || uploadedImages.length < selectedLayout.slots) {
       alert(`Please upload at least ${selectedLayout?.slots || 2} images`);
       return;
     }
 
-    // Get collage from canvas
+    // Get collage from canvas (async)
     const canvasAPI = (window as any).imageEditorCanvas;
     if (canvasAPI && canvasAPI.getCollageCanvas) {
-      const collageDataUrl = canvasAPI.getCollageCanvas();
-      if (collageDataUrl) {
-        onApplyCollage(collageDataUrl);
+      try {
+        const collageDataUrl = await canvasAPI.getCollageCanvas();
+        if (collageDataUrl) {
+          onApplyCollage(collageDataUrl);
+        }
+      } catch (err) {
+        console.error("Failed to create collage:", err);
+        alert("Failed to create collage. Please try again.");
       }
     }
   };

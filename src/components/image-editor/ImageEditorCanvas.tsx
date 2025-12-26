@@ -97,8 +97,8 @@ export function ImageEditorCanvas({
     // This is just to track the settings
   };
 
-  // Get collage canvas - creates the final collage
-  const getCollageCanvas = () => {
+  // Get collage canvas - creates the final collage (async to properly load images)
+  const getCollageCanvas = async () => {
     if (!collageSettings) return null;
 
     const { layout, images, spacing, backgroundColor, canvasSize } =
@@ -135,18 +135,29 @@ export function ImageEditorCanvas({
     const cellWidth = (tempCanvas.width - (cols + 1) * spacing) / cols;
     const cellHeight = (tempCanvas.height - (rows + 1) * spacing) / rows;
 
-    // Draw images in grid
-    images.forEach((imgSrc: string, index: number) => {
-      if (index >= cols * rows) return;
+    // Load all images first with proper CORS handling
+    const loadImage = (imgSrc: string): Promise<HTMLImageElement> => {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.onload = () => resolve(img);
+        img.onerror = (e) => reject(e);
+        img.src = imgSrc;
+      });
+    };
 
+    // Load all images in parallel
+    const loadedImages = await Promise.all(
+      images.slice(0, cols * rows).map((imgSrc: string) => loadImage(imgSrc))
+    );
+
+    // Draw images in grid
+    loadedImages.forEach((img: HTMLImageElement, index: number) => {
       const col = index % cols;
       const row = Math.floor(index / cols);
 
       const x = spacing + col * (cellWidth + spacing);
       const y = spacing + row * (cellHeight + spacing);
-
-      const img = new Image();
-      img.src = imgSrc;
 
       // Draw image to fit cell
       ctx.drawImage(img, x, y, cellWidth, cellHeight);
