@@ -1592,7 +1592,7 @@ export default function ContentLibraryPage() {
                               );
                             }
 
-                            if (image.metadata?.edit_tool) {
+                            if (image.metadata?.edit_tool && image.metadata.edit_tool !== "transparent") {
                               // Map edit_tool to display name
                               const toolNames: Record<string, string> = {
                                 filters: "Filters",
@@ -1600,7 +1600,6 @@ export default function ContentLibraryPage() {
                                 inpaint: "Inpaint",
                                 erase: "Erase",
                                 overlay: "Overlays",
-                                transparent: "TRANSPARENT",
                               };
                               const toolName =
                                 toolNames[image.metadata.edit_tool] ||
