@@ -106,10 +106,25 @@ export function ImageEditorCanvas({
     console.log("🎨 applyCollage called with settings:", settings);
     setCollageSettings(settings);
 
-    // Render preview to main canvas
+    // Wait for canvas ref to be available (with retry)
+    let attempts = 0;
+    const maxAttempts = 10;
+    const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+    while (attempts < maxAttempts) {
+      const canvas = canvasRef.current;
+      if (canvas) {
+        // Canvas is ready, proceed with collage
+        break;
+      }
+      attempts++;
+      console.log(`⏳ Waiting for canvas ref... attempt ${attempts}/${maxAttempts}`);
+      await delay(100);
+    }
+
     const canvas = canvasRef.current;
     if (!canvas) {
-      console.error("❌ Canvas ref not available");
+      console.error("❌ Canvas ref not available after waiting");
       return;
     }
 
@@ -422,6 +437,9 @@ export function ImageEditorCanvas({
 
   // Expose applyFilter, collage, and template methods to window
   useEffect(() => {
+    // Only expose functions when canvas ref is available
+    if (!canvasRef.current) return;
+
     if (!(window as any).imageEditorCanvas) {
       (window as any).imageEditorCanvas = {};
     }
@@ -429,7 +447,7 @@ export function ImageEditorCanvas({
     (window as any).imageEditorCanvas.applyCollage = applyCollage;
     (window as any).imageEditorCanvas.getCollageCanvas = getCollageCanvas;
     (window as any).imageEditorCanvas.getTemplateCanvas = getTemplateCanvas;
-  }, [applyFilter, collageSettings]);
+  }, [applyFilter, collageSettings, canvasRef.current]);
 
   // Load image onto canvas
   useEffect(() => {
