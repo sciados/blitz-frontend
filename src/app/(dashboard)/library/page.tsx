@@ -55,10 +55,18 @@ export default function ContentLibraryPage() {
 
   // Helper function to get proxied image URL
   const getProxiedImageUrl = (imageUrl: string) => {
-    if (!imageUrl) return "";
+    console.log("🔍 getProxiedImageUrl called with:", imageUrl);
+
+    if (!imageUrl) {
+      console.log("❌ Empty image URL, returning empty string");
+      return "";
+    }
+
     // If already a proxy URL or API route, return as-is
-    if (imageUrl.startsWith("/api/") || imageUrl.includes("/api/images/proxy"))
+    if (imageUrl.startsWith("/api/") || imageUrl.includes("/api/images/proxy")) {
+      console.log("✅ Already a proxy URL, returning as-is:", imageUrl);
       return imageUrl;
+    }
 
     const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
     let finalApiUrl = apiBaseUrl;
@@ -79,24 +87,22 @@ export default function ContentLibraryPage() {
     // If still no API base URL, log warning and return original
     if (!finalApiUrl) {
       console.warn(
-        "NEXT_PUBLIC_API_BASE_URL not configured and cannot infer API URL, images may have CORS issues"
+        "❌ NEXT_PUBLIC_API_BASE_URL not configured and cannot infer API URL, images may have CORS issues"
       );
       console.warn(
         "Current hostname:",
         typeof window !== "undefined" ? window.location.hostname : "server"
       );
+      console.warn("Returning original URL:", imageUrl);
       return imageUrl;
     }
 
-    console.log(
-      "Using proxy for image:",
-      imageUrl.substring(0, 100),
-      "via",
-      finalApiUrl
-    );
-    return `${finalApiUrl}/api/images/proxy?url=${encodeURIComponent(
+    const proxyUrl = `${finalApiUrl}/api/images/proxy?url=${encodeURIComponent(
       imageUrl
     )}`;
+    console.log("✅ Created proxy URL:", proxyUrl);
+    console.log("📸 Final URL to use for <img>:", proxyUrl);
+    return proxyUrl;
   };
 
   const [filterCampaignId, setFilterCampaignId] = useState<number | null>(
