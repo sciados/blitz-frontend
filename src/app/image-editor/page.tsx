@@ -378,7 +378,16 @@ export default function ImageEditorPage() {
     resizedImageDataUrl: string,
     preset: string
   ) => {
+    console.log("📸 handleResizeSave called with:", {
+      campaignId,
+      imageUrl,
+      preset,
+      dataUrlLength: resizedImageDataUrl?.length,
+      isDataUrl: resizedImageDataUrl?.startsWith("data:")
+    });
+
     if (!campaignId || !imageUrl) {
+      console.error("❌ Missing campaign ID or image URL:", { campaignId, imageUrl });
       toast.error("Missing campaign ID or image URL");
       return;
     }
@@ -388,7 +397,7 @@ export default function ImageEditorPage() {
     setIsProcessing(true);
 
     try {
-      const response = await api.post("/api/images/save-draft", {
+      const payload = {
         campaign_id: parseInt(campaignId),
         image_url: resizedImageDataUrl,
         image_type: "variation",
@@ -404,14 +413,29 @@ export default function ImageEditorPage() {
           edit_tool: "resize",
           preset: preset,
         },
-      });
+      };
+
+      console.log("📤 Sending payload to /api/images/save-draft:", payload);
+
+      const response = await api.post("/api/images/save-draft", payload);
+
+      console.log("📥 Response received:", response.data);
 
       if (!response.data.id && !response.data.image_url) {
+        console.error("❌ Response missing id and image_url:", response.data);
         throw new Error("Failed to save resized image");
       }
+
+      console.log("✅ Resized image saved successfully!");
       toast.success("Resized image saved!");
     } catch (err: any) {
-      console.error("Error saving resized image:", err);
+      console.error("❌ Error saving resized image:", err);
+      console.error("❌ Error details:", {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status
+      });
+      toast.error(err.response?.data?.detail || err.message || "Failed to save resized image");
     } finally {
       setIsProcessing(false);
     }
