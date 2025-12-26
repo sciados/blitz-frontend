@@ -437,9 +437,6 @@ export function ImageEditorCanvas({
 
   // Expose applyFilter, collage, and template methods to window
   useEffect(() => {
-    // Only expose functions when canvas ref is available
-    if (!canvasRef.current) return;
-
     if (!(window as any).imageEditorCanvas) {
       (window as any).imageEditorCanvas = {};
     }
@@ -447,7 +444,7 @@ export function ImageEditorCanvas({
     (window as any).imageEditorCanvas.applyCollage = applyCollage;
     (window as any).imageEditorCanvas.getCollageCanvas = getCollageCanvas;
     (window as any).imageEditorCanvas.getTemplateCanvas = getTemplateCanvas;
-  }, [applyFilter, collageSettings, canvasRef.current]);
+  }, [applyFilter, collageSettings]);
 
   // Load image onto canvas
   useEffect(() => {
