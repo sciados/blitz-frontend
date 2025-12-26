@@ -12,6 +12,7 @@ import { ImageEditorSidebar } from "src/components/image-editor/ImageEditorSideb
 import { ToolSelector } from "src/components/image-editor/ToolSelector";
 import { OverlayEditor } from "src/components/image-editor/OverlayEditor";
 import { SmartResize } from "src/components/image-editor/SmartResize";
+import { getProxiedImageUrl } from "src/utils/imageProxy";
 
 export type EditTool =
   | "inpaint"
@@ -147,11 +148,13 @@ export default function ImageEditorPage() {
           setActiveImage(storedImage);
         }
       } else {
-        setOriginalImage(imageUrl);
-        setActiveImage(imageUrl);
+        // Only proxy for collage tool (needs crossOrigin for canvas export)
+        const url = initialTool === "collage" ? getProxiedImageUrl(imageUrl) : imageUrl;
+        setOriginalImage(url);
+        setActiveImage(url);
       }
     }
-  }, [imageUrl, campaignId]);
+  }, [imageUrl, campaignId, initialTool]);
 
   // Detect transparency in active image
   const checkImageTransparency = (imageUrl: string): Promise<boolean> => {

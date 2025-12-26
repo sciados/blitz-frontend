@@ -18,6 +18,7 @@ import { BatchImageOptimizer } from "src/components/image-editor/BatchImageOptim
 import { ImageFilters } from "src/components/image-editor/ImageFilters";
 import { BatchFilters } from "src/components/image-editor/BatchFilters";
 import { BatchBackgroundRemoval } from "src/components/image-editor/BatchBackgroundRemoval";
+import { getProxiedImageUrl } from "src/utils/imageProxy";
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -700,17 +701,18 @@ export default function ContentLibraryPage() {
     const selectedImagesData = combinedImages
       .filter(img => selectedImageUrls.includes(img.image_url))
       .map(img => ({
-        url: img.image_url,
+        url: getProxiedImageUrl(img.image_url),
         prompt: img.prompt || "Campaign Image"
       }));
 
     sessionStorage.setItem('collageSelectedImages', JSON.stringify(selectedImagesData));
 
-    // Navigate to image editor with collage tool
+    // Navigate to image editor with collage tool - use proxied URL
     const firstImage = combinedImages.find(img => selectedImageUrls.includes(img.image_url));
     if (firstImage) {
       const campaignId = firstImage.campaign_id || "";
-      router.push(`/image-editor?imageUrl=${encodeURIComponent(firstImage.image_url)}&campaignId=${campaignId}&tool=collage`);
+      const proxiedUrl = getProxiedImageUrl(firstImage.image_url);
+      router.push(`/image-editor?imageUrl=${encodeURIComponent(proxiedUrl)}&campaignId=${campaignId}&tool=collage`);
     }
   };
 
