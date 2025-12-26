@@ -141,6 +141,11 @@ export default function ImageEditorPage() {
   // Load image from URL params
   useEffect(() => {
     if (imageUrl && campaignId) {
+      // For collage tool, don't load initial image - collage will be built from selected images
+      if (initialTool === "collage") {
+        return;
+      }
+
       if (imageUrl === "uploaded") {
         const storedImage = sessionStorage.getItem("uploadedImageData");
         if (storedImage) {
@@ -148,10 +153,8 @@ export default function ImageEditorPage() {
           setActiveImage(storedImage);
         }
       } else {
-        // Only proxy for collage tool (needs crossOrigin for canvas export)
-        const url = initialTool === "collage" ? getProxiedImageUrl(imageUrl) : imageUrl;
-        setOriginalImage(url);
-        setActiveImage(url);
+        setOriginalImage(imageUrl);
+        setActiveImage(imageUrl);
       }
     }
   }, [imageUrl, campaignId, initialTool]);
