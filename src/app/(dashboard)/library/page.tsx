@@ -1565,7 +1565,11 @@ export default function ContentLibraryPage() {
 
                         {/* Image - Make clickable only if not selecting */}
                         <div
-                          className="relative bg-gray-100 dark:bg-gray-800 aspect-square cursor-pointer"
+                          className={`relative aspect-square cursor-pointer ${
+                            image.has_transparency
+                              ? "bg-[length:20px_20px] bg-[linear-gradient(45deg,#d1d5db_25%,transparent_25%),linear-gradient(-45deg,#d1d5db_25%,transparent_25%),linear-gradient(45deg,transparent_75%,#d1d5db_75%),linear-gradient(-45deg,transparent_75%,#d1d5db_75%)] dark:bg-[length:20px_20px] dark:bg-[linear-gradient(45deg,#4b5563_25%,transparent_25%),linear-gradient(-45deg,#4b5563_25%,transparent_25%),linear-gradient(45deg,transparent_75%,#4b5563_75%),linear-gradient(-45deg,transparent_75%,#4b5563_75%)]"
+                              : "bg-gray-100 dark:bg-gray-800"
+                          }`}
                           onClick={() => {
                             if (selectedImageUrls.length === 0) {
                               handleImageClick(image, index);
