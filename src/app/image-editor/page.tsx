@@ -24,7 +24,8 @@ export type EditTool =
   | "overlay"
   | "resize"
   | "filters"
-  | "collage";
+  | "collage"
+  | "template";
 
 export default function ImageEditorPage() {
   const searchParams = useSearchParams();
@@ -38,11 +39,15 @@ export default function ImageEditorPage() {
   const [hasTransparency, setHasTransparency] = useState(false);
 
   // Filter preview state - shows filtered image before saving to R2
-  const [filterPreviewImage, setFilterPreviewImage] = useState<string | null>(null);
+  const [filterPreviewImage, setFilterPreviewImage] = useState<string | null>(
+    null
+  );
 
   // Tool states
   const [selectedEditTool, setSelectedEditTool] = useState<EditTool>("inpaint");
-  const [selectedDrawTool, setSelectedDrawTool] = useState<"brush" | "eraser">("brush");
+  const [selectedDrawTool, setSelectedDrawTool] = useState<"brush" | "eraser">(
+    "brush"
+  );
   const [brushSize, setBrushSize] = useState(20);
 
   // Common parameters
@@ -65,20 +70,23 @@ export default function ImageEditorPage() {
   const [uploadedImageFile, setUploadedImageFile] = useState<File | null>(null);
 
   // React Query: Fetch campaigns
-  const { data: availableCampaigns = [], isLoading: isLoadingCampaigns } = useQuery({
-    queryKey: ["campaigns"],
-    queryFn: async () => {
-      const res = await api.get("/api/campaigns");
-      return res.data || [];
-    },
-    enabled: !imageUrl || !campaignId, // Only fetch when showing selection interface
-  });
+  const { data: availableCampaigns = [], isLoading: isLoadingCampaigns } =
+    useQuery({
+      queryKey: ["campaigns"],
+      queryFn: async () => {
+        const res = await api.get("/api/campaigns");
+        return res.data || [];
+      },
+      enabled: !imageUrl || !campaignId, // Only fetch when showing selection interface
+    });
 
   // React Query: Fetch images for selected campaign
   const { data: availableImages = [], isLoading: isLoadingImages } = useQuery({
     queryKey: ["campaign-images", selectedCampaignId],
     queryFn: async () => {
-      const res = await api.get(`/api/content/campaign/${selectedCampaignId}/images`);
+      const res = await api.get(
+        `/api/content/campaign/${selectedCampaignId}/images`
+      );
       return res.data.images || [];
     },
     enabled: !!selectedCampaignId && (!imageUrl || !campaignId),
@@ -201,7 +209,11 @@ export default function ImageEditorPage() {
       params.set("imageUrl", originalImage);
     }
 
-    window.history.replaceState({}, "", `${window.location.pathname}?${params.toString()}`);
+    window.history.replaceState(
+      {},
+      "",
+      `${window.location.pathname}?${params.toString()}`
+    );
     window.location.reload();
   };
 
@@ -211,7 +223,10 @@ export default function ImageEditorPage() {
       return;
     }
 
-    if (["inpaint", "search-replace", "upscale"].includes(selectedEditTool) && !prompt) {
+    if (
+      ["inpaint", "search-replace", "upscale"].includes(selectedEditTool) &&
+      !prompt
+    ) {
       toast.error("Please enter a prompt");
       return;
     }
@@ -240,7 +255,8 @@ export default function ImageEditorPage() {
         case "inpaint":
           endpoint = "/api/image-editor/inpaint";
           formData.append("prompt", prompt);
-          if (negativePrompt) formData.append("negative_prompt", negativePrompt);
+          if (negativePrompt)
+            formData.append("negative_prompt", negativePrompt);
           if (maskDataUrl) formData.append("mask_image_data", maskDataUrl);
           formData.append("seed", seed.toString());
           break;
@@ -259,7 +275,8 @@ export default function ImageEditorPage() {
           endpoint = "/api/image-editor/search-replace";
           formData.append("search_prompt", searchPrompt);
           formData.append("prompt", prompt);
-          if (negativePrompt) formData.append("negative_prompt", negativePrompt);
+          if (negativePrompt)
+            formData.append("negative_prompt", negativePrompt);
           formData.append("seed", seed.toString());
           break;
 
@@ -277,7 +294,8 @@ export default function ImageEditorPage() {
         case "upscale":
           endpoint = "/api/image-editor/upscale";
           formData.append("prompt", prompt);
-          if (negativePrompt) formData.append("negative_prompt", negativePrompt);
+          if (negativePrompt)
+            formData.append("negative_prompt", negativePrompt);
           formData.append("creativity", "0.35");
           formData.append("seed", seed.toString());
           break;
@@ -285,7 +303,8 @@ export default function ImageEditorPage() {
         case "sketch-to-image":
           endpoint = "/api/image-editor/sketch-to-image";
           formData.append("prompt", prompt);
-          if (negativePrompt) formData.append("negative_prompt", negativePrompt);
+          if (negativePrompt)
+            formData.append("negative_prompt", negativePrompt);
           formData.append("control_strength", "0.7");
           formData.append("seed", seed.toString());
           break;
@@ -305,7 +324,9 @@ export default function ImageEditorPage() {
         throw new Error("Failed to generate edited image");
       }
     } catch (err: any) {
-      toast.error(err.response?.data?.detail || err.message || "Failed to edit image");
+      toast.error(
+        err.response?.data?.detail || err.message || "Failed to edit image"
+      );
     } finally {
       setIsProcessing(false);
     }
@@ -333,8 +354,8 @@ export default function ImageEditorPage() {
         metadata: {
           is_edited: true,
           edit_type: "overlay",
-          edit_tool: "overlay"
-        }
+          edit_tool: "overlay",
+        },
       });
 
       const result = response.data;
@@ -353,7 +374,10 @@ export default function ImageEditorPage() {
     }
   };
 
-  const handleResizeSave = async (resizedImageDataUrl: string, preset: string) => {
+  const handleResizeSave = async (
+    resizedImageDataUrl: string,
+    preset: string
+  ) => {
     if (!campaignId || !imageUrl) {
       toast.error("Missing campaign ID or image URL");
       return;
@@ -378,8 +402,8 @@ export default function ImageEditorPage() {
           is_edited: true,
           edit_type: "resize",
           edit_tool: "resize",
-          preset: preset
-        }
+          preset: preset,
+        },
       });
 
       if (!response.data.id && !response.data.image_url) {
@@ -418,8 +442,8 @@ export default function ImageEditorPage() {
         metadata: {
           is_edited: true,
           edit_type: "filter",
-          edit_tool: "filters"
-        }
+          edit_tool: "filters",
+        },
       });
 
       if (response.data.id || response.data.image_url) {
@@ -442,7 +466,7 @@ export default function ImageEditorPage() {
 
     try {
       const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-      
+
       if (!apiBaseUrl) {
         throw new Error("API base URL not configured");
       }
@@ -481,7 +505,78 @@ export default function ImageEditorPage() {
       }
     } catch (err) {
       console.error("Collage save error:", err);
-      toast.error(`Error: ${err instanceof Error ? err.message : "Unknown error"}`);
+      toast.error(
+        `Error: ${err instanceof Error ? err.message : "Unknown error"}`
+      );
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleApplyTemplate = async (templateData: any) => {
+    if (!campaignId || !imageUrl) {
+      toast.error("Missing campaign ID or image URL");
+      return;
+    }
+
+    setIsProcessing(true);
+
+    try {
+      // Generate template canvas on client side
+      const canvasAPI = (window as any).imageEditorCanvas;
+      if (canvasAPI && canvasAPI.getTemplateCanvas) {
+        const templateDataUrl = canvasAPI.getTemplateCanvas(templateData);
+
+        if (!templateDataUrl) {
+          throw new Error("Failed to generate template");
+        }
+
+        const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+        if (!apiBaseUrl) {
+          throw new Error("API base URL not configured");
+        }
+
+        // Convert data URL to blob
+        const response = await fetch(templateDataUrl);
+        const blob = await response.blob();
+
+        // Create form data
+        const formData = new FormData();
+        formData.append("image", blob, "template_image.png");
+        formData.append("campaign_id", campaignId);
+        formData.append("operation", "template");
+
+        const token = localStorage.getItem("token");
+        const uploadResponse = await fetch(
+          `${apiBaseUrl}/api/image-editor/save-filtered-image`,
+          {
+            method: "POST",
+            body: formData,
+            credentials: "include",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const result = await uploadResponse.json();
+
+        if (result.success && result.image_url) {
+          setEditedImage(result.image_url);
+          setActiveImage(result.image_url);
+          toast.success("Template created and saved successfully!");
+        } else {
+          throw new Error("Failed to save template image");
+        }
+      } else {
+        throw new Error("Template renderer not available");
+      }
+    } catch (err) {
+      console.error("Template save error:", err);
+      toast.error(
+        `Error: ${err instanceof Error ? err.message : "Unknown error"}`
+      );
     } finally {
       setIsProcessing(false);
     }
@@ -553,7 +648,8 @@ export default function ImageEditorPage() {
                 AI Image Editor
               </h1>
               <p className="text-[var(--text-secondary)]">
-                Select a campaign and image to start editing, or upload your own image
+                Select a campaign and image to start editing, or upload your own
+                image
               </p>
             </div>
 
@@ -580,38 +676,43 @@ export default function ImageEditorPage() {
                   <div className="mt-4 animate-pulse">
                     <div className="grid grid-cols-3 gap-2">
                       {[1, 2, 3].map((i) => (
-                        <div key={i} className="h-24 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                        <div
+                          key={i}
+                          className="h-24 bg-gray-200 dark:bg-gray-700 rounded"
+                        ></div>
                       ))}
                     </div>
                   </div>
                 )}
 
-                {selectedCampaignId && !isLoadingImages && availableImages.length > 0 && (
-                  <div className="mt-4">
-                    <h3 className="text-sm font-medium mb-2 text-[var(--text-primary)]">
-                      Or select an existing image:
-                    </h3>
-                    <div className="grid grid-cols-3 gap-2 max-h-64 overflow-y-auto">
-                      {availableImages.map((img: any) => (
-                        <div
-                          key={img.id}
-                          className={`cursor-pointer border-2 rounded overflow-hidden transition-all ${
-                            originalImage === img.image_url
-                              ? "border-blue-500 ring-2 ring-blue-200"
-                              : "border-transparent hover:border-blue-300"
-                          }`}
-                          onClick={() => handleImageSelect(img.image_url)}
-                        >
-                          <img
-                            src={img.image_url}
-                            alt="Campaign image"
-                            className="w-full h-24 object-cover"
-                          />
-                        </div>
-                      ))}
+                {selectedCampaignId &&
+                  !isLoadingImages &&
+                  availableImages.length > 0 && (
+                    <div className="mt-4">
+                      <h3 className="text-sm font-medium mb-2 text-[var(--text-primary)]">
+                        Or select an existing image:
+                      </h3>
+                      <div className="grid grid-cols-3 gap-2 max-h-64 overflow-y-auto">
+                        {availableImages.map((img: any) => (
+                          <div
+                            key={img.id}
+                            className={`cursor-pointer border-2 rounded overflow-hidden transition-all ${
+                              originalImage === img.image_url
+                                ? "border-blue-500 ring-2 ring-blue-200"
+                                : "border-transparent hover:border-blue-300"
+                            }`}
+                            onClick={() => handleImageSelect(img.image_url)}
+                          >
+                            <img
+                              src={img.image_url}
+                              alt="Campaign image"
+                              className="w-full h-24 object-cover"
+                            />
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
               </div>
 
               {/* File Upload */}
@@ -627,7 +728,10 @@ export default function ImageEditorPage() {
                     className="hidden"
                     id="file-upload"
                   />
-                  <label htmlFor="file-upload" className="cursor-pointer flex flex-col items-center">
+                  <label
+                    htmlFor="file-upload"
+                    className="cursor-pointer flex flex-col items-center"
+                  >
                     <svg
                       className="w-12 h-12 mb-4 text-gray-400"
                       fill="none"
@@ -732,6 +836,7 @@ export default function ImageEditorPage() {
               onCreativityChange={setCreativity}
               onFilterSave={handleFilterSave}
               onApplyCollage={handleApplyCollage}
+              onApplyTemplate={handleApplyTemplate}
               currentImageUrl={activeImage}
               isProcessing={isProcessing}
               hasTransparency={hasTransparency}
@@ -765,7 +870,9 @@ export default function ImageEditorPage() {
           {/* Right Panel - Image Preview */}
           {!isFullWidthTool && (
             <div className="w-80 bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 p-4 overflow-auto">
-              <h3 className="text-lg font-semibold mb-4 text-[var(--text-primary)]">Preview</h3>
+              <h3 className="text-lg font-semibold mb-4 text-[var(--text-primary)]">
+                Preview
+              </h3>
 
               <div className="space-y-4">
                 <div>
@@ -781,7 +888,11 @@ export default function ImageEditorPage() {
                     onClick={switchToOriginal}
                   >
                     {originalImage && (
-                      <img src={originalImage} alt="Original" className="w-full h-auto" />
+                      <img
+                        src={originalImage}
+                        alt="Original"
+                        className="w-full h-auto"
+                      />
                     )}
                   </div>
                   {activeImage === originalImage && (
@@ -794,7 +905,9 @@ export default function ImageEditorPage() {
                 {(editedImage || filterPreviewImage) && (
                   <div>
                     <p className="text-sm font-medium text-[var(--text-secondary)] mb-2">
-                      {selectedEditTool === "filters" ? "Filtered Preview" : `Edited (${selectedEditTool})`}
+                      {selectedEditTool === "filters"
+                        ? "Filtered Preview"
+                        : `Edited (${selectedEditTool})`}
                     </p>
                     <div
                       className={`border-2 rounded overflow-hidden cursor-pointer transition-all ${
