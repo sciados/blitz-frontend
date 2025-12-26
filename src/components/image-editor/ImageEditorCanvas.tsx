@@ -103,35 +103,30 @@ export function ImageEditorCanvas({
 
   // Apply collage to canvas - renders preview immediately
   const applyCollage = async (settings: any) => {
-    console.log("🎨 applyCollage called with settings:", settings);
+    console.log("🎨 applyCollage called");
     setCollageSettings(settings);
 
     // Wait for canvas ref to be available (with retry)
     let attempts = 0;
-    const maxAttempts = 50; // Increased attempts
+    const maxAttempts = 50;
     const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
-    console.log("🔍 Canvas ref current value:", canvasRef.current);
 
     while (attempts < maxAttempts) {
       const canvas = canvasRef.current;
-      console.log(`🔎 Attempt ${attempts}: canvas =`, canvas);
       if (canvas) {
-        // Canvas is ready, proceed with collage
-        console.log("✅ Canvas found! Proceeding with collage render");
+        console.log("✅ Canvas found");
         break;
       }
       attempts++;
-      if (attempts <= 5 || attempts % 5 === 0) {
-        console.log(`⏳ Waiting for canvas ref... attempt ${attempts}/${maxAttempts}`);
+      if (attempts <= 3) {
+        console.log(`⏳ Waiting for canvas... attempt ${attempts}/${maxAttempts}`);
       }
-      await delay(50); // Faster retries (50ms instead of 100ms)
+      await delay(50);
     }
 
     const canvas = canvasRef.current;
     if (!canvas) {
-      console.error("❌ Canvas ref not available after waiting", maxAttempts, "attempts");
-      console.error("🔍 Canvas element exists in DOM?", document.querySelector('canvas'));
+      console.error("❌ Canvas ref not available");
       return;
     }
 
@@ -142,52 +137,59 @@ export function ImageEditorCanvas({
     }
 
     const { layout, images, spacing, backgroundColor, canvasSize } = settings;
-    console.log("📐 Layout:", layout, "Images:", images.length, "Size:", canvasSize);
 
-    // Update canvas size
-    canvas.width = canvasSize.width;
-    canvas.height = canvasSize.height;
+    // Calculate display scale to fit collage in container
+    let containerWidth = 800;
+    let containerHeight = 600;
+
+    if (containerRef.current) {
+      containerWidth = containerRef.current.clientWidth - 32; // Account for padding
+      containerHeight = containerRef.current.clientHeight - 100; // Account for header space
+    }
+
+    // Calculate scale to fit collage in container while maintaining aspect ratio
+    const scaleX = containerWidth / canvasSize.width;
+    const scaleY = containerHeight / canvasSize.height;
+    const displayScale = Math.min(scaleX, scaleY, 1); // Don't scale up beyond 100%
+
+    const displayWidth = canvasSize.width * displayScale;
+    const displayHeight = canvasSize.height * displayScale;
+
+    // Set canvas to display size
+    canvas.width = displayWidth;
+    canvas.height = displayHeight;
     setImageSize({ width: canvasSize.width, height: canvasSize.height });
-    console.log("📏 Canvas size set to:", canvasSize.width, "x", canvasSize.height);
+    setDisplayScale(displayScale);
 
     // Fill background
     ctx.fillStyle = backgroundColor;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    console.log("🎨 Background filled with:", backgroundColor);
 
-    // Calculate grid
+    // Calculate grid (use display dimensions for cells)
     const cols = layout.includes("3x3") ? 3 : layout.includes("3x2") ? 3 : layout.includes("2x2") ? 2 : 2;
     const rows = layout.includes("3x3") ? 3 : layout.includes("3x2") ? 2 : layout.includes("2x2") ? 2 : 1;
-    console.log("📊 Grid:", cols, "x", rows);
 
-    const cellWidth = (canvas.width - (cols + 1) * spacing) / cols;
-    const cellHeight = (canvas.height - (rows + 1) * spacing) / rows;
-    console.log("📦 Cell size:", cellWidth, "x", cellHeight);
+    const cellWidth = (displayWidth - (cols + 1) * spacing) / cols;
+    const cellHeight = (displayHeight - (rows + 1) * spacing) / rows;
 
     // Load and draw images
     try {
-      console.log("⏳ Loading images...");
       const loadedImages = await Promise.all(
-        images.slice(0, cols * rows).map((imgSrc: string, i: number) => {
-          console.log(`  Loading image ${i}:`, imgSrc.substring(0, 80) + "...");
-          return loadImageWithCORS(imgSrc);
-        })
+        images.slice(0, cols * rows).map((imgSrc: string) => loadImageWithCORS(imgSrc))
       );
-      console.log("✅ All images loaded:", loadedImages.length);
 
       loadedImages.forEach((img: HTMLImageElement, index: number) => {
         const col = index % cols;
         const row = Math.floor(index / cols);
         const x = spacing + col * (cellWidth + spacing);
         const y = spacing + row * (cellHeight + spacing);
-        console.log(`  Drawing image ${index} at (${x}, ${y})`);
         ctx.drawImage(img, x, y, cellWidth, cellHeight);
       });
 
       setImageLoaded(true);
-      console.log("✅ Collage preview rendered, imageLoaded set to true");
+      console.log("✅ Collage preview rendered");
     } catch (err) {
-      console.error("❌ Failed to load collage images for preview:", err);
+      console.error("❌ Failed to load collage images:", err);
     }
   };
 
@@ -444,11 +446,11 @@ export function ImageEditorCanvas({
 
   // Debug: Track canvas ref availability
   useEffect(() => {
-    console.log("🔍 Canvas ref status:", {
-      hasRef: !!canvasRef.current,
-      tool: selectedEditTool,
-      hasOriginalImage: !!originalImage
-    });
+    // console.log("🔍 Canvas ref status:", {
+    //   hasRef: !!canvasRef.current,
+    //   tool: selectedEditTool,
+    //   hasOriginalImage: !!originalImage
+    // });
   }, [canvasRef.current, selectedEditTool, originalImage]);
 
   // Expose applyFilter, collage, and template methods to window
@@ -1092,7 +1094,6 @@ export function ImageEditorCanvas({
 
   // For collage and template tools, allow rendering without an original image
   if (!originalImage && !["collage", "template"].includes(selectedEditTool)) {
-    console.log("🚫 Early return: originalImage =", originalImage, "tool =", selectedEditTool);
     return (
       <div className="bg-white rounded-lg shadow-lg p-12 text-center">
         <p className="text-gray-500">No image loaded</p>
@@ -1286,16 +1287,13 @@ export function ImageEditorCanvas({
             </div>
           )}
 
-          {!imageLoaded && !originalImage && ["collage", "template"].includes(selectedEditTool) && (
-            <>
-              {console.log("📋 Showing collage/template message: imageLoaded =", imageLoaded, "originalImage =", originalImage, "tool =", selectedEditTool)}
-              <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
-                <div className="text-center text-gray-500">
-                  <p className="text-lg font-medium">Select a layout to preview collage</p>
-                  <p className="text-sm mt-2">Choose images and a layout from the sidebar</p>
-                </div>
+          {!imageLoaded && !originalImage && !collageSettings && ["collage", "template"].includes(selectedEditTool) && (
+            <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+              <div className="text-center text-gray-500">
+                <p className="text-lg font-medium">Select a layout to preview collage</p>
+                <p className="text-sm mt-2">Choose images and a layout from the sidebar</p>
               </div>
-            </>
+            </div>
           )}
 
           {isProcessing && (
