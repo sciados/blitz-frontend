@@ -106,6 +106,20 @@ export function CollageToolControls({
     }
   }, [currentImageUrl]);
 
+  // Load selected images from Content Library
+  useEffect(() => {
+    if (selectedImages && selectedImages.length > 0) {
+      // Convert selected images to proxy URLs and add to uploadedImages
+      const proxiedUrls = selectedImages.map(img => getProxiedImageUrl(img.url));
+      setUploadedImages(prev => {
+        // Don't duplicate if current image is already in the list
+        const hasCurrentImage = prev.some(url => url === getProxiedImageUrl(currentImageUrl));
+        return hasCurrentImage ? [...prev, ...proxiedUrls] : proxiedUrls;
+      });
+      console.log("📦 CollageTool: Loaded", selectedImages.length, "selected images");
+    }
+  }, [selectedImages, currentImageUrl]);
+
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
