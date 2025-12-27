@@ -956,6 +956,146 @@ export function ImageEditorCanvas({
       .slice(1)}`;
   }
 
+  // Background Library rendering method
+  const getBackgroundCanvas = (backgroundData: any) => {
+    if (!backgroundData || !backgroundData.currentImageUrl) return null;
+
+    const { type, data } = backgroundData;
+
+    return new Promise<string>((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+
+      img.onload = () => {
+        // Create canvas with image dimensions
+        const tempCanvas = document.createElement("canvas");
+        tempCanvas.width = img.width;
+        tempCanvas.height = img.height;
+        const ctx = tempCanvas.getContext("2d");
+
+        if (!ctx) {
+          reject(new Error("Could not get canvas context"));
+          return;
+        }
+
+        // Render background based on type
+        switch (type) {
+          case "solid":
+            // Solid color background
+            ctx.fillStyle = data.color;
+            ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+            break;
+
+          case "gradient":
+            if (data.type === "linear") {
+              // Linear gradient
+              const angle = data.angle || 135;
+              const radians = (angle * Math.PI) / 180;
+
+              // Calculate gradient endpoints based on angle
+              const x1 =
+                tempCanvas.width / 2 -
+                (Math.cos(radians) * tempCanvas.width) / 2;
+              const y1 =
+                tempCanvas.height / 2 -
+                (Math.sin(radians) * tempCanvas.height) / 2;
+              const x2 =
+                tempCanvas.width / 2 +
+                (Math.cos(radians) * tempCanvas.width) / 2;
+              const y2 =
+                tempCanvas.height / 2 +
+                (Math.sin(radians) * tempCanvas.height) / 2;
+
+              const gradient = ctx.createLinearGradient(x1, y1, x2, y2);
+
+              // Add color stops
+              data.colors.forEach((color: string, index: number) => {
+                const stop =
+                  data.stops?.[index] ?? index / (data.colors.length - 1);
+                gradient.addColorStop(stop, color);
+              });
+
+              ctx.fillStyle = gradient;
+              ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+            } else if (data.type === "radial") {
+              // Radial gradient
+              const centerX = tempCanvas.width / 2;
+              const centerY = tempCanvas.height / 2;
+              const radius = Math.max(tempCanvas.width, tempCanvas.height) / 2;
+
+              const gradient = ctx.createRadialGradient(
+                centerX,
+                centerY,
+                0,
+                centerX,
+                centerY,
+                radius
+              );
+
+              // Add color stops
+              data.colors.forEach((color: string, index: number) => {
+                const stop =
+                  data.stops?.[index] ?? index / (data.colors.length - 1);
+                gradient.addColorStop(stop, color);
+              });
+
+              ctx.fillStyle = gradient;
+              ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+            }
+            break;
+
+          case "texture":
+            // Textured background with noise
+            ctx.fillStyle = data.baseColor || "#FFFFFF";
+            ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+
+            // Add noise texture
+            const intensity = data.intensity || 0.2;
+            const imageData = ctx.getImageData(
+              0,
+              0,
+              tempCanvas.width,
+              tempCanvas.height
+            );
+            const pixels = imageData.data;
+
+            for (let i = 0; i < pixels.length; i += 4) {
+              const noise = (Math.random() - 0.5) * intensity * 255;
+              pixels[i] += noise; // R
+              pixels[i + 1] += noise; // G
+              pixels[i + 2] += noise; // B
+              // Alpha stays at 255
+            }
+
+            ctx.putImageData(imageData, 0, 0);
+            break;
+
+          case "pattern":
+            // Pattern background (for future expansion)
+            ctx.fillStyle = data.baseColor || "#FFFFFF";
+            ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+            break;
+
+          default:
+            // Default to white
+            ctx.fillStyle = "#FFFFFF";
+            ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+        }
+
+        // Draw the image on top of background
+        ctx.drawImage(img, 0, 0, img.width, img.height);
+
+        resolve(tempCanvas.toDataURL("image/png"));
+      };
+
+      img.onerror = () => {
+        reject(new Error("Failed to load image"));
+      };
+
+      img.src = backgroundData.currentImageUrl;
+    });
+  };
+
   // Debug: Track canvas ref availability
   useEffect(() => {
     // console.log("🔍 Canvas ref status:", {
@@ -965,7 +1105,7 @@ export function ImageEditorCanvas({
     // });
   }, [canvasRef.current, selectedEditTool, originalImage]);
 
-  // Expose applyFilter, collage, template, and frame methods to window
+  // Expose applyFilter, collage, template, frame, and background methods to window
   useEffect(() => {
     if (!(window as any).imageEditorCanvas) {
       (window as any).imageEditorCanvas = {};
@@ -975,6 +1115,7 @@ export function ImageEditorCanvas({
     (window as any).imageEditorCanvas.getCollageCanvas = getCollageCanvas;
     (window as any).imageEditorCanvas.getTemplateCanvas = getTemplateCanvas;
     (window as any).imageEditorCanvas.getFrameCanvas = getFrameCanvas;
+    (window as any).imageEditorCanvas.getBackgroundCanvas = getBackgroundCanvas;
   }, [applyFilter, collageSettings]);
 
   // Load image onto canvas

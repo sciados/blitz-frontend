@@ -6,6 +6,7 @@ import { FilterToolControls } from "src/components/image-editor/FilterToolContro
 import { CollageToolControls } from "src/components/image-editor/CollageToolControls";
 import { TemplateToolControls } from "src/components/image-editor/TemplateToolControls";
 import { FrameToolControls } from "src/components/image-editor/FrameToolControls";
+import { BackgroundLibraryControls } from "src/components/image-editor/BackgroundLibraryControls";
 
 interface TextOverlay {
   id: string;
@@ -498,6 +499,7 @@ interface ImageEditorSidebarProps {
   onApplyCollage?: (dataUrl: string) => void;
   onApplyTemplate?: (templateData: any) => void;
   onApplyFrame?: (frameData: any) => void;
+  onApplyBackground?: (backgroundData: any) => void;
   currentImageUrl?: string | null;
   hasTransparency?: boolean;
   selectedImages?: { id: string; url: string; prompt: string }[];
@@ -527,6 +529,7 @@ export function ImageEditorSidebar({
   onApplyCollage,
   onApplyTemplate,
   onApplyFrame,
+  onApplyBackground,
   currentImageUrl,
   hasTransparency = false,
   selectedImages = [],
@@ -615,6 +618,12 @@ export function ImageEditorSidebar({
       icon: "🖼️",
       description: "Add decorative frames/borders",
     },
+    {
+      id: "background-add",
+      label: "Background",
+      icon: "🎨",
+      description: "Add background from library",
+    },
   ];
 
   // Filter out inpaint and erase tools if image has transparency
@@ -697,12 +706,22 @@ export function ImageEditorSidebar({
         />
       )}
 
-      {/* Settings Panel - Hide for overlay, filters, collage, template, and frame tools */}
+      {/* Background Library - Full Width Layout */}
+      {selectedEditTool === "background-add" && onApplyBackground && (
+        <BackgroundLibraryControls
+          isProcessing={isProcessing}
+          currentImageUrl={currentImageUrl || ""}
+          onApplyBackground={onApplyBackground}
+        />
+      )}
+
+      {/* Settings Panel - Hide for overlay, filters, collage, template, frame, and background tools */}
       {selectedEditTool !== "overlay" &&
         selectedEditTool !== "filters" &&
         selectedEditTool !== "collage" &&
         selectedEditTool !== "template" &&
-        selectedEditTool !== "frame" && (
+        selectedEditTool !== "frame" &&
+        selectedEditTool !== "background-add" && (
           <div>
             <h4 className="text-sm font-semibold text-gray-700 mb-3">
               Settings

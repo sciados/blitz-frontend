@@ -141,6 +141,16 @@ export function ToolSelector({ selectedTool }: ToolSelectorProps) {
         "Gallery-style matted photos",
       ],
     },
+    "background-add": {
+      name: "Background Library",
+      description: "Add backgrounds from pre-made library (no AI cost!)",
+      useCases: [
+        "Product photos on clean backgrounds",
+        "Replace busy backgrounds",
+        "Seasonal and holiday themes",
+        "Professional gradient backgrounds",
+      ],
+    },
   };
 
   const info = toolInfo[selectedTool];

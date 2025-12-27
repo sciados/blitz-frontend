@@ -10,7 +10,7 @@ import { ImageEditorCanvas } from "src/components/image-editor/ImageEditorCanvas
 import { ImageEditorToolbar } from "src/components/image-editor/ImageEditorToolbar";
 import { ImageEditorSidebar } from "src/components/image-editor/ImageEditorSidebar";
 import { ToolSelector } from "src/components/image-editor/ToolSelector";
-import { OverlayEditor } from "src/components/image-editor/OverlayEditor";
+// import { OverlayEditor } from "src/components/image-editor/OverlayEditor";
 import { SmartResize } from "src/components/image-editor/SmartResize";
 
 export type EditTool =
@@ -26,7 +26,8 @@ export type EditTool =
   | "filters"
   | "collage"
   | "template"
-  | "frame";
+  | "frame"
+  | "background-add";
 
 export default function ImageEditorPage() {
   const searchParams = useSearchParams();
@@ -583,6 +584,76 @@ export default function ImageEditorPage() {
     }
   };
 
+  const handleApplyBackgroundAdd = async (backgroundData: any) => {
+    if (!campaignId || !imageUrl) {
+      toast.error("Missing campaign ID or image URL");
+      return;
+    }
+
+    setIsProcessing(true);
+
+    try {
+      // Generate background canvas on client side
+      const canvasAPI = (window as any).imageEditorCanvas;
+      if (canvasAPI && canvasAPI.getBackgroundCanvas) {
+        const backgroundDataUrl = await canvasAPI.getBackgroundCanvas(
+          backgroundData
+        );
+
+        if (!backgroundDataUrl) {
+          throw new Error("Failed to generate background");
+        }
+
+        const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+        if (!apiBaseUrl) {
+          throw new Error("API base URL not configured");
+        }
+
+        // Convert data URL to blob
+        const response = await fetch(backgroundDataUrl);
+        const blob = await response.blob();
+
+        // Create form data
+        const formData = new FormData();
+        formData.append("image", blob, "background_image.png");
+        formData.append("campaign_id", campaignId);
+        formData.append("operation", "background");
+
+        const token = localStorage.getItem("token");
+        const uploadResponse = await fetch(
+          `${apiBaseUrl}/api/image-editor/save-filtered-image`,
+          {
+            method: "POST",
+            body: formData,
+            credentials: "include",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const result = await uploadResponse.json();
+
+        if (result.success && result.image_url) {
+          setEditedImage(result.image_url);
+          setActiveImage(result.image_url);
+          toast.success("Background applied and saved successfully!");
+        } else {
+          throw new Error("Failed to save background image");
+        }
+      } else {
+        throw new Error("Background renderer not available");
+      }
+    } catch (err) {
+      console.error("Background save error:", err);
+      toast.error(
+        `Error: ${err instanceof Error ? err.message : "Unknown error"}`
+      );
+    } finally {
+      setIsProcessing(false);
+    }
+  };
   const switchToOriginal = () => {
     if (originalImage) setActiveImage(originalImage);
   };
@@ -840,6 +911,7 @@ export default function ImageEditorPage() {
               onFilterSave={handleFilterSave}
               onApplyCollage={handleApplyCollage}
               onApplyFrame={handleApplyFrame}
+              onApplyBackground={handleApplyBackgroundAdd}
               currentImageUrl={activeImage}
               isProcessing={isProcessing}
               hasTransparency={hasTransparency}

@@ -5,8 +5,8 @@ import { useRouter } from "next/navigation";
 import { EditTool } from "src/app/image-editor/page";
 
 interface ImageEditorToolbarProps {
-  selectedDrawTool: 'brush' | 'eraser';
-  onDrawToolChange: (tool: 'brush' | 'eraser') => void;
+  selectedDrawTool: "brush" | "eraser";
+  onDrawToolChange: (tool: "brush" | "eraser") => void;
   selectedEditTool: EditTool;
   onEditToolChange: (tool: EditTool) => void;
   brushSize: number;
@@ -49,9 +49,10 @@ export function ImageEditorToolbar({
     { id: "collage", label: "Collage", icon: "🖼️" },
     { id: "template", label: "Templates", icon: "📋" },
     { id: "frame", label: "Frame", icon: "🖼️" },
+    { id: "background-add", label: "Background-add", icon: "🎨" },
   ];
 
-  const selectedEditToolInfo = editTools.find(t => t.id === selectedEditTool);
+  const selectedEditToolInfo = editTools.find((t) => t.id === selectedEditTool);
 
   return (
     <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-3">
@@ -64,17 +65,31 @@ export function ImageEditorToolbar({
             className="flex items-center gap-2 px-3 py-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors disabled:opacity-50"
             title="Back to Content Library"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M10 19l-7-7m0 0l7-7m-7 7h18"
+              />
             </svg>
             <span className="text-sm font-medium">Back</span>
           </button>
 
-          <h1 className="text-xl font-bold text-gray-900 dark:text-white">Image Editor</h1>
+          <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+            Image Editor
+          </h1>
 
           {/* Edit Tool Selection */}
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Tool:</span>
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              Tool:
+            </span>
             <select
               value={selectedEditTool}
               onChange={(e) => onEditToolChange(e.target.value as EditTool)}
@@ -92,21 +107,21 @@ export function ImageEditorToolbar({
           {/* Draw Tool Selection */}
           <div className="flex gap-2">
             <button
-              onClick={() => onDrawToolChange('brush')}
+              onClick={() => onDrawToolChange("brush")}
               className={`px-4 py-2 rounded font-medium transition-colors ${
-                selectedDrawTool === 'brush'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600'
+                selectedDrawTool === "brush"
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600"
               }`}
             >
               🖌️ Brush
             </button>
             <button
-              onClick={() => onDrawToolChange('eraser')}
+              onClick={() => onDrawToolChange("eraser")}
               className={`px-4 py-2 rounded font-medium transition-colors ${
-                selectedDrawTool === 'eraser'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600'
+                selectedDrawTool === "eraser"
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600"
               }`}
             >
               🧹 Eraser
@@ -115,7 +130,10 @@ export function ImageEditorToolbar({
 
           {/* Brush Size */}
           <div className="flex items-center gap-3">
-            <label htmlFor="brush-size" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label
+              htmlFor="brush-size"
+              className="text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
               Brush Size:
             </label>
             <input
@@ -127,7 +145,9 @@ export function ImageEditorToolbar({
               onChange={(e) => onBrushSizeChange(Number(e.target.value))}
               className="w-32"
             />
-            <span className="text-sm text-gray-600 dark:text-gray-400 w-12">{brushSize}px</span>
+            <span className="text-sm text-gray-600 dark:text-gray-400 w-12">
+              {brushSize}px
+            </span>
           </div>
         </div>
 

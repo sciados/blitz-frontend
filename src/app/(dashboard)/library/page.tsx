@@ -136,6 +136,7 @@ export default function ContentLibraryPage() {
     | "collage"
     | "template"
     | "frame"
+    | "background"
   >("all");
   const [videoFilter, setVideoFilter] = useState<
     "all" | "generated" | "overlays"
@@ -296,6 +297,7 @@ export default function ContentLibraryPage() {
                   edited_erase: "erase",
                   erase: "erase", // Backend uses "erase"
                   background_removal: "transparent",
+                  background_add: "background", // Background add tool saves as "background_add"
                   collage: "collage", // Backend uses "collage"
                   template: "template", // Template tool saves as "template"
                   frame: "frame", // Frame tool saves as "frame"
@@ -484,6 +486,8 @@ export default function ContentLibraryPage() {
     if (imageFilter === "collage" && image.metadata?.edit_tool !== "collage")
       return false;
     if (imageFilter === "template" && image.metadata?.edit_tool !== "template")
+      return false;
+    if (imageFilter === "background" && image.metadata?.edit_tool !== "background")
       return false;
     if (imageFilter === "frame" && image.metadata?.edit_tool !== "frame")
       return false;
@@ -1183,6 +1187,23 @@ export default function ContentLibraryPage() {
                 </span>
               </button>
               <button
+                onClick={() => setImageFilter("background")}
+                className={`px-4 py-2 rounded-lg transition flex items-center gap-2 ${
+                  imageFilter === "background"
+                    ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow"
+                    : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+                }`}
+              >
+                <span>🎨 Backgrounds</span>
+                <span className="text-xs px-2 py-0.5 bg-gray-200 dark:bg-gray-600 rounded-full">
+                  {
+                    combinedImages.filter(
+                      (img) => img.metadata?.edit_tool === "background"
+                    ).length
+                  }
+                </span>
+              </button>
+              <button
                 onClick={() => setImageFilter("frame")}
                 className={`px-4 py-2 rounded-lg transition flex items-center gap-2 ${
                   imageFilter === "frame"
@@ -1724,6 +1745,7 @@ export default function ContentLibraryPage() {
                                 overlay: "Overlays",
                                 background_removal: "TRANSPARENT",
                                 transparent: "TRANSPARENT",
+                                background: "Background",
                                 collage: "Collage",
                                 template: "Template",
                                 frame: "Frame",
@@ -2339,6 +2361,9 @@ export default function ContentLibraryPage() {
                       inpaint: "Inpaint",
                       erase: "Erase",
                       overlay: "Overlays",
+                      background_removal: "TRANSPARENT",
+                      transparent: "TRANSPARENT",
+                      background: "Background",
                       collage: "Collage",
                       template: "Template",
                       frame: "Frame",
