@@ -476,116 +476,121 @@ export function LandingPageBuilder({
 
   return (
     <div className="h-full flex bg-white">
-      {/* Left Sidebar - Template Selection */}
-      <div className="w-80 border-r border-gray-200 overflow-y-auto p-4">
-        <h3 className="font-bold text-lg mb-4">Landing Page Templates</h3>
+      {/* Center - Full Width with Template Viewer at Top */}
+      <div className="flex-1 bg-gray-50 flex flex-col">
+        {/* Template Selection - Top Section */}
+        <div className="border-b border-gray-200 p-4 bg-white">
+          <div className="mb-4">
+            <h3 className="font-bold text-lg mb-3">Landing Page Templates</h3>
 
-        {/* Category Filter */}
-        <div className="mb-6">
-          <button
-            onClick={() => setSelectedCategory(null)}
-            className={`w-full mb-2 px-4 py-2 rounded-lg text-sm font-medium transition ${
-              !selectedCategory
-                ? "bg-blue-600 text-white"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-            }`}
-          >
-            All Templates ({LANDING_PAGE_TEMPLATES.length})
-          </button>
-
-          {TEMPLATE_CATEGORIES.map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() => setSelectedCategory(cat.id)}
-              className={`w-full mb-2 px-4 py-2 rounded-lg text-sm font-medium transition ${
-                selectedCategory === cat.id
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
-            >
-              {cat.icon} {cat.name} ({cat.count})
-            </button>
-          ))}
-        </div>
-
-        {/* Template Grid */}
-        <div className="space-y-2">
-          {filteredTemplates.map((template) => (
-            <button
-              key={template.id}
-              onClick={() => handleTemplateSelect(template)}
-              className={`w-full p-4 rounded-lg border-2 transition text-left ${
-                selectedTemplate?.id === template.id
-                  ? "border-blue-600 bg-blue-50"
-                  : "border-gray-200 hover:border-blue-400"
-              }`}
-            >
-              <div className="text-3xl mb-2">{template.thumbnail}</div>
-              <div className="font-semibold text-sm">{template.name}</div>
-              <div className="text-xs text-gray-500 mt-1">
-                {template.description}
-              </div>
-              <div className="text-xs text-gray-400 mt-1">
-                {template.size.width}×{template.size.height}
-              </div>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Center - Canvas Preview */}
-      <div className="flex-1 bg-gray-50 p-8 overflow-auto flex flex-col">
-        {selectedTemplate ? (
-          <>
-            <div className="flex justify-between items-center mb-4">
-              <div>
-                <h2 className="text-xl font-bold">{selectedTemplate.name}</h2>
-                <p className="text-sm text-gray-600">
-                  {selectedTemplate.description}
-                </p>
-              </div>
+            {/* Category Filter */}
+            <div className="flex flex-wrap gap-2 mb-4">
               <button
-                onClick={handleExport}
-                disabled={isProcessing}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition font-medium"
+                onClick={() => setSelectedCategory(null)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+                  !selectedCategory
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
               >
-                {isProcessing ? "💾 Saving..." : "💾 Save to Library"}
+                All Templates ({LANDING_PAGE_TEMPLATES.length})
               </button>
-            </div>
 
-            <div className="flex-1 flex items-center justify-center">
-              <div className="bg-white rounded-lg shadow-2xl inline-block">
-                <canvas
-                  ref={canvasRef}
-                  onClick={handleCanvasClick}
-                  className="cursor-pointer max-w-full max-h-[calc(100vh-200px)]"
-                  style={{
-                    width: "auto",
-                    height: "auto",
-                    maxWidth: "100%",
-                    maxHeight: "calc(100vh - 200px)",
-                  }}
-                />
-              </div>
-            </div>
-
-            <div className="mt-4 text-center text-sm text-gray-500">
-              💡 Click on any editable element to customize it
-            </div>
-          </>
-        ) : (
-          <div className="flex-1 flex items-center justify-center text-gray-400">
-            <div className="text-center">
-              <div className="text-6xl mb-4">🎨</div>
-              <div className="text-xl font-semibold">
-                Select a template to get started
-              </div>
-              <div className="text-sm mt-2">
-                Choose from 25 professional templates →
-              </div>
+              {TEMPLATE_CATEGORIES.map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => setSelectedCategory(cat.id)}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+                    selectedCategory === cat.id
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  }`}
+                >
+                  {cat.icon} {cat.name} ({cat.count})
+                </button>
+              ))}
             </div>
           </div>
-        )}
+
+          {/* Template Grid - Horizontal Scroll */}
+          <div className="flex gap-3 overflow-x-auto pb-2">
+            {filteredTemplates.map((template) => (
+              <button
+                key={template.id}
+                onClick={() => handleTemplateSelect(template)}
+                className={`flex-shrink-0 w-48 p-3 rounded-lg border-2 transition text-left ${
+                  selectedTemplate?.id === template.id
+                    ? "border-blue-600 bg-blue-50"
+                    : "border-gray-200 hover:border-blue-400"
+                }`}
+              >
+                <div className="text-2xl mb-2">{template.thumbnail}</div>
+                <div className="font-semibold text-sm">{template.name}</div>
+                <div className="text-xs text-gray-500 mt-1">
+                  {template.description}
+                </div>
+                <div className="text-xs text-gray-400 mt-1">
+                  {template.size.width}×{template.size.height}
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Canvas Preview - Below */}
+        <div className="flex-1 p-8 overflow-auto flex flex-col">
+          {selectedTemplate ? (
+            <>
+              <div className="flex justify-between items-center mb-4">
+                <div>
+                  <h2 className="text-xl font-bold">{selectedTemplate.name}</h2>
+                  <p className="text-sm text-gray-600">
+                    {selectedTemplate.description}
+                  </p>
+                </div>
+                <button
+                  onClick={handleExport}
+                  disabled={isProcessing}
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition font-medium"
+                >
+                  {isProcessing ? "💾 Saving..." : "💾 Save to Library"}
+                </button>
+              </div>
+
+              <div className="flex-1 flex items-center justify-center">
+                <div className="bg-white rounded-lg shadow-2xl inline-block">
+                  <canvas
+                    ref={canvasRef}
+                    onClick={handleCanvasClick}
+                    className="cursor-pointer max-w-full max-h-[calc(100vh-400px)]"
+                    style={{
+                      width: "auto",
+                      height: "auto",
+                      maxWidth: "100%",
+                      maxHeight: "calc(100vh - 400px)",
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div className="mt-4 text-center text-sm text-gray-500">
+                💡 Click on any editable element to customize it
+              </div>
+            </>
+          ) : (
+            <div className="flex-1 flex items-center justify-center text-gray-400">
+              <div className="text-center">
+                <div className="text-6xl mb-4">🎨</div>
+                <div className="text-xl font-semibold">
+                  Select a template to get started
+                </div>
+                <div className="text-sm mt-2">
+                  Choose from 25 professional templates ↑
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Right Sidebar - Content Selector (shown when element is active) */}
