@@ -9,6 +9,7 @@ import { ContentList } from "src/components/ContentList";
 import { ContentRefinementModal } from "src/components/ContentRefinementModal";
 import { ContentVariationsModal } from "src/components/ContentVariationsModal";
 import { ContentViewModal } from "src/components/ContentViewModal";
+import { ImageVariationsModal } from "src/components/ImageVariationsModal";
 import { UnifiedEditorModal } from "src/components/UnifiedEditorModal";
 import { ConfirmationModal } from "src/components/ConfirmationModal";
 import { VideoEditorModal } from "src/components/VideoEditorModal";
@@ -122,6 +123,11 @@ export default function ContentLibraryPage() {
   const [selectedContent, setSelectedContent] =
     useState<GeneratedContent | null>(null);
   const [allContent, setAllContent] = useState<GeneratedContent[]>([]);
+
+  // Image Variations State
+  const [showImageVariationsModal, setShowImageVariationsModal] = useState(false);
+  const [selectedImageForVariations, setSelectedImageForVariations] =
+    useState<LibraryImage | null>(null);
 
   // Content Library Tab State
   const [activeLibraryTab, setActiveLibraryTab] = useState<
@@ -616,6 +622,19 @@ export default function ContentLibraryPage() {
     setSelectedContent(content);
     setShowVariationsModal(true);
   };
+
+  const handleCreateImageVariations = (image: LibraryImage) => {
+    setSelectedImageForVariations(image);
+    setShowImageVariationsModal(true);
+  };
+
+  const handleImageVariationCreated = (variations: GeneratedImage[]) => {
+    // Refresh the images list to show new variations
+    refetchImages();
+    refetchEditedImages();
+    toast.success(`Created ${variations.length} variations successfully!`);
+  };
+
   const handleGenerateVideo = (content: GeneratedContent) => {
     if (content.content_type !== "video_script") {
       toast.error("Video generation is only available for video scripts");
@@ -2368,6 +2387,14 @@ export default function ContentLibraryPage() {
         onVariationCreated={handleVariationCreated}
       />
 
+      {/* Image Variations Modal */}
+      <ImageVariationsModal
+        isOpen={showImageVariationsModal}
+        onClose={() => setShowImageVariationsModal(false)}
+        image={selectedImageForVariations}
+        onVariationCreated={handleImageVariationCreated}
+      />
+
       {/* Library Image Viewer Modal */}
       {isLibraryModalOpen && selectedLibraryImage && (
         <div
@@ -2632,6 +2659,26 @@ export default function ContentLibraryPage() {
                       />
                     </svg>
                     <span>AI Image Editor</span>
+                  </button>
+
+                  <button
+                    onClick={() => handleCreateImageVariations(selectedLibraryImage)}
+                    className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition font-medium flex items-center space-x-2"
+                  >
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                      />
+                    </svg>
+                    <span>Generate Variations</span>
                   </button>
 
                   {isSeedImage(selectedLibraryImage) ? (
