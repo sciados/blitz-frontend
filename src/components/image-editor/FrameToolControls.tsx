@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { getProxiedImageUrl } from "src/utils/imageProxy";
 
 interface FrameStyle {
   id: string;
@@ -157,7 +158,7 @@ export function FrameToolControls({
         : null,
       cornerRadius: cornerRadius,
       innerPadding: innerPadding,
-      currentImageUrl: currentImageUrl,
+      currentImageUrl: currentImageUrl ? getProxiedImageUrl(currentImageUrl) : null,
     };
 
     onApplyFrame(frameData);
