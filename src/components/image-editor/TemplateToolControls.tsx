@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { getProxiedImageUrl } from "src/utils/imageProxy";
 
@@ -2451,11 +2451,55 @@ export function TemplateToolControls({
     null
   );
   const [customizations, setCustomizations] = useState<Record<string, any>>({});
+  const [currentImageDimensions, setCurrentImageDimensions] = useState<{
+    width: number;
+    height: number;
+  } | null>(null);
+  const [filterBySize, setFilterBySize] = useState(true);
 
-  const filteredTemplates =
+  // Load image dimensions when currentImageUrl changes
+  useEffect(() => {
+    if (!currentImageUrl) {
+      setCurrentImageDimensions(null);
+      return;
+    }
+
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      setCurrentImageDimensions({
+        width: img.width,
+        height: img.height,
+      });
+    };
+    img.onerror = () => {
+      console.error("Failed to load image for template filtering");
+      setCurrentImageDimensions(null);
+    };
+    img.src = getProxiedImageUrl(currentImageUrl);
+  }, [currentImageUrl]);
+
+  // Filter templates by category
+  const categoryFilteredTemplates =
     selectedCategory === "all"
       ? TEMPLATES
       : TEMPLATES.filter((t) => t.category === selectedCategory);
+
+  // Filter templates by image size (aspect ratio match)
+  const sizeMatchedTemplates = filterBySize && currentImageDimensions
+    ? categoryFilteredTemplates.filter((template) => {
+        const templateAspect = template.width / template.height;
+        const imageAspect = currentImageDimensions.width / currentImageDimensions.height;
+
+        // Consider it a match if aspect ratios are close (within 10% tolerance)
+        const aspectDifference = Math.abs(templateAspect - imageAspect);
+        const aspectTolerance = 0.1;
+
+        return aspectDifference <= aspectTolerance;
+      })
+    : categoryFilteredTemplates;
+
+  const filteredTemplates = sizeMatchedTemplates;
 
   const handleTemplateSelect = (template: Template) => {
     setSelectedTemplate(template);
@@ -2528,6 +2572,56 @@ export function TemplateToolControls({
           ))}
         </div>
       </div>
+
+      {/* Image Size Info */}
+      {currentImageDimensions && (
+        <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <p className="text-sm text-blue-800 font-semibold">
+            📐 Selected Image: {currentImageDimensions.width} × {currentImageDimensions.height}
+          </p>
+          <p className="text-xs text-blue-700 mt-1">
+            Showing {filteredTemplates.length} template{filteredTemplates.length !== 1 ? 's' : ''}
+            {filterBySize && " (filtered by size)"}
+          </p>
+        </div>
+      )}
+
+      {/* Filter Toggle */}
+      {currentImageDimensions && (
+        <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+          <span className="text-sm text-gray-700">Filter by image size</span>
+          <button
+            onClick={() => setFilterBySize(!filterBySize)}
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${
+              filterBySize ? "bg-blue-600" : "bg-gray-300"
+            }`}
+          >
+            <span
+              className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
+                filterBySize ? "translate-x-6" : "translate-x-1"
+              }`}
+            />
+          </button>
+        </div>
+      )}
+
+      {/* No Matches Message */}
+      {filteredTemplates.length === 0 && currentImageDimensions && filterBySize && (
+        <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-center">
+          <p className="text-sm text-yellow-800 font-semibold mb-2">
+            No templates match this image size
+          </p>
+          <p className="text-xs text-yellow-700">
+            Try disabling the size filter or selecting a different category
+          </p>
+          <button
+            onClick={() => setFilterBySize(false)}
+            className="mt-3 px-3 py-1 bg-yellow-100 hover:bg-yellow-200 text-yellow-800 rounded text-xs font-medium"
+          >
+            Show All Templates
+          </button>
+        </div>
+      )}
 
       {/* Template Grid */}
       {!selectedTemplate ? (
