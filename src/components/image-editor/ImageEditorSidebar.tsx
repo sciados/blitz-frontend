@@ -43,6 +43,79 @@ function OverlayToolControls({ isProcessing }: OverlayToolControlsProps) {
   const [textOverlays, setTextOverlays] = useState<TextOverlay[]>([]);
   const [imageOverlays, setImageOverlays] = useState<ImageOverlay[]>([]);
   const [selectedOverlay, setSelectedOverlay] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<"text" | "upload" | "stickers">(
+    "text"
+  );
+  const [selectedStickerCategory, setSelectedStickerCategory] =
+    useState("badges");
+
+  // Sticker Library Data
+  const STICKER_LIBRARY = {
+    badges: [
+      { id: "new", emoji: "🆕", name: "NEW" },
+      { id: "sale", emoji: "💰", name: "SALE" },
+      { id: "hot", emoji: "🔥", name: "HOT" },
+      { id: "off", emoji: "💸", name: "50% OFF" },
+      { id: "limited", emoji: "⏰", name: "LIMITED" },
+      { id: "bestseller", emoji: "⭐", name: "BESTSELLER" },
+      { id: "exclusive", emoji: "👑", name: "EXCLUSIVE" },
+      { id: "trending", emoji: "📈", name: "TRENDING" },
+    ],
+    arrows: [
+      { id: "up", emoji: "⬆️", name: "Up" },
+      { id: "down", emoji: "⬇️", name: "Down" },
+      { id: "left", emoji: "⬅️", name: "Left" },
+      { id: "right", emoji: "➡️", name: "Right" },
+      { id: "up-right", emoji: "↗️", name: "Up Right" },
+      { id: "down-right", emoji: "↘️", name: "Down Right" },
+      { id: "curved-right", emoji: "↪️", name: "Curved Right" },
+      { id: "curved-left", emoji: "↩️", name: "Curved Left" },
+    ],
+    emojis: [
+      { id: "star", emoji: "⭐", name: "Star" },
+      { id: "fire", emoji: "🔥", name: "Fire" },
+      { id: "100", emoji: "💯", name: "100" },
+      { id: "check", emoji: "✅", name: "Check" },
+      { id: "heart", emoji: "❤️", name: "Heart" },
+      { id: "thumbs-up", emoji: "👍", name: "Thumbs Up" },
+      { id: "party", emoji: "🎉", name: "Party" },
+      { id: "money", emoji: "💰", name: "Money" },
+      { id: "rocket", emoji: "🚀", name: "Rocket" },
+      { id: "sparkles", emoji: "✨", name: "Sparkles" },
+      { id: "trophy", emoji: "🏆", name: "Trophy" },
+      { id: "gift", emoji: "🎁", name: "Gift" },
+    ],
+    shapes: [
+      { id: "circle-red", emoji: "🔴", name: "Red Circle" },
+      { id: "circle-blue", emoji: "🔵", name: "Blue Circle" },
+      { id: "circle-green", emoji: "🟢", name: "Green Circle" },
+      { id: "circle-yellow", emoji: "🟡", name: "Yellow Circle" },
+      { id: "square-red", emoji: "🟥", name: "Red Square" },
+      { id: "square-blue", emoji: "🟦", name: "Blue Square" },
+      { id: "square-green", emoji: "🟩", name: "Green Square" },
+      { id: "square-yellow", emoji: "🟨", name: "Yellow Square" },
+      { id: "star-shape", emoji: "⭐", name: "Star" },
+      { id: "heart-shape", emoji: "❤️", name: "Heart" },
+    ],
+    social: [
+      { id: "facebook", emoji: "📘", name: "Facebook" },
+      { id: "instagram", emoji: "📸", name: "Instagram" },
+      { id: "twitter", emoji: "🐦", name: "Twitter" },
+      { id: "youtube", emoji: "📺", name: "YouTube" },
+      { id: "tiktok", emoji: "🎵", name: "TikTok" },
+      { id: "linkedin", emoji: "💼", name: "LinkedIn" },
+      { id: "pinterest", emoji: "📌", name: "Pinterest" },
+      { id: "snapchat", emoji: "👻", name: "Snapchat" },
+    ],
+  };
+
+  const STICKER_CATEGORIES = [
+    { id: "badges", name: "Badges", icon: "🏷️" },
+    { id: "arrows", name: "Arrows", icon: "➡️" },
+    { id: "emojis", name: "Emojis", icon: "😀" },
+    { id: "shapes", name: "Shapes", icon: "⬛" },
+    { id: "social", name: "Social", icon: "📱" },
+  ];
 
   useEffect(() => {
     const updateOverlayState = () => {
@@ -77,6 +150,33 @@ function OverlayToolControls({ isProcessing }: OverlayToolControlsProps) {
     const canvasAPI = (window as any).imageEditorCanvas;
     if (canvasAPI) {
       canvasAPI.addImageOverlay(file);
+    }
+  };
+
+  const addSticker = (emoji: string, name: string) => {
+    // Create a canvas to render the emoji as an image
+    const canvas = document.createElement("canvas");
+    canvas.width = 200;
+    canvas.height = 200;
+    const ctx = canvas.getContext("2d");
+
+    if (ctx) {
+      // Set font size and draw emoji
+      ctx.font = "160px Arial";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(emoji, 100, 100);
+
+      // Convert to blob and add as image overlay
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const file = new File([blob], `${name}.png`, { type: "image/png" });
+          const canvasAPI = (window as any).imageEditorCanvas;
+          if (canvasAPI) {
+            canvasAPI.addImageOverlay(file);
+          }
+        }
+      });
     }
   };
 
@@ -116,33 +216,121 @@ function OverlayToolControls({ isProcessing }: OverlayToolControlsProps) {
     <div>
       <h3 className="text-lg font-semibold mb-4">📝 Overlay Editor</h3>
 
-      {/* Add Overlay Buttons */}
+      {/* Tab Selector */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
         <h5 className="font-semibold text-sm text-blue-900 mb-2">
-          Text & Image Overlays
+          Add to Image
         </h5>
         <p className="text-xs text-blue-800 mb-3">
-          Add text and image overlays to your image. No AI cost!
+          Add text, images, or stickers to your image. No AI cost!
         </p>
 
-        <button
-          onClick={addTextOverlay}
-          disabled={isProcessing}
-          className="w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 text-sm font-medium mb-2"
-        >
-          ➕ Add Text
-        </button>
+        {/* Tabs */}
+        <div className="grid grid-cols-3 gap-2 mb-4">
+          <button
+            onClick={() => setActiveTab("text")}
+            className={`px-3 py-2 rounded-lg text-sm font-medium transition ${
+              activeTab === "text"
+                ? "bg-blue-600 text-white"
+                : "bg-white text-gray-700 hover:bg-gray-100"
+            }`}
+          >
+            📝 Text
+          </button>
+          <button
+            onClick={() => setActiveTab("upload")}
+            className={`px-3 py-2 rounded-lg text-sm font-medium transition ${
+              activeTab === "upload"
+                ? "bg-blue-600 text-white"
+                : "bg-white text-gray-700 hover:bg-gray-100"
+            }`}
+          >
+            🖼️ Upload
+          </button>
+          <button
+            onClick={() => setActiveTab("stickers")}
+            className={`px-3 py-2 rounded-lg text-sm font-medium transition ${
+              activeTab === "stickers"
+                ? "bg-blue-600 text-white"
+                : "bg-white text-gray-700 hover:bg-gray-100"
+            }`}
+          >
+            😀 Stickers
+          </button>
+        </div>
 
-        <label className="w-full px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 text-sm font-medium cursor-pointer flex items-center justify-center gap-2">
-          🖼️ Add Image
-          <input
-            type="file"
-            accept="image/*"
-            onChange={addImageOverlay}
+        {/* Text Tab */}
+        {activeTab === "text" && (
+          <button
+            onClick={addTextOverlay}
             disabled={isProcessing}
-            className="hidden"
-          />
-        </label>
+            className="w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 text-sm font-medium"
+          >
+            ➕ Add Text
+          </button>
+        )}
+
+        {/* Upload Tab */}
+        {activeTab === "upload" && (
+          <label className="w-full px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 text-sm font-medium cursor-pointer flex items-center justify-center gap-2">
+            🖼️ Upload Image
+            <input
+              type="file"
+              accept="image/*"
+              onChange={addImageOverlay}
+              disabled={isProcessing}
+              className="hidden"
+            />
+          </label>
+        )}
+
+        {/* Stickers Tab */}
+        {activeTab === "stickers" && (
+          <div className="space-y-3">
+            {/* Category Selector */}
+            <div className="grid grid-cols-2 gap-2">
+              {STICKER_CATEGORIES.map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => setSelectedStickerCategory(cat.id)}
+                  className={`px-2 py-2 rounded text-xs font-medium transition ${
+                    selectedStickerCategory === cat.id
+                      ? "bg-blue-600 text-white"
+                      : "bg-white text-gray-700 hover:bg-gray-100"
+                  }`}
+                >
+                  {cat.icon} {cat.name}
+                </button>
+              ))}
+            </div>
+
+            {/* Sticker Grid */}
+            <div className="bg-white rounded-lg p-2 max-h-64 overflow-y-auto">
+              <div className="grid grid-cols-4 gap-2">
+                {STICKER_LIBRARY[
+                  selectedStickerCategory as keyof typeof STICKER_LIBRARY
+                ]?.map((sticker) => (
+                  <button
+                    key={sticker.id}
+                    onClick={() => addSticker(sticker.emoji, sticker.name)}
+                    disabled={isProcessing}
+                    title={sticker.name}
+                    className="p-3 border border-gray-200 rounded hover:bg-blue-50 hover:border-blue-400 transition disabled:opacity-50 text-center"
+                  >
+                    <div className="text-3xl">{sticker.emoji}</div>
+                    <div className="text-xs text-gray-600 mt-1 truncate">
+                      {sticker.name}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <p className="text-xs text-gray-600 text-center">
+              💡 Click any sticker to add it to your image
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Selected Text Overlay Controls */}
