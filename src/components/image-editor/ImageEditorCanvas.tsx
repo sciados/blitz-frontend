@@ -252,10 +252,10 @@ export function ImageEditorCanvas({
   };
 
   // Get template canvas - renders template design
-  const getTemplateCanvas = (templateData: any) => {
+  const getTemplateCanvas = async (templateData: any) => {
     if (!templateData) return null;
 
-    const { width, height, elements } = templateData;
+    const { width, height, elements, currentImage } = templateData;
 
     // Create temp canvas for template
     const tempCanvas = document.createElement("canvas");
@@ -265,8 +265,18 @@ export function ImageEditorCanvas({
 
     if (!ctx) return null;
 
+    // Load the current image if available
+    let loadedImage: HTMLImageElement | null = null;
+    if (currentImage) {
+      try {
+        loadedImage = await loadImageWithCORS(currentImage);
+      } catch (error) {
+        console.error("Failed to load template image:", error);
+      }
+    }
+
     // Render each element
-    elements.forEach((element: any) => {
+    for (const element of elements) {
       ctx.save();
 
       if (element.opacity !== undefined) {
@@ -374,72 +384,135 @@ export function ImageEditorCanvas({
           break;
 
         case "image":
-          // For now, we'll just show a placeholder
-          // In production, you'd load the actual image
-          if (element.backgroundColor) {
-            ctx.fillStyle = element.backgroundColor;
+          if (loadedImage) {
+            // Draw the actual loaded image
+            // Calculate aspect ratio to fit image in element bounds
+            const imgAspect = loadedImage.width / loadedImage.height;
+            const elemAspect = element.width / element.height;
+
+            let drawWidth = element.width;
+            let drawHeight = element.height;
+            let offsetX = element.x;
+            let offsetY = element.y;
+
+            if (imgAspect > elemAspect) {
+              // Image is wider - fit to width
+              drawHeight = element.width / imgAspect;
+              offsetY = element.y + (element.height - drawHeight) / 2;
+            } else {
+              // Image is taller - fit to height
+              drawWidth = element.height * imgAspect;
+              offsetX = element.x + (element.width - drawWidth) / 2;
+            }
+
+            // Apply rounded corners if specified
             if (element.borderRadius) {
-              // Draw rounded rect for image placeholder
-              const radius = element.borderRadius;
               ctx.beginPath();
-              ctx.moveTo(element.x + radius, element.y);
-              ctx.lineTo(element.x + element.width - radius, element.y);
+              const radius = element.borderRadius;
+              ctx.moveTo(offsetX + radius, offsetY);
+              ctx.lineTo(offsetX + drawWidth - radius, offsetY);
               ctx.quadraticCurveTo(
-                element.x + element.width,
-                element.y,
-                element.x + element.width,
-                element.y + radius
+                offsetX + drawWidth,
+                offsetY,
+                offsetX + drawWidth,
+                offsetY + radius
               );
               ctx.lineTo(
-                element.x + element.width,
-                element.y + element.height - radius
+                offsetX + drawWidth,
+                offsetY + drawHeight - radius
               );
               ctx.quadraticCurveTo(
-                element.x + element.width,
-                element.y + element.height,
-                element.x + element.width - radius,
-                element.y + element.height
+                offsetX + drawWidth,
+                offsetY + drawHeight,
+                offsetX + drawWidth - radius,
+                offsetY + drawHeight
               );
-              ctx.lineTo(element.x + radius, element.y + element.height);
+              ctx.lineTo(offsetX + radius, offsetY + drawHeight);
               ctx.quadraticCurveTo(
-                element.x,
-                element.y + element.height,
-                element.x,
-                element.y + element.height - radius
+                offsetX,
+                offsetY + drawHeight,
+                offsetX,
+                offsetY + drawHeight - radius
               );
-              ctx.lineTo(element.x, element.y + radius);
+              ctx.lineTo(offsetX, offsetY + radius);
               ctx.quadraticCurveTo(
-                element.x,
-                element.y,
-                element.x + radius,
-                element.y
+                offsetX,
+                offsetY,
+                offsetX + radius,
+                offsetY
               );
               ctx.closePath();
-              ctx.fill();
-            } else {
-              ctx.fillRect(element.x, element.y, element.width, element.height);
+              ctx.clip();
             }
-          } else {
-            // Draw placeholder with light gray background
-            ctx.fillStyle = "#E5E7EB";
-            ctx.fillRect(element.x, element.y, element.width, element.height);
 
-            // Draw placeholder icon/text
-            ctx.fillStyle = "#9CA3AF";
-            ctx.font = "20px Arial";
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.fillText(
-              element.placeholder || "Image",
-              element.x + element.width / 2,
-              element.y + element.height / 2
-            );
+            ctx.drawImage(loadedImage, offsetX, offsetY, drawWidth, drawHeight);
+          } else {
+            // Fallback to placeholder if no image loaded
+            if (element.backgroundColor) {
+              ctx.fillStyle = element.backgroundColor;
+              if (element.borderRadius) {
+                // Draw rounded rect for image placeholder
+                const radius = element.borderRadius;
+                ctx.beginPath();
+                ctx.moveTo(element.x + radius, element.y);
+                ctx.lineTo(element.x + element.width - radius, element.y);
+                ctx.quadraticCurveTo(
+                  element.x + element.width,
+                  element.y,
+                  element.x + element.width,
+                  element.y + radius
+                );
+                ctx.lineTo(
+                  element.x + element.width,
+                  element.y + element.height - radius
+                );
+                ctx.quadraticCurveTo(
+                  element.x + element.width,
+                  element.y + element.height,
+                  element.x + element.width - radius,
+                  element.y + element.height
+                );
+                ctx.lineTo(element.x + radius, element.y + element.height);
+                ctx.quadraticCurveTo(
+                  element.x,
+                  element.y + element.height,
+                  element.x,
+                  element.y + element.height - radius
+                );
+                ctx.lineTo(element.x, element.y + radius);
+                ctx.quadraticCurveTo(
+                  element.x,
+                  element.y,
+                  element.x + radius,
+                  element.y
+                );
+                ctx.closePath();
+                ctx.fill();
+              } else {
+                ctx.fillRect(element.x, element.y, element.width, element.height);
+              }
+            } else {
+              // Draw placeholder with light gray background
+              ctx.fillStyle = "#E5E7EB";
+              ctx.fillRect(element.x, element.y, element.width, element.height);
+
+              // Draw placeholder icon/text
+              ctx.fillStyle = "#9CA3AF";
+              ctx.font = "20px Arial";
+              ctx.textAlign = "center";
+              ctx.textBaseline = "middle";
+              ctx.fillText(
+                element.placeholder || "Image",
+                element.x + element.width / 2,
+                element.y + element.height / 2
+              );
+            }
           }
           break;
       }
 
       ctx.restore();
-    });
+    }
 
     return tempCanvas.toDataURL("image/png");
   };

@@ -600,7 +600,7 @@ export default function ImageEditorPage() {
       // Generate template canvas on client side
       const canvasAPI = (window as any).imageEditorCanvas;
       if (canvasAPI && canvasAPI.getTemplateCanvas) {
-        const templateDataUrl = canvasAPI.getTemplateCanvas(templateData);
+        const templateDataUrl = await canvasAPI.getTemplateCanvas(templateData);
 
         if (!templateDataUrl) {
           throw new Error("Failed to generate template");
