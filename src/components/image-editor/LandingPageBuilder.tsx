@@ -43,6 +43,7 @@ export function LandingPageBuilder({
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedTemplate, setSelectedTemplate] =
     useState<LandingPageTemplate | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
   const [templateElements, setTemplateElements] = useState<TemplateElement[]>(
     []
   );
@@ -355,7 +356,16 @@ export function LandingPageBuilder({
 
   const handleTemplateSelect = (template: LandingPageTemplate) => {
     setSelectedTemplate(template);
+    setIsEditing(true);
     setActiveElement(null);
+  };
+
+  const handleBackToTemplates = () => {
+    setIsEditing(false);
+    setSelectedTemplate(null);
+    setTemplateElements([]);
+    setActiveElement(null);
+    setShowContentSelector(false);
   };
 
   const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -474,17 +484,23 @@ export function LandingPageBuilder({
     (el) => el.id === activeElement
   );
 
-  return (
-    <div className="h-full flex bg-white">
-      {/* Center - Full Width with Template Viewer at Top */}
-      <div className="flex-1 bg-gray-50 flex flex-col">
-        {/* Template Selection - Top Section */}
-        <div className="border-b border-gray-200 p-4 bg-white">
-          <div className="mb-4">
-            <h3 className="font-bold text-lg mb-3">Landing Page Templates</h3>
+  // Preview Mode - Template Grid
+  if (!isEditing || !selectedTemplate) {
+    return (
+      <div className="h-full flex bg-gray-50">
+        {/* Full Width Grid View */}
+        <div className="flex-1 flex flex-col">
+          {/* Header with Back Button and Title */}
+          <div className="border-b border-gray-200 p-4 bg-white">
+            <div className="flex items-center gap-4 mb-4">
+              <h3 className="font-bold text-xl">Landing Page Templates</h3>
+              <div className="text-sm text-gray-500">
+                {LANDING_PAGE_TEMPLATES.length} templates available
+              </div>
+            </div>
 
             {/* Category Filter */}
-            <div className="flex flex-wrap gap-2 mb-4">
+            <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => setSelectedCategory(null)}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
@@ -512,84 +528,98 @@ export function LandingPageBuilder({
             </div>
           </div>
 
-          {/* Template Grid - Horizontal Scroll */}
-          <div className="flex gap-3 overflow-x-auto pb-2">
-            {filteredTemplates.map((template) => (
-              <button
-                key={template.id}
-                onClick={() => handleTemplateSelect(template)}
-                className={`flex-shrink-0 w-48 p-3 rounded-lg border-2 transition text-left ${
-                  selectedTemplate?.id === template.id
-                    ? "border-blue-600 bg-blue-50"
-                    : "border-gray-200 hover:border-blue-400"
-                }`}
-              >
-                <div className="text-2xl mb-2">{template.thumbnail}</div>
-                <div className="font-semibold text-sm">{template.name}</div>
-                <div className="text-xs text-gray-500 mt-1">
-                  {template.description}
-                </div>
-                <div className="text-xs text-gray-400 mt-1">
-                  {template.size.width}×{template.size.height}
-                </div>
-              </button>
-            ))}
+          {/* Template Grid */}
+          <div className="flex-1 p-6 overflow-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {filteredTemplates.map((template) => (
+                <button
+                  key={template.id}
+                  onClick={() => handleTemplateSelect(template)}
+                  className="group bg-white rounded-lg border-2 border-gray-200 hover:border-blue-500 transition-all overflow-hidden text-left"
+                >
+                  {/* Template Preview Thumbnail */}
+                  <div className="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                    <div className="text-4xl">{template.thumbnail}</div>
+                  </div>
+
+                  {/* Template Info */}
+                  <div className="p-4">
+                    <div className="font-semibold text-sm mb-1 group-hover:text-blue-600 transition">
+                      {template.name}
+                    </div>
+                    <div className="text-xs text-gray-500 mb-2">
+                      {template.description}
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="text-xs text-gray-400">
+                        {template.size.width}×{template.size.height}
+                      </div>
+                      <div className="text-xs px-2 py-1 bg-blue-50 text-blue-600 rounded">
+                        Click to Edit
+                      </div>
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Editor Mode - Template Editor
+  return (
+    <div className="h-full flex bg-white">
+      {/* Center - Full Width Editor */}
+      <div className="flex-1 bg-gray-50 flex flex-col">
+        {/* Editor Header with Back Button */}
+        <div className="border-b border-gray-200 p-4 bg-white">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={handleBackToTemplates}
+              className="px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 transition font-medium"
+            >
+              ← Back to Templates
+            </button>
+            <div>
+              <h2 className="text-xl font-bold">{selectedTemplate.name}</h2>
+              <p className="text-sm text-gray-600">
+                {selectedTemplate.description}
+              </p>
+            </div>
+            <div className="flex-1" />
+            <button
+              onClick={handleExport}
+              disabled={isProcessing}
+              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition font-medium"
+            >
+              {isProcessing ? "💾 Saving..." : "💾 Save to Library"}
+            </button>
           </div>
         </div>
 
-        {/* Canvas Preview - Below */}
+        {/* Canvas Editor */}
         <div className="flex-1 p-8 overflow-auto flex flex-col">
-          {selectedTemplate ? (
-            <>
-              <div className="flex justify-between items-center mb-4">
-                <div>
-                  <h2 className="text-xl font-bold">{selectedTemplate.name}</h2>
-                  <p className="text-sm text-gray-600">
-                    {selectedTemplate.description}
-                  </p>
-                </div>
-                <button
-                  onClick={handleExport}
-                  disabled={isProcessing}
-                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition font-medium"
-                >
-                  {isProcessing ? "💾 Saving..." : "💾 Save to Library"}
-                </button>
-              </div>
-
-              <div className="flex-1 flex items-center justify-center">
-                <div className="bg-white rounded-lg shadow-2xl inline-block">
-                  <canvas
-                    ref={canvasRef}
-                    onClick={handleCanvasClick}
-                    className="cursor-pointer max-w-full max-h-[calc(100vh-400px)]"
-                    style={{
-                      width: "auto",
-                      height: "auto",
-                      maxWidth: "100%",
-                      maxHeight: "calc(100vh - 400px)",
-                    }}
-                  />
-                </div>
-              </div>
-
-              <div className="mt-4 text-center text-sm text-gray-500">
-                💡 Click on any editable element to customize it
-              </div>
-            </>
-          ) : (
-            <div className="flex-1 flex items-center justify-center text-gray-400">
-              <div className="text-center">
-                <div className="text-6xl mb-4">🎨</div>
-                <div className="text-xl font-semibold">
-                  Select a template to get started
-                </div>
-                <div className="text-sm mt-2">
-                  Choose from 25 professional templates ↑
-                </div>
-              </div>
+          <div className="flex-1 flex items-center justify-center">
+            <div className="bg-white rounded-lg shadow-2xl inline-block">
+              <canvas
+                ref={canvasRef}
+                onClick={handleCanvasClick}
+                className="cursor-pointer max-w-full max-h-[calc(100vh-300px)]"
+                style={{
+                  width: "auto",
+                  height: "auto",
+                  maxWidth: "100%",
+                  maxHeight: "calc(100vh - 300px)",
+                }}
+              />
             </div>
-          )}
+          </div>
+
+          <div className="mt-4 text-center text-sm text-gray-500">
+            💡 Click on any editable element to customize it
+          </div>
         </div>
       </div>
 
