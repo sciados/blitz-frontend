@@ -95,6 +95,7 @@ export function ContentStudioImagesTab({
     null
   );
   const [isEnhancing, setIsEnhancing] = useState(false);
+  const [customPrompt, setCustomPrompt] = useState<string>("");
 
   // Fetch images for this campaign
   const { data, refetch } = useQuery({
@@ -133,6 +134,7 @@ export function ContentStudioImagesTab({
         style: imageStyle,
         aspect_ratio: aspectRatio,
         highlight_features: selectedKeywords,
+        custom_prompt: customPrompt || null,
       });
 
       setDraftImages(response.data || []);
@@ -278,6 +280,34 @@ export function ContentStudioImagesTab({
                 </option>
               ))}
             </select>
+          </div>
+
+          {/* Custom Prompt */}
+          <div className="mb-6">
+            <label
+              className="block text-sm font-medium mb-2"
+              style={{ color: "var(--text-primary)" }}
+            >
+              Custom Prompt (Optional)
+            </label>
+            <textarea
+              value={customPrompt}
+              onChange={(e) => setCustomPrompt(e.target.value)}
+              placeholder="Describe the image you want to generate..."
+              className="w-full px-3 py-2 rounded-lg border resize-none"
+              style={{
+                borderColor: "var(--card-border)",
+                backgroundColor: "var(--bg-primary)",
+                color: "var(--text-primary)",
+              }}
+              rows={4}
+            />
+            <p
+              className="text-xs mt-1"
+              style={{ color: "var(--text-secondary)" }}
+            >
+              Leave empty to use keywords below, or add your own description
+            </p>
           </div>
 
           {/* Keywords Selection */}
