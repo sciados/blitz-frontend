@@ -135,6 +135,7 @@ export default function ContentLibraryPage() {
     | "lineage"
     | "collage"
     | "template"
+    | "frame"
   >("all");
   const [videoFilter, setVideoFilter] = useState<
     "all" | "generated" | "overlays"
@@ -297,6 +298,7 @@ export default function ContentLibraryPage() {
                   background_removal: "transparent",
                   collage: "collage", // Backend uses "collage"
                   template: "template", // Template tool saves as "template"
+                  frame: "frame", // Frame tool saves as "frame"
                 };
 
                 const editTool =
@@ -482,6 +484,8 @@ export default function ContentLibraryPage() {
     if (imageFilter === "collage" && image.metadata?.edit_tool !== "collage")
       return false;
     if (imageFilter === "template" && image.metadata?.edit_tool !== "template")
+      return false;
+    if (imageFilter === "frame" && image.metadata?.edit_tool !== "frame")
       return false;
     return true;
   });
@@ -1178,6 +1182,23 @@ export default function ContentLibraryPage() {
                   }
                 </span>
               </button>
+              <button
+                onClick={() => setImageFilter("frame")}
+                className={`px-4 py-2 rounded-lg transition flex items-center gap-2 ${
+                  imageFilter === "frame"
+                    ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow"
+                    : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+                }`}
+              >
+                <span>🖼️ Frames</span>
+                <span className="text-xs px-2 py-0.5 bg-gray-200 dark:bg-gray-600 rounded-full">
+                  {
+                    combinedImages.filter(
+                      (img) => img.metadata?.edit_tool === "frame"
+                    ).length
+                  }
+                </span>
+              </button>
             </div>
           )}
 
@@ -1705,6 +1726,7 @@ export default function ContentLibraryPage() {
                                 transparent: "TRANSPARENT",
                                 collage: "Collage",
                                 template: "Template",
+                                frame: "Frame",
                               };
                               const toolName =
                                 toolNames[image.metadata.edit_tool] ||
@@ -2319,6 +2341,7 @@ export default function ContentLibraryPage() {
                       overlay: "Overlays",
                       collage: "Collage",
                       template: "Template",
+                      frame: "Frame",
                     };
                     const toolName =
                       toolNames[selectedLibraryImage.metadata.edit_tool] ||
