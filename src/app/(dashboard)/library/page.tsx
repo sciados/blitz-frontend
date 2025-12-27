@@ -134,6 +134,7 @@ export default function ContentLibraryPage() {
     | "transparent"
     | "lineage"
     | "collage"
+    | "template"
   >("all");
   const [videoFilter, setVideoFilter] = useState<
     "all" | "generated" | "overlays"
@@ -479,6 +480,8 @@ export default function ContentLibraryPage() {
     )
       return false;
     if (imageFilter === "collage" && image.metadata?.edit_tool !== "collage")
+      return false;
+    if (imageFilter === "template" && image.metadata?.edit_tool !== "template")
       return false;
     return true;
   });
@@ -1154,6 +1157,23 @@ export default function ContentLibraryPage() {
                   {
                     combinedImages.filter(
                       (img) => img.metadata?.edit_tool === "collage"
+                    ).length
+                  }
+                </span>
+              </button>
+              <button
+                onClick={() => setImageFilter("template")}
+                className={`px-4 py-2 rounded-lg transition flex items-center gap-2 ${
+                  imageFilter === "template"
+                    ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow"
+                    : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+                }`}
+              >
+                <span>📋 Templates</span>
+                <span className="text-xs px-2 py-0.5 bg-gray-200 dark:bg-gray-600 rounded-full">
+                  {
+                    combinedImages.filter(
+                      (img) => img.metadata?.edit_tool === "template"
                     ).length
                   }
                 </span>
