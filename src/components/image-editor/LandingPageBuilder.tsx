@@ -53,24 +53,6 @@ export function LandingPageBuilder({
     null
   );
 
-  // Load template when selected
-  useEffect(() => {
-    if (selectedTemplate) {
-      setTemplateElements(
-        JSON.parse(JSON.stringify(selectedTemplate.elements))
-      );
-      // Render after state update
-      setTimeout(() => renderCanvas(), 100);
-    }
-  }, [selectedTemplate]);
-
-  // Re-render when elements change
-  useEffect(() => {
-    if (templateElements.length > 0) {
-      renderCanvas();
-    }
-  }, [templateElements]);
-
   const renderCanvas = async () => {
     if (!canvasRef.current || !selectedTemplate) return;
 
@@ -88,6 +70,24 @@ export function LandingPageBuilder({
       await renderElement(ctx, element);
     }
   };
+
+  // Load template when selected
+  useEffect(() => {
+    if (selectedTemplate) {
+      setTemplateElements(
+        JSON.parse(JSON.stringify(selectedTemplate.elements))
+      );
+      // Render after state update
+      setTimeout(() => renderCanvas(), 100);
+    }
+  }, [selectedTemplate]);
+
+  // Re-render when elements change
+  useEffect(() => {
+    if (templateElements.length > 0) {
+      renderCanvas();
+    }
+  }, [templateElements]);
 
   const renderElement = async (
     ctx: CanvasRenderingContext2D,
@@ -287,6 +287,22 @@ export function LandingPageBuilder({
     }
 
     ctx.restore();
+
+    // Draw selection outline if this element is active
+    if (activeElement === element.id && element.editable) {
+      ctx.save();
+      ctx.strokeStyle = "#3B82F6";
+      ctx.lineWidth = 2;
+      ctx.setLineDash([5, 5]);
+
+      const x = element.x || 0;
+      const y = element.y || 0;
+      const width = element.width || (element.type === "text" ? 200 : 100);
+      const height = element.height || (element.type === "text" ? 50 : 100);
+
+      ctx.strokeRect(x, y, width, height);
+      ctx.restore();
+    }
   };
 
   const loadImage = (url: string): Promise<HTMLImageElement> => {
@@ -402,7 +418,38 @@ export function LandingPageBuilder({
       }
     }
 
+    // Clicked on empty area - hide selector
     setActiveElement(null);
+    setShowContentSelector(false);
+  };
+
+  const handleCanvasMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!canvasRef.current || !selectedTemplate) return;
+
+    const rect = canvasRef.current.getBoundingClientRect();
+    const scaleX = selectedTemplate.size.width / rect.width;
+    const scaleY = selectedTemplate.size.height / rect.height;
+    const clickX = (e.clientX - rect.left) * scaleX;
+    const clickY = (e.clientY - rect.top) * scaleY;
+
+    // Check if hovering over an editable element
+    for (let i = templateElements.length - 1; i >= 0; i--) {
+      const element = templateElements[i];
+      if (!element.editable) continue;
+
+      const { x = 0, y = 0, width = 100, height = 100 } = element;
+      if (
+        clickX >= x &&
+        clickX <= x + width &&
+        clickY >= y &&
+        clickY <= y + height
+      ) {
+        canvasRef.current.style.cursor = "pointer";
+        return;
+      }
+    }
+
+    canvasRef.current.style.cursor = "default";
   };
 
   const updateElement = (
@@ -743,7 +790,8 @@ export function LandingPageBuilder({
               <canvas
                 ref={canvasRef}
                 onClick={handleCanvasClick}
-                className="cursor-pointer max-w-full max-h-[calc(100vh-300px)]"
+                onMouseMove={handleCanvasMouseMove}
+                className="max-w-full max-h-[calc(100vh-300px)]"
                 style={{
                   width: "auto",
                   height: "auto",
@@ -755,7 +803,7 @@ export function LandingPageBuilder({
           </div>
 
           <div className="mt-4 text-center text-sm text-gray-500">
-            💡 Click on any editable element to customize it
+            💡 <strong>Click on any element</strong> to edit text or replace media • <strong>Blue dashed line</strong> shows selected element
           </div>
         </div>
       </div>
