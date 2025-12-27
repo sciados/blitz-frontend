@@ -12,7 +12,6 @@ import { ImageEditorSidebar } from "src/components/image-editor/ImageEditorSideb
 import { ToolSelector } from "src/components/image-editor/ToolSelector";
 import { OverlayEditor } from "src/components/image-editor/OverlayEditor";
 import { SmartResize } from "src/components/image-editor/SmartResize";
-import { getProxiedImageUrl } from "src/utils/imageProxy";
 
 export type EditTool =
   | "inpaint"
@@ -26,13 +25,13 @@ export type EditTool =
   | "resize"
   | "filters"
   | "collage"
-  | "template";
+  | "template"
+  | "frame";
 
 export default function ImageEditorPage() {
   const searchParams = useSearchParams();
   const imageUrl = searchParams.get("imageUrl");
   const campaignId = searchParams.get("campaignId");
-  const initialTool = searchParams.get("tool") as EditTool | null;
 
   const [originalImage, setOriginalImage] = useState<string | null>(null);
   const [editedImage, setEditedImage] = useState<string | null>(null);
@@ -46,9 +45,7 @@ export default function ImageEditorPage() {
   );
 
   // Tool states
-  const [selectedEditTool, setSelectedEditTool] = useState<EditTool>(
-    initialTool === "collage" ? "collage" : "inpaint"
-  );
+  const [selectedEditTool, setSelectedEditTool] = useState<EditTool>("inpaint");
   const [selectedDrawTool, setSelectedDrawTool] = useState<"brush" | "eraser">(
     "brush"
   );
@@ -73,28 +70,6 @@ export default function ImageEditorPage() {
   const [selectedCampaignId, setSelectedCampaignId] = useState<string>("");
   const [uploadedImageFile, setUploadedImageFile] = useState<File | null>(null);
 
-  // Collage selected images from Content Library
-  const [collageSelectedImages, setCollageSelectedImages] = useState<{ id: string; url: string; prompt: string }[]>([]);
-
-  // Load selected images from sessionStorage when collage tool is used
-  useEffect(() => {
-    if (selectedEditTool === "collage") {
-      const stored = sessionStorage.getItem('collageSelectedImages');
-      if (stored) {
-        try {
-          const images = JSON.parse(stored);
-          // Use all selected images for collage (no initial image loaded on canvas)
-          setCollageSelectedImages(images);
-          console.log("📦 Collage: Loaded", images.length, "selected images");
-          // Clear from sessionStorage after reading
-          sessionStorage.removeItem('collageSelectedImages');
-        } catch (e) {
-          console.error("Failed to parse collage selected images:", e);
-        }
-      }
-    }
-  }, [selectedEditTool]);
-
   // React Query: Fetch campaigns
   const { data: availableCampaigns = [], isLoading: isLoadingCampaigns } =
     useQuery({
@@ -118,32 +93,9 @@ export default function ImageEditorPage() {
     enabled: !!selectedCampaignId && (!imageUrl || !campaignId),
   });
 
-  // React Query: Fetch images for current campaign (when editing a specific image)
-  const { data: currentCampaignImages = [] } = useQuery({
-    queryKey: ["current-campaign-images", campaignId],
-    queryFn: async () => {
-      if (!campaignId) return [];
-      const res = await api.get(`/api/images/campaign/${campaignId}`);
-      return res.data.images || [];
-    },
-    enabled: !!campaignId && !!imageUrl,
-  });
-
-  // Format images for collage tool
-  const collageImages = currentCampaignImages.map((img: any) => ({
-    id: img.id || img.image_url,
-    url: img.image_url,
-    prompt: img.prompt || "Campaign Image",
-  }));
-
   // Load image from URL params
   useEffect(() => {
     if (imageUrl && campaignId) {
-      // For collage tool, don't load initial image - collage will be built from selected images
-      if (initialTool === "collage") {
-        return;
-      }
-
       if (imageUrl === "uploaded") {
         const storedImage = sessionStorage.getItem("uploadedImageData");
         if (storedImage) {
@@ -155,7 +107,7 @@ export default function ImageEditorPage() {
         setActiveImage(imageUrl);
       }
     }
-  }, [imageUrl, campaignId, initialTool]);
+  }, [imageUrl, campaignId]);
 
   // Detect transparency in active image
   const checkImageTransparency = (imageUrl: string): Promise<boolean> => {
@@ -427,16 +379,7 @@ export default function ImageEditorPage() {
     resizedImageDataUrl: string,
     preset: string
   ) => {
-    console.log("📸 handleResizeSave called with:", {
-      campaignId,
-      imageUrl,
-      preset,
-      dataUrlLength: resizedImageDataUrl?.length,
-      isDataUrl: resizedImageDataUrl?.startsWith("data:")
-    });
-
     if (!campaignId || !imageUrl) {
-      console.error("❌ Missing campaign ID or image URL:", { campaignId, imageUrl });
       toast.error("Missing campaign ID or image URL");
       return;
     }
@@ -446,7 +389,7 @@ export default function ImageEditorPage() {
     setIsProcessing(true);
 
     try {
-      const payload = {
+      const response = await api.post("/api/images/save-draft", {
         campaign_id: parseInt(campaignId),
         image_url: resizedImageDataUrl,
         image_type: "variation",
@@ -462,29 +405,14 @@ export default function ImageEditorPage() {
           edit_tool: "resize",
           preset: preset,
         },
-      };
-
-      console.log("📤 Sending payload to /api/images/save-draft:", payload);
-
-      const response = await api.post("/api/images/save-draft", payload);
-
-      console.log("📥 Response received:", response.data);
+      });
 
       if (!response.data.id && !response.data.image_url) {
-        console.error("❌ Response missing id and image_url:", response.data);
         throw new Error("Failed to save resized image");
       }
-
-      console.log("✅ Resized image saved successfully!");
       toast.success("Resized image saved!");
     } catch (err: any) {
-      console.error("❌ Error saving resized image:", err);
-      console.error("❌ Error details:", {
-        message: err.message,
-        response: err.response?.data,
-        status: err.response?.status
-      });
-      toast.error(err.response?.data?.detail || err.message || "Failed to save resized image");
+      console.error("Error saving resized image:", err);
     } finally {
       setIsProcessing(false);
     }
@@ -570,10 +498,8 @@ export default function ImageEditorPage() {
       const result = await uploadResponse.json();
 
       if (result.success && result.image_url) {
-        // Use proxied URL for collage to avoid CORS when displaying
-        const displayUrl = getProxiedImageUrl(result.image_url);
-        setEditedImage(displayUrl);
-        setActiveImage(displayUrl);
+        setEditedImage(result.image_url);
+        setActiveImage(result.image_url);
         toast.success("Collage created and saved successfully!");
       } else {
         throw new Error("Failed to save collage image");
@@ -588,7 +514,7 @@ export default function ImageEditorPage() {
     }
   };
 
-  const handleApplyTemplate = async (templateData: any) => {
+  const handleApplyFrame = async (frameData: any) => {
     if (!campaignId || !imageUrl) {
       toast.error("Missing campaign ID or image URL");
       return;
@@ -597,13 +523,13 @@ export default function ImageEditorPage() {
     setIsProcessing(true);
 
     try {
-      // Generate template canvas on client side
+      // Generate frame canvas on client side
       const canvasAPI = (window as any).imageEditorCanvas;
-      if (canvasAPI && canvasAPI.getTemplateCanvas) {
-        const templateDataUrl = await canvasAPI.getTemplateCanvas(templateData);
+      if (canvasAPI && canvasAPI.getFrameCanvas) {
+        const frameDataUrl = await canvasAPI.getFrameCanvas(frameData);
 
-        if (!templateDataUrl) {
-          throw new Error("Failed to generate template");
+        if (!frameDataUrl) {
+          throw new Error("Failed to generate frame");
         }
 
         const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -613,14 +539,14 @@ export default function ImageEditorPage() {
         }
 
         // Convert data URL to blob
-        const response = await fetch(templateDataUrl);
+        const response = await fetch(frameDataUrl);
         const blob = await response.blob();
 
         // Create form data
         const formData = new FormData();
-        formData.append("image", blob, "template_image.png");
+        formData.append("image", blob, "framed_image.png");
         formData.append("campaign_id", campaignId);
-        formData.append("operation", "template");
+        formData.append("operation", "frame");
 
         const token = localStorage.getItem("token");
         const uploadResponse = await fetch(
@@ -640,15 +566,15 @@ export default function ImageEditorPage() {
         if (result.success && result.image_url) {
           setEditedImage(result.image_url);
           setActiveImage(result.image_url);
-          toast.success("Template created and saved successfully!");
+          toast.success("Frame applied and saved successfully!");
         } else {
-          throw new Error("Failed to save template image");
+          throw new Error("Failed to save framed image");
         }
       } else {
-        throw new Error("Template renderer not available");
+        throw new Error("Frame renderer not available");
       }
     } catch (err) {
-      console.error("Template save error:", err);
+      console.error("Frame save error:", err);
       toast.error(
         `Error: ${err instanceof Error ? err.message : "Unknown error"}`
       );
@@ -913,11 +839,10 @@ export default function ImageEditorPage() {
               onCreativityChange={setCreativity}
               onFilterSave={handleFilterSave}
               onApplyCollage={handleApplyCollage}
-              onApplyTemplate={handleApplyTemplate}
+              onApplyFrame={handleApplyFrame}
               currentImageUrl={activeImage}
               isProcessing={isProcessing}
               hasTransparency={hasTransparency}
-              selectedImages={collageSelectedImages}
             />
           )}
 

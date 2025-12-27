@@ -109,7 +109,8 @@ export function ImageEditorCanvas({
     // Wait for canvas ref to be available (with retry)
     let attempts = 0;
     const maxAttempts = 50;
-    const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+    const delay = (ms: number) =>
+      new Promise((resolve) => setTimeout(resolve, ms));
 
     while (attempts < maxAttempts) {
       const canvas = canvasRef.current;
@@ -119,7 +120,9 @@ export function ImageEditorCanvas({
       }
       attempts++;
       if (attempts <= 3) {
-        console.log(`⏳ Waiting for canvas... attempt ${attempts}/${maxAttempts}`);
+        console.log(
+          `⏳ Waiting for canvas... attempt ${attempts}/${maxAttempts}`
+        );
       }
       await delay(50);
     }
@@ -166,8 +169,20 @@ export function ImageEditorCanvas({
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     // Calculate grid (use display dimensions for cells)
-    const cols = layout.includes("3x3") ? 3 : layout.includes("3x2") ? 3 : layout.includes("2x2") ? 2 : 2;
-    const rows = layout.includes("3x3") ? 3 : layout.includes("3x2") ? 2 : layout.includes("2x2") ? 2 : 1;
+    const cols = layout.includes("3x3")
+      ? 3
+      : layout.includes("3x2")
+      ? 3
+      : layout.includes("2x2")
+      ? 2
+      : 2;
+    const rows = layout.includes("3x3")
+      ? 3
+      : layout.includes("3x2")
+      ? 2
+      : layout.includes("2x2")
+      ? 2
+      : 1;
 
     const cellWidth = (displayWidth - (cols + 1) * spacing) / cols;
     const cellHeight = (displayHeight - (rows + 1) * spacing) / rows;
@@ -175,7 +190,9 @@ export function ImageEditorCanvas({
     // Load and draw images
     try {
       const loadedImages = await Promise.all(
-        images.slice(0, cols * rows).map((imgSrc: string) => loadImageWithCORS(imgSrc))
+        images
+          .slice(0, cols * rows)
+          .map((imgSrc: string) => loadImageWithCORS(imgSrc))
       );
 
       loadedImages.forEach((img: HTMLImageElement, index: number) => {
@@ -233,7 +250,9 @@ export function ImageEditorCanvas({
 
     // Load all images in parallel using shared helper
     const loadedImages = await Promise.all(
-      images.slice(0, cols * rows).map((imgSrc: string) => loadImageWithCORS(imgSrc))
+      images
+        .slice(0, cols * rows)
+        .map((imgSrc: string) => loadImageWithCORS(imgSrc))
     );
 
     // Draw images in grid
@@ -417,10 +436,7 @@ export function ImageEditorCanvas({
                 offsetX + drawWidth,
                 offsetY + radius
               );
-              ctx.lineTo(
-                offsetX + drawWidth,
-                offsetY + drawHeight - radius
-              );
+              ctx.lineTo(offsetX + drawWidth, offsetY + drawHeight - radius);
               ctx.quadraticCurveTo(
                 offsetX + drawWidth,
                 offsetY + drawHeight,
@@ -435,12 +451,7 @@ export function ImageEditorCanvas({
                 offsetY + drawHeight - radius
               );
               ctx.lineTo(offsetX, offsetY + radius);
-              ctx.quadraticCurveTo(
-                offsetX,
-                offsetY,
-                offsetX + radius,
-                offsetY
-              );
+              ctx.quadraticCurveTo(offsetX, offsetY, offsetX + radius, offsetY);
               ctx.closePath();
               ctx.clip();
             }
@@ -489,7 +500,12 @@ export function ImageEditorCanvas({
                 ctx.closePath();
                 ctx.fill();
               } else {
-                ctx.fillRect(element.x, element.y, element.width, element.height);
+                ctx.fillRect(
+                  element.x,
+                  element.y,
+                  element.width,
+                  element.height
+                );
               }
             } else {
               // Draw placeholder with light gray background
@@ -517,6 +533,429 @@ export function ImageEditorCanvas({
     return tempCanvas.toDataURL("image/png");
   };
 
+  // Frame rendering method
+  const getFrameCanvas = (frameData: any) => {
+    if (!frameData || !frameData.currentImageUrl) return null;
+
+    const {
+      style,
+      width,
+      color,
+      backgroundColor,
+      shadow,
+      cornerRadius,
+      innerPadding,
+    } = frameData;
+
+    return new Promise<string>((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+
+      img.onload = () => {
+        // Calculate canvas size (image + padding + frame)
+        const totalPadding = innerPadding * 2;
+        const totalFrame = width * 2;
+        const canvasWidth = img.width + totalPadding + totalFrame;
+        const canvasHeight = img.height + totalPadding + totalFrame;
+
+        // Create canvas
+        const tempCanvas = document.createElement("canvas");
+        tempCanvas.width = canvasWidth;
+        tempCanvas.height = canvasHeight;
+        const ctx = tempCanvas.getContext("2d");
+
+        if (!ctx) {
+          reject(new Error("Could not get canvas context"));
+          return;
+        }
+
+        // Enable shadow if specified
+        if (shadow) {
+          ctx.shadowBlur = shadow.blur;
+          ctx.shadowColor = shadow.color;
+          ctx.shadowOffsetX = 5;
+          ctx.shadowOffsetY = 5;
+        }
+
+        // Draw mat/background (inner padding area)
+        if (innerPadding > 0) {
+          ctx.fillStyle = backgroundColor;
+          const matX = width;
+          const matY = width;
+          const matWidth = canvasWidth - width * 2;
+          const matHeight = canvasHeight - width * 2;
+
+          if (cornerRadius > 0) {
+            drawRoundedRect(ctx, matX, matY, matWidth, matHeight, cornerRadius);
+            ctx.fill();
+          } else {
+            ctx.fillRect(matX, matY, matWidth, matHeight);
+          }
+        }
+
+        // Reset shadow for frame drawing
+        ctx.shadowBlur = 0;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 0;
+
+        // Draw frame based on style
+        const frameX = 0;
+        const frameY = 0;
+        const frameWidth = canvasWidth;
+        const frameHeight = canvasHeight;
+        const imageX = width + innerPadding;
+        const imageY = width + innerPadding;
+
+        switch (style) {
+          case "modern-thin":
+          case "modern-thick":
+            // Simple solid border
+            ctx.strokeStyle = color;
+            ctx.lineWidth = width;
+            if (cornerRadius > 0) {
+              drawRoundedRect(
+                ctx,
+                frameX + width / 2,
+                frameY + width / 2,
+                frameWidth - width,
+                frameHeight - width,
+                cornerRadius
+              );
+              ctx.stroke();
+            } else {
+              ctx.strokeRect(
+                frameX + width / 2,
+                frameY + width / 2,
+                frameWidth - width,
+                frameHeight - width
+              );
+            }
+            break;
+
+          case "modern-double":
+            // Double line border
+            ctx.strokeStyle = color;
+            ctx.lineWidth = Math.max(2, width / 5);
+
+            // Outer line
+            ctx.strokeRect(
+              frameX + ctx.lineWidth / 2,
+              frameY + ctx.lineWidth / 2,
+              frameWidth - ctx.lineWidth,
+              frameHeight - ctx.lineWidth
+            );
+
+            // Inner line
+            const innerOffset = width - ctx.lineWidth;
+            ctx.strokeRect(
+              frameX + innerOffset,
+              frameY + innerOffset,
+              frameWidth - innerOffset * 2,
+              frameHeight - innerOffset * 2
+            );
+            break;
+
+          case "modern-shadow":
+            // Already handled by shadow above
+            ctx.fillStyle = color;
+            ctx.fillRect(frameX, frameY, frameWidth, width); // Top
+            ctx.fillRect(frameX, frameY, width, frameHeight); // Left
+            ctx.fillRect(frameX, frameHeight - width, frameWidth, width); // Bottom
+            ctx.fillRect(frameWidth - width, frameY, width, frameHeight); // Right
+            break;
+
+          case "classic-rounded":
+            // Rounded corner frame
+            ctx.fillStyle = color;
+            const radius = Math.min(50, cornerRadius || 20);
+            drawRoundedRect(
+              ctx,
+              frameX,
+              frameY,
+              frameWidth,
+              frameHeight,
+              radius
+            );
+            ctx.fill();
+            // Cut out center
+            ctx.globalCompositeOperation = "destination-out";
+            drawRoundedRect(
+              ctx,
+              imageX,
+              imageY,
+              img.width,
+              img.height,
+              radius - width
+            );
+            ctx.fill();
+            ctx.globalCompositeOperation = "source-over";
+            break;
+
+          case "classic-beveled":
+            // 3D beveled effect
+            drawBeveledFrame(
+              ctx,
+              frameX,
+              frameY,
+              frameWidth,
+              frameHeight,
+              width,
+              color
+            );
+            break;
+
+          case "classic-ornate":
+            // Ornate pattern (simplified)
+            ctx.fillStyle = color;
+            ctx.fillRect(frameX, frameY, frameWidth, frameHeight);
+            // Cut out center
+            ctx.globalCompositeOperation = "destination-out";
+            ctx.fillRect(imageX, imageY, img.width, img.height);
+            ctx.globalCompositeOperation = "source-over";
+            // Add decorative dots
+            drawOrnatePattern(
+              ctx,
+              frameX,
+              frameY,
+              frameWidth,
+              frameHeight,
+              width
+            );
+            break;
+
+          case "photo-polaroid":
+            // Polaroid style
+            ctx.fillStyle = "#FFFFFF";
+            ctx.fillRect(frameX, frameY, frameWidth, frameHeight);
+            ctx.strokeStyle = "#E5E5E5";
+            ctx.lineWidth = 1;
+            ctx.strokeRect(frameX, frameY, frameWidth, frameHeight);
+            break;
+
+          case "photo-matted":
+            // Already handled by mat background above
+            ctx.fillStyle = color;
+            ctx.fillRect(frameX, frameY, frameWidth, width); // Top
+            ctx.fillRect(frameX, frameY, width, frameHeight); // Left
+            ctx.fillRect(frameX, frameHeight - width, frameWidth, width); // Bottom
+            ctx.fillRect(frameWidth - width, frameY, width, frameHeight); // Right
+            break;
+
+          case "special-neon":
+            // Neon glow effect
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = color;
+            ctx.strokeStyle = color;
+            ctx.lineWidth = width;
+            ctx.strokeRect(
+              frameX + width / 2,
+              frameY + width / 2,
+              frameWidth - width,
+              frameHeight - width
+            );
+            ctx.shadowBlur = 0;
+            break;
+
+          case "special-gradient":
+            // Gradient border
+            const gradient = ctx.createLinearGradient(
+              0,
+              0,
+              frameWidth,
+              frameHeight
+            );
+            gradient.addColorStop(0, color);
+            gradient.addColorStop(0.5, backgroundColor);
+            gradient.addColorStop(1, color);
+            ctx.fillStyle = gradient;
+            ctx.fillRect(frameX, frameY, frameWidth, frameHeight);
+            // Cut out center
+            ctx.globalCompositeOperation = "destination-out";
+            ctx.fillRect(imageX, imageY, img.width, img.height);
+            ctx.globalCompositeOperation = "source-over";
+            break;
+
+          case "special-dashed":
+            // Dashed border
+            ctx.strokeStyle = color;
+            ctx.lineWidth = width;
+            ctx.setLineDash([width * 2, width]);
+            ctx.strokeRect(
+              frameX + width / 2,
+              frameY + width / 2,
+              frameWidth - width,
+              frameHeight - width
+            );
+            ctx.setLineDash([]);
+            break;
+
+          default:
+            // Default to simple border
+            ctx.fillStyle = color;
+            ctx.fillRect(frameX, frameY, frameWidth, frameHeight);
+            // Cut out center
+            ctx.globalCompositeOperation = "destination-out";
+            ctx.fillRect(imageX, imageY, img.width, img.height);
+            ctx.globalCompositeOperation = "source-over";
+        }
+
+        // Draw the image
+        ctx.drawImage(img, imageX, imageY, img.width, img.height);
+
+        resolve(tempCanvas.toDataURL("image/png"));
+      };
+
+      img.onerror = () => {
+        reject(new Error("Failed to load image"));
+      };
+
+      img.src = frameData.currentImageUrl;
+    });
+  };
+
+  // Helper function to draw rounded rectangles
+  function drawRoundedRect(
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    radius: number
+  ) {
+    ctx.beginPath();
+    ctx.moveTo(x + radius, y);
+    ctx.lineTo(x + width - radius, y);
+    ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+    ctx.lineTo(x + width, y + height - radius);
+    ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+    ctx.lineTo(x + radius, y + height);
+    ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+    ctx.lineTo(x, y + radius);
+    ctx.quadraticCurveTo(x, y, x + radius, y);
+    ctx.closePath();
+  }
+
+  // Helper function to draw beveled frame
+  function drawBeveledFrame(
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    frameWidth: number,
+    baseColor: string
+  ) {
+    // Parse base color and create lighter/darker variants
+    const lighter = lightenColor(baseColor, 30);
+    const darker = darkenColor(baseColor, 30);
+
+    // Top highlight
+    ctx.fillStyle = lighter;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + width, y);
+    ctx.lineTo(x + width - frameWidth, y + frameWidth);
+    ctx.lineTo(x + frameWidth, y + frameWidth);
+    ctx.closePath();
+    ctx.fill();
+
+    // Left highlight
+    ctx.fillStyle = lighter;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + frameWidth, y + frameWidth);
+    ctx.lineTo(x + frameWidth, y + height - frameWidth);
+    ctx.lineTo(x, y + height);
+    ctx.closePath();
+    ctx.fill();
+
+    // Bottom shadow
+    ctx.fillStyle = darker;
+    ctx.beginPath();
+    ctx.moveTo(x, y + height);
+    ctx.lineTo(x + frameWidth, y + height - frameWidth);
+    ctx.lineTo(x + width - frameWidth, y + height - frameWidth);
+    ctx.lineTo(x + width, y + height);
+    ctx.closePath();
+    ctx.fill();
+
+    // Right shadow
+    ctx.fillStyle = darker;
+    ctx.beginPath();
+    ctx.moveTo(x + width, y);
+    ctx.lineTo(x + width, y + height);
+    ctx.lineTo(x + width - frameWidth, y + height - frameWidth);
+    ctx.lineTo(x + width - frameWidth, y + frameWidth);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  // Helper function to draw ornate pattern
+  function drawOrnatePattern(
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    frameWidth: number
+  ) {
+    const dotSize = Math.max(3, frameWidth / 8);
+    const spacing = frameWidth / 4;
+
+    ctx.fillStyle = "#FFD700"; // Gold accent
+
+    // Top border dots
+    for (let i = spacing; i < width - spacing; i += spacing * 2) {
+      ctx.beginPath();
+      ctx.arc(x + i, y + frameWidth / 2, dotSize, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Bottom border dots
+    for (let i = spacing; i < width - spacing; i += spacing * 2) {
+      ctx.beginPath();
+      ctx.arc(x + i, y + height - frameWidth / 2, dotSize, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Left border dots
+    for (let i = spacing; i < height - spacing; i += spacing * 2) {
+      ctx.beginPath();
+      ctx.arc(x + frameWidth / 2, y + i, dotSize, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Right border dots
+    for (let i = spacing; i < height - spacing; i += spacing * 2) {
+      ctx.beginPath();
+      ctx.arc(x + width - frameWidth / 2, y + i, dotSize, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  // Color manipulation helpers
+  function lightenColor(color: string, percent: number): string {
+    const num = parseInt(color.replace("#", ""), 16);
+    const amt = Math.round(2.55 * percent);
+    const R = Math.min(255, (num >> 16) + amt);
+    const G = Math.min(255, ((num >> 8) & 0x00ff) + amt);
+    const B = Math.min(255, (num & 0x0000ff) + amt);
+    return `#${(0x1000000 + R * 0x10000 + G * 0x100 + B)
+      .toString(16)
+      .slice(1)}`;
+  }
+
+  function darkenColor(color: string, percent: number): string {
+    const num = parseInt(color.replace("#", ""), 16);
+    const amt = Math.round(2.55 * percent);
+    const R = Math.max(0, (num >> 16) - amt);
+    const G = Math.max(0, ((num >> 8) & 0x00ff) - amt);
+    const B = Math.max(0, (num & 0x0000ff) - amt);
+    return `#${(0x1000000 + R * 0x10000 + G * 0x100 + B)
+      .toString(16)
+      .slice(1)}`;
+  }
+
   // Debug: Track canvas ref availability
   useEffect(() => {
     // console.log("🔍 Canvas ref status:", {
@@ -526,7 +965,7 @@ export function ImageEditorCanvas({
     // });
   }, [canvasRef.current, selectedEditTool, originalImage]);
 
-  // Expose applyFilter, collage, and template methods to window
+  // Expose applyFilter, collage, template, and frame methods to window
   useEffect(() => {
     if (!(window as any).imageEditorCanvas) {
       (window as any).imageEditorCanvas = {};
@@ -535,6 +974,7 @@ export function ImageEditorCanvas({
     (window as any).imageEditorCanvas.applyCollage = applyCollage;
     (window as any).imageEditorCanvas.getCollageCanvas = getCollageCanvas;
     (window as any).imageEditorCanvas.getTemplateCanvas = getTemplateCanvas;
+    (window as any).imageEditorCanvas.getFrameCanvas = getFrameCanvas;
   }, [applyFilter, collageSettings]);
 
   // Load image onto canvas
@@ -1351,23 +1791,32 @@ export function ImageEditorCanvas({
             />
           )}
 
-          {!imageLoaded && originalImage && !["collage", "template"].includes(selectedEditTool) && (
-            <div className="absolute inset-0 flex items-center justify-center bg-gray-50 bg-opacity-90">
-              <div className="text-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-                <p className="mt-4 text-gray-600">Loading image...</p>
+          {!imageLoaded &&
+            originalImage &&
+            !["collage", "template"].includes(selectedEditTool) && (
+              <div className="absolute inset-0 flex items-center justify-center bg-gray-50 bg-opacity-90">
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+                  <p className="mt-4 text-gray-600">Loading image...</p>
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {!imageLoaded && !originalImage && !collageSettings && ["collage", "template"].includes(selectedEditTool) && (
-            <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
-              <div className="text-center text-gray-500">
-                <p className="text-lg font-medium">Select a layout to preview collage</p>
-                <p className="text-sm mt-2">Choose images and a layout from the sidebar</p>
+          {!imageLoaded &&
+            !originalImage &&
+            !collageSettings &&
+            ["collage", "template"].includes(selectedEditTool) && (
+              <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+                <div className="text-center text-gray-500">
+                  <p className="text-lg font-medium">
+                    Select a layout to preview collage
+                  </p>
+                  <p className="text-sm mt-2">
+                    Choose images and a layout from the sidebar
+                  </p>
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
           {isProcessing && (
             <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded">

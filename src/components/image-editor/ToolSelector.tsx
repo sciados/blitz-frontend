@@ -131,6 +131,16 @@ export function ToolSelector({ selectedTool }: ToolSelectorProps) {
         "Marketing material layouts",
       ],
     },
+    frame: {
+      name: "Frame & Border",
+      description: "Add decorative frames and borders (no AI cost!)",
+      useCases: [
+        "Product photos with branded frames",
+        "Social posts with signature borders",
+        "Certificates and awards",
+        "Gallery-style matted photos",
+      ],
+    },
   };
 
   const info = toolInfo[selectedTool];

@@ -48,6 +48,7 @@ export function ImageEditorToolbar({
     { id: "filters", label: "Filters", icon: "🎭" },
     { id: "collage", label: "Collage", icon: "🖼️" },
     { id: "template", label: "Templates", icon: "📋" },
+    { id: "frame", label: "Frame", icon: "🖼️" },
   ];
 
   const selectedEditToolInfo = editTools.find(t => t.id === selectedEditTool);

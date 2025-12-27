@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { FilterToolControls } from "src/components/image-editor/FilterToolControls";
 import { CollageToolControls } from "src/components/image-editor/CollageToolControls";
 import { TemplateToolControls } from "src/components/image-editor/TemplateToolControls";
+import { FrameToolControls } from "src/components/image-editor/FrameToolControls";
 
 interface TextOverlay {
   id: string;
@@ -496,6 +497,7 @@ interface ImageEditorSidebarProps {
   onFilterSave?: (dataUrl: string) => void;
   onApplyCollage?: (dataUrl: string) => void;
   onApplyTemplate?: (templateData: any) => void;
+  onApplyFrame?: (frameData: any) => void;
   currentImageUrl?: string | null;
   hasTransparency?: boolean;
   selectedImages?: { id: string; url: string; prompt: string }[];
@@ -524,6 +526,7 @@ export function ImageEditorSidebar({
   onFilterSave,
   onApplyCollage,
   onApplyTemplate,
+  onApplyFrame,
   currentImageUrl,
   hasTransparency = false,
   selectedImages = [],
@@ -606,6 +609,12 @@ export function ImageEditorSidebar({
       icon: "📋",
       description: "Use pre-made social templates",
     },
+    {
+      id: "frame",
+      label: "Frame",
+      icon: "🖼️",
+      description: "Add decorative frames/borders",
+    },
   ];
 
   // Filter out inpaint and erase tools if image has transparency
@@ -679,11 +688,21 @@ export function ImageEditorSidebar({
         />
       )}
 
-      {/* Settings Panel - Hide for overlay, filters, collage, and template tools */}
+      {/* Frame Tool - Full Width Layout */}
+      {selectedEditTool === "frame" && onApplyFrame && (
+        <FrameToolControls
+          isProcessing={isProcessing}
+          currentImageUrl={currentImageUrl || ""}
+          onApplyFrame={onApplyFrame}
+        />
+      )}
+
+      {/* Settings Panel - Hide for overlay, filters, collage, template, and frame tools */}
       {selectedEditTool !== "overlay" &&
         selectedEditTool !== "filters" &&
         selectedEditTool !== "collage" &&
-        selectedEditTool !== "template" && (
+        selectedEditTool !== "template" &&
+        selectedEditTool !== "frame" && (
           <div>
             <h4 className="text-sm font-semibold text-gray-700 mb-3">
               Settings
