@@ -10,6 +10,7 @@ import { ContentRefinementModal } from "src/components/ContentRefinementModal";
 import { ContentVariationsModal } from "src/components/ContentVariationsModal";
 import { ContentViewModal } from "src/components/ContentViewModal";
 import { ImageVariationsModal } from "src/components/ImageVariationsModal";
+import { FolderSelectorModal } from "src/components/FolderSelectorModal";
 import { UnifiedEditorModal } from "src/components/UnifiedEditorModal";
 import { ConfirmationModal } from "src/components/ConfirmationModal";
 import { VideoEditorModal } from "src/components/VideoEditorModal";
@@ -128,6 +129,9 @@ export default function ContentLibraryPage() {
   const [showImageVariationsModal, setShowImageVariationsModal] = useState(false);
   const [selectedImageForVariations, setSelectedImageForVariations] =
     useState<LibraryImage | null>(null);
+
+  // Image Management State
+  const [showFolderSelector, setShowFolderSelector] = useState(false);
 
   // Content Library Tab State
   const [activeLibraryTab, setActiveLibraryTab] = useState<
@@ -633,6 +637,37 @@ export default function ContentLibraryPage() {
     refetchImages();
     refetchEditedImages();
     toast.success(`Created ${variations.length} variations successfully!`);
+  };
+
+  // Image Management Functions
+  const handleMoveToStock = () => {
+    setShowFolderSelector(true);
+  };
+
+  const handleMoveImages = async (destinationPath: string) => {
+    try {
+      // Get image IDs from selected URLs
+      const imageIds: number[] = [];
+      for (const imageUrl of selectedImageUrls) {
+        const image = sortedImages.find((img) => img.image_url === imageUrl);
+        if (image && image.id) {
+          imageIds.push(image.id);
+        }
+      }
+
+      const { data } = await api.post("/api/images/move", {
+        image_ids: imageIds,
+        destination_path: destinationPath,
+      });
+
+      toast.success(`Moved ${imageIds.length} image(s) to ${destinationPath}`);
+      setSelectedImageUrls([]);
+      setShowFolderSelector(false);
+      refetchImages();
+      refetchEditedImages();
+    } catch (error: any) {
+      toast.error(error.response?.data?.detail || "Failed to move images");
+    }
   };
 
   const handleGenerateVideo = (content: GeneratedContent) => {
@@ -1774,6 +1809,26 @@ export default function ContentLibraryPage() {
                           </button>
 
                           <button
+                            onClick={handleMoveToStock}
+                            className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition flex items-center gap-2 font-medium"
+                          >
+                            <svg
+                              className="w-5 h-5"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                              />
+                            </svg>
+                            Move to Stock ({selectedImageUrls.length})
+                          </button>
+
+                          <button
                             onClick={() => {
                               setBatchCampaignId(filterCampaignId);
                               setShowBatchModal(true);
@@ -2393,6 +2448,14 @@ export default function ContentLibraryPage() {
         onClose={() => setShowImageVariationsModal(false)}
         image={selectedImageForVariations}
         onVariationCreated={handleImageVariationCreated}
+      />
+
+      {/* Folder Selector Modal */}
+      <FolderSelectorModal
+        isOpen={showFolderSelector}
+        onClose={() => setShowFolderSelector(false)}
+        onSelectFolder={handleMoveImages}
+        selectedCount={selectedImageUrls.length}
       />
 
       {/* Library Image Viewer Modal */}
