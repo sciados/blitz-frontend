@@ -18,6 +18,7 @@ import { BatchImageOptimizer } from "src/components/image-editor/BatchImageOptim
 import { ImageFilters } from "src/components/image-editor/ImageFilters";
 import { BatchFilters } from "src/components/image-editor/BatchFilters";
 import { BatchBackgroundRemoval } from "src/components/image-editor/BatchBackgroundRemoval";
+import { LandingPageBuilder } from "src/components/image-editor/LandingPageBuilder";
 import { getProxiedImageUrl } from "src/utils/imageProxy";
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -64,7 +65,10 @@ export default function ContentLibraryPage() {
     }
 
     // If already a proxy URL or API route, return as-is
-    if (imageUrl.startsWith("/api/") || imageUrl.includes("/api/images/proxy")) {
+    if (
+      imageUrl.startsWith("/api/") ||
+      imageUrl.includes("/api/images/proxy")
+    ) {
       console.log("✅ Already a proxy URL, returning as-is:", imageUrl);
       return imageUrl;
     }
@@ -121,7 +125,7 @@ export default function ContentLibraryPage() {
 
   // Content Library Tab State
   const [activeLibraryTab, setActiveLibraryTab] = useState<
-    "text" | "images" | "videos"
+    "text" | "images" | "videos" | "landing-pages"
   >("text");
   const [imageFilter, setImageFilter] = useState<
     | "all"
@@ -137,6 +141,7 @@ export default function ContentLibraryPage() {
     | "template"
     | "frame"
     | "background"
+    | "landing_page"
   >("all");
   const [videoFilter, setVideoFilter] = useState<
     "all" | "generated" | "overlays"
@@ -148,7 +153,12 @@ export default function ContentLibraryPage() {
   // Read tab from URL params (e.g., /library?tab=images)
   useEffect(() => {
     const tabParam = searchParams.get("tab");
-    if (tabParam === "images" || tabParam === "videos" || tabParam === "text") {
+    if (
+      tabParam === "images" ||
+      tabParam === "videos" ||
+      tabParam === "text" ||
+      tabParam === "landing-pages"
+    ) {
       setActiveLibraryTab(tabParam);
     }
   }, [searchParams]);
@@ -252,141 +262,175 @@ export default function ContentLibraryPage() {
   });
 
   // Query to fetch edited images from image editor
-  const { refetch: refetchEditedImages } = useQuery({
-    queryKey: ["all-edited-images"],
-    queryFn: async () => {
-      try {
-        // Fetch from all campaigns
-        const { data: campaigns } = await api.get("/api/campaigns");
+  const { refetch: refetchEditedImages, isLoading: isLoadingEdited } = useQuery(
+    {
+      queryKey: ["all-edited-images"],
+      queryFn: async () => {
+        try {
+          console.log("🔄 Fetching edited images...");
+          // Fetch from all campaigns
+          const { data: campaigns } = await api.get("/api/campaigns");
+          console.log(`📊 Found ${campaigns.length} campaigns`);
 
-        const allEditedPromises = campaigns.map(async (campaign: Campaign) => {
-          try {
-            const res = await api.get(
-              `/api/image-editor/history/${campaign.id}`
-            );
+          const allEditedPromises = campaigns.map(
+            async (campaign: Campaign) => {
+              try {
+                console.log(`📋 Fetching edits for campaign ${campaign.id}...`);
+                const res = await api.get(
+                  `/api/image-editor/history/${campaign.id}`
+                );
 
-            // Transform the data to match the expected format
-            const edits = res.data.edits || [];
+                // Transform the data to match the expected format
+                const edits = res.data.edits || [];
 
-            const mappedEdits = edits
-              .filter((edit: any) => edit.success && edit.edited_image_path)
-              .map((edit: any) => {
-                // Use the proxy endpoint for edited images since /edited/ folder requires authentication
-                // The proxy endpoint has R2 credentials and can fetch private files
-                // Need to use full URL with domain to avoid browser encoding issues
-                const r2PublicUrl =
-                  "https://pub-c0ddba9f039845bda33be436955187cb.r2.dev";
-                const fullR2Url = `${r2PublicUrl}/${edit.edited_image_path}`;
-                const apiBaseUrl =
-                  process.env.NEXT_PUBLIC_API_BASE_URL ||
-                  "https://blitzed.up.railway.app";
-                const imageUrl = `${apiBaseUrl}/api/images/proxy?url=${encodeURIComponent(
-                  fullR2Url
-                )}`;
+                const mappedEdits = edits
+                  .filter((edit: any) => edit.success && edit.edited_image_path)
+                  .map((edit: any) => {
+                    // Use the proxy endpoint for edited images since /edited/ folder requires authentication
+                    // The proxy endpoint has R2 credentials and can fetch private files
+                    // Need to use full URL with domain to avoid browser encoding issues
+                    const r2PublicUrl =
+                      "https://pub-c0ddba9f039845bda33be436955187cb.r2.dev";
+                    const fullR2Url = `${r2PublicUrl}/${edit.edited_image_path}`;
+                    const apiBaseUrl =
+                      process.env.NEXT_PUBLIC_API_BASE_URL ||
+                      "https://blitzed.up.railway.app";
+                    const imageUrl = `${apiBaseUrl}/api/images/proxy?url=${encodeURIComponent(
+                      fullR2Url
+                    )}`;
 
-                // Map operation_type to the correct edit_tool value
-                // This must match what the badge display shows
-                const operationTypeMap: Record<string, string> = {
-                  edited_text_overlay: "overlay",
-                  edited_image_overlay: "overlay",
-                  edited_layers: "overlay",
-                  edited_filters: "filters",
-                  edited_resize: "resize",
-                  edited_inpaint: "inpaint",
-                  inpainting: "inpaint", // Backend uses "inpainting"
-                  edited_erase: "erase",
-                  erase: "erase", // Backend uses "erase"
-                  background_removal: "transparent",
-                  background_add: "background", // Background add tool saves as "background_add"
-                  collage: "collage", // Backend uses "collage"
-                  template: "template", // Template tool saves as "template"
-                  frame: "frame", // Frame tool saves as "frame"
-                };
+                    // Map operation_type to the correct edit_tool value
+                    // This must match what the badge display shows
+                    const operationTypeMap: Record<string, string> = {
+                      edited_text_overlay: "overlay",
+                      edited_image_overlay: "overlay",
+                      edited_layers: "overlay",
+                      edited_filters: "filters",
+                      edited_resize: "resize",
+                      edited_inpaint: "inpaint",
+                      inpainting: "inpaint", // Backend uses "inpainting"
+                      edited_erase: "erase",
+                      erase: "erase", // Backend uses "erase"
+                      background_removal: "transparent",
+                      background_add: "background", // Background add tool saves as "background_add"
+                      landing_page: "landing_page", // Landing page builder saves as "landing_page"
+                      collage: "collage", // Backend uses "collage"
+                      template: "template", // Template tool saves as "template"
+                      frame: "frame", // Frame tool saves as "frame"
+                    };
 
-                const editTool =
-                  operationTypeMap[edit.operation_type] ||
-                  edit.operation_type.replace("edited_", "");
+                    const editTool =
+                      operationTypeMap[edit.operation_type] ||
+                      edit.operation_type.replace("edited_", "");
 
-                // Determine if this is an overlay operation
-                const isOverlayOperation =
-                  edit.operation_type === "edited_text_overlay" ||
-                  edit.operation_type === "edited_image_overlay" ||
-                  edit.operation_type === "edited_layers";
+                    // Determine if this is an overlay operation
+                    const isOverlayOperation =
+                      edit.operation_type === "edited_text_overlay" ||
+                      edit.operation_type === "edited_image_overlay" ||
+                      edit.operation_type === "edited_layers";
 
-                return {
-                  id: edit.id,
-                  campaign_id: edit.campaign_id,
-                  image_url: imageUrl,
-                  image_type: edit.operation_type === "background_removal" ? "transparent" : `edited_${edit.operation_type}`,
-                  prompt:
-                    edit.operation_params?.prompt ||
-                    edit.operation_params?.search_prompt ||
-                    "Edited Image",
-                  provider: "Stability AI",
-                  aspect_ratio: "original",
-                  // Include transparency and lineage tracking
-                  has_transparency: edit.has_transparency || false,
-                  parent_image_id: edit.parent_image_id || null,
-                  metadata: {
-                    is_edited: true,
-                    edit_tool: editTool,
-                    operation_type: edit.operation_type,
-                    original_image_path: edit.original_image_path,
-                    r2_url: fullR2Url, // Store the actual R2 URL for editing
-                    text_overlay: edit.operation_type === "edited_text_overlay",
-                    image_overlay:
-                      isOverlayOperation &&
-                      edit.operation_type !== "edited_text_overlay",
-                  },
-                  created_at: edit.created_at,
-                };
-              });
+                    return {
+                      id: edit.id,
+                      campaign_id: edit.campaign_id,
+                      image_url: imageUrl,
+                      image_type:
+                        edit.operation_type === "background_removal"
+                          ? "transparent"
+                          : `edited_${edit.operation_type}`,
+                      prompt:
+                        edit.operation_params?.prompt ||
+                        edit.operation_params?.search_prompt ||
+                        "Edited Image",
+                      provider: "Stability AI",
+                      aspect_ratio: "original",
+                      // Include transparency and lineage tracking
+                      has_transparency: edit.has_transparency || false,
+                      parent_image_id: edit.parent_image_id || null,
+                      metadata: {
+                        is_edited: true,
+                        edit_tool: editTool,
+                        operation_type: edit.operation_type,
+                        original_image_path: edit.original_image_path,
+                        r2_url: fullR2Url, // Store the actual R2 URL for editing
+                        text_overlay:
+                          edit.operation_type === "edited_text_overlay",
+                        image_overlay:
+                          isOverlayOperation &&
+                          edit.operation_type !== "edited_text_overlay",
+                      },
+                      created_at: edit.created_at,
+                    };
+                  });
 
-            return mappedEdits;
-          } catch (error: any) {
-            console.error(
-              `Error fetching edits for campaign ${campaign.id}:`,
-              error
-            );
-            return [];
-          }
-        });
-
-        const allEditedArrays = await Promise.all(allEditedPromises);
-        const flatEdited = allEditedArrays.flat();
-
-        // Deduplicate by image_url, keeping only the most recent for each unique image
-        const uniqueEdits = flatEdited.reduce((acc: any[], current) => {
-          const existingIndex = acc.findIndex(
-            (item) => item.image_url === current.image_url
-          );
-          if (existingIndex === -1) {
-            acc.push(current);
-          } else {
-            // Keep the more recent one
-            if (
-              new Date(current.created_at) >
-              new Date(acc[existingIndex].created_at)
-            ) {
-              acc[existingIndex] = current;
+                return mappedEdits;
+              } catch (error: any) {
+                console.error(
+                  `Error fetching edits for campaign ${campaign.id}:`,
+                  error
+                );
+                return [];
+              }
             }
-          }
-          return acc;
-        }, []);
+          );
 
-        setAllEditedImages(uniqueEdits);
-        return uniqueEdits;
-      } catch (error) {
-        console.error("Error in refetchEditedImages:", error);
-        return [];
-      }
-    },
-  });
+          const allEditedArrays = await Promise.all(allEditedPromises);
+          const flatEdited = allEditedArrays.flat();
+          console.log(`📝 Total edits found: ${flatEdited.length}`);
+          console.log(
+            `📋 Operation types:`,
+            flatEdited.map((e) => e.operation_type)
+          );
+
+          // Deduplicate by image_url, keeping only the most recent for each unique image
+          const uniqueEdits = flatEdited.reduce((acc: any[], current) => {
+            const existingIndex = acc.findIndex(
+              (item) => item.image_url === current.image_url
+            );
+            if (existingIndex === -1) {
+              acc.push(current);
+            } else {
+              // Keep the more recent one
+              if (
+                new Date(current.created_at) >
+                new Date(acc[existingIndex].created_at)
+              ) {
+                acc[existingIndex] = current;
+              }
+            }
+            return acc;
+          }, []);
+
+          console.log(
+            `✅ Unique edits after deduplication: ${uniqueEdits.length}`
+          );
+          console.log(
+            `🔍 Edit tools:`,
+            uniqueEdits.map((e) => e.metadata?.edit_tool).filter(Boolean)
+          );
+          console.log(
+            `🔍 Transparency flags:`,
+            uniqueEdits.map((e) => ({
+              id: e.id,
+              op: e.operation_type,
+              trans: e.has_transparency,
+            }))
+          );
+
+          setAllEditedImages(uniqueEdits);
+          return uniqueEdits;
+        } catch (error) {
+          console.error("Error in refetchEditedImages:", error);
+          return [];
+        }
+      },
+    }
+  );
 
   // Query to fetch videos for the library - ONLY poll when videos tab is active
   const { refetch: refetchVideos } = useQuery({
     queryKey: ["all-videos"],
     queryFn: async () => {
+      console.log("Fetching videos - active tab:", activeLibraryTab);
       const { data } = await api.get("/api/video/library");
       setAllVideos(data.videos || []);
       return data.videos || [];
@@ -394,6 +438,12 @@ export default function ContentLibraryPage() {
     // Only poll when videos tab is active
     refetchInterval: activeLibraryTab === "videos" ? 5000 : false,
   });
+
+  // Debug log for tab changes
+  useEffect(() => {
+    console.log("Library tab changed to:", activeLibraryTab);
+    console.log("Video polling enabled:", activeLibraryTab === "videos");
+  }, [activeLibraryTab]);
 
   // Refetch images when tab changes to images (for manual refresh if needed)
   useEffect(() => {
@@ -443,6 +493,18 @@ export default function ContentLibraryPage() {
     ...allEditedImages.map((img) => ({ ...img, source: "edited" as const })),
   ];
 
+  console.log(
+    `🖼️ Combined images: ${combinedImages.length} total (${allImages.length} original + ${allEditedImages.length} edited)`
+  );
+  console.log(
+    `🔍 Combined edit tools:`,
+    combinedImages.map((e) => e.metadata?.edit_tool).filter(Boolean)
+  );
+  console.log(
+    `🔍 Combined transparency:`,
+    combinedImages.filter((e) => e.has_transparency).length
+  );
+
   // Filter images based on campaign and filter type
   const filteredImages = combinedImages.filter((image) => {
     // Campaign filter check
@@ -469,8 +531,14 @@ export default function ContentLibraryPage() {
       return false;
     if (imageFilter === "erase" && image.metadata?.edit_tool !== "erase")
       return false;
-    if (imageFilter === "transparent" && image.has_transparency !== true)
+    if (imageFilter === "transparent" && image.has_transparency !== true) {
+      console.log(`🚫 Filtering out transparent image:`, {
+        id: image.id,
+        has_transparency: image.has_transparency,
+        op: image.metadata?.edit_tool,
+      });
       return false;
+    }
     if (
       imageFilter === "lineage" &&
       (image.parent_image_id === null || image.parent_image_id === undefined)
@@ -480,12 +548,24 @@ export default function ContentLibraryPage() {
       return false;
     if (imageFilter === "template" && image.metadata?.edit_tool !== "template")
       return false;
-    if (imageFilter === "background" && image.metadata?.edit_tool !== "background")
+    if (
+      imageFilter === "background" &&
+      image.metadata?.edit_tool !== "background"
+    ) {
+      console.log(`🚫 Filtering out background image:`, {
+        id: image.id,
+        edit_tool: image.metadata?.edit_tool,
+      });
       return false;
+    }
     if (imageFilter === "frame" && image.metadata?.edit_tool !== "frame")
       return false;
     return true;
   });
+
+  console.log(
+    `✅ Filtered images: ${filteredImages.length} (filter: ${imageFilter})`
+  );
 
   // Sort images: Premium (is_enhanced) first, then by newest
   const sortedImages = filteredImages.sort((a, b) => {
@@ -710,20 +790,29 @@ export default function ContentLibraryPage() {
 
     // Store selected images for collage in sessionStorage
     const selectedImagesData = combinedImages
-      .filter(img => selectedImageUrls.includes(img.image_url))
-      .map(img => ({
+      .filter((img) => selectedImageUrls.includes(img.image_url))
+      .map((img) => ({
         url: getProxiedImageUrl(img.image_url),
-        prompt: img.prompt || "Campaign Image"
+        prompt: img.prompt || "Campaign Image",
       }));
 
-    sessionStorage.setItem('collageSelectedImages', JSON.stringify(selectedImagesData));
+    sessionStorage.setItem(
+      "collageSelectedImages",
+      JSON.stringify(selectedImagesData)
+    );
 
     // Navigate to image editor with collage tool - use proxied URL
-    const firstImage = combinedImages.find(img => selectedImageUrls.includes(img.image_url));
+    const firstImage = combinedImages.find((img) =>
+      selectedImageUrls.includes(img.image_url)
+    );
     if (firstImage) {
       const campaignId = firstImage.campaign_id || "";
       const proxiedUrl = getProxiedImageUrl(firstImage.image_url);
-      router.push(`/image-editor?imageUrl=${encodeURIComponent(proxiedUrl)}&campaignId=${campaignId}&tool=collage`);
+      router.push(
+        `/image-editor?imageUrl=${encodeURIComponent(
+          proxiedUrl
+        )}&campaignId=${campaignId}&tool=collage`
+      );
     }
   };
 
@@ -982,6 +1071,16 @@ export default function ContentLibraryPage() {
               }`}
             >
               🎬 Videos ({allVideos.length})
+            </button>
+            <button
+              onClick={() => setActiveLibraryTab("landing-pages")}
+              className={`px-4 py-2 rounded-lg transition font-medium ${
+                activeLibraryTab === "landing-pages"
+                  ? "bg-green-600 text-white shadow-sm"
+                  : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+              }`}
+            >
+              🎨 Landing Pages
             </button>
           </div>
 
@@ -1269,6 +1368,15 @@ export default function ContentLibraryPage() {
             </div>
           )}
 
+          {/* Landing Pages Tab */}
+          {activeLibraryTab === "landing-pages" && (
+            <LandingPageBuilder
+              textContent={allContent}
+              images={combinedImages}
+              videos={allVideos}
+            />
+          )}
+
           {/* Tab-Specific Filters and Stats */}
           {activeLibraryTab === "text" ? (
             /* Text Content Filters */
@@ -1527,8 +1635,8 @@ export default function ContentLibraryPage() {
                         className="text-sm"
                         style={{ color: "var(--text-secondary)" }}
                       >
-                        Showing {sortedImages.length} of{" "}
-                        {combinedImages.length} total images
+                        Showing {sortedImages.length} of {combinedImages.length}{" "}
+                        total images
                       </p>
 
                       {selectedImageUrls.length > 0 && (
@@ -2284,7 +2392,8 @@ export default function ContentLibraryPage() {
                       className="text-sm mt-1"
                       style={{ color: "var(--text-secondary)" }}
                     >
-                      {currentImageIndexInSortedList + 1} of {sortedImages.length}
+                      {currentImageIndexInSortedList + 1} of{" "}
+                      {sortedImages.length}
                     </p>
                   )}
                 </div>
@@ -2417,7 +2526,8 @@ export default function ContentLibraryPage() {
                     )}
 
                     {/* Next Button */}
-                    {currentImageIndexInSortedList < sortedImages.length - 1 && (
+                    {currentImageIndexInSortedList <
+                      sortedImages.length - 1 && (
                       <button
                         onClick={handleNextImage}
                         className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center transition-colors"

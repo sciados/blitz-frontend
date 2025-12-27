@@ -151,6 +151,16 @@ export function ToolSelector({ selectedTool }: ToolSelectorProps) {
         "Professional gradient backgrounds",
       ],
     },
+    "landing-page": {
+      name: "Landing Page Builder",
+      description: "Create marketing landing pages with templates",
+      useCases: [
+        "Product sales pages",
+        "Lead generation pages",
+        "Webinar registration pages",
+        "Promotional campaign pages",
+      ],
+    },
   };
 
   const info = toolInfo[selectedTool];

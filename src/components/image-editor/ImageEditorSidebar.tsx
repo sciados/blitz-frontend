@@ -7,6 +7,7 @@ import { CollageToolControls } from "src/components/image-editor/CollageToolCont
 import { TemplateToolControls } from "src/components/image-editor/TemplateToolControls";
 import { FrameToolControls } from "src/components/image-editor/FrameToolControls";
 import { BackgroundLibraryControls } from "src/components/image-editor/BackgroundLibraryControls";
+import { LandingPageBuilder } from "src/components/image-editor/LandingPageBuilder";
 
 interface TextOverlay {
   id: string;
@@ -688,7 +689,9 @@ interface ImageEditorSidebarProps {
   onApplyTemplate?: (templateData: any) => void;
   onApplyFrame?: (frameData: any) => void;
   onApplyBackground?: (backgroundData: any) => void;
+  onApplyLandingPage?: (templateData: any) => void;
   currentImageUrl?: string | null;
+  campaignId?: string | null;
   hasTransparency?: boolean;
   selectedImages?: { id: string; url: string; prompt: string }[];
 }
@@ -718,7 +721,9 @@ export function ImageEditorSidebar({
   onApplyTemplate,
   onApplyFrame,
   onApplyBackground,
+  onApplyLandingPage,
   currentImageUrl,
+  campaignId,
   hasTransparency = false,
   selectedImages = [],
 }: ImageEditorSidebarProps) {
@@ -812,6 +817,12 @@ export function ImageEditorSidebar({
       icon: "🎨",
       description: "Add background from library",
     },
+    {
+      id: "landing-page",
+      label: "Landing Page",
+      icon: "📄",
+      description: "Create landing page templates",
+    },
   ];
 
   // Filter out inpaint and erase tools if image has transparency
@@ -903,13 +914,26 @@ export function ImageEditorSidebar({
         />
       )}
 
-      {/* Settings Panel - Hide for overlay, filters, collage, template, frame, and background tools */}
+      {/* Landing Page Builder - Full Width Layout */}
+      {selectedEditTool === "landing-page" && onApplyLandingPage && (
+        <LandingPageBuilder
+          textContent={[]}
+          images={[]}
+          videos={[]}
+          campaignId={campaignId ? parseInt(campaignId) : undefined}
+          onSave={onApplyLandingPage}
+          isProcessing={isProcessing}
+        />
+      )}
+
+      {/* Settings Panel - Hide for overlay, filters, collage, template, frame, background, and landing-page tools */}
       {selectedEditTool !== "overlay" &&
         selectedEditTool !== "filters" &&
         selectedEditTool !== "collage" &&
         selectedEditTool !== "template" &&
         selectedEditTool !== "frame" &&
-        selectedEditTool !== "background-add" && (
+        selectedEditTool !== "background-add" &&
+        selectedEditTool !== "landing-page" && (
           <div>
             <h4 className="text-sm font-semibold text-gray-700 mb-3">
               Settings

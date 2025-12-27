@@ -27,7 +27,8 @@ export type EditTool =
   | "collage"
   | "template"
   | "frame"
-  | "background-add";
+  | "background-add"
+  | "landing-page";
 
 export default function ImageEditorPage() {
   const searchParams = useSearchParams();
@@ -654,6 +655,68 @@ export default function ImageEditorPage() {
       setIsProcessing(false);
     }
   };
+
+  const handleApplyLandingPage = async (templateData: any) => {
+    if (!campaignId) {
+      toast.error("Missing campaign ID");
+      return;
+    }
+
+    setIsProcessing(true);
+
+    try {
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+      if (!apiBaseUrl) {
+        throw new Error("API base URL not configured");
+      }
+
+      // Convert canvas to blob
+      const canvas = templateData.canvas as HTMLCanvasElement;
+      const blob = await new Promise<Blob>((resolve) => {
+        canvas.toBlob((blob) => {
+          if (blob) resolve(blob);
+        }, "image/png");
+      });
+
+      // Create form data
+      const formData = new FormData();
+      formData.append("image", blob, "landing_page.png");
+      formData.append("campaign_id", campaignId);
+      formData.append("operation", "landing_page");
+
+      const token = localStorage.getItem("token");
+      const uploadResponse = await fetch(
+        `${apiBaseUrl}/api/image-editor/save-filtered-image`,
+        {
+          method: "POST",
+          body: formData,
+          credentials: "include",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const result = await uploadResponse.json();
+
+      if (result.success && result.image_url) {
+        setEditedImage(result.image_url);
+        setActiveImage(result.image_url);
+        toast.success("Landing page saved successfully!");
+      } else {
+        throw new Error("Failed to save landing page");
+      }
+    } catch (err) {
+      console.error("Landing page save error:", err);
+      toast.error(
+        `Error: ${err instanceof Error ? err.message : "Unknown error"}`
+      );
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   const switchToOriginal = () => {
     if (originalImage) setActiveImage(originalImage);
   };
@@ -912,7 +975,9 @@ export default function ImageEditorPage() {
               onApplyCollage={handleApplyCollage}
               onApplyFrame={handleApplyFrame}
               onApplyBackground={handleApplyBackgroundAdd}
+              onApplyLandingPage={handleApplyLandingPage}
               currentImageUrl={activeImage}
+              campaignId={campaignId}
               isProcessing={isProcessing}
               hasTransparency={hasTransparency}
             />
