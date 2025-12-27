@@ -252,18 +252,15 @@ export default function ContentLibraryPage() {
   });
 
   // Query to fetch edited images from image editor
-  const { refetch: refetchEditedImages, isLoading: isLoadingEdited } = useQuery({
+  const { refetch: refetchEditedImages } = useQuery({
     queryKey: ["all-edited-images"],
     queryFn: async () => {
       try {
-        console.log("🔄 Fetching edited images...");
         // Fetch from all campaigns
         const { data: campaigns } = await api.get("/api/campaigns");
-        console.log(`📊 Found ${campaigns.length} campaigns`);
 
         const allEditedPromises = campaigns.map(async (campaign: Campaign) => {
           try {
-            console.log(`📋 Fetching edits for campaign ${campaign.id}...`);
             const res = await api.get(
               `/api/image-editor/history/${campaign.id}`
             );
@@ -357,8 +354,6 @@ export default function ContentLibraryPage() {
 
         const allEditedArrays = await Promise.all(allEditedPromises);
         const flatEdited = allEditedArrays.flat();
-        console.log(`📝 Total edits found: ${flatEdited.length}`);
-        console.log(`📋 Operation types:`, flatEdited.map(e => e.operation_type));
 
         // Deduplicate by image_url, keeping only the most recent for each unique image
         const uniqueEdits = flatEdited.reduce((acc: any[], current) => {
@@ -379,10 +374,6 @@ export default function ContentLibraryPage() {
           return acc;
         }, []);
 
-        console.log(`✅ Unique edits after deduplication: ${uniqueEdits.length}`);
-        console.log(`🔍 Edit tools:`, uniqueEdits.map(e => e.metadata?.edit_tool).filter(Boolean));
-        console.log(`🔍 Transparency flags:`, uniqueEdits.map(e => ({ id: e.id, op: e.operation_type, trans: e.has_transparency })));
-
         setAllEditedImages(uniqueEdits);
         return uniqueEdits;
       } catch (error) {
@@ -396,7 +387,6 @@ export default function ContentLibraryPage() {
   const { refetch: refetchVideos } = useQuery({
     queryKey: ["all-videos"],
     queryFn: async () => {
-      console.log("Fetching videos - active tab:", activeLibraryTab);
       const { data } = await api.get("/api/video/library");
       setAllVideos(data.videos || []);
       return data.videos || [];
@@ -404,12 +394,6 @@ export default function ContentLibraryPage() {
     // Only poll when videos tab is active
     refetchInterval: activeLibraryTab === "videos" ? 5000 : false,
   });
-
-  // Debug log for tab changes
-  useEffect(() => {
-    console.log("Library tab changed to:", activeLibraryTab);
-    console.log("Video polling enabled:", activeLibraryTab === "videos");
-  }, [activeLibraryTab]);
 
   // Refetch images when tab changes to images (for manual refresh if needed)
   useEffect(() => {
@@ -459,10 +443,6 @@ export default function ContentLibraryPage() {
     ...allEditedImages.map((img) => ({ ...img, source: "edited" as const })),
   ];
 
-  console.log(`🖼️ Combined images: ${combinedImages.length} total (${allImages.length} original + ${allEditedImages.length} edited)`);
-  console.log(`🔍 Combined edit tools:`, combinedImages.map(e => e.metadata?.edit_tool).filter(Boolean));
-  console.log(`🔍 Combined transparency:`, combinedImages.filter(e => e.has_transparency).length);
-
   // Filter images based on campaign and filter type
   const filteredImages = combinedImages.filter((image) => {
     // Campaign filter check
@@ -489,10 +469,8 @@ export default function ContentLibraryPage() {
       return false;
     if (imageFilter === "erase" && image.metadata?.edit_tool !== "erase")
       return false;
-    if (imageFilter === "transparent" && image.has_transparency !== true) {
-      console.log(`🚫 Filtering out transparent image:`, { id: image.id, has_transparency: image.has_transparency, op: image.metadata?.edit_tool });
+    if (imageFilter === "transparent" && image.has_transparency !== true)
       return false;
-    }
     if (
       imageFilter === "lineage" &&
       (image.parent_image_id === null || image.parent_image_id === undefined)
@@ -502,16 +480,12 @@ export default function ContentLibraryPage() {
       return false;
     if (imageFilter === "template" && image.metadata?.edit_tool !== "template")
       return false;
-    if (imageFilter === "background" && image.metadata?.edit_tool !== "background") {
-      console.log(`🚫 Filtering out background image:`, { id: image.id, edit_tool: image.metadata?.edit_tool });
+    if (imageFilter === "background" && image.metadata?.edit_tool !== "background")
       return false;
-    }
     if (imageFilter === "frame" && image.metadata?.edit_tool !== "frame")
       return false;
     return true;
   });
-
-  console.log(`✅ Filtered images: ${filteredImages.length} (filter: ${imageFilter})`);
 
   // Sort images: Premium (is_enhanced) first, then by newest
   const sortedImages = filteredImages.sort((a, b) => {
