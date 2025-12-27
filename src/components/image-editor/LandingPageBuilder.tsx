@@ -356,6 +356,7 @@ export function LandingPageBuilder({
 
   const handleTemplateSelect = (template: LandingPageTemplate) => {
     setSelectedTemplate(template);
+    setTemplateElements(JSON.parse(JSON.stringify(template.elements)));
     setIsEditing(true);
     setActiveElement(null);
   };
@@ -484,8 +485,127 @@ export function LandingPageBuilder({
     (el) => el.id === activeElement
   );
 
+  // Generate thumbnail preview for template
+  const generateThumbnail = (template: LandingPageTemplate) => {
+    const canvas = document.createElement("canvas");
+    const thumbnailWidth = 300;
+    const aspectRatio = template.size.height / template.size.width;
+    const thumbnailHeight = thumbnailWidth * aspectRatio;
+
+    canvas.width = thumbnailWidth;
+    canvas.height = thumbnailHeight;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return null;
+
+    // Render template elements at thumbnail size
+    const elements = template.elements;
+    for (const element of elements) {
+      const scaleX = thumbnailWidth / template.size.width;
+      const scaleY = thumbnailHeight / template.size.height;
+
+      ctx.save();
+      ctx.scale(scaleX, scaleY);
+
+      // Render background
+      if (element.type === "background") {
+        if (element.gradient) {
+          const { type, angle, colors } = element.gradient;
+          let gradient;
+          if (type === "linear") {
+            const radians = ((angle || 0) * Math.PI) / 180;
+            const x1 = template.size.width / 2 - (Math.cos(radians) * template.size.width) / 2;
+            const y1 = template.size.height / 2 - (Math.sin(radians) * template.size.height) / 2;
+            const x2 = template.size.width / 2 + (Math.cos(radians) * template.size.width) / 2;
+            const y2 = template.size.height / 2 + (Math.sin(radians) * template.size.height) / 2;
+            gradient = ctx.createLinearGradient(x1, y1, x2, y2);
+          } else {
+            const centerX = template.size.width / 2;
+            const centerY = template.size.height / 2;
+            const radius = Math.max(template.size.width, template.size.height) / 2;
+            gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
+          }
+          colors.forEach((color, i) => {
+            gradient!.addColorStop(i / (colors.length - 1), color);
+          });
+          ctx.fillStyle = gradient;
+        } else if (element.color) {
+          ctx.fillStyle = element.color;
+        }
+        ctx.fillRect(0, 0, template.size.width, template.size.height);
+      }
+
+      // Render shapes
+      if (element.type === "shape" && element.color) {
+        ctx.fillStyle = element.color;
+        const x = element.x || 0;
+        const y = element.y || 0;
+        const width = element.width || 100;
+        const height = element.height || 100;
+        const cornerRadius = element.cornerRadius || 0;
+
+        if (element.shape === "roundedRect" && cornerRadius > 0) {
+          ctx.beginPath();
+          ctx.moveTo(x + cornerRadius, y);
+          ctx.lineTo(x + width - cornerRadius, y);
+          ctx.quadraticCurveTo(x + width, y, x + width, y + cornerRadius);
+          ctx.lineTo(x + width, y + height - cornerRadius);
+          ctx.quadraticCurveTo(x + width, y + height, x + width - cornerRadius, y + height);
+          ctx.lineTo(x + cornerRadius, y + height);
+          ctx.quadraticCurveTo(x, y + height, x, y + height - cornerRadius);
+          ctx.lineTo(x, y + cornerRadius);
+          ctx.quadraticCurveTo(x, y, x + cornerRadius, y);
+          ctx.closePath();
+          ctx.fill();
+        } else {
+          ctx.fillRect(x, y, width, height);
+        }
+      }
+
+      // Render text
+      if (element.type === "text" && element.content) {
+        const fontSize = element.fontSize || 16;
+        const fontWeight = element.fontWeight || "normal";
+        const fontFamily = element.fontFamily || "Arial";
+        ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
+        ctx.fillStyle = element.color || "#000000";
+        ctx.textAlign = (element.textAlign as CanvasTextAlign) || "left";
+        ctx.textBaseline = "top";
+
+        const x = element.x || 0;
+        const y = element.y || 0;
+        const maxWidth = element.maxWidth;
+
+        if (maxWidth) {
+          // Simple text wrapping for preview
+          const words = element.content.split(" ");
+          let line = "";
+          let lineY = y;
+
+          for (const word of words) {
+            const testLine = line + word + " ";
+            const metrics = ctx.measureText(testLine);
+            if (metrics.width > maxWidth && line !== "") {
+              ctx.fillText(line, x, lineY);
+              line = word + " ";
+              lineY += fontSize * 1.2;
+            } else {
+              line = testLine;
+            }
+          }
+          ctx.fillText(line, x, lineY);
+        } else {
+          ctx.fillText(element.content, x, y);
+        }
+      }
+
+      ctx.restore();
+    }
+
+    return canvas.toDataURL("image/png");
+  };
+
   // Preview Mode - Template Grid
-  if (!isEditing || !selectedTemplate) {
+  if (!isEditing) {
     return (
       <div className="h-full flex bg-gray-50">
         {/* Full Width Grid View */}
@@ -531,36 +651,49 @@ export function LandingPageBuilder({
           {/* Template Grid */}
           <div className="flex-1 p-6 overflow-auto">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {filteredTemplates.map((template) => (
-                <button
-                  key={template.id}
-                  onClick={() => handleTemplateSelect(template)}
-                  className="group bg-white rounded-lg border-2 border-gray-200 hover:border-blue-500 transition-all overflow-hidden text-left"
-                >
-                  {/* Template Preview Thumbnail */}
-                  <div className="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
-                    <div className="text-4xl">{template.thumbnail}</div>
-                  </div>
+              {filteredTemplates.map((template) => {
+                const thumbnailDataUrl = generateThumbnail(template);
+                return (
+                  <button
+                    key={template.id}
+                    onClick={() => handleTemplateSelect(template)}
+                    className="group bg-white rounded-lg border-2 border-gray-200 hover:border-blue-500 transition-all overflow-hidden text-left"
+                  >
+                    {/* Template Preview Thumbnail */}
+                    <div className="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
+                      {thumbnailDataUrl ? (
+                        <img
+                          src={thumbnailDataUrl}
+                          alt={template.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <div className="text-4xl">{template.thumbnail}</div>
+                        </div>
+                      )}
+                    </div>
 
-                  {/* Template Info */}
-                  <div className="p-4">
-                    <div className="font-semibold text-sm mb-1 group-hover:text-blue-600 transition">
-                      {template.name}
-                    </div>
-                    <div className="text-xs text-gray-500 mb-2">
-                      {template.description}
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="text-xs text-gray-400">
-                        {template.size.width}×{template.size.height}
+                    {/* Template Info */}
+                    <div className="p-4">
+                      <div className="font-semibold text-sm mb-1 group-hover:text-blue-600 transition">
+                        {template.name}
                       </div>
-                      <div className="text-xs px-2 py-1 bg-blue-50 text-blue-600 rounded">
-                        Click to Edit
+                      <div className="text-xs text-gray-500 mb-2">
+                        {template.description}
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div className="text-xs text-gray-400">
+                          {template.size.width}×{template.size.height}
+                        </div>
+                        <div className="text-xs px-2 py-1 bg-blue-50 text-blue-600 rounded">
+                          Click to Edit
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </button>
-              ))}
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -569,6 +702,10 @@ export function LandingPageBuilder({
   }
 
   // Editor Mode - Template Editor
+  if (!selectedTemplate) {
+    return null; // Should not happen, but safety check
+  }
+
   return (
     <div className="h-full flex bg-white">
       {/* Center - Full Width Editor */}
