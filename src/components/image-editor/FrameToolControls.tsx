@@ -47,6 +47,20 @@ const FRAME_STYLES: FrameStyle[] = [
     description: "Border with shadow",
     category: "modern",
   },
+  {
+    id: "modern-minimal",
+    name: "Minimal",
+    thumbnail: "□",
+    description: "Ultra-minimal square",
+    category: "modern",
+  },
+  {
+    id: "modern-arched",
+    name: "Arch Top",
+    thumbnail: "⌒",
+    description: "Curved top border",
+    category: "modern",
+  },
 
   // Classic Frames
   {
@@ -70,8 +84,22 @@ const FRAME_STYLES: FrameStyle[] = [
     description: "Decorative pattern",
     category: "classic",
   },
+  {
+    id: "classic-vintage",
+    name: "Vintage",
+    thumbnail: "◉",
+    description: "Classic vintage style",
+    category: "classic",
+  },
+  {
+    id: "classic-worn",
+    name: "Worn Edge",
+    thumbnail: "◰",
+    description: "Distressed edges",
+    category: "classic",
+  },
 
-  // Photo Frames
+  // Photo Styles
   {
     id: "photo-polaroid",
     name: "Polaroid",
@@ -80,25 +108,185 @@ const FRAME_STYLES: FrameStyle[] = [
     category: "photo",
   },
   {
+    id: "photo-polaroid-white",
+    name: "White Polaroid",
+    thumbnail: "🖼️",
+    description: "Classic white border",
+    category: "photo",
+  },
+  {
+    id: "photo-instagram",
+    name: "Instagram",
+    thumbnail: "📸",
+    description: "Social media style",
+    category: "photo",
+  },
+  {
     id: "photo-matted",
     name: "Matted",
-    thumbnail: "🖼️",
+    thumbnail: "▣",
     description: "Gallery mat frame",
     category: "photo",
+  },
+  {
+    id: "photo-film",
+    name: "Film Strip",
+    thumbnail: "🎞️",
+    description: "Movie film border",
+    category: "photo",
+  },
+  {
+    id: "photo-snapshot",
+    name: "Snapshot",
+    thumbnail: "📷",
+    description: "Quick photo print",
+    category: "photo",
+  },
+
+  // Vintage & Retro
+  {
+    id: "vintage-sepia",
+    name: "Sepia Tone",
+    thumbnail: "📜",
+    description: "Aged paper effect",
+    category: "vintage",
+  },
+  {
+    id: "vintage-postcard",
+    name: "Postcard",
+    thumbnail: "✉️",
+    description: "Retro postcard border",
+    category: "vintage",
+  },
+  {
+    id: "vintage-newspaper",
+    name: "Newspaper",
+    thumbnail: "📰",
+    description: "News print frame",
+    category: "vintage",
+  },
+  {
+    id: "vintage-ticket",
+    name: "Ticket Stub",
+    thumbnail: "🎟️",
+    description: "Perforated edges",
+    category: "vintage",
+  },
+  {
+    id: "vintage-label",
+    name: "Vintage Label",
+    thumbnail: "🏷️",
+    description: "Antique label style",
+    category: "vintage",
+  },
+  {
+    id: "vintage-stamp",
+    name: "Postage Stamp",
+    thumbnail: "📮",
+    description: "Canceled stamp edge",
+    category: "vintage",
+  },
+
+  // Paper & Notebook
+  {
+    id: "paper-sticky",
+    name: "Sticky Note",
+    thumbnail: "📝",
+    description: "Yellow sticky note",
+    category: "paper",
+  },
+  {
+    id: "paper-peeled",
+    name: "Peeled Corner",
+    thumbnail: "📄",
+    description: "Folded corner effect",
+    category: "paper",
+  },
+  {
+    id: "paper-notebook",
+    name: "Notebook",
+    thumbnail: "📓",
+    description: "Spiral notebook",
+    category: "paper",
+  },
+  {
+    id: "paper-grid",
+    name: "Graph Paper",
+    thumbnail: "▦",
+    description: "Grid paper background",
+    category: "paper",
+  },
+  {
+    id: "paper-lined",
+    name: "Lined Paper",
+    thumbnail: "📃",
+    description: "Writing paper lines",
+    category: "paper",
+  },
+  {
+    id: "paper-torn",
+    name: "Torn Edge",
+    thumbnail: "✂️",
+    description: "Hand-torn paper edge",
+    category: "paper",
+  },
+
+  // Decorative & Artistic
+  {
+    id: "decorative-lace",
+    name: "Lace",
+    thumbnail: "✨",
+    description: "Delicate lace pattern",
+    category: "decorative",
+  },
+  {
+    id: "decorative-floral",
+    name: "Floral",
+    thumbnail: "🌸",
+    description: "Flowing floral border",
+    category: "decorative",
+  },
+  {
+    id: "decorative-wreath",
+    name: "Wreath",
+    thumbnail: "🌿",
+    description: "Leafy branch frame",
+    category: "decorative",
+  },
+  {
+    id: "decorative-ribbon",
+    name: "Ribbon",
+    thumbnail: "🎀",
+    description: "Decorative ribbon",
+    category: "decorative",
+  },
+  {
+    id: "decorative-star",
+    name: "Star Border",
+    thumbnail: "⭐",
+    description: "Starry pattern",
+    category: "decorative",
+  },
+  {
+    id: "decorative-heart",
+    name: "Heart Border",
+    thumbnail: "💝",
+    description: "Heart pattern",
+    category: "decorative",
   },
 
   // Special Effects
   {
     id: "special-neon",
     name: "Neon Glow",
-    thumbnail: "✨",
+    thumbnail: "🌈",
     description: "Glowing border effect",
     category: "special",
   },
   {
     id: "special-gradient",
     name: "Gradient",
-    thumbnail: "🌈",
+    thumbnail: "▱",
     description: "Color gradient border",
     category: "special",
   },
@@ -109,6 +297,80 @@ const FRAME_STYLES: FrameStyle[] = [
     description: "Dashed border",
     category: "special",
   },
+  {
+    id: "special-dotted",
+    name: "Dotted",
+    thumbnail: "· · ·",
+    description: "Dotted border",
+    category: "special",
+  },
+  {
+    id: "special-metallic",
+    name: "Metallic",
+    thumbnail: "⚪",
+    description: "Shiny metal effect",
+    category: "special",
+  },
+  {
+    id: "special-glow",
+    name: "Outer Glow",
+    thumbnail: "◯",
+    description: "Soft outer glow",
+    category: "special",
+  },
+
+  // Social Media
+  {
+    id: "social-story",
+    name: "Story Frame",
+    thumbnail: "📱",
+    description: "Vertical story style",
+    category: "social",
+  },
+  {
+    id: "social-post",
+    name: "Social Post",
+    thumbnail: "📲",
+    description: "Social media post",
+    category: "social",
+  },
+  {
+    id: "social-badge",
+    name: "Badge",
+    thumbnail: "🏅",
+    description: "Award/badge style",
+    category: "social",
+  },
+
+  // Natural & Organic
+  {
+    id: "natural-branch",
+    name: "Tree Branch",
+    thumbnail: "🌳",
+    description: "Twig branch frame",
+    category: "natural",
+  },
+  {
+    id: "natural-bamboo",
+    name: "Bamboo",
+    thumbnail: "🎋",
+    description: "Bamboo frame",
+    category: "natural",
+  },
+  {
+    id: "natural-rope",
+    name: "Rope",
+    thumbnail: "🪢",
+    description: "Twisted rope border",
+    category: "natural",
+  },
+  {
+    id: "natural-woven",
+    name: "Woven",
+    thumbnail: "🧺",
+    description: "Woven texture",
+    category: "natural",
+  },
 ];
 
 const FRAME_CATEGORIES = [
@@ -116,7 +378,12 @@ const FRAME_CATEGORIES = [
   { id: "modern", name: "Modern", icon: "▭" },
   { id: "classic", name: "Classic", icon: "❖" },
   { id: "photo", name: "Photo", icon: "📷" },
-  { id: "special", name: "Special", icon: "✨" },
+  { id: "vintage", name: "Vintage", icon: "📜" },
+  { id: "paper", name: "Paper", icon: "📄" },
+  { id: "decorative", name: "Decorative", icon: "✨" },
+  { id: "special", name: "Special", icon: "🌈" },
+  { id: "social", name: "Social", icon: "📱" },
+  { id: "natural", name: "Natural", icon: "🌿" },
 ];
 
 export function FrameToolControls({
@@ -369,10 +636,13 @@ export function FrameToolControls({
       <div className="p-3 bg-gray-50 rounded text-xs text-gray-700">
         <p className="font-semibold mb-1">💡 Frame Tips:</p>
         <ul className="space-y-1">
-          <li>• Thin frames work best for modern, minimal looks</li>
-          <li>• Add inner padding for a matted photo effect</li>
-          <li>• Enable shadow for depth and elevation</li>
-          <li>• Use corner radius for softer edges</li>
+          <li>• Frames work with all image sizes - square, portrait, landscape</li>
+          <li>• Vintage & Paper styles great for creative, artistic images</li>
+          <li>• Photo frames (Polaroid, Instagram) perfect for social media</li>
+          <li>• Add inner padding for a professional matted effect</li>
+          <li>• Enable shadow for depth and visual interest</li>
+          <li>• Use corner radius to soften edges on modern frames</li>
+          <li>• Decorative frames (floral, lace) add elegant touches</li>
         </ul>
       </div>
     </div>

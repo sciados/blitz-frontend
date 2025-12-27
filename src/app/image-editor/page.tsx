@@ -618,7 +618,7 @@ export default function ImageEditorPage() {
         const formData = new FormData();
         formData.append("image", blob, "background_image.png");
         formData.append("campaign_id", campaignId);
-        formData.append("operation", "background");
+        formData.append("operation", "background_add");
 
         const token = localStorage.getItem("token");
         const uploadResponse = await fetch(
