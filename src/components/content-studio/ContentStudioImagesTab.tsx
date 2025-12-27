@@ -96,6 +96,8 @@ export function ContentStudioImagesTab({
   );
   const [isEnhancing, setIsEnhancing] = useState(false);
   const [customPrompt, setCustomPrompt] = useState<string>("");
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
+  const [isGeneratingVariations, setIsGeneratingVariations] = useState(false);
 
   // Fetch images for this campaign
   const { data, refetch } = useQuery({
@@ -189,6 +191,47 @@ export function ContentStudioImagesTab({
       toast.error(error?.response?.data?.detail || "Failed to enhance image");
     } finally {
       setIsEnhancing(false);
+    }
+  };
+
+  const handleGenerateVariations = async () => {
+    if (selectedImageIndex === null) {
+      toast.error("Please select an image first");
+      return;
+    }
+
+    try {
+      setIsGeneratingVariations(true);
+      const selectedImage = images[selectedImageIndex];
+
+      if (!selectedImage) {
+        toast.error("Selected image not found");
+        return;
+      }
+
+      // Generate 4 variations of the selected image
+      const response = await api.post("/api/images/variations", {
+        campaign_id: campaignId,
+        base_image_url: selectedImage.image_url,
+        image_type: selectedImage.image_type,
+        style: selectedImage.style,
+        aspect_ratio: selectedImage.aspect_ratio,
+      });
+
+      toast.success(
+        `Generated ${
+          response.data?.length || 0
+        } variations! They have been added to your library.`
+      );
+
+      // Refresh the images list
+      refetch();
+    } catch (error: any) {
+      toast.error(
+        error?.response?.data?.detail || "Failed to generate variations"
+      );
+    } finally {
+      setIsGeneratingVariations(false);
     }
   };
 
@@ -687,59 +730,121 @@ export function ContentStudioImagesTab({
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {images.slice(0, 10).map((image: GeneratedImage) => (
-                  <div
-                    key={image.id}
-                    className="card rounded-lg overflow-hidden hover:shadow-lg transition"
-                  >
-                    <div className="aspect-square bg-gray-100 dark:bg-gray-800">
-                      {image.image_url ? (
-                        <img
-                          src={image.image_url}
-                          alt={image.prompt}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <span style={{ color: "var(--text-secondary)" }}>
-                            Processing...
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                    <div className="p-4">
-                      <p
-                        className="text-sm line-clamp-2 mb-2"
-                        style={{ color: "var(--text-secondary)" }}
-                      >
-                        {image.prompt}
-                      </p>
-                      <div className="flex items-center justify-between">
-                        <span
-                          className="text-xs px-2 py-1 rounded"
-                          style={{
-                            backgroundColor: "var(--bg-secondary)",
-                            color: "var(--text-primary)",
-                          }}
+              <>
+                {/* Generate Variations Button - shown when image is selected */}
+                {selectedImageIndex !== null && (
+                  <div className="card rounded-lg p-4 mb-4 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-2 border-green-200 dark:border-green-800">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <svg
+                          className="w-5 h-5 mr-2 text-green-600"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
                         >
-                          {image.image_type}
-                        </span>
-                        {image.image_url && (
-                          <a
-                            href={image.image_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-xs text-blue-600 hover:underline"
-                          >
-                            View Full Size
-                          </a>
-                        )}
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                          />
+                        </svg>
+                        <div>
+                          <h4 className="font-semibold text-green-900 dark:text-green-100">
+                            Image Selected
+                          </h4>
+                          <p className="text-sm text-green-800 dark:text-green-200">
+                            Generate variations of this image
+                          </p>
+                        </div>
                       </div>
+                      <button
+                        onClick={handleGenerateVariations}
+                        disabled={isGeneratingVariations}
+                        className="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white rounded-lg font-medium transition"
+                      >
+                        {isGeneratingVariations
+                          ? "Generating..."
+                          : "Generate Variations"}
+                      </button>
                     </div>
                   </div>
-                ))}
-              </div>
+                )}
+
+                {/* Images Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {images.slice(0, 10).map((image: GeneratedImage, index: number) => {
+                    const imageIndex = index;
+                    const isSelected = selectedImageIndex === imageIndex;
+                    return (
+                      <div
+                        key={image.id}
+                        onClick={() =>
+                          setSelectedImageIndex(isSelected ? null : imageIndex)
+                        }
+                        className={`card rounded-lg overflow-hidden hover:shadow-lg transition cursor-pointer ${
+                          isSelected
+                            ? "ring-2 ring-green-500 ring-offset-2"
+                            : ""
+                        }`}
+                      >
+                        <div className="relative">
+                          <div className="aspect-square bg-gray-100 dark:bg-gray-800">
+                            {image.image_url ? (
+                              <img
+                                src={image.image_url}
+                                alt={image.prompt}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center">
+                                <span style={{ color: "var(--text-secondary)" }}>
+                                  Processing...
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                          {isSelected && (
+                            <div className="absolute top-2 right-2 bg-green-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold">
+                              ✓
+                            </div>
+                          )}
+                        </div>
+                        <div className="p-4">
+                          <p
+                            className="text-sm line-clamp-2 mb-2"
+                            style={{ color: "var(--text-secondary)" }}
+                          >
+                            {image.prompt}
+                          </p>
+                          <div className="flex items-center justify-between">
+                            <span
+                              className="text-xs px-2 py-1 rounded"
+                              style={{
+                                backgroundColor: "var(--bg-secondary)",
+                                color: "var(--text-primary)",
+                              }}
+                            >
+                              {image.image_type}
+                            </span>
+                            {image.image_url && (
+                              <a
+                                href={image.image_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={(e) => e.stopPropagation()}
+                                className="text-xs text-blue-600 hover:underline"
+                              >
+                                View Full Size
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
             )}
           </>
         )}
