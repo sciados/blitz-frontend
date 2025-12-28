@@ -126,7 +126,8 @@ export default function ContentLibraryPage() {
   const [allContent, setAllContent] = useState<GeneratedContent[]>([]);
 
   // Image Variations State
-  const [showImageVariationsModal, setShowImageVariationsModal] = useState(false);
+  const [showImageVariationsModal, setShowImageVariationsModal] =
+    useState(false);
   const [selectedImageForVariations, setSelectedImageForVariations] =
     useState<LibraryImage | null>(null);
 
@@ -682,17 +683,23 @@ export default function ContentLibraryPage() {
   };
 
   const handleMoveImages = async (destinationPath: string) => {
-    console.log('LibraryPage: handleMoveImages called with path:', destinationPath);
+    console.log(
+      "LibraryPage: handleMoveImages called with path:",
+      destinationPath
+    );
     try {
       let imageIds: number[] = [];
 
       // If sharing a single image from viewer
       if (imageToShare) {
-        console.log('LibraryPage: moving single image, id =', imageToShare.id);
+        console.log("LibraryPage: moving single image, id =", imageToShare.id);
         imageIds = [imageToShare.id];
       } else {
         // Moving multiple selected images
-        console.log('LibraryPage: moving multiple images, selectedImageUrls =', selectedImageUrls);
+        console.log(
+          "LibraryPage: moving multiple images, selectedImageUrls =",
+          selectedImageUrls
+        );
         for (const imageUrl of selectedImageUrls) {
           const image = sortedImages.find((img) => img.image_url === imageUrl);
           if (image && image.id) {
@@ -701,13 +708,13 @@ export default function ContentLibraryPage() {
         }
       }
 
-      console.log('LibraryPage: imageIds to move =', imageIds);
+      console.log("LibraryPage: imageIds to move =", imageIds);
       const { data } = await api.post("/api/images/move", {
         image_ids: imageIds,
         destination_path: destinationPath,
       });
 
-      console.log('LibraryPage: API call successful, response =', data);
+      console.log("LibraryPage: API call successful, response =", data);
       toast.success(`Moved ${imageIds.length} image(s) to ${destinationPath}`);
       setSelectedImageUrls([]);
       setImageToShare(null);
@@ -715,7 +722,7 @@ export default function ContentLibraryPage() {
       refetchImages();
       refetchEditedImages();
     } catch (error: any) {
-      console.error('LibraryPage: handleMoveImages error:', error);
+      console.error("LibraryPage: handleMoveImages error:", error);
       toast.error(error.response?.data?.detail || "Failed to move images");
     }
   };
@@ -1734,22 +1741,6 @@ export default function ContentLibraryPage() {
               {sortedImages.length > 0 ? (
                 <>
                   <div className="mb-4 flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <p
-                        className="text-sm"
-                        style={{ color: "var(--text-secondary)" }}
-                      >
-                        Showing {sortedImages.length} of {combinedImages.length}{" "}
-                        total images
-                      </p>
-
-                      {selectedImageUrls.length > 0 && (
-                        <span className="text-sm font-medium text-blue-600">
-                          {selectedImageUrls.length} selected
-                        </span>
-                      )}
-                    </div>
-
                     <div className="flex items-center gap-2">
                       {selectedImageUrls.length === 0 ? (
                         <button
@@ -2513,7 +2504,9 @@ export default function ContentLibraryPage() {
             handleMoveVideos(path);
           }
         }}
-        selectedCount={imageToShare ? 1 : videoToShare ? 1 : selectedImageUrls.length}
+        selectedCount={
+          imageToShare ? 1 : videoToShare ? 1 : selectedImageUrls.length
+        }
       />
 
       {/* Library Image Viewer Modal */}
@@ -2783,7 +2776,9 @@ export default function ContentLibraryPage() {
                   </button>
 
                   <button
-                    onClick={() => handleCreateImageVariations(selectedLibraryImage)}
+                    onClick={() =>
+                      handleCreateImageVariations(selectedLibraryImage)
+                    }
                     className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition font-medium flex items-center space-x-2"
                   >
                     <svg
@@ -2943,7 +2938,10 @@ export default function ContentLibraryPage() {
                     className="text-sm mt-1"
                     style={{ color: "var(--text-secondary)" }}
                   >
-                    {selectedVideo.generation_mode?.replace("_", " ").toUpperCase()} • {selectedVideo.aspect_ratio}
+                    {selectedVideo.generation_mode
+                      ?.replace("_", " ")
+                      .toUpperCase()}{" "}
+                    • {selectedVideo.aspect_ratio}
                   </p>
                 </div>
                 <button
@@ -2969,7 +2967,8 @@ export default function ContentLibraryPage() {
               {/* Video Display */}
               <div className="relative bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden mb-4">
                 <div className="aspect-video flex items-center justify-center">
-                  {selectedVideo.status === "completed" && selectedVideo.video_url ? (
+                  {selectedVideo.status === "completed" &&
+                  selectedVideo.video_url ? (
                     <video
                       src={selectedVideo.video_url}
                       controls
