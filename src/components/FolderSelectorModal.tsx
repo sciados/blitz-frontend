@@ -20,13 +20,13 @@ function hasStockAccess(): boolean {
     return true;
   }
 
-  // Pro/Business users have access
-  if (tier === 'pro' || tier === 'business') {
+  // Pro/Business/Pro Marketer users have access (check various formats)
+  if (tier === 'pro' || tier === 'business' || tier === 'Pro Marketer' || tier === 'pro_marketer') {
     return true;
   }
 
   // Business user type has access
-  if (userType === 'Business' || userType === 'Admin') {
+  if (userType === 'Business' || userType === 'Admin' || userType === 'Pro Marketer') {
     return true;
   }
 
