@@ -10,6 +10,7 @@ import { ImageEditorCanvas } from "src/components/image-editor/ImageEditorCanvas
 import { ImageEditorToolbar } from "src/components/image-editor/ImageEditorToolbar";
 import { ImageEditorSidebar } from "src/components/image-editor/ImageEditorSidebar";
 import { ToolSelector } from "src/components/image-editor/ToolSelector";
+import { FolderSelectorModal } from "src/components/FolderSelectorModal";
 // import { OverlayEditor } from "src/components/image-editor/OverlayEditor";
 import { SmartResize } from "src/components/image-editor/SmartResize";
 
@@ -71,6 +72,9 @@ export default function ImageEditorPage() {
   // Selection interface state
   const [selectedCampaignId, setSelectedCampaignId] = useState<string>("");
   const [uploadedImageFile, setUploadedImageFile] = useState<File | null>(null);
+
+  // Share to Stock state
+  const [showFolderSelector, setShowFolderSelector] = useState(false);
 
   // React Query: Fetch campaigns
   const { data: availableCampaigns = [], isLoading: isLoadingCampaigns } =
@@ -754,6 +758,29 @@ export default function ImageEditorPage() {
     }
   };
 
+  const handleShareToStock = async (destinationPath: string) => {
+    try {
+      // For images in the editor, we need to get the image ID from the campaign
+      // This is a simplified approach - in a real implementation, you might want to
+      // save the image first, then share it
+      const imageToShare = editedImage || originalImage;
+      if (!imageToShare || !campaignId) {
+        toast.error("No image to share");
+        return;
+      }
+
+      // TODO: Implement backend endpoint for sharing images from editor
+      // For now, show a message that this feature is coming soon
+      toast.info(
+        "Share to Stock feature for Image Editor is coming soon! Please save the image first, then share from the Library."
+      );
+      setShowFolderSelector(false);
+    } catch (error) {
+      console.error("Failed to share image:", error);
+      toast.error("Failed to share image");
+    }
+  };
+
   // Loading skeleton
   if (isLoadingCampaigns && (!imageUrl || !campaignId)) {
     return (
@@ -1072,10 +1099,44 @@ export default function ImageEditorPage() {
                 )}
               </div>
 
+              {/* Share to Stock Button */}
+              <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+                <button
+                  onClick={() => setShowFolderSelector(true)}
+                  className="w-full px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition font-medium flex items-center justify-center gap-2"
+                >
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
+                    />
+                  </svg>
+                  <span>Share to Stock</span>
+                </button>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">
+                  Save to shared folder for team use
+                </p>
+              </div>
+
               <ToolSelector selectedTool={selectedEditTool} />
             </div>
           )}
         </div>
+
+        {/* Folder Selector Modal */}
+        <FolderSelectorModal
+          isOpen={showFolderSelector}
+          onClose={() => setShowFolderSelector(false)}
+          onSelectFolder={handleShareToStock}
+          selectedCount={1}
+        />
       </div>
     </AuthGate>
   );

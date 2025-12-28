@@ -18,7 +18,8 @@
       "Bash(npm view:*)",
       "Bash(npm install:*)",
       "Bash(PORT=3001 npm run dev:*)",
-      "Bash(npx next:*)"
+      "Bash(npx next:*)",
+      "Bash(npm run build)"
     ],
     "deny": [],
     "ask": []
