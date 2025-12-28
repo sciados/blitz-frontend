@@ -40,8 +40,15 @@ function isAdmin(): boolean {
 
 const PRESET_FOLDERS = [
   {
-    path: "campaignforge-storage/stock/",
+    path: "campaignforge-storage/stock/images/",
     name: "Stock Images",
+    description: "Images shared with all users",
+    icon: "📦",
+    access: "All users can read",
+  },
+  {
+    path: "campaignforge-storage/stock/",
+    name: "Stock (General)",
     description: "Global shared folder - visible to all users",
     icon: "📦",
     access: "All users can read",

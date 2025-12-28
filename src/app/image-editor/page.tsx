@@ -760,24 +760,54 @@ export default function ImageEditorPage() {
 
   const handleShareToStock = async (destinationPath: string) => {
     try {
-      // For images in the editor, we need to get the image ID from the campaign
-      // This is a simplified approach - in a real implementation, you might want to
-      // save the image first, then share it
       const imageToShare = editedImage || originalImage;
       if (!imageToShare || !campaignId) {
         toast.error("No image to share");
         return;
       }
 
-      // TODO: Implement backend endpoint for sharing images from editor
-      // For now, show a message that this feature is coming soon
-      toast.info(
-        "Share to Stock feature for Image Editor is coming soon! Please save the image first, then share from the Library."
+      // Check if image is a data URL (needs to be uploaded first)
+      if (imageToShare.startsWith("data:")) {
+        toast.error(
+          "Please save the image to your campaign first before sharing to stock. Use the 'Save to Campaign' button."
+        );
+        setShowFolderSelector(false);
+        return;
+      }
+
+      // Extract image ID from the URL
+      // The URL pattern is: campaignforge-storage/campaigns/{campaignId}/images/{imageId}.png
+      const urlParts = imageToShare.split("/");
+      const imageIdPart = urlParts[urlParts.length - 1];
+      const imageId = parseInt(imageIdPart.split(".")[0]);
+
+      if (isNaN(imageId)) {
+        toast.error("Could not extract image ID from URL");
+        setShowFolderSelector(false);
+        return;
+      }
+
+      // Call the move endpoint
+      const response = await api.post("/api/images/move", {
+        image_ids: [imageId],
+        destination_path: destinationPath,
+      });
+
+      toast.success(
+        `Image shared successfully to ${destinationPath.replace(
+          "campaignforge-storage/",
+          ""
+        )}`
       );
       setShowFolderSelector(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to share image:", error);
-      toast.error("Failed to share image");
+      const errorMessage =
+        error.response?.data?.detail ||
+        error.response?.data?.message ||
+        "Failed to share image to stock folder";
+      toast.error(errorMessage);
+      setShowFolderSelector(false);
     }
   };
 
