@@ -19,7 +19,8 @@
       "Bash(npm install:*)",
       "Bash(PORT=3001 npm run dev:*)",
       "Bash(npx next:*)",
-      "Bash(npm run build)"
+      "Bash(npm run build)",
+      "Bash(python -m uvicorn:*)"
     ],
     "deny": [],
     "ask": []

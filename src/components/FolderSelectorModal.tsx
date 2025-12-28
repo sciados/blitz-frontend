@@ -15,21 +15,28 @@ function hasStockAccess(): boolean {
   const role = getRoleFromToken();
   const userType = localStorage.getItem('user_type');
 
+  // Debug logging
+  console.log('hasStockAccess check:', { tier, role, userType });
+
   // Admin has full access
   if (role === 'admin') {
+    console.log('Access granted: admin role');
     return true;
   }
 
   // Pro/Business/Pro Marketer users have access (check various formats)
   if (tier === 'pro' || tier === 'business' || tier === 'Pro Marketer' || tier === 'pro_marketer') {
+    console.log('Access granted: pro/business tier');
     return true;
   }
 
   // Business user type has access
   if (userType === 'Business' || userType === 'Admin' || userType === 'Pro Marketer') {
+    console.log('Access granted: business user type');
     return true;
   }
 
+  console.log('Access denied: no matching criteria');
   return false;
 }
 
