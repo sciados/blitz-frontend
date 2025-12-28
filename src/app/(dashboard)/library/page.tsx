@@ -682,14 +682,17 @@ export default function ContentLibraryPage() {
   };
 
   const handleMoveImages = async (destinationPath: string) => {
+    console.log('LibraryPage: handleMoveImages called with path:', destinationPath);
     try {
       let imageIds: number[] = [];
 
       // If sharing a single image from viewer
       if (imageToShare) {
+        console.log('LibraryPage: moving single image, id =', imageToShare.id);
         imageIds = [imageToShare.id];
       } else {
         // Moving multiple selected images
+        console.log('LibraryPage: moving multiple images, selectedImageUrls =', selectedImageUrls);
         for (const imageUrl of selectedImageUrls) {
           const image = sortedImages.find((img) => img.image_url === imageUrl);
           if (image && image.id) {
@@ -698,11 +701,13 @@ export default function ContentLibraryPage() {
         }
       }
 
+      console.log('LibraryPage: imageIds to move =', imageIds);
       const { data } = await api.post("/api/images/move", {
         image_ids: imageIds,
         destination_path: destinationPath,
       });
 
+      console.log('LibraryPage: API call successful, response =', data);
       toast.success(`Moved ${imageIds.length} image(s) to ${destinationPath}`);
       setSelectedImageUrls([]);
       setImageToShare(null);
@@ -710,6 +715,7 @@ export default function ContentLibraryPage() {
       refetchImages();
       refetchEditedImages();
     } catch (error: any) {
+      console.error('LibraryPage: handleMoveImages error:', error);
       toast.error(error.response?.data?.detail || "Failed to move images");
     }
   };
