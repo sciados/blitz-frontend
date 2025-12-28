@@ -24,7 +24,8 @@
       "Bash(python3 -c:*)",
       "Bash(python:*)",
       "Bash(node -c:*)",
-      "Bash(awk:*)"
+      "Bash(awk:*)",
+      "Bash(git restore:*)"
     ],
     "deny": [],
     "ask": []
