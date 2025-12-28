@@ -20,7 +20,11 @@
       "Bash(PORT=3001 npm run dev:*)",
       "Bash(npx next:*)",
       "Bash(npm run build)",
-      "Bash(python -m uvicorn:*)"
+      "Bash(python -m uvicorn:*)",
+      "Bash(python3 -c:*)",
+      "Bash(python:*)",
+      "Bash(node -c:*)",
+      "Bash(awk:*)"
     ],
     "deny": [],
     "ask": []
