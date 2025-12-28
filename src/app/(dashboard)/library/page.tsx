@@ -2502,6 +2502,8 @@ export default function ContentLibraryPage() {
             handleMoveImages(path);
           } else if (videoToShare) {
             handleMoveVideos(path);
+          } else {
+            handleMoveImages(path);
           }
         }}
         selectedCount={

@@ -107,9 +107,7 @@ export function FolderSelectorModal({
   };
 
   const handleSubmit = () => {
-    console.log('FolderSelectorModal: handleSubmit called');
     const path = useCustom ? customPath : selectedFolder;
-    console.log('FolderSelectorModal: path =', path, 'useCustom =', useCustom);
     if (useCustom && !path?.trim()) {
       alert("Please enter a folder path");
       return;
@@ -119,7 +117,6 @@ export function FolderSelectorModal({
       return;
     }
     if (path) {
-      console.log('FolderSelectorModal: calling onSelectFolder with path:', path);
       onSelectFolder(path);
     }
   };
