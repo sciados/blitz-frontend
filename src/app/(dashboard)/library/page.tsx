@@ -132,6 +132,12 @@ export default function ContentLibraryPage() {
 
   // Image Management State
   const [showFolderSelector, setShowFolderSelector] = useState(false);
+  const [imageToShare, setImageToShare] = useState<LibraryImage | null>(null);
+
+  // Video Viewer State
+  const [selectedVideo, setSelectedVideo] = useState<any | null>(null);
+  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
+  const [videoToShare, setVideoToShare] = useState<any | null>(null);
 
   // Content Library Tab State
   const [activeLibraryTab, setActiveLibraryTab] = useState<
@@ -644,14 +650,51 @@ export default function ContentLibraryPage() {
     setShowFolderSelector(true);
   };
 
+  const handleShareImage = (image: LibraryImage) => {
+    setImageToShare(image);
+    setShowFolderSelector(true);
+  };
+
+  // Video Management Functions
+  const handleOpenVideoViewer = (video: any) => {
+    setSelectedVideo(video);
+    setIsVideoModalOpen(true);
+  };
+
+  const handleShareVideo = (video: any) => {
+    setVideoToShare(video);
+    setShowFolderSelector(true);
+  };
+
+  const handleMoveVideos = async (destinationPath: string) => {
+    try {
+      // For now, show a message that video sharing is coming soon
+      // TODO: Implement video sharing backend endpoint
+      toast.info(
+        "Video sharing to Stock folders is coming soon! Please check back later."
+      );
+      setShowFolderSelector(false);
+      setVideoToShare(null);
+    } catch (error) {
+      console.error("Failed to move videos:", error);
+      toast.error("Failed to move videos");
+    }
+  };
+
   const handleMoveImages = async (destinationPath: string) => {
     try {
-      // Get image IDs from selected URLs
-      const imageIds: number[] = [];
-      for (const imageUrl of selectedImageUrls) {
-        const image = sortedImages.find((img) => img.image_url === imageUrl);
-        if (image && image.id) {
-          imageIds.push(image.id);
+      let imageIds: number[] = [];
+
+      // If sharing a single image from viewer
+      if (imageToShare) {
+        imageIds = [imageToShare.id];
+      } else {
+        // Moving multiple selected images
+        for (const imageUrl of selectedImageUrls) {
+          const image = sortedImages.find((img) => img.image_url === imageUrl);
+          if (image && image.id) {
+            imageIds.push(image.id);
+          }
         }
       }
 
@@ -662,6 +705,7 @@ export default function ContentLibraryPage() {
 
       toast.success(`Moved ${imageIds.length} image(s) to ${destinationPath}`);
       setSelectedImageUrls([]);
+      setImageToShare(null);
       setShowFolderSelector(false);
       refetchImages();
       refetchEditedImages();
@@ -2246,9 +2290,7 @@ export default function ContentLibraryPage() {
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              if (video.video_url) {
-                                window.open(video.video_url, "_blank");
-                              }
+                              handleOpenVideoViewer(video);
                             }}
                             className="flex-1 text-xs px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded transition flex items-center justify-center gap-1"
                             title="View Video"
@@ -2453,9 +2495,19 @@ export default function ContentLibraryPage() {
       {/* Folder Selector Modal */}
       <FolderSelectorModal
         isOpen={showFolderSelector}
-        onClose={() => setShowFolderSelector(false)}
-        onSelectFolder={handleMoveImages}
-        selectedCount={selectedImageUrls.length}
+        onClose={() => {
+          setShowFolderSelector(false);
+          setImageToShare(null);
+          setVideoToShare(null);
+        }}
+        onSelectFolder={(path) => {
+          if (imageToShare) {
+            handleMoveImages(path);
+          } else if (videoToShare) {
+            handleMoveVideos(path);
+          }
+        }}
+        selectedCount={imageToShare ? 1 : videoToShare ? 1 : selectedImageUrls.length}
       />
 
       {/* Library Image Viewer Modal */}
@@ -2744,6 +2796,26 @@ export default function ContentLibraryPage() {
                     <span>Generate Variations</span>
                   </button>
 
+                  <button
+                    onClick={() => handleShareImage(selectedLibraryImage)}
+                    className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition font-medium flex items-center space-x-2"
+                  >
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
+                      />
+                    </svg>
+                    <span>Share to Stock</span>
+                  </button>
+
                   {isSeedImage(selectedLibraryImage) ? (
                     <button
                       disabled
@@ -2840,6 +2912,206 @@ export default function ContentLibraryPage() {
             }
           }}
         />
+      )}
+
+      {/* Library Video Viewer Modal */}
+      {isVideoModalOpen && selectedVideo && (
+        <div
+          className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
+          onClick={() => setIsVideoModalOpen(false)}
+        >
+          <div
+            className="bg-white dark:bg-gray-900 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2
+                    className="text-2xl font-bold"
+                    style={{ color: "var(--text-primary)" }}
+                  >
+                    Video Details
+                  </h2>
+                  <p
+                    className="text-sm mt-1"
+                    style={{ color: "var(--text-secondary)" }}
+                  >
+                    {selectedVideo.generation_mode?.replace("_", " ").toUpperCase()} • {selectedVideo.aspect_ratio}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setIsVideoModalOpen(false)}
+                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                >
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Video Display */}
+              <div className="relative bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden mb-4">
+                <div className="aspect-video flex items-center justify-center">
+                  {selectedVideo.status === "completed" && selectedVideo.video_url ? (
+                    <video
+                      src={selectedVideo.video_url}
+                      controls
+                      className="w-full h-full"
+                      poster={selectedVideo.thumbnail_url}
+                    >
+                      Your browser does not support the video tag.
+                    </video>
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <svg
+                        className="w-16 h-16"
+                        style={{ color: "var(--text-secondary)" }}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+                        />
+                      </svg>
+                    </div>
+                  )}
+                </div>
+                {/* Status Badge */}
+                <div className="absolute top-4 right-4 px-3 py-1 rounded-full text-sm font-medium bg-black/50 text-white">
+                  {selectedVideo.status}
+                </div>
+              </div>
+
+              {/* Video Details */}
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center space-x-3">
+                  <button
+                    onClick={() => {
+                      if (selectedVideo.video_url) {
+                        window.open(selectedVideo.video_url, "_blank");
+                      }
+                    }}
+                    className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition font-medium flex items-center space-x-2"
+                  >
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                      />
+                    </svg>
+                    <span>Download</span>
+                  </button>
+
+                  {selectedVideo.generation_mode !== "text_overlay" && (
+                    <button
+                      onClick={() => {
+                        handleOpenVideoEditor(
+                          selectedVideo.video_url,
+                          selectedVideo.campaign_id,
+                          selectedVideo.prompt
+                        );
+                      }}
+                      className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition font-medium flex items-center space-x-2"
+                    >
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"
+                        />
+                      </svg>
+                      <span>Add Text Overlays</span>
+                    </button>
+                  )}
+
+                  <button
+                    onClick={() => handleShareVideo(selectedVideo)}
+                    className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition font-medium flex items-center space-x-2"
+                  >
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
+                      />
+                    </svg>
+                    <span>Share to Stock</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      handleDeleteVideo(selectedVideo.id);
+                      setIsVideoModalOpen(false);
+                    }}
+                    className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition font-medium flex items-center space-x-2"
+                  >
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                      />
+                    </svg>
+                    <span>Delete</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Prompt Display */}
+              <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <p
+                  className="text-xs font-medium mb-1"
+                  style={{ color: "var(--text-secondary)" }}
+                >
+                  Prompt:
+                </p>
+                <p className="text-sm" style={{ color: "var(--text-primary)" }}>
+                  {selectedVideo.prompt}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Delete Content Confirmation */}
