@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { getSubscriptionTierFromToken, getRoleFromToken } from "src/lib/auth";
 
 interface FolderSelectorModalProps {
   isOpen: boolean;
@@ -9,42 +10,76 @@ interface FolderSelectorModalProps {
   selectedCount: number;
 }
 
+function hasStockAccess(): boolean {
+  const tier = getSubscriptionTierFromToken();
+  const role = getRoleFromToken();
+  const userType = localStorage.getItem('user_type');
+
+  // Admin has full access
+  if (role === 'admin') {
+    return true;
+  }
+
+  // Pro/Business users have access
+  if (tier === 'pro' || tier === 'business') {
+    return true;
+  }
+
+  // Business user type has access
+  if (userType === 'Business' || userType === 'Admin') {
+    return true;
+  }
+
+  return false;
+}
+
+function isAdmin(): boolean {
+  const role = getRoleFromToken();
+  return role === 'admin';
+}
+
 const PRESET_FOLDERS = [
   {
     path: "campaignforge-storage/stock/",
     name: "Stock Images",
-    description: "Global shared folder for reusable images",
+    description: "Global shared folder - visible to all users",
     icon: "📦",
+    access: "All users can read",
   },
   {
     path: "campaignforge-storage/backgrounds/",
     name: "Backgrounds",
     description: "Background images for editors",
     icon: "🎨",
+    access: "All users can read",
   },
   {
     path: "campaignforge-storage/overlays/",
     name: "Overlays",
     description: "Overlay images and graphics",
     icon: "🖼️",
+    access: "All users can read",
   },
   {
     path: "campaignforge-storage/frames/",
     name: "Frames",
     description: "Frame templates and borders",
     icon: "🖼️",
+    access: "All users can read",
   },
   {
     path: "campaignforge-storage/icons/",
     name: "Icons",
     description: "Icon library",
     icon: "⭐",
+    access: "All users can read",
   },
   {
     path: "campaignforge-storage/templates/",
     name: "Templates",
     description: "Template assets",
     icon: "📋",
+    access: "All users can read",
   },
 ];
 
@@ -111,6 +146,45 @@ export function FolderSelectorModal({
             </p>
           </div>
 
+          {/* Access Notice */}
+          <div className="mb-6 p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
+            <div className="flex items-start space-x-2">
+              <svg
+                className="w-5 h-5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              <div>
+                <p className="text-sm font-medium text-amber-900 dark:text-amber-100">
+                  {hasStockAccess() ? "Your Access Level" : "Upgrade Required"}
+                </p>
+                {hasStockAccess() ? (
+                  <p className="text-xs text-amber-800 dark:text-amber-200 mt-1">
+                    ✓ You can add images to these shared folders (Pro/Business access)
+                    <br />
+                    ✗ You cannot delete from shared folders (Admin only)
+                    <br />
+                    All users can view and use images from these folders in editors.
+                  </p>
+                ) : (
+                  <p className="text-xs text-amber-800 dark:text-amber-200 mt-1">
+                    Stock folders are only accessible to Pro and Business subscribers.
+                    <br />
+                    <strong>Upgrade your account</strong> to add images to shared folders.
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
           {/* Preset Folders */}
           {!useCustom && (
             <div className="mb-6">
@@ -126,7 +200,7 @@ export function FolderSelectorModal({
                   >
                     <div className="flex items-start space-x-3">
                       <span className="text-2xl">{folder.icon}</span>
-                      <div>
+                      <div className="flex-1">
                         <div className="font-medium text-gray-900 dark:text-white">
                           {folder.name}
                         </div>
@@ -135,6 +209,16 @@ export function FolderSelectorModal({
                         </div>
                         <div className="text-xs text-gray-500 mt-1 font-mono">
                           {folder.path}
+                        </div>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-xs text-green-600 dark:text-green-400">
+                            ✓ Read & Add Access
+                          </span>
+                          {!isAdmin() && (
+                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                              • Admin can delete
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -168,7 +252,7 @@ export function FolderSelectorModal({
                   className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                 />
                 <p className="text-xs text-gray-500 mt-2">
-                  Enter the full R2 path including the bucket name
+                  Enter the full R2 path. Only folders under <code className="bg-gray-100 dark:bg-gray-800 px-1 rounded">campaignforge-storage/users/</code> or the preset folders are allowed.
                 </p>
               </div>
             )}
