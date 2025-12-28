@@ -35,6 +35,7 @@ export default function ImageEditorPage() {
   const searchParams = useSearchParams();
   const imageUrl = searchParams.get("imageUrl");
   const campaignId = searchParams.get("campaignId");
+  const imageId = searchParams.get("imageId");
 
   const [originalImage, setOriginalImage] = useState<string | null>(null);
   const [editedImage, setEditedImage] = useState<string | null>(null);
@@ -762,7 +763,8 @@ export default function ImageEditorPage() {
     try {
       const imageToShare = editedImage || originalImage;
       if (!imageToShare || !campaignId) {
-        toast.error("No image to share");
+        toast.error("Missing image information");
+        setShowFolderSelector(false);
         return;
       }
 
@@ -775,21 +777,24 @@ export default function ImageEditorPage() {
         return;
       }
 
-      // Extract image ID from the URL
-      // The URL pattern is: campaignforge-storage/campaigns/{campaignId}/images/{imageId}.png
-      const urlParts = imageToShare.split("/");
-      const imageIdPart = urlParts[urlParts.length - 1];
-      const imageId = parseInt(imageIdPart.split(".")[0]);
+      // If imageId is not provided, show error
+      if (!imageId) {
+        toast.error("Cannot share: image ID not available");
+        setShowFolderSelector(false);
+        return;
+      }
 
-      if (isNaN(imageId)) {
-        toast.error("Could not extract image ID from URL");
+      // Parse imageId from URL parameter
+      const parsedImageId = parseInt(imageId);
+      if (isNaN(parsedImageId)) {
+        toast.error("Invalid image ID");
         setShowFolderSelector(false);
         return;
       }
 
       // Call the move endpoint
       const response = await api.post("/api/images/move", {
-        image_ids: [imageId],
+        image_ids: [parsedImageId],
         destination_path: destinationPath,
       });
 

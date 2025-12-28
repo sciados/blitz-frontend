@@ -98,16 +98,35 @@ export function FolderSelectorModal({
 }: FolderSelectorModalProps) {
   const [customPath, setCustomPath] = useState("");
   const [useCustom, setUseCustom] = useState(false);
+  const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
+  const handleFolderSelect = (path: string) => {
+    setSelectedFolder(path);
+  };
+
   const handleSubmit = () => {
-    const path = useCustom ? customPath : "";
-    if (useCustom && !path.trim()) {
+    const path = useCustom ? customPath : selectedFolder;
+    if (useCustom && !path?.trim()) {
       alert("Please enter a folder path");
       return;
     }
-    onSelectFolder(path);
+    if (!useCustom && !path) {
+      alert("Please select a folder");
+      return;
+    }
+    if (path) {
+      onSelectFolder(path);
+    }
+  };
+
+  const handlePresetClick = (path: string) => {
+    setSelectedFolder(path);
+    // Auto-submit after a short delay for better UX
+    setTimeout(() => {
+      onSelectFolder(path);
+    }, 100);
   };
 
   return (
@@ -202,8 +221,12 @@ export function FolderSelectorModal({
                 {PRESET_FOLDERS.map((folder) => (
                   <button
                     key={folder.path}
-                    onClick={() => onSelectFolder(folder.path)}
-                    className="w-full text-left p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition"
+                    onClick={() => handlePresetClick(folder.path)}
+                    className={`w-full text-left p-4 border rounded-lg transition ${
+                      selectedFolder === folder.path
+                        ? "border-blue-500 bg-blue-50 dark:bg-blue-900/30"
+                        : "border-gray-200 dark:border-gray-700 hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                    }`}
                   >
                     <div className="flex items-start space-x-3">
                       <span className="text-2xl">{folder.icon}</span>
@@ -273,7 +296,7 @@ export function FolderSelectorModal({
             >
               Cancel
             </button>
-            {useCustom && (
+            {(selectedFolder || useCustom) && (
               <button
                 onClick={handleSubmit}
                 className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition font-medium"
