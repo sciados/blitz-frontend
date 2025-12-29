@@ -101,6 +101,16 @@ export function ToolSelector({ selectedTool }: ToolSelectorProps) {
         "E-commerce product images",
       ],
     },
+    crop: {
+      name: "Crop & Trim",
+      description: "Crop images to remove unwanted areas (no AI cost!)",
+      useCases: [
+        "Remove unwanted edges or backgrounds",
+        "Focus on specific parts of an image",
+        "Adjust image composition",
+        "Trim screenshots or photos",
+      ],
+    },
     filters: {
       name: "Filters & Color",
       description: "Apply preset filters and adjust colors",

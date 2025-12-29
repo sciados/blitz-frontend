@@ -87,8 +87,83 @@ export function ImageEditorCanvas({
     setFilterSettings(settings);
   };
 
+  // Crop methods
+  const setCropAspectRatio = (ratio: number | null) => {
+    setCropAspectRatio(ratio);
+    if (ratio && cropArea) {
+      // Adjust crop area to maintain aspect ratio
+      const centerX = cropArea.x + cropArea.width / 2;
+      const centerY = cropArea.y + cropArea.height / 2;
+      let newWidth = cropArea.width;
+      let newHeight = cropArea.width / ratio;
+
+      if (newHeight > cropArea.height) {
+        newHeight = cropArea.height;
+        newWidth = cropArea.height * ratio;
+      }
+
+      setCropArea({
+        x: centerX - newWidth / 2,
+        y: centerY - newHeight / 2,
+        width: newWidth,
+        height: newHeight,
+      });
+    }
+  };
+
+  const applyCrop = () => {
+    if (!cropArea || !canvasRef.current) return null;
+
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return null;
+
+    // Create a new canvas with the cropped image
+    const croppedCanvas = document.createElement("canvas");
+    croppedCanvas.width = cropArea.width;
+    croppedCanvas.height = cropArea.height;
+    const croppedCtx = croppedCanvas.getContext("2d");
+    if (!croppedCtx) return null;
+
+    // Draw the cropped portion
+    croppedCtx.drawImage(
+      canvas,
+      cropArea.x,
+      cropArea.y,
+      cropArea.width,
+      cropArea.height,
+      0,
+      0,
+      cropArea.width,
+      cropArea.height
+    );
+
+    // Convert to data URL
+    return croppedCanvas.toDataURL("image/png");
+  };
+
+  const resetCrop = () => {
+    setCropArea(null);
+    setCropAspectRatio(null);
+    setIsDraggingCrop(false);
+    setIsResizingCrop(false);
+    setCropHandle(null);
+  };
+
   // Collage state
   const [collageSettings, setCollageSettings] = useState<any>(null);
+
+  // Crop state
+  const [cropArea, setCropArea] = useState<{
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  } | null>(null);
+  const [cropAspectRatio, setCropAspectRatio] = useState<number | null>(null);
+  const [isDraggingCrop, setIsDraggingCrop] = useState(false);
+  const [isResizingCrop, setIsResizingCrop] = useState(false);
+  const [cropHandle, setCropHandle] = useState<string | null>(null);
 
   // Helper to load image with CORS
   const loadImageWithCORS = (imgSrc: string): Promise<HTMLImageElement> => {
@@ -1116,6 +1191,9 @@ export function ImageEditorCanvas({
     (window as any).imageEditorCanvas.getTemplateCanvas = getTemplateCanvas;
     (window as any).imageEditorCanvas.getFrameCanvas = getFrameCanvas;
     (window as any).imageEditorCanvas.getBackgroundCanvas = getBackgroundCanvas;
+    (window as any).imageEditorCanvas.setCropAspectRatio = setCropAspectRatio;
+    (window as any).imageEditorCanvas.applyCrop = applyCrop;
+    (window as any).imageEditorCanvas.resetCrop = resetCrop;
   }, [applyFilter, collageSettings]);
 
   // Load image onto canvas

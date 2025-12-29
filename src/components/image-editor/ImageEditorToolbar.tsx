@@ -45,6 +45,7 @@ export function ImageEditorToolbar({
     { id: "sketch-to-image", label: "Sketch", icon: "✏️" },
     { id: "overlay", label: "Overlay", icon: "📝" },
     { id: "resize", label: "Resize", icon: "📐" },
+    { id: "crop", label: "Crop", icon: "✂️" },
     { id: "filters", label: "Filters", icon: "🎭" },
     { id: "collage", label: "Collage", icon: "🖼️" },
     { id: "template", label: "Templates", icon: "📋" },

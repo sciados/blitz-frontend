@@ -29,6 +29,7 @@ export type EditTool =
   | "template"
   | "frame"
   | "background-add"
+  | "crop"
   | "landing-page";
 
 export default function ImageEditorPage() {

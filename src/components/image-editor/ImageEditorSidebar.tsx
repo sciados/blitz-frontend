@@ -8,6 +8,7 @@ import { TemplateToolControls } from "src/components/image-editor/TemplateToolCo
 import { FrameToolControls } from "src/components/image-editor/FrameToolControls";
 import { BackgroundLibraryControls } from "src/components/image-editor/BackgroundLibraryControls";
 import { LandingPageBuilder } from "src/components/image-editor/LandingPageBuilder";
+import { CropToolControls } from "src/components/image-editor/CropToolControls";
 
 interface TextOverlay {
   id: string;
@@ -790,6 +791,12 @@ export function ImageEditorSidebar({
       description: "Smart resize & format",
     },
     {
+      id: "crop",
+      label: "Crop",
+      icon: "✂️",
+      description: "Crop & trim images",
+    },
+    {
       id: "filters",
       label: "Filters",
       icon: "🎭",
@@ -907,6 +914,14 @@ export function ImageEditorSidebar({
         />
       )}
 
+      {/* Crop Tool - Full Width Layout */}
+      {selectedEditTool === "crop" && (
+        <CropToolControls
+          isProcessing={isProcessing}
+          onApplyCrop={onFilterSave || (() => {})}
+        />
+      )}
+
       {/* Background Library - Full Width Layout */}
       {selectedEditTool === "background-add" && onApplyBackground && (
         <BackgroundLibraryControls
@@ -928,13 +943,14 @@ export function ImageEditorSidebar({
         />
       )}
 
-      {/* Settings Panel - Hide for overlay, filters, collage, template, frame, background, and landing-page tools */}
+      {/* Settings Panel - Hide for overlay, filters, collage, template, frame, background, crop, and landing-page tools */}
       {selectedEditTool !== "overlay" &&
         selectedEditTool !== "filters" &&
         selectedEditTool !== "collage" &&
         selectedEditTool !== "template" &&
         selectedEditTool !== "frame" &&
         selectedEditTool !== "background-add" &&
+        selectedEditTool !== "crop" &&
         selectedEditTool !== "landing-page" && (
           <div>
             <h4 className="text-sm font-semibold text-gray-700 mb-3">
