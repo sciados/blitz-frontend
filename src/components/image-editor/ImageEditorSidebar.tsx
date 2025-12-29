@@ -9,6 +9,7 @@ import { FrameToolControls } from "src/components/image-editor/FrameToolControls
 import { BackgroundLibraryControls } from "src/components/image-editor/BackgroundLibraryControls";
 import { LandingPageBuilder } from "src/components/image-editor/LandingPageBuilder";
 import { CropToolControls } from "src/components/image-editor/CropToolControls";
+import { getProxiedImageUrl } from "src/utils/imageProxy";
 
 interface TextOverlay {
   id: string;
@@ -316,7 +317,7 @@ function OverlayToolControls({ isProcessing, libraryImages = [] }: OverlayToolCo
                         key={img.id}
                         onClick={() => {
                           if (img.url) {
-                            addImageOverlayFromUrl(img.url);
+                            addImageOverlayFromUrl(getProxiedImageUrl(img.url));
                           }
                         }}
                         disabled={isProcessing}
@@ -324,7 +325,7 @@ function OverlayToolControls({ isProcessing, libraryImages = [] }: OverlayToolCo
                         className="aspect-square border border-gray-200 rounded hover:bg-blue-50 hover:border-blue-400 transition disabled:opacity-50 overflow-hidden"
                       >
                         <img
-                          src={img.url}
+                          src={getProxiedImageUrl(img.url)}
                           alt={img.prompt || "Library image"}
                           className="w-full h-full object-cover"
                         />

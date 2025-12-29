@@ -1511,6 +1511,7 @@ export function ImageEditorCanvas({
     img.onerror = () => {
       console.error("Failed to load image from URL:", imageUrl);
     };
+    // Use the proxy endpoint to avoid CORS issues with R2
     img.src = imageUrl;
   };
 
