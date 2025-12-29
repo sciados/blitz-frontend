@@ -94,14 +94,14 @@ export default function ImageEditorPage() {
 
   // React Query: Fetch images for selected campaign
   const { data: availableImages = [], isLoading: isLoadingImages } = useQuery({
-    queryKey: ["campaign-images", selectedCampaignId],
+    queryKey: ["campaign-images", campaignId],
     queryFn: async () => {
       const res = await api.get(
-        `/api/images/campaign/${selectedCampaignId}`
+        `/api/images/campaign/${campaignId}`
       );
       return res.data.images || [];
     },
-    enabled: !!selectedCampaignId,
+    enabled: !!campaignId,
   });
 
   // React Query: Fetch stock images for background selection
