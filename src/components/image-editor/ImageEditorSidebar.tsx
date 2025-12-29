@@ -694,6 +694,7 @@ interface ImageEditorSidebarProps {
   campaignId?: string | null;
   hasTransparency?: boolean;
   selectedImages?: { id: string; url: string; prompt: string }[];
+  libraryImages?: { id: string; url: string; prompt?: string }[];
 }
 
 export function ImageEditorSidebar({
@@ -726,6 +727,7 @@ export function ImageEditorSidebar({
   campaignId,
   hasTransparency = false,
   selectedImages = [],
+  libraryImages = [],
 }: ImageEditorSidebarProps) {
   const allTools: {
     id: EditTool;

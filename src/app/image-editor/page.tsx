@@ -77,6 +77,9 @@ export default function ImageEditorPage() {
   // Share to Stock state
   const [showFolderSelector, setShowFolderSelector] = useState(false);
 
+  // Stock images for background selection
+  const [stockImages, setStockImages] = useState<Array<{ id: string; url: string; prompt?: string }>>([]);
+
   // React Query: Fetch campaigns
   const { data: availableCampaigns = [], isLoading: isLoadingCampaigns } =
     useQuery({
@@ -98,6 +101,15 @@ export default function ImageEditorPage() {
       return res.data.images || [];
     },
     enabled: !!selectedCampaignId && (!imageUrl || !campaignId),
+  });
+
+  // React Query: Fetch stock images for background selection
+  const { data: stockImagesData } = useQuery({
+    queryKey: ["stock-images"],
+    queryFn: async () => {
+      const res = await api.get("/api/images/stock");
+      return res.data;
+    },
   });
 
   // Load image from URL params
@@ -167,6 +179,13 @@ export default function ImageEditorPage() {
       setHasTransparency(false);
     }
   }, [activeImage]);
+
+  // Update stock images when data is fetched
+  useEffect(() => {
+    if (stockImagesData?.images) {
+      setStockImages(stockImagesData.images);
+    }
+  }, [stockImagesData]);
 
   // Handle campaign selection
   const handleCampaignSelect = (campaignId: string) => {
@@ -1042,6 +1061,7 @@ export default function ImageEditorPage() {
               campaignId={campaignId}
               isProcessing={isProcessing}
               hasTransparency={hasTransparency}
+              libraryImages={stockImages}
             />
           )}
 

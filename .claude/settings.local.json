@@ -32,7 +32,8 @@
       "Bash(git check-ignore:*)",
       "Bash(git remote get-url:*)",
       "Bash(find:*)",
-      "Bash(\"/c/Users/shaun/OneDrive/Documents/GitHub/blitz-backend/app/api/images/move.py\")"
+      "Bash(\"/c/Users/shaun/OneDrive/Documents/GitHub/blitz-backend/app/api/images/move.py\")",
+      "Bash(npx tsc:*)"
     ],
     "deny": [],
     "ask": []
