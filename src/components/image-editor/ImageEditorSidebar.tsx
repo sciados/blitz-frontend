@@ -39,7 +39,7 @@ interface ImageOverlay {
 interface OverlayToolControlsProps {
   isProcessing: boolean;
   onFilterSave?: (dataUrl: string) => void;
-  libraryImages?: { id: string; url: string; prompt?: string }[];
+  libraryImages?: { id: string; image_url: string; prompt?: string }[];
 }
 
 function OverlayToolControls({ isProcessing, libraryImages = [] }: OverlayToolControlsProps) {
