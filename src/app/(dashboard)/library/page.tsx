@@ -142,7 +142,7 @@ export default function ContentLibraryPage() {
 
   // Content Library Tab State
   const [activeLibraryTab, setActiveLibraryTab] = useState<
-    "text" | "images" | "videos" | "landing-pages"
+    "text" | "images" | "shared-images" | "videos" | "landing-pages"
   >("text");
   const [imageFilter, setImageFilter] = useState<
     | "all"
@@ -166,12 +166,14 @@ export default function ContentLibraryPage() {
   const [allImages, setAllImages] = useState<GeneratedImage[]>([]);
   const [allEditedImages, setAllEditedImages] = useState<LibraryImage[]>([]);
   const [allVideos, setAllVideos] = useState<any[]>([]);
+  const [stockImages, setStockImages] = useState<any[]>([]);
 
   // Read tab from URL params (e.g., /library?tab=images)
   useEffect(() => {
     const tabParam = searchParams.get("tab");
     if (
       tabParam === "images" ||
+      tabParam === "shared-images" ||
       tabParam === "videos" ||
       tabParam === "text" ||
       tabParam === "landing-pages"
@@ -456,6 +458,17 @@ export default function ContentLibraryPage() {
     refetchInterval: activeLibraryTab === "videos" ? 5000 : false,
   });
 
+  // Query to fetch stock images for the library
+  const { refetch: refetchStockImages } = useQuery({
+    queryKey: ["stock-images"],
+    queryFn: async () => {
+      console.log("Fetching stock images - active tab:", activeLibraryTab);
+      const { data } = await api.get("/api/images/stock");
+      setStockImages(data.images || []);
+      return data.images || [];
+    },
+  });
+
   // Debug log for tab changes
   useEffect(() => {
     console.log("Library tab changed to:", activeLibraryTab);
@@ -476,6 +489,13 @@ export default function ContentLibraryPage() {
       refetchVideos();
     }
   }, [activeLibraryTab, refetchVideos]);
+
+  // Refetch stock images when tab changes to shared-images (for manual refresh if needed)
+  useEffect(() => {
+    if (activeLibraryTab === "shared-images") {
+      refetchStockImages();
+    }
+  }, [activeLibraryTab, refetchStockImages]);
 
   // Filter content based on selected filters
   const filteredContent = allContent.filter((content) => {
@@ -1174,6 +1194,16 @@ export default function ContentLibraryPage() {
               🖼️ Images ({allImages.length + allEditedImages.length})
             </button>
             <button
+              onClick={() => setActiveLibraryTab("shared-images")}
+              className={`px-4 py-2 rounded-lg transition font-medium ${
+                activeLibraryTab === "shared-images"
+                  ? "bg-orange-600 text-white shadow-sm"
+                  : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+              }`}
+            >
+              🗂️ Shared Images ({stockImages.length})
+            </button>
+            <button
               onClick={() => setActiveLibraryTab("videos")}
               className={`px-4 py-2 rounded-lg transition font-medium ${
                 activeLibraryTab === "videos"
@@ -1476,6 +1506,66 @@ export default function ContentLibraryPage() {
                   }
                 </span>
               </button>
+            </div>
+          )}
+
+          {/* Shared Images Tab */}
+          {activeLibraryTab === "shared-images" && (
+            <div className="space-y-6">
+              {/* Shared Images Grid */}
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                {stockImages.length > 0 ? (
+                  stockImages.map((image, index) => (
+                    <div
+                      key={image.id || index}
+                      className="relative group cursor-pointer rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 hover:border-blue-500 transition"
+                      onClick={() => {
+                        setSelectedLibraryImage({
+                          id: image.id,
+                          image_url: image.url,
+                          prompt: image.prompt,
+                          provider: image.provider,
+                          created_at: image.created_at,
+                          metadata: {},
+                        } as any);
+                        setIsLibraryModalOpen(true);
+                        setCurrentImageIndex(index);
+                      }}
+                    >
+                      <div className="aspect-square bg-gray-100 dark:bg-gray-800">
+                        <img
+                          src={image.url}
+                          alt={image.prompt || 'Stock image'}
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                        />
+                      </div>
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="absolute bottom-0 left-0 right-0 p-3">
+                          <p className="text-white text-xs font-medium truncate">
+                            {image.prompt || 'Stock Image'}
+                          </p>
+                          <p className="text-white/80 text-xs">
+                            {image.provider || 'Stock'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="col-span-full text-center py-12">
+                    <div className="text-gray-400 dark:text-gray-600 mb-4">
+                      <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                    <p className="text-gray-600 dark:text-gray-400 mb-4">No shared images yet</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-500">
+                      Share images to stock folders to make them available to all users
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
