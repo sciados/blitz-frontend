@@ -1062,7 +1062,7 @@ export default function ImageEditorPage() {
               campaignId={campaignId}
               isProcessing={isProcessing}
               hasTransparency={hasTransparency}
-              libraryImages={stockImages}
+              libraryImages={availableImages}
             />
           )}
 
