@@ -92,12 +92,12 @@ export default function ImageEditorPage() {
       enabled: !imageUrl || !campaignId, // Only fetch when showing selection interface
     });
 
-  // React Query: Fetch images for selected campaign
+  // React Query: Fetch images for selected campaign (transparent images only for overlays)
   const { data: availableImages = [], isLoading: isLoadingImages } = useQuery({
-    queryKey: ["campaign-images", campaignId],
+    queryKey: ["campaign-images", campaignId, "transparent"],
     queryFn: async () => {
       const res = await api.get(
-        `/api/images/campaign/${campaignId}`
+        `/api/images/campaign/${campaignId}?has_transparency=true`
       );
       const images = res.data.images || [];
       // Map image_url to url for compatibility with components that expect 'url'
