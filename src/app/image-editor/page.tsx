@@ -99,7 +99,13 @@ export default function ImageEditorPage() {
       const res = await api.get(
         `/api/images/campaign/${campaignId}`
       );
-      return res.data.images || [];
+      const images = res.data.images || [];
+      // Map image_url to url for compatibility with components that expect 'url'
+      return images.map((img: any) => ({
+        id: img.id,
+        url: img.image_url,
+        prompt: img.prompt
+      }));
     },
     enabled: !!campaignId,
   });

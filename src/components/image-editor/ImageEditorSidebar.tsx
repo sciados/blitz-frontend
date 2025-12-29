@@ -39,7 +39,7 @@ interface ImageOverlay {
 interface OverlayToolControlsProps {
   isProcessing: boolean;
   onFilterSave?: (dataUrl: string) => void;
-  libraryImages?: { id: string; image_url: string; prompt?: string }[];
+  libraryImages?: { id: string; url: string; prompt?: string }[];
 }
 
 function OverlayToolControls({ isProcessing, libraryImages = [] }: OverlayToolControlsProps) {
@@ -315,8 +315,8 @@ function OverlayToolControls({ isProcessing, libraryImages = [] }: OverlayToolCo
                       <button
                         key={img.id}
                         onClick={() => {
-                          if (img.image_url) {
-                            addImageOverlayFromUrl(img.image_url);
+                          if (img.url) {
+                            addImageOverlayFromUrl(img.url);
                           }
                         }}
                         disabled={isProcessing}
@@ -324,7 +324,7 @@ function OverlayToolControls({ isProcessing, libraryImages = [] }: OverlayToolCo
                         className="aspect-square border border-gray-200 rounded hover:bg-blue-50 hover:border-blue-400 transition disabled:opacity-50 overflow-hidden"
                       >
                         <img
-                          src={img.image_url}
+                          src={img.url}
                           alt={img.prompt || "Library image"}
                           className="w-full h-full object-cover"
                         />
