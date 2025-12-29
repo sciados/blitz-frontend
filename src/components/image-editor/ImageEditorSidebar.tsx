@@ -315,8 +315,8 @@ function OverlayToolControls({ isProcessing, libraryImages = [] }: OverlayToolCo
                       <button
                         key={img.id}
                         onClick={() => {
-                          if (img.url) {
-                            addImageOverlayFromUrl(img.url);
+                          if (img.image_url) {
+                            addImageOverlayFromUrl(img.image_url);
                           }
                         }}
                         disabled={isProcessing}
@@ -324,7 +324,7 @@ function OverlayToolControls({ isProcessing, libraryImages = [] }: OverlayToolCo
                         className="aspect-square border border-gray-200 rounded hover:bg-blue-50 hover:border-blue-400 transition disabled:opacity-50 overflow-hidden"
                       >
                         <img
-                          src={img.url}
+                          src={img.image_url}
                           alt={img.prompt || "Library image"}
                           className="w-full h-full object-cover"
                         />
