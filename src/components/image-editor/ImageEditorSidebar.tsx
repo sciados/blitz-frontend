@@ -39,13 +39,14 @@ interface ImageOverlay {
 interface OverlayToolControlsProps {
   isProcessing: boolean;
   onFilterSave?: (dataUrl: string) => void;
+  libraryImages?: { id: string; url: string; prompt?: string }[];
 }
 
-function OverlayToolControls({ isProcessing }: OverlayToolControlsProps) {
+function OverlayToolControls({ isProcessing, libraryImages = [] }: OverlayToolControlsProps) {
   const [textOverlays, setTextOverlays] = useState<TextOverlay[]>([]);
   const [imageOverlays, setImageOverlays] = useState<ImageOverlay[]>([]);
   const [selectedOverlay, setSelectedOverlay] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"text" | "upload" | "stickers">(
+  const [activeTab, setActiveTab] = useState<"text" | "upload" | "library" | "stickers">(
     "text"
   );
   const [selectedStickerCategory, setSelectedStickerCategory] =
@@ -155,6 +156,13 @@ function OverlayToolControls({ isProcessing }: OverlayToolControlsProps) {
     }
   };
 
+  const addImageOverlayFromUrl = (imageUrl: string) => {
+    const canvasAPI = (window as any).imageEditorCanvas;
+    if (canvasAPI && canvasAPI.addImageOverlayFromUrl) {
+      canvasAPI.addImageOverlayFromUrl(imageUrl);
+    }
+  };
+
   const addSticker = (emoji: string, name: string) => {
     // Create a canvas to render the emoji as an image
     const canvas = document.createElement("canvas");
@@ -228,7 +236,7 @@ function OverlayToolControls({ isProcessing }: OverlayToolControlsProps) {
         </p>
 
         {/* Tabs */}
-        <div className="grid grid-cols-3 gap-2 mb-4">
+        <div className="grid grid-cols-2 gap-2 mb-4">
           <button
             onClick={() => setActiveTab("text")}
             className={`px-3 py-2 rounded-lg text-sm font-medium transition ${
@@ -248,6 +256,16 @@ function OverlayToolControls({ isProcessing }: OverlayToolControlsProps) {
             }`}
           >
             🖼️ Upload
+          </button>
+          <button
+            onClick={() => setActiveTab("library")}
+            className={`px-3 py-2 rounded-lg text-sm font-medium transition ${
+              activeTab === "library"
+                ? "bg-blue-600 text-white"
+                : "bg-white text-gray-700 hover:bg-gray-100"
+            }`}
+          >
+            📚 Library
           </button>
           <button
             onClick={() => setActiveTab("stickers")}
@@ -284,6 +302,49 @@ function OverlayToolControls({ isProcessing }: OverlayToolControlsProps) {
               className="hidden"
             />
           </label>
+        )}
+
+        {/* Library Tab */}
+        {activeTab === "library" && (
+          <div className="space-y-3">
+            {libraryImages && libraryImages.length > 0 ? (
+              <>
+                <div className="bg-white rounded-lg p-2 max-h-64 overflow-y-auto">
+                  <div className="grid grid-cols-3 gap-2">
+                    {libraryImages.map((img) => (
+                      <button
+                        key={img.id}
+                        onClick={() => {
+                          if (img.url) {
+                            addImageOverlayFromUrl(img.url);
+                          }
+                        }}
+                        disabled={isProcessing}
+                        title={img.prompt || "Library image"}
+                        className="aspect-square border border-gray-200 rounded hover:bg-blue-50 hover:border-blue-400 transition disabled:opacity-50 overflow-hidden"
+                      >
+                        <img
+                          src={img.url}
+                          alt={img.prompt || "Library image"}
+                          className="w-full h-full object-cover"
+                        />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <p className="text-xs text-gray-600 text-center">
+                  💡 Click any image to add it as an overlay
+                </p>
+              </>
+            ) : (
+              <div className="text-center py-6 bg-white rounded-lg">
+                <p className="text-gray-500 text-sm">No images in library</p>
+                <p className="text-xs text-gray-400 mt-1">
+                  Generate or upload images to use them here
+                </p>
+              </div>
+            )}
+          </div>
         )}
 
         {/* Stickers Tab */}
@@ -875,7 +936,7 @@ export function ImageEditorSidebar({
 
       {/* Overlay Tool - Full Width Layout */}
       {selectedEditTool === "overlay" && (
-        <OverlayToolControls isProcessing={isProcessing} />
+        <OverlayToolControls isProcessing={isProcessing} libraryImages={libraryImages} />
       )}
 
       {/* Filters Tool - Full Width Layout */}

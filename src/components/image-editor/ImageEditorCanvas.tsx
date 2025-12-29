@@ -1481,6 +1481,39 @@ export function ImageEditorCanvas({
     reader.readAsDataURL(file);
   };
 
+  const addImageOverlayFromUrl = (imageUrl: string) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      // Create a canvas to convert the image to a data URL
+      const canvas = document.createElement("canvas");
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+
+      ctx.drawImage(img, 0, 0);
+      const imageData = canvas.toDataURL("image/png");
+
+      const newOverlay: ImageOverlay = {
+        id: `image-${Date.now()}`,
+        imageData,
+        x: 100,
+        y: 100,
+        width: Math.min(img.width, 300),
+        height: Math.min(img.height, 300),
+        rotation: 0,
+        opacity: 1,
+      };
+      setImageOverlays([...imageOverlays, newOverlay]);
+      setSelectedOverlay(newOverlay.id);
+    };
+    img.onerror = () => {
+      console.error("Failed to load image from URL:", imageUrl);
+    };
+    img.src = imageUrl;
+  };
+
   const handleCanvasMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (selectedEditTool === "overlay") {
       const canvas = canvasRef.current;
@@ -1813,6 +1846,7 @@ export function ImageEditorCanvas({
     }
     (window as any).imageEditorCanvas.addTextOverlay = addTextOverlay;
     (window as any).imageEditorCanvas.addImageOverlay = addImageOverlay;
+    (window as any).imageEditorCanvas.addImageOverlayFromUrl = addImageOverlayFromUrl;
     (window as any).imageEditorCanvas.handleSaveOverlays = handleSaveOverlays;
     (window as any).imageEditorCanvas.getCanvasWithFilters =
       getCanvasWithFilters;
