@@ -88,7 +88,7 @@ export function ImageEditorCanvas({
   };
 
   // Crop methods
-  const setCropAspectRatio = (ratio: number | null) => {
+  const handleSetCropAspectRatio = (ratio: number | null) => {
     setCropAspectRatio(ratio);
     if (ratio && cropArea) {
       // Adjust crop area to maintain aspect ratio
@@ -1191,7 +1191,7 @@ export function ImageEditorCanvas({
     (window as any).imageEditorCanvas.getTemplateCanvas = getTemplateCanvas;
     (window as any).imageEditorCanvas.getFrameCanvas = getFrameCanvas;
     (window as any).imageEditorCanvas.getBackgroundCanvas = getBackgroundCanvas;
-    (window as any).imageEditorCanvas.setCropAspectRatio = setCropAspectRatio;
+    (window as any).imageEditorCanvas.setCropAspectRatio = handleSetCropAspectRatio;
     (window as any).imageEditorCanvas.applyCrop = applyCrop;
     (window as any).imageEditorCanvas.resetCrop = resetCrop;
   }, [applyFilter, collageSettings]);
