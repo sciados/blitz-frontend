@@ -1520,16 +1520,9 @@ export default function ContentLibraryPage() {
                       key={image.id || index}
                       className="relative group cursor-pointer rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 hover:border-blue-500 transition"
                       onClick={() => {
-                        setSelectedLibraryImage({
-                          id: image.id,
-                          image_url: image.url,
-                          prompt: image.prompt,
-                          provider: image.provider,
-                          created_at: image.created_at,
-                          metadata: {},
-                        } as any);
-                        setIsLibraryModalOpen(true);
-                        setCurrentImageIndex(index);
+                        // Navigate to Image Editor with the shared image URL
+                        const encodedUrl = encodeURIComponent(image.url);
+                        router.push(`/image-editor?imageUrl=${encodedUrl}`);
                       }}
                     >
                       <div className="aspect-square bg-gray-100 dark:bg-gray-800">
