@@ -97,7 +97,7 @@ export default function ImageEditorPage() {
     queryKey: ["campaign-images", selectedCampaignId],
     queryFn: async () => {
       const res = await api.get(
-        `/api/content/campaign/${selectedCampaignId}/images`
+        `/api/images/campaign/${selectedCampaignId}`
       );
       return res.data.images || [];
     },
