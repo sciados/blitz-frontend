@@ -168,6 +168,9 @@ export default function ContentLibraryPage() {
   const [allVideos, setAllVideos] = useState<any[]>([]);
   const [stockImages, setStockImages] = useState<any[]>([]);
 
+  // Shared images folder filter
+  const [sharedImageFolderFilter, setSharedImageFolderFilter] = useState<"all" | "backgrounds" | "stock-images" | "overlays" | "frames" | "icons" | "templates">("all");
+
   // Campaign selector modal for shared images
   const [showCampaignSelector, setShowCampaignSelector] = useState(false);
   const [selectedSharedImage, setSelectedSharedImage] = useState<any>(null);
@@ -186,6 +189,13 @@ export default function ContentLibraryPage() {
       setActiveLibraryTab(tabParam);
     }
   }, [searchParams]);
+
+  // Reset shared images folder filter when tab changes
+  useEffect(() => {
+    if (activeLibraryTab !== "shared-images") {
+      setSharedImageFolderFilter("all");
+    }
+  }, [activeLibraryTab]);
 
   // Modal state for library image viewer
   const [selectedLibraryImage, setSelectedLibraryImage] =
@@ -1526,10 +1536,98 @@ export default function ContentLibraryPage() {
           {/* Shared Images Tab */}
           {activeLibraryTab === "shared-images" && (
             <div className="space-y-6">
-              {/* Shared Images Grid */}
+              {/* Folder Filter Bar */}
+              <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+                <h3 className="text-sm font-semibold mb-3" style={{ color: "var(--text-primary)" }}>
+                  Filter by Folder
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => setSharedImageFolderFilter("all")}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${
+                      sharedImageFolderFilter === "all"
+                        ? "bg-orange-600 text-white"
+                        : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
+                    }`}
+                  >
+                    🗂️ All Folders
+                  </button>
+                  <button
+                    onClick={() => setSharedImageFolderFilter("backgrounds")}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${
+                      sharedImageFolderFilter === "backgrounds"
+                        ? "bg-orange-600 text-white"
+                        : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
+                    }`}
+                  >
+                    🎨 Backgrounds
+                  </button>
+                  <button
+                    onClick={() => setSharedImageFolderFilter("stock-images")}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${
+                      sharedImageFolderFilter === "stock-images"
+                        ? "bg-orange-600 text-white"
+                        : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
+                    }`}
+                  >
+                    🖼️ Stock Images
+                  </button>
+                  <button
+                    onClick={() => setSharedImageFolderFilter("overlays")}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${
+                      sharedImageFolderFilter === "overlays"
+                        ? "bg-orange-600 text-white"
+                        : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
+                    }`}
+                  >
+                    ✨ Overlays
+                  </button>
+                  <button
+                    onClick={() => setSharedImageFolderFilter("frames")}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${
+                      sharedImageFolderFilter === "frames"
+                        ? "bg-orange-600 text-white"
+                        : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
+                    }`}
+                  >
+                    🖼️ Frames
+                  </button>
+                  <button
+                    onClick={() => setSharedImageFolderFilter("icons")}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${
+                      sharedImageFolderFilter === "icons"
+                        ? "bg-orange-600 text-white"
+                        : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
+                    }`}
+                  >
+                    🔔 Icons
+                  </button>
+                  <button
+                    onClick={() => setSharedImageFolderFilter("templates")}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${
+                      sharedImageFolderFilter === "templates"
+                        ? "bg-orange-600 text-white"
+                        : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-700"
+                    }`}
+                  >
+                    📄 Templates
+                  </button>
+                </div>
+              </div>
+
+              {/* Filtered Shared Images Grid */}
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                {stockImages.length > 0 ? (
-                  stockImages.map((image, index) => (
+                {(() => {
+                  // Filter stock images based on selected folder
+                  const filteredImages = stockImages.filter((image) => {
+                    if (sharedImageFolderFilter === "all") return true;
+                    const imageUrl = image.url?.toLowerCase() || "";
+                    const folderPath = sharedImageFolderFilter.replace("-", "/");
+                    return imageUrl.includes(folderPath);
+                  });
+
+                  return filteredImages.length > 0 ? (
+                    filteredImages.map((image, index) => (
                     <div
                       key={image.id || index}
                       className="relative group cursor-pointer rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 hover:border-blue-500 transition"
@@ -1566,12 +1664,19 @@ export default function ContentLibraryPage() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                       </svg>
                     </div>
-                    <p className="text-gray-600 dark:text-gray-400 mb-4">No shared images yet</p>
+                    <p className="text-gray-600 dark:text-gray-400 mb-4">
+                      {sharedImageFolderFilter === "all"
+                        ? "No shared images yet"
+                        : `No images in ${sharedImageFolderFilter} folder`}
+                    </p>
                     <p className="text-sm text-gray-500 dark:text-gray-500">
-                      Share images to stock folders to make them available to all users
+                      {sharedImageFolderFilter === "all"
+                        ? "Share images to stock folders to make them available to all users"
+                        : "Try a different folder filter or share images to this folder"}
                     </p>
                   </div>
-                )}
+                );
+                })()}
               </div>
             </div>
           )}
