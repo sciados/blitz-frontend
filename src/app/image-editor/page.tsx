@@ -101,7 +101,7 @@ export default function ImageEditorPage() {
       );
       return res.data.images || [];
     },
-    enabled: !!selectedCampaignId && (!imageUrl || !campaignId),
+    enabled: !!selectedCampaignId,
   });
 
   // React Query: Fetch stock images for background selection
