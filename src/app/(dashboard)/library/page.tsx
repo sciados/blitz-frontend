@@ -168,6 +168,11 @@ export default function ContentLibraryPage() {
   const [allVideos, setAllVideos] = useState<any[]>([]);
   const [stockImages, setStockImages] = useState<any[]>([]);
 
+  // Campaign selector modal for shared images
+  const [showCampaignSelector, setShowCampaignSelector] = useState(false);
+  const [selectedSharedImage, setSelectedSharedImage] = useState<any>(null);
+  const [selectedCampaignForEdit, setSelectedCampaignForEdit] = useState<string>("");
+
   // Read tab from URL params (e.g., /library?tab=images)
   useEffect(() => {
     const tabParam = searchParams.get("tab");
@@ -466,6 +471,15 @@ export default function ContentLibraryPage() {
       const { data } = await api.get("/api/images/stock");
       setStockImages(data.images || []);
       return data.images || [];
+    },
+  });
+
+  // Query campaigns for campaign selector modal
+  const { data: campaigns = [] } = useQuery({
+    queryKey: ["campaigns"],
+    queryFn: async () => {
+      const { data } = await api.get("/api/campaigns");
+      return data || [];
     },
   });
 
@@ -1520,9 +1534,9 @@ export default function ContentLibraryPage() {
                       key={image.id || index}
                       className="relative group cursor-pointer rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 hover:border-blue-500 transition"
                       onClick={() => {
-                        // Navigate to Image Editor with the shared image URL
-                        const encodedUrl = encodeURIComponent(image.url);
-                        router.push(`/image-editor?imageUrl=${encodedUrl}`);
+                        // Open campaign selector modal
+                        setSelectedSharedImage(image);
+                        setShowCampaignSelector(true);
                       }}
                     >
                       <div className="aspect-square bg-gray-100 dark:bg-gray-800">
@@ -2593,6 +2607,147 @@ export default function ContentLibraryPage() {
           imageToShare ? 1 : videoToShare ? 1 : selectedImageUrls.length
         }
       />
+
+      {/* Campaign Selector Modal for Shared Images */}
+      {showCampaignSelector && selectedSharedImage && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-start justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>
+                    Select Campaign
+                  </h2>
+                  <p className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>
+                    Choose a campaign to edit this image
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    setShowCampaignSelector(false);
+                    setSelectedSharedImage(null);
+                    setSelectedCampaignForEdit("");
+                  }}
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6">
+              {/* Image Preview */}
+              <div className="flex gap-4 mb-6">
+                <div className="w-24 h-24 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0">
+                  <img
+                    src={selectedSharedImage.url}
+                    alt={selectedSharedImage.prompt || 'Shared image'}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold mb-1" style={{ color: "var(--text-primary)" }}>
+                    {selectedSharedImage.prompt || 'Shared Image'}
+                  </h3>
+                  <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+                    Provider: {selectedSharedImage.provider || 'Stock'}
+                  </p>
+                  <p className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>
+                    Click a campaign below to edit this image
+                  </p>
+                </div>
+              </div>
+
+              {/* Campaign List */}
+              <div className="space-y-2">
+                <h4 className="font-medium mb-3" style={{ color: "var(--text-primary)" }}>
+                  Your Campaigns
+                </h4>
+                {campaigns.length > 0 ? (
+                  <div className="max-h-64 overflow-y-auto space-y-2">
+                    {campaigns.map((campaign: Campaign) => (
+                      <button
+                        key={campaign.id}
+                        onClick={() => setSelectedCampaignForEdit(campaign.id.toString())}
+                        className={`w-full text-left p-4 rounded-lg border-2 transition ${
+                          selectedCampaignForEdit === campaign.id.toString()
+                            ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+                            : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+                        }`}
+                      >
+                        <div className="font-medium" style={{ color: "var(--text-primary)" }}>
+                          {campaign.name}
+                        </div>
+                        <div className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>
+                          {campaign.product_url}
+                        </div>
+                        <div className="flex items-center gap-2 mt-2">
+                          <span
+                            className={`px-2 py-1 rounded text-xs font-medium ${
+                              campaign.status === "active"
+                                ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                                : campaign.status === "paused"
+                                ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+                                : "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200"
+                            }`}
+                          >
+                            {campaign.status}
+                          </span>
+                          <span className="text-xs" style={{ color: "var(--text-secondary)" }}>
+                            {campaign.affiliate_network}
+                          </span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <p className="text-gray-500 dark:text-gray-400">No campaigns found</p>
+                    <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
+                      Create a campaign first to edit images
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-6 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
+              <button
+                onClick={() => {
+                  setShowCampaignSelector(false);
+                  setSelectedSharedImage(null);
+                  setSelectedCampaignForEdit("");
+                }}
+                className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+                style={{ color: "var(--text-primary)" }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  if (!selectedCampaignForEdit) {
+                    toast.error("Please select a campaign");
+                    return;
+                  }
+                  // Navigate to Image Editor with both image URL and campaign ID
+                  const encodedUrl = encodeURIComponent(selectedSharedImage.url);
+                  router.push(
+                    `/image-editor?imageUrl=${encodedUrl}&campaignId=${selectedCampaignForEdit}`
+                  );
+                  setShowCampaignSelector(false);
+                }}
+                disabled={!selectedCampaignForEdit}
+                className="px-6 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+              >
+                Edit Image
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Library Image Viewer Modal */}
       {isLibraryModalOpen && selectedLibraryImage && (
