@@ -26,6 +26,7 @@ import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams, useRouter } from "next/navigation";
 import { api } from "src/lib/appClient";
+import { getRoleFromToken } from "src/lib/auth";
 import { toast } from "sonner";
 import {
   GeneratedContent,
@@ -1528,9 +1529,18 @@ export default function ContentLibraryPage() {
                   // Filter stock images based on selected folder
                   const filteredImages = stockImages.filter((image) => {
                     if (sharedImageFolderFilter === "all") return true;
-                    const imageUrl = image.url?.toLowerCase() || "";
-                    const folderPath = sharedImageFolderFilter.replace("-", "/");
-                    return imageUrl.includes(folderPath);
+                    // Map filter values to folder names returned by backend
+                    const filterToFolderMap: Record<string, string> = {
+                      "backgrounds": "Backgrounds",
+                      "stock-images": "Stock Images",
+                      "overlays": "Overlays",
+                      "frames": "Frames",
+                      "icons": "Icons",
+                      "templates": "Templates",
+                    };
+                    const targetFolder = filterToFolderMap[sharedImageFolderFilter];
+                    if (!targetFolder) return true;
+                    return image.folder === targetFolder;
                   });
 
                   return filteredImages.map((image, index) => (
@@ -1559,13 +1569,15 @@ export default function ContentLibraryPage() {
                             >
                               Use in Campaign
                             </button>
-                            <a
-                              href={getProxiedImageUrl(image.url)}
-                              download
-                              className="px-3 py-2 bg-gray-700 hover:bg-gray-800 text-white rounded-lg text-sm font-medium transition"
-                            >
-                              Download
-                            </a>
+                            {getRoleFromToken() === "admin" && (
+                              <a
+                                href={getProxiedImageUrl(image.url)}
+                                download
+                                className="px-3 py-2 bg-gray-700 hover:bg-gray-800 text-white rounded-lg text-sm font-medium transition"
+                              >
+                                Download
+                              </a>
+                            )}
                           </div>
                         </div>
                       </div>
