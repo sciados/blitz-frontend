@@ -59,7 +59,10 @@ export default function ContentLibraryPage() {
 
   // Helper function to get proxied image URL
   const getProxiedImageUrl = (imageUrl: string) => {
+    console.log("🔍 getProxiedImageUrl called with:", imageUrl);
+
     if (!imageUrl) {
+      console.log("❌ Empty image URL, returning empty string");
       return "";
     }
 
@@ -68,6 +71,7 @@ export default function ContentLibraryPage() {
       imageUrl.startsWith("/api/") ||
       imageUrl.includes("/api/images/proxy")
     ) {
+      console.log("✅ Already a proxy URL, returning as-is:", imageUrl);
       return imageUrl;
     }
 
@@ -103,7 +107,8 @@ export default function ContentLibraryPage() {
     const proxyUrl = `${finalApiUrl}/api/images/proxy?url=${encodeURIComponent(
       imageUrl
     )}`;
-
+    console.log("✅ Created proxy URL:", proxyUrl);
+    console.log("📸 Final URL to use for <img>:", proxyUrl);
     return proxyUrl;
   };
 
@@ -137,7 +142,7 @@ export default function ContentLibraryPage() {
 
   // Content Library Tab State
   const [activeLibraryTab, setActiveLibraryTab] = useState<
-    "text" | "images" | "videos" | "landing-pages"
+    "text" | "images" | "shared-images" | "videos" | "landing-pages"
   >("text");
   const [imageFilter, setImageFilter] = useState<
     | "all"
@@ -161,12 +166,22 @@ export default function ContentLibraryPage() {
   const [allImages, setAllImages] = useState<GeneratedImage[]>([]);
   const [allEditedImages, setAllEditedImages] = useState<LibraryImage[]>([]);
   const [allVideos, setAllVideos] = useState<any[]>([]);
+  const [stockImages, setStockImages] = useState<any[]>([]);
+
+  // Shared images folder filter
+  const [sharedImageFolderFilter, setSharedImageFolderFilter] = useState<"all" | "backgrounds" | "stock-images" | "overlays" | "frames" | "icons" | "templates">("all");
+
+  // Campaign selector modal for shared images
+  const [showCampaignSelector, setShowCampaignSelector] = useState(false);
+  const [selectedSharedImage, setSelectedSharedImage] = useState<any>(null);
+  const [selectedCampaignForEdit, setSelectedCampaignForEdit] = useState<string>("");
 
   // Read tab from URL params (e.g., /library?tab=images)
   useEffect(() => {
     const tabParam = searchParams.get("tab");
     if (
       tabParam === "images" ||
+      tabParam === "shared-images" ||
       tabParam === "videos" ||
       tabParam === "text" ||
       tabParam === "landing-pages"
@@ -174,6 +189,13 @@ export default function ContentLibraryPage() {
       setActiveLibraryTab(tabParam);
     }
   }, [searchParams]);
+
+  // Reset shared images folder filter when tab changes
+  useEffect(() => {
+    if (activeLibraryTab !== "shared-images") {
+      setSharedImageFolderFilter("all");
+    }
+  }, [activeLibraryTab]);
 
   // Modal state for library image viewer
   const [selectedLibraryImage, setSelectedLibraryImage] =
@@ -279,12 +301,15 @@ export default function ContentLibraryPage() {
       queryKey: ["all-edited-images"],
       queryFn: async () => {
         try {
+          console.log("🔄 Fetching edited images...");
           // Fetch from all campaigns
           const { data: campaigns } = await api.get("/api/campaigns");
+          console.log(`📊 Found ${campaigns.length} campaigns`);
 
           const allEditedPromises = campaigns.map(
             async (campaign: Campaign) => {
               try {
+                console.log(`📋 Fetching edits for campaign ${campaign.id}...`);
                 const res = await api.get(
                   `/api/image-editor/history/${campaign.id}`
                 );
@@ -384,6 +409,11 @@ export default function ContentLibraryPage() {
 
           const allEditedArrays = await Promise.all(allEditedPromises);
           const flatEdited = allEditedArrays.flat();
+          console.log(`📝 Total edits found: ${flatEdited.length}`);
+          console.log(
+            `📋 Operation types:`,
+            flatEdited.map((e) => e.operation_type)
+          );
 
           // Deduplicate by image_url, keeping only the most recent for each unique image
           const uniqueEdits = flatEdited.reduce((acc: any[], current) => {
@@ -404,6 +434,22 @@ export default function ContentLibraryPage() {
             return acc;
           }, []);
 
+          console.log(
+            `✅ Unique edits after deduplication: ${uniqueEdits.length}`
+          );
+          console.log(
+            `🔍 Edit tools:`,
+            uniqueEdits.map((e) => e.metadata?.edit_tool).filter(Boolean)
+          );
+          console.log(
+            `🔍 Transparency flags:`,
+            uniqueEdits.map((e) => ({
+              id: e.id,
+              op: e.operation_type,
+              trans: e.has_transparency,
+            }))
+          );
+
           setAllEditedImages(uniqueEdits);
           return uniqueEdits;
         } catch (error) {
@@ -418,6 +464,7 @@ export default function ContentLibraryPage() {
   const { refetch: refetchVideos } = useQuery({
     queryKey: ["all-videos"],
     queryFn: async () => {
+      console.log("Fetching videos - active tab:", activeLibraryTab);
       const { data } = await api.get("/api/video/library");
       setAllVideos(data.videos || []);
       return data.videos || [];
@@ -426,8 +473,31 @@ export default function ContentLibraryPage() {
     refetchInterval: activeLibraryTab === "videos" ? 5000 : false,
   });
 
+  // Query to fetch stock images for the library
+  const { refetch: refetchStockImages } = useQuery({
+    queryKey: ["stock-images"],
+    queryFn: async () => {
+      console.log("Fetching stock images - active tab:", activeLibraryTab);
+      const { data } = await api.get("/api/images/stock");
+      setStockImages(data.images || []);
+      return data.images || [];
+    },
+  });
+
+  // Query campaigns for campaign selector modal
+  const { data: campaigns = [] } = useQuery({
+    queryKey: ["campaigns"],
+    queryFn: async () => {
+      const { data } = await api.get("/api/campaigns");
+      return data || [];
+    },
+  });
+
   // Debug log for tab changes
-  useEffect(() => {}, [activeLibraryTab]);
+  useEffect(() => {
+    console.log("Library tab changed to:", activeLibraryTab);
+    console.log("Video polling enabled:", activeLibraryTab === "videos");
+  }, [activeLibraryTab]);
 
   // Refetch images when tab changes to images (for manual refresh if needed)
   useEffect(() => {
@@ -443,6 +513,13 @@ export default function ContentLibraryPage() {
       refetchVideos();
     }
   }, [activeLibraryTab, refetchVideos]);
+
+  // Refetch stock images when tab changes to shared-images (for manual refresh if needed)
+  useEffect(() => {
+    if (activeLibraryTab === "shared-images") {
+      refetchStockImages();
+    }
+  }, [activeLibraryTab, refetchStockImages]);
 
   // Filter content based on selected filters
   const filteredContent = allContent.filter((content) => {
@@ -477,6 +554,18 @@ export default function ContentLibraryPage() {
     ...allEditedImages.map((img) => ({ ...img, source: "edited" as const })),
   ];
 
+  console.log(
+    `🖼️ Combined images: ${combinedImages.length} total (${allImages.length} original + ${allEditedImages.length} edited)`
+  );
+  console.log(
+    `🔍 Combined edit tools:`,
+    combinedImages.map((e) => e.metadata?.edit_tool).filter(Boolean)
+  );
+  console.log(
+    `🔍 Combined transparency:`,
+    combinedImages.filter((e) => e.has_transparency).length
+  );
+
   // Filter images based on campaign and filter type
   const filteredImages = combinedImages.filter((image) => {
     // Campaign filter check
@@ -504,6 +593,11 @@ export default function ContentLibraryPage() {
     if (imageFilter === "erase" && image.metadata?.edit_tool !== "erase")
       return false;
     if (imageFilter === "transparent" && image.has_transparency !== true) {
+      console.log(`🚫 Filtering out transparent image:`, {
+        id: image.id,
+        has_transparency: image.has_transparency,
+        op: image.metadata?.edit_tool,
+      });
       return false;
     }
     if (
@@ -519,12 +613,20 @@ export default function ContentLibraryPage() {
       imageFilter === "background" &&
       image.metadata?.edit_tool !== "background"
     ) {
+      console.log(`🚫 Filtering out background image:`, {
+        id: image.id,
+        edit_tool: image.metadata?.edit_tool,
+      });
       return false;
     }
     if (imageFilter === "frame" && image.metadata?.edit_tool !== "frame")
       return false;
     return true;
   });
+
+  console.log(
+    `✅ Filtered images: ${filteredImages.length} (filter: ${imageFilter})`
+  );
 
   // Sort images: Premium (is_enhanced) first, then by newest
   const sortedImages = filteredImages.sort((a, b) => {
@@ -625,15 +727,23 @@ export default function ContentLibraryPage() {
   };
 
   const handleMoveImages = async (destinationPath: string) => {
+    console.log(
+      "LibraryPage: handleMoveImages called with path:",
+      destinationPath
+    );
     try {
       let imageIds: number[] = [];
 
       // If sharing a single image from viewer
       if (imageToShare) {
+        console.log("LibraryPage: moving single image, id =", imageToShare.id);
         imageIds = [imageToShare.id];
       } else {
         // Moving multiple selected images
-
+        console.log(
+          "LibraryPage: moving multiple images, selectedImageUrls =",
+          selectedImageUrls
+        );
         for (const imageUrl of selectedImageUrls) {
           const image = sortedImages.find((img) => img.image_url === imageUrl);
           if (image && image.id) {
@@ -642,11 +752,13 @@ export default function ContentLibraryPage() {
         }
       }
 
+      console.log("LibraryPage: imageIds to move =", imageIds);
       const { data } = await api.post("/api/images/move", {
         image_ids: imageIds,
         destination_path: destinationPath,
       });
 
+      console.log("LibraryPage: API call successful, response =", data);
       toast.success(`Moved ${imageIds.length} image(s) to ${destinationPath}`);
       setSelectedImageUrls([]);
       setImageToShare(null);
@@ -912,24 +1024,33 @@ export default function ContentLibraryPage() {
     setThumbnailOptions([]); // Clear previous options
 
     try {
-      // Use backend to get video duration (avoids CORS issues with R2)
+      console.log("🎬 Starting thumbnail generation for video:", video.id);
+      console.log("📹 Video URL:", video.video_url);
 
+      // Use backend to get video duration (avoids CORS issues with R2)
+      console.log("📏 Getting video duration from backend...");
       const durationResponse = await api.post("/api/videos/get-duration", {
         video_url: video.video_url,
       });
 
       const videoDuration = durationResponse.data.duration;
       setVideoDurationForThumbnail(videoDuration);
+      console.log("📹 Video duration:", videoDuration, "seconds");
 
       // Call the API to generate thumbnails
-
+      console.log("🎨 Calling thumbnail options API...");
       const response = await api.post("/api/videos/thumbnail-options", {
         video_url: video.video_url,
         video_duration: videoDuration,
         campaign_id: video.campaign_id,
       });
 
+      console.log("✅ API response received:", response.data);
       setThumbnailOptions(response.data.thumbnail_options || []);
+      console.log(
+        "📋 Set thumbnail options:",
+        response.data.thumbnail_options?.length || 0
+      );
 
       if (
         !response.data.thumbnail_options ||
@@ -1095,6 +1216,16 @@ export default function ContentLibraryPage() {
               }`}
             >
               🖼️ Images ({allImages.length + allEditedImages.length})
+            </button>
+            <button
+              onClick={() => setActiveLibraryTab("shared-images")}
+              className={`px-4 py-2 rounded-lg transition font-medium ${
+                activeLibraryTab === "shared-images"
+                  ? "bg-orange-600 text-white shadow-sm"
+                  : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+              }`}
+            >
+              🗂️ Shared Images ({stockImages.length})
             </button>
             <button
               onClick={() => setActiveLibraryTab("videos")}
@@ -1399,6 +1530,154 @@ export default function ContentLibraryPage() {
                   }
                 </span>
               </button>
+            </div>
+          )}
+
+          {/* Shared Images Tab */}
+          {activeLibraryTab === "shared-images" && (
+            <div className="space-y-6">
+              {/* Folder Filter Bar */}
+              <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+                <h3 className="text-sm font-semibold mb-3" style={{ color: "var(--text-primary)" }}>
+                  Filter by Folder
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => setSharedImageFolderFilter("all")}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${
+                      sharedImageFolderFilter === "all"
+                        ? "bg-orange-600 text-white"
+                        : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
+                    }`}
+                  >
+                    🗂️ All Folders
+                  </button>
+                  <button
+                    onClick={() => setSharedImageFolderFilter("backgrounds")}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${
+                      sharedImageFolderFilter === "backgrounds"
+                        ? "bg-orange-600 text-white"
+                        : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
+                    }`}
+                  >
+                    🎨 Backgrounds
+                  </button>
+                  <button
+                    onClick={() => setSharedImageFolderFilter("stock-images")}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${
+                      sharedImageFolderFilter === "stock-images"
+                        ? "bg-orange-600 text-white"
+                        : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
+                    }`}
+                  >
+                    🖼️ Stock Images
+                  </button>
+                  <button
+                    onClick={() => setSharedImageFolderFilter("overlays")}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${
+                      sharedImageFolderFilter === "overlays"
+                        ? "bg-orange-600 text-white"
+                        : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
+                    }`}
+                  >
+                    ✨ Overlays
+                  </button>
+                  <button
+                    onClick={() => setSharedImageFolderFilter("frames")}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${
+                      sharedImageFolderFilter === "frames"
+                        ? "bg-orange-600 text-white"
+                        : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
+                    }`}
+                  >
+                    🖼️ Frames
+                  </button>
+                  <button
+                    onClick={() => setSharedImageFolderFilter("icons")}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${
+                      sharedImageFolderFilter === "icons"
+                        ? "bg-orange-600 text-white"
+                        : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
+                    }`}
+                  >
+                    🔔 Icons
+                  </button>
+                  <button
+                    onClick={() => setSharedImageFolderFilter("templates")}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${
+                      sharedImageFolderFilter === "templates"
+                        ? "bg-orange-600 text-white"
+                        : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-700"
+                    }`}
+                  >
+                    📄 Templates
+                  </button>
+                </div>
+              </div>
+
+              {/* Filtered Shared Images Grid */}
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                {(() => {
+                  // Filter stock images based on selected folder
+                  const filteredImages = stockImages.filter((image) => {
+                    if (sharedImageFolderFilter === "all") return true;
+                    const imageUrl = image.url?.toLowerCase() || "";
+                    const folderPath = sharedImageFolderFilter.replace("-", "/");
+                    return imageUrl.includes(folderPath);
+                  });
+
+                  return filteredImages.length > 0 ? (
+                    filteredImages.map((image, index) => (
+                    <div
+                      key={image.id || index}
+                      className="relative group cursor-pointer rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 hover:border-blue-500 transition"
+                      onClick={() => {
+                        // Open campaign selector modal
+                        setSelectedSharedImage(image);
+                        setShowCampaignSelector(true);
+                      }}
+                    >
+                      <div className="aspect-square bg-gray-100 dark:bg-gray-800">
+                        <img
+                          src={image.url}
+                          alt={image.prompt || 'Stock image'}
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                        />
+                      </div>
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="absolute bottom-0 left-0 right-0 p-3">
+                          <p className="text-white text-xs font-medium truncate">
+                            {image.prompt || 'Stock Image'}
+                          </p>
+                          <p className="text-white/80 text-xs">
+                            {image.provider || 'Stock'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="col-span-full text-center py-12">
+                    <div className="text-gray-400 dark:text-gray-600 mb-4">
+                      <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                    <p className="text-gray-600 dark:text-gray-400 mb-4">
+                      {sharedImageFolderFilter === "all"
+                        ? "No shared images yet"
+                        : `No images in ${sharedImageFolderFilter} folder`}
+                    </p>
+                    <p className="text-sm text-gray-500 dark:text-gray-500">
+                      {sharedImageFolderFilter === "all"
+                        ? "Share images to stock folders to make them available to all users"
+                        : "Try a different folder filter or share images to this folder"}
+                    </p>
+                  </div>
+                );
+                })()}
+              </div>
             </div>
           )}
 
@@ -1866,6 +2145,12 @@ export default function ContentLibraryPage() {
                               typeof window !== "undefined" &&
                               image.metadata
                             ) {
+                              console.log(
+                                "Image metadata for ID",
+                                image.id,
+                                ":",
+                                image.metadata
+                              );
                             }
 
                             if (image.metadata?.edit_tool) {
@@ -2428,6 +2713,147 @@ export default function ContentLibraryPage() {
         }
       />
 
+      {/* Campaign Selector Modal for Shared Images */}
+      {showCampaignSelector && selectedSharedImage && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-start justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>
+                    Select Campaign
+                  </h2>
+                  <p className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>
+                    Choose a campaign to edit this image
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    setShowCampaignSelector(false);
+                    setSelectedSharedImage(null);
+                    setSelectedCampaignForEdit("");
+                  }}
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6">
+              {/* Image Preview */}
+              <div className="flex gap-4 mb-6">
+                <div className="w-24 h-24 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0">
+                  <img
+                    src={selectedSharedImage.url}
+                    alt={selectedSharedImage.prompt || 'Shared image'}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold mb-1" style={{ color: "var(--text-primary)" }}>
+                    {selectedSharedImage.prompt || 'Shared Image'}
+                  </h3>
+                  <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+                    Provider: {selectedSharedImage.provider || 'Stock'}
+                  </p>
+                  <p className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>
+                    Click a campaign below to edit this image
+                  </p>
+                </div>
+              </div>
+
+              {/* Campaign List */}
+              <div className="space-y-2">
+                <h4 className="font-medium mb-3" style={{ color: "var(--text-primary)" }}>
+                  Your Campaigns
+                </h4>
+                {campaigns.length > 0 ? (
+                  <div className="max-h-64 overflow-y-auto space-y-2">
+                    {campaigns.map((campaign: Campaign) => (
+                      <button
+                        key={campaign.id}
+                        onClick={() => setSelectedCampaignForEdit(campaign.id.toString())}
+                        className={`w-full text-left p-4 rounded-lg border-2 transition ${
+                          selectedCampaignForEdit === campaign.id.toString()
+                            ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+                            : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+                        }`}
+                      >
+                        <div className="font-medium" style={{ color: "var(--text-primary)" }}>
+                          {campaign.name}
+                        </div>
+                        <div className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>
+                          {campaign.product_url}
+                        </div>
+                        <div className="flex items-center gap-2 mt-2">
+                          <span
+                            className={`px-2 py-1 rounded text-xs font-medium ${
+                              campaign.status === "active"
+                                ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                                : campaign.status === "paused"
+                                ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+                                : "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200"
+                            }`}
+                          >
+                            {campaign.status}
+                          </span>
+                          <span className="text-xs" style={{ color: "var(--text-secondary)" }}>
+                            {campaign.affiliate_network}
+                          </span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <p className="text-gray-500 dark:text-gray-400">No campaigns found</p>
+                    <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
+                      Create a campaign first to edit images
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-6 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
+              <button
+                onClick={() => {
+                  setShowCampaignSelector(false);
+                  setSelectedSharedImage(null);
+                  setSelectedCampaignForEdit("");
+                }}
+                className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+                style={{ color: "var(--text-primary)" }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  if (!selectedCampaignForEdit) {
+                    toast.error("Please select a campaign");
+                    return;
+                  }
+                  // Navigate to Image Editor with both image URL and campaign ID
+                  const encodedUrl = encodeURIComponent(selectedSharedImage.url);
+                  router.push(
+                    `/image-editor?imageUrl=${encodedUrl}&campaignId=${selectedCampaignForEdit}`
+                  );
+                  setShowCampaignSelector(false);
+                }}
+                disabled={!selectedCampaignForEdit}
+                className="px-6 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+              >
+                Edit Image
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Library Image Viewer Modal */}
       {isLibraryModalOpen && selectedLibraryImage && (
         <div
@@ -2507,6 +2933,12 @@ export default function ContentLibraryPage() {
                     typeof window !== "undefined" &&
                     selectedLibraryImage.metadata
                   ) {
+                    console.log(
+                      "Modal Image metadata for ID",
+                      selectedLibraryImage.id,
+                      ":",
+                      selectedLibraryImage.metadata
+                    );
                   }
 
                   if (selectedLibraryImage.metadata?.edit_tool) {
