@@ -34,7 +34,8 @@
       "Bash(find:*)",
       "Bash(\"/c/Users/shaun/OneDrive/Documents/GitHub/blitz-backend/app/api/images/move.py\")",
       "Bash(npx tsc:*)",
-      "Bash(pkill:*)"
+      "Bash(pkill:*)",
+      "Bash(ls:*)"
     ],
     "deny": [],
     "ask": []

@@ -137,7 +137,7 @@ export default function ContentLibraryPage() {
 
   // Content Library Tab State
   const [activeLibraryTab, setActiveLibraryTab] = useState<
-    "text" | "images" | "videos" | "landing-pages"
+    "text" | "images" | "shared-images" | "videos" | "landing-pages"
   >("text");
   const [imageFilter, setImageFilter] = useState<
     | "all"
@@ -161,12 +161,23 @@ export default function ContentLibraryPage() {
   const [allImages, setAllImages] = useState<GeneratedImage[]>([]);
   const [allEditedImages, setAllEditedImages] = useState<LibraryImage[]>([]);
   const [allVideos, setAllVideos] = useState<any[]>([]);
+  const [stockImages, setStockImages] = useState<any[]>([]);
+
+  // Shared images folder filter
+  const [sharedImageFolderFilter, setSharedImageFolderFilter] = useState<
+    "all" | "backgrounds" | "stock-images" | "overlays" | "frames" | "icons" | "templates"
+  >("all");
+
+  // Campaign selector modal for shared images
+  const [showCampaignSelector, setShowCampaignSelector] = useState(false);
+  const [selectedSharedImage, setSelectedSharedImage] = useState<any>(null);
 
   // Read tab from URL params (e.g., /library?tab=images)
   useEffect(() => {
     const tabParam = searchParams.get("tab");
     if (
       tabParam === "images" ||
+      tabParam === "shared-images" ||
       tabParam === "videos" ||
       tabParam === "text" ||
       tabParam === "landing-pages"
@@ -426,6 +437,26 @@ export default function ContentLibraryPage() {
     refetchInterval: activeLibraryTab === "videos" ? 5000 : false,
   });
 
+  // Query to fetch stock images for the library
+  const { refetch: refetchStockImages } = useQuery({
+    queryKey: ["stock-images"],
+    queryFn: async () => {
+      console.log("Fetching stock images - active tab:", activeLibraryTab);
+      const { data } = await api.get("/api/images/stock");
+      setStockImages(data.images || []);
+      return data.images || [];
+    },
+  });
+
+  // Query campaigns for campaign selector modal
+  const { data: campaigns = [] } = useQuery({
+    queryKey: ["campaigns"],
+    queryFn: async () => {
+      const { data } = await api.get("/api/campaigns");
+      return data || [];
+    },
+  });
+
   // Debug log for tab changes
   useEffect(() => {}, [activeLibraryTab]);
 
@@ -443,6 +474,13 @@ export default function ContentLibraryPage() {
       refetchVideos();
     }
   }, [activeLibraryTab, refetchVideos]);
+
+  // Refetch stock images when tab changes to shared-images (for manual refresh if needed)
+  useEffect(() => {
+    if (activeLibraryTab === "shared-images") {
+      refetchStockImages();
+    }
+  }, [activeLibraryTab, refetchStockImages]);
 
   // Filter content based on selected filters
   const filteredContent = allContent.filter((content) => {
@@ -1097,6 +1135,16 @@ export default function ContentLibraryPage() {
               🖼️ Images ({allImages.length + allEditedImages.length})
             </button>
             <button
+              onClick={() => setActiveLibraryTab("shared-images")}
+              className={`px-4 py-2 rounded-lg transition font-medium ${
+                activeLibraryTab === "shared-images"
+                  ? "bg-orange-600 text-white shadow-sm"
+                  : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+              }`}
+            >
+              🗂️ Shared Images ({stockImages.length})
+            </button>
+            <button
               onClick={() => setActiveLibraryTab("videos")}
               className={`px-4 py-2 rounded-lg transition font-medium ${
                 activeLibraryTab === "videos"
@@ -1399,6 +1447,147 @@ export default function ContentLibraryPage() {
                   }
                 </span>
               </button>
+            </div>
+          )}
+
+          {/* Shared Images Tab */}
+          {activeLibraryTab === "shared-images" && (
+            <div className="space-y-6">
+              {/* Folder Filter Bar */}
+              <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+                <h3 className="text-sm font-semibold mb-3" style={{ color: "var(--text-primary)" }}>
+                  Filter by Folder
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => setSharedImageFolderFilter("all")}
+                    className={`px-4 py-2 rounded-lg transition ${
+                      sharedImageFolderFilter === "all"
+                        ? "bg-orange-600 text-white"
+                        : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-700"
+                    }`}
+                  >
+                    All Images
+                  </button>
+                  <button
+                    onClick={() => setSharedImageFolderFilter("backgrounds")}
+                    className={`px-4 py-2 rounded-lg transition ${
+                      sharedImageFolderFilter === "backgrounds"
+                        ? "bg-orange-600 text-white"
+                        : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-700"
+                    }`}
+                  >
+                    🎨 Backgrounds
+                  </button>
+                  <button
+                    onClick={() => setSharedImageFolderFilter("overlays")}
+                    className={`px-4 py-2 rounded-lg transition ${
+                      sharedImageFolderFilter === "overlays"
+                        ? "bg-orange-600 text-white"
+                        : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-700"
+                    }`}
+                  >
+                    ✨ Overlays
+                  </button>
+                  <button
+                    onClick={() => setSharedImageFolderFilter("icons")}
+                    className={`px-4 py-2 rounded-lg transition ${
+                      sharedImageFolderFilter === "icons"
+                        ? "bg-orange-600 text-white"
+                        : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-700"
+                    }`}
+                  >
+                    🔲 Icons
+                  </button>
+                  <button
+                    onClick={() => setSharedImageFolderFilter("frames")}
+                    className={`px-4 py-2 rounded-lg transition ${
+                      sharedImageFolderFilter === "frames"
+                        ? "bg-orange-600 text-white"
+                        : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-700"
+                    }`}
+                  >
+                    🖼️ Frames
+                  </button>
+                  <button
+                    onClick={() => setSharedImageFolderFilter("templates")}
+                    className={`px-4 py-2 rounded-lg transition ${
+                      sharedImageFolderFilter === "templates"
+                        ? "bg-orange-600 text-white"
+                        : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-700"
+                    }`}
+                  >
+                    📄 Templates
+                  </button>
+                </div>
+              </div>
+
+              {/* Filtered Shared Images Grid */}
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                {(() => {
+                  // Filter stock images based on selected folder
+                  const filteredImages = stockImages.filter((image) => {
+                    if (sharedImageFolderFilter === "all") return true;
+                    const imageUrl = image.url?.toLowerCase() || "";
+                    const folderPath = sharedImageFolderFilter.replace("-", "/");
+                    return imageUrl.includes(folderPath);
+                  });
+
+                  return filteredImages.map((image, index) => (
+                    <div
+                      key={index}
+                      className="group relative bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-lg transition"
+                    >
+                      <div className="aspect-square relative">
+                        <img
+                          src={getProxiedImageUrl(image.url)}
+                          alt={image.name || "Shared image"}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = "/placeholder-image.png";
+                          }}
+                        />
+                        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition flex items-center justify-center opacity-0 group-hover:opacity-100">
+                          <div className="flex space-x-2">
+                            <button
+                              onClick={() => {
+                                setSelectedSharedImage(image);
+                                setShowCampaignSelector(true);
+                              }}
+                              className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition"
+                            >
+                              Use in Campaign
+                            </button>
+                            <a
+                              href={getProxiedImageUrl(image.url)}
+                              download
+                              className="px-3 py-2 bg-gray-700 hover:bg-gray-800 text-white rounded-lg text-sm font-medium transition"
+                            >
+                              Download
+                            </a>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-3">
+                        <p className="text-sm font-medium truncate" style={{ color: "var(--text-primary)" }}>
+                          {image.name || "Untitled"}
+                        </p>
+                        <p className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>
+                          {image.folder || "Uncategorized"}
+                        </p>
+                      </div>
+                    </div>
+                  ));
+                })()}
+              </div>
+
+              {stockImages.length === 0 && (
+                <div className="text-center py-12">
+                  <div className="text-gray-400 dark:text-gray-600 text-lg mb-2">🖼️</div>
+                  <p style={{ color: "var(--text-secondary)" }}>No shared images available</p>
+                </div>
+              )}
             </div>
           )}
 
@@ -3097,6 +3286,149 @@ export default function ContentLibraryPage() {
         type="danger"
         confirmText="Delete All"
       />
+
+      {/* Campaign Selector Modal for Shared Images */}
+      {showCampaignSelector && selectedSharedImage && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-start justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>
+                    Select Campaign
+                  </h2>
+                  <p className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>
+                    Choose a campaign to add this image to
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    setShowCampaignSelector(false);
+                    setSelectedSharedImage(null);
+                  }}
+                  className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                >
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6">
+              {isLoading ? (
+                <div className="text-center py-8">
+                  <div className="animate-spin h-8 w-8 border-4 border-orange-600 border-t-transparent rounded-full mx-auto mb-4"></div>
+                  <p style={{ color: "var(--text-secondary)" }}>Loading campaigns...</p>
+                </div>
+              ) : campaigns.length === 0 ? (
+                <div className="text-center py-8">
+                  <p style={{ color: "var(--text-secondary)" }}>No campaigns available</p>
+                  <button
+                    onClick={() => router.push("/campaigns")}
+                    className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                  >
+                    Create Campaign
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {campaigns.map((campaign: Campaign) => (
+                    <div
+                      key={campaign.id}
+                      className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition cursor-pointer"
+                      onClick={async () => {
+                        try {
+                          // Add shared image to campaign
+                          await api.post("/api/images/campaign", {
+                            campaign_id: campaign.id,
+                            image_url: selectedSharedImage.url,
+                            prompt: selectedSharedImage.name || "Shared image",
+                            image_type: "variation",
+                            metadata: {
+                              source: "shared",
+                              shared_from: selectedSharedImage.folder || "stock",
+                              name: selectedSharedImage.name,
+                            },
+                          });
+                          toast.success("Image added to campaign successfully!");
+                          setShowCampaignSelector(false);
+                          setSelectedSharedImage(null);
+                        } catch (error) {
+                          console.error("Error adding image to campaign:", error);
+                          toast.error("Failed to add image to campaign");
+                        }
+                      }}
+                    >
+                      <div className="flex items-center space-x-4">
+                        <div className="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-lg overflow-hidden flex-shrink-0">
+                          {campaign.thumbnail_image_url ? (
+                            <img
+                              src={getProxiedImageUrl(campaign.thumbnail_image_url)}
+                              alt={campaign.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <svg
+                                className="w-8 h-8 text-gray-400"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                />
+                              </svg>
+                            </div>
+                          )}
+                        </div>
+                        <div>
+                          <h3 className="font-semibold" style={{ color: "var(--text-primary)" }}>
+                            {campaign.name}
+                          </h3>
+                          <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+                            {campaign.product_url}
+                          </p>
+                          <span className="inline-block mt-1 px-2 py-0.5 text-xs rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                            {campaign.affiliate_network}
+                          </span>
+                        </div>
+                      </div>
+                      <svg
+                        className="w-5 h-5 text-gray-400"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 5l7 7-7 7"
+                        />
+                      </svg>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Video Editor Modal */}
       <VideoEditorModal
