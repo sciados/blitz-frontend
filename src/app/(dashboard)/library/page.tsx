@@ -2083,7 +2083,14 @@ export default function ContentLibraryPage() {
                             ) {
                             }
 
-                            if (image.metadata?.edit_tool) {
+                            {/* Check has_transparency first for transparent images */}
+                            if (image.has_transparency) {
+                              return (
+                                <div className="absolute top-3 right-3 bg-emerald-600 text-white px-2 py-1 rounded-full text-xs font-medium">
+                                  TRANSPARENT
+                                </div>
+                              );
+                            } else if (image.metadata?.edit_tool) {
                               // Map edit_tool to display name - show the last tool used
                               const toolNames: Record<string, string> = {
                                 filters: "Filters",
