@@ -1629,16 +1629,40 @@ export default function ContentLibraryPage() {
                     >
                       ➕ Add Images
                     </button>
+
+                    {/* Action buttons - only show when images are selected */}
                     {selectedSharedImages.size > 0 && (
-                      <button
-                        onClick={() => {
-                          setBatchDeleteCount(selectedSharedImages.size);
-                          setShowBatchDeleteSharedImagesConfirm(true);
-                        }}
-                        className="px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition"
-                      >
-                        🗑️ Delete Selected ({selectedSharedImages.size})
-                      </button>
+                      <>
+                        <button
+                          onClick={() => {
+                            // Download each selected image
+                            for (const imageId of selectedSharedImages) {
+                              const image = stockImages.find((img) => img.id === imageId);
+                              if (image && image.url) {
+                                const link = document.createElement('a');
+                                link.href = getProxiedImageUrl(image.url);
+                                link.download = image.name || 'image';
+                                document.body.appendChild(link);
+                                link.click();
+                                document.body.removeChild(link);
+                              }
+                            }
+                            toast.success(`Downloaded ${selectedSharedImages.size} image(s)`);
+                          }}
+                          className="px-3 py-2 bg-gray-700 hover:bg-gray-800 text-white rounded-lg text-sm font-medium transition"
+                        >
+                          ⬇️ Download Selected ({selectedSharedImages.size})
+                        </button>
+                        <button
+                          onClick={() => {
+                            setBatchDeleteCount(selectedSharedImages.size);
+                            setShowBatchDeleteSharedImagesConfirm(true);
+                          }}
+                          className="px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition"
+                        >
+                          🗑️ Delete Selected ({selectedSharedImages.size})
+                        </button>
+                      </>
                     )}
                   </div>
                 </div>
@@ -1701,37 +1725,15 @@ export default function ContentLibraryPage() {
                         )}
 
                         <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition flex items-center justify-center opacity-0 group-hover:opacity-100">
-                          <div className="flex space-x-2">
-                            <button
-                              onClick={() => {
-                                setSelectedSharedImage(image);
-                                setShowCampaignSelector(true);
-                              }}
-                              className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition"
-                            >
-                              Use in Campaign
-                            </button>
-                            {getRoleFromToken() === "admin" && (
-                              <>
-                                <a
-                                  href={getProxiedImageUrl(image.url)}
-                                  download
-                                  className="px-3 py-2 bg-gray-700 hover:bg-gray-800 text-white rounded-lg text-sm font-medium transition"
-                                >
-                                  Download
-                                </a>
-                                <button
-                                  onClick={() => {
-                                    setImageToDelete(Number(image.id.replace(/[^0-9]/g, '')));
-                                    setShowDeleteImageConfirm(true);
-                                  }}
-                                  className="px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition"
-                                >
-                                  Delete
-                                </button>
-                              </>
-                            )}
-                          </div>
+                          <button
+                            onClick={() => {
+                              setSelectedSharedImage(image);
+                              setShowCampaignSelector(true);
+                            }}
+                            className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition"
+                          >
+                            Use in Campaign
+                          </button>
                         </div>
                       </div>
                       <div className="p-3">
