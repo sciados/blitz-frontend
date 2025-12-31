@@ -516,8 +516,8 @@ export default function ContentLibraryPage() {
   // No need to add allEditedImages separately as that causes duplicates
   const combinedImages: LibraryImage[] = allImages.map((img) => ({
     ...img,
-    // Determine source based on image_type - "variation" means it came from image_edits table
-    source: img.image_type === "variation" ? "edited" as const : "original" as const
+    // Determine source based on prompt - image_edits have "Edited:" prefix in prompt
+    source: (img.prompt?.startsWith("Edited:") || img.has_transparency) ? "edited" as const : "original" as const
   }));
 
   // Filter images based on campaign and filter type
