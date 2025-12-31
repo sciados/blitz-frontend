@@ -511,11 +511,14 @@ export default function ContentLibraryPage() {
     return true;
   });
 
-  // Combine original and edited images
-  const combinedImages: LibraryImage[] = [
-    ...allImages.map((img) => ({ ...img, source: "original" as const })),
-    ...allEditedImages.map((img) => ({ ...img, source: "edited" as const })),
-  ];
+  // Use allImages directly - it already includes both generated_images and image_edits from the backend
+  // The backend /api/images/campaign/{id} endpoint now returns both tables combined
+  // No need to add allEditedImages separately as that causes duplicates
+  const combinedImages: LibraryImage[] = allImages.map((img) => ({
+    ...img,
+    // Determine source based on image_type - "variation" means it came from image_edits table
+    source: img.image_type === "variation" ? "edited" as const : "original" as const
+  }));
 
   // Filter images based on campaign and filter type
   const filteredImages = combinedImages.filter((image) => {
@@ -1134,7 +1137,7 @@ export default function ContentLibraryPage() {
                   : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
               }`}
             >
-              🖼️ Images ({allImages.length + allEditedImages.length})
+              🖼️ Images ({allImages.length})
             </button>
             <button
               onClick={() => setActiveLibraryTab("shared-images")}
@@ -1181,7 +1184,7 @@ export default function ContentLibraryPage() {
               >
                 <span>All</span>
                 <span className="text-xs px-2 py-0.5 bg-gray-200 dark:bg-gray-600 rounded-full">
-                  {allImages.length + allEditedImages.length}
+                  {allImages.length}
                 </span>
               </button>
               <button
