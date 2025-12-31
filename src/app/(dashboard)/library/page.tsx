@@ -174,6 +174,10 @@ export default function ContentLibraryPage() {
   const [selectedSharedImage, setSelectedSharedImage] = useState<any>(null);
   const [selectedCampaignForEdit, setSelectedCampaignForEdit] = useState<string>("");
 
+  // Admin batch selection state for shared images
+  const [selectedSharedImages, setSelectedSharedImages] = useState<Set<string>>(new Set());
+  const [showAddSharedImageModal, setShowAddSharedImageModal] = useState(false);
+
   // Read tab from URL params (e.g., /library?tab=images)
   useEffect(() => {
     const tabParam = searchParams.get("tab");
@@ -218,6 +222,7 @@ export default function ContentLibraryPage() {
   const [showDeleteImageConfirm, setShowDeleteImageConfirm] = useState(false);
   const [showDeleteVideoConfirm, setShowDeleteVideoConfirm] = useState(false);
   const [showBatchDeleteConfirm, setShowBatchDeleteConfirm] = useState(false);
+  const [showBatchDeleteSharedImagesConfirm, setShowBatchDeleteSharedImagesConfirm] = useState(false);
   const [contentToDelete, setContentToDelete] = useState<number | null>(null);
   const [imageToDelete, setImageToDelete] = useState<number | null>(null);
   const [videoToDelete, setVideoToDelete] = useState<number | null>(null);
@@ -929,6 +934,34 @@ export default function ContentLibraryPage() {
     }
   };
 
+  const confirmBatchDeleteSharedImages = async () => {
+    try {
+      // Get the selected shared image URLs
+      const imageUrls: string[] = [];
+
+      for (const imageId of selectedSharedImages) {
+        const image = stockImages.find((img) => img.id === imageId);
+        if (image && image.url) {
+          imageUrls.push(image.url);
+        }
+      }
+
+      // Delete each image from R2 storage
+      for (const imageUrl of imageUrls) {
+        await api.delete(`/api/images/stock`, {
+          data: { url: imageUrl }
+        });
+      }
+
+      toast.success(`Successfully deleted ${selectedSharedImages.size} shared image(s)`);
+      setSelectedSharedImages(new Set());
+      setShowBatchDeleteSharedImagesConfirm(false);
+      refetchStockImages();
+    } catch (err: any) {
+      toast.error(err.response?.data?.detail || "Failed to delete shared images");
+    }
+  };
+
   // Video Editor handlers
   const handleOpenVideoEditor = (
     videoUrl: string,
@@ -1537,6 +1570,80 @@ export default function ContentLibraryPage() {
                 </div>
               </div>
 
+              {/* Admin Controls Bar */}
+              {getRoleFromToken() === "admin" && (
+                <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
+                      Admin Controls
+                    </h3>
+                    <div className="text-xs" style={{ color: "var(--text-secondary)" }}>
+                      {selectedSharedImages.size} selected
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      onClick={() => {
+                        const filteredImages = stockImages.filter((image) => {
+                          if (sharedImageFolderFilter === "all") return true;
+                          const filterToFolderMap: Record<string, string> = {
+                            "backgrounds": "Backgrounds",
+                            "stock-images": "Stock Images",
+                            "overlays": "Overlays",
+                            "frames": "Frames",
+                            "icons": "Icons",
+                            "templates": "Templates",
+                          };
+                          const targetFolder = filterToFolderMap[sharedImageFolderFilter];
+                          if (!targetFolder) return true;
+                          return image.folder === targetFolder;
+                        });
+                        setSelectedSharedImages(new Set(filteredImages.map(img => img.id)));
+                      }}
+                      className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition"
+                    >
+                      Select All ({stockImages.filter((image) => {
+                        if (sharedImageFolderFilter === "all") return true;
+                        const filterToFolderMap: Record<string, string> = {
+                          "backgrounds": "Backgrounds",
+                          "stock-images": "Stock Images",
+                          "overlays": "Overlays",
+                          "frames": "Frames",
+                          "icons": "Icons",
+                          "templates": "Templates",
+                        };
+                        const targetFolder = filterToFolderMap[sharedImageFolderFilter];
+                        if (!targetFolder) return true;
+                        return image.folder === targetFolder;
+                      }).length})
+                    </button>
+                    <button
+                      onClick={() => setSelectedSharedImages(new Set())}
+                      className="px-3 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg text-sm font-medium transition"
+                    >
+                      Clear Selection
+                    </button>
+                    <button
+                      onClick={() => setShowAddSharedImageModal(true)}
+                      className="px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition"
+                    >
+                      ➕ Add Images
+                    </button>
+                    {selectedSharedImages.size > 0 && (
+                      <button
+                        onClick={() => {
+                          setBatchDeleteCount(selectedSharedImages.size);
+                          setShowBatchDeleteSharedImagesConfirm(true);
+                        }}
+                        className="px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition"
+                      >
+                        🗑️ Delete Selected ({selectedSharedImages.size})
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+
               {/* Filtered Shared Images Grid */}
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                 {(() => {
@@ -1572,6 +1679,27 @@ export default function ContentLibraryPage() {
                             target.src = "/placeholder-image.png";
                           }}
                         />
+
+                        {/* Admin Checkbox */}
+                        {getRoleFromToken() === "admin" && (
+                          <div className="absolute top-2 left-2">
+                            <input
+                              type="checkbox"
+                              checked={selectedSharedImages.has(image.id)}
+                              onChange={(e) => {
+                                const newSelection = new Set(selectedSharedImages);
+                                if (e.target.checked) {
+                                  newSelection.add(image.id);
+                                } else {
+                                  newSelection.delete(image.id);
+                                }
+                                setSelectedSharedImages(newSelection);
+                              }}
+                              className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 focus:ring-2"
+                            />
+                          </div>
+                        )}
+
                         <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition flex items-center justify-center opacity-0 group-hover:opacity-100">
                           <div className="flex space-x-2">
                             <button
@@ -1584,13 +1712,24 @@ export default function ContentLibraryPage() {
                               Use in Campaign
                             </button>
                             {getRoleFromToken() === "admin" && (
-                              <a
-                                href={getProxiedImageUrl(image.url)}
-                                download
-                                className="px-3 py-2 bg-gray-700 hover:bg-gray-800 text-white rounded-lg text-sm font-medium transition"
-                              >
-                                Download
-                              </a>
+                              <>
+                                <a
+                                  href={getProxiedImageUrl(image.url)}
+                                  download
+                                  className="px-3 py-2 bg-gray-700 hover:bg-gray-800 text-white rounded-lg text-sm font-medium transition"
+                                >
+                                  Download
+                                </a>
+                                <button
+                                  onClick={() => {
+                                    setImageToDelete(Number(image.id.replace(/[^0-9]/g, '')));
+                                    setShowDeleteImageConfirm(true);
+                                  }}
+                                  className="px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition"
+                                >
+                                  Delete
+                                </button>
+                              </>
                             )}
                           </div>
                         </div>
@@ -3316,6 +3455,20 @@ export default function ContentLibraryPage() {
         onConfirm={confirmBatchDelete}
         title="Delete Multiple Images"
         message={`Are you sure you want to delete ${batchDeleteCount} image(s)? This action cannot be undone.`}
+        type="danger"
+        confirmText="Delete All"
+      />
+
+      {/* Batch Delete Shared Images Confirmation */}
+      <ConfirmationModal
+        isOpen={showBatchDeleteSharedImagesConfirm}
+        onClose={() => {
+          setShowBatchDeleteSharedImagesConfirm(false);
+          setBatchDeleteCount(0);
+        }}
+        onConfirm={confirmBatchDeleteSharedImages}
+        title="Delete Multiple Shared Images"
+        message={`Are you sure you want to delete ${batchDeleteCount} shared image(s)? This action cannot be undone.`}
         type="danger"
         confirmText="Delete All"
       />
