@@ -1571,41 +1571,20 @@ export default function ContentLibraryPage() {
               </div>
 
               {/* Admin Controls Bar */}
-              {(() => {
-                const userRole = getRoleFromToken();
-                console.log("User role:", userRole); // Debug log
-                return userRole === "admin" && (
-                  <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <h3 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
-                        Admin Controls
-                      </h3>
-                      <div className="text-xs" style={{ color: "var(--text-secondary)" }}>
-                        {selectedSharedImages.size} selected
-                      </div>
+              {getRoleFromToken() === "admin" && (
+                <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
+                      Admin Controls
+                    </h3>
+                    <div className="text-xs" style={{ color: "var(--text-secondary)" }}>
+                      {selectedSharedImages.size} selected
                     </div>
-                    <div className="flex flex-wrap gap-2">
-                      <button
-                        onClick={() => {
-                          const filteredImages = stockImages.filter((image) => {
-                            if (sharedImageFolderFilter === "all") return true;
-                            const filterToFolderMap: Record<string, string> = {
-                              "backgrounds": "Backgrounds",
-                              "stock-images": "Stock Images",
-                              "overlays": "Overlays",
-                              "frames": "Frames",
-                              "icons": "Icons",
-                              "templates": "Templates",
-                            };
-                            const targetFolder = filterToFolderMap[sharedImageFolderFilter];
-                            if (!targetFolder) return true;
-                            return image.folder === targetFolder;
-                          });
-                          setSelectedSharedImages(new Set(filteredImages.map(img => img.id)));
-                        }}
-                        className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition"
-                      >
-                        Select All ({stockImages.filter((image) => {
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      onClick={() => {
+                        const filteredImages = stockImages.filter((image) => {
                           if (sharedImageFolderFilter === "all") return true;
                           const filterToFolderMap: Record<string, string> = {
                             "backgrounds": "Backgrounds",
@@ -1618,59 +1597,76 @@ export default function ContentLibraryPage() {
                           const targetFolder = filterToFolderMap[sharedImageFolderFilter];
                           if (!targetFolder) return true;
                           return image.folder === targetFolder;
-                        }).length})
-                      </button>
-                      <button
-                        onClick={() => setSelectedSharedImages(new Set())}
-                        className="px-3 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg text-sm font-medium transition"
-                      >
-                        Clear Selection
-                      </button>
-                      <button
-                        onClick={() => setShowAddSharedImageModal(true)}
-                        className="px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition"
-                      >
-                        ➕ Add Images
-                      </button>
+                        });
+                        setSelectedSharedImages(new Set(filteredImages.map(img => img.id)));
+                      }}
+                      className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition"
+                    >
+                      Select All ({stockImages.filter((image) => {
+                        if (sharedImageFolderFilter === "all") return true;
+                        const filterToFolderMap: Record<string, string> = {
+                          "backgrounds": "Backgrounds",
+                          "stock-images": "Stock Images",
+                          "overlays": "Overlays",
+                          "frames": "Frames",
+                          "icons": "Icons",
+                          "templates": "Templates",
+                        };
+                        const targetFolder = filterToFolderMap[sharedImageFolderFilter];
+                        if (!targetFolder) return true;
+                        return image.folder === targetFolder;
+                      }).length})
+                    </button>
+                    <button
+                      onClick={() => setSelectedSharedImages(new Set())}
+                      className="px-3 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg text-sm font-medium transition"
+                    >
+                      Clear Selection
+                    </button>
+                    <button
+                      onClick={() => setShowAddSharedImageModal(true)}
+                      className="px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition"
+                    >
+                      ➕ Add Images
+                    </button>
 
-                      {/* Action buttons - only show when images are selected */}
-                      {selectedSharedImages.size > 0 && (
-                        <>
-                          <button
-                            onClick={() => {
-                              // Download each selected image
-                              for (const imageId of selectedSharedImages) {
-                                const image = stockImages.find((img) => img.id === imageId);
-                                if (image && image.url) {
-                                  const link = document.createElement('a');
-                                  link.href = getProxiedImageUrl(image.url);
-                                  link.download = image.name || 'image';
-                                  document.body.appendChild(link);
-                                  link.click();
-                                  document.body.removeChild(link);
-                                }
+                    {/* Action buttons - only show when images are selected */}
+                    {selectedSharedImages.size > 0 && (
+                      <>
+                        <button
+                          onClick={() => {
+                            // Download each selected image
+                            for (const imageId of selectedSharedImages) {
+                              const image = stockImages.find((img) => img.id === imageId);
+                              if (image && image.url) {
+                                const link = document.createElement('a');
+                                link.href = getProxiedImageUrl(image.url);
+                                link.download = image.name || 'image';
+                                document.body.appendChild(link);
+                                link.click();
+                                document.body.removeChild(link);
                               }
-                              toast.success(`Downloaded ${selectedSharedImages.size} image(s)`);
-                            }}
-                            className="px-3 py-2 bg-gray-700 hover:bg-gray-800 text-white rounded-lg text-sm font-medium transition"
-                          >
-                            ⬇️ Download Selected ({selectedSharedImages.size})
-                          </button>
-                          <button
-                            onClick={() => {
-                              setBatchDeleteCount(selectedSharedImages.size);
-                              setShowBatchDeleteSharedImagesConfirm(true);
-                            }}
-                            className="px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition"
-                          >
-                            🗑️ Delete Selected ({selectedSharedImages.size})
-                          </button>
-                        </>
-                      )}
-                    </div>
+                            }
+                            toast.success(`Downloaded ${selectedSharedImages.size} image(s)`);
+                          }}
+                          className="px-3 py-2 bg-gray-700 hover:bg-gray-800 text-white rounded-lg text-sm font-medium transition"
+                        >
+                          ⬇️ Download Selected ({selectedSharedImages.size})
+                        </button>
+                        <button
+                          onClick={() => {
+                            setBatchDeleteCount(selectedSharedImages.size);
+                            setShowBatchDeleteSharedImagesConfirm(true);
+                          }}
+                          className="px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition"
+                        >
+                          🗑️ Delete Selected ({selectedSharedImages.size})
+                        </button>
+                      </>
+                    )}
                   </div>
-                );
-              })()}
+                </div>
+              )}
 
               {/* Filtered Shared Images Grid */}
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
