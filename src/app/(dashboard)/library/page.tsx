@@ -3917,8 +3917,8 @@ export default function ContentLibraryPage() {
                 >
                   <option value="">Select a campaign</option>
                   {campaigns
-                    .filter((c) => c.id === filterCampaignId || !filterCampaignId)
-                    .map((campaign) => (
+                    .filter((c: Campaign) => c.id === filterCampaignId || !filterCampaignId)
+                    .map((campaign: Campaign) => (
                       <option key={campaign.id} value={campaign.id}>
                         {campaign.name}
                       </option>
