@@ -37,7 +37,8 @@
       "Bash(pkill:*)",
       "Bash(ls:*)",
       "Bash(tail -200 \"/c/Users/shaun/OneDrive/Documents/GitHub/blitz-frontend/src/app/(dashboard)/library/page.tsx\")",
-      "Bash(tail:*)"
+      "Bash(tail:*)",
+      "WebSearch"
     ],
     "deny": [],
     "ask": []
