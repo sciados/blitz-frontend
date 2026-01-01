@@ -304,6 +304,64 @@ Backend CORS allows:
 4. All subsequent requests include `Authorization: Bearer <token>` header (added by axios interceptor)
 5. On 401 response, frontend clears token and redirects to `/login`
 
+## Image Access Pattern (CRITICAL)
+
+**ALL image access must use the proxy utility for consistency, CORS handling, and centralized control.**
+
+### Frontend: Display Images
+
+**Location:** `src/utils/imageProxy.ts`
+
+**Usage:**
+```typescript
+import { getProxiedImageUrl } from "src/utils/imageProxy";
+
+// Display any R2 image
+<img src={getProxiedImageUrl(imageUrl)} alt="Description" />
+```
+
+**How it works:**
+1. Extracts R2 path from full URL (e.g., `/campaigns/28/image.png`)
+2. Constructs proxy URL: `/api/images/proxy?url=/campaigns/28/image.png`
+3. Proxy adds CORS headers and returns image
+
+### Backend: Retrieve Images for Processing
+
+**Location:** `app/api/proxy.py` and `app/plugins/image_editor/image_router.py`
+
+**Usage in Image Editor:**
+```python
+# For image editing operations, use proxy endpoint
+proxy_url = f"{settings.API_BASE_URL}/api/images/proxy?url={image_path}"
+async with httpx.AsyncClient(timeout=30.0) as client:
+    response = await client.get(proxy_url)
+    response.raise_for_status()
+    image_data = response.content
+```
+
+**Why this matters:**
+- Frontend uses proxy to display images
+- Backend must also use proxy to retrieve images for processing
+- Ensures consistent path handling and CORS
+- Proxy automatically handles relative paths (`/campaigns/28/image.png`)
+- Single point of control for image access
+
+**Common Mistake to Avoid:**
+❌ DON'T: `r2_storage.download_file(image_path)` - fails with relative paths
+✅ DO: Use `/api/images/proxy` endpoint - handles all path types
+
+### Path Handling
+
+The proxy automatically handles:
+- Full URLs: `https://pub-xxx.r2.dev/campaigns/28/image.png`
+- Relative paths: `/campaigns/28/image.png`
+- Paths with/without leading slash
+
+**Backend automatically converts:**
+- Input: `/campaigns/28/generated_images/enhanced_123.png`
+- Constructed: `https://pub-xxx.r2.dev/campaigns/28/generated_images/enhanced_123.png`
+- Returns: Image with proper CORS headers
+
 ## Landing Page Content Structure
 
 **IMPORTANT:** Generated landing page content is **structured content for template integration**, NOT a finished landing page.

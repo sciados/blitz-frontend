@@ -178,6 +178,13 @@ export default function ContentLibraryPage() {
   const [selectedSharedImages, setSelectedSharedImages] = useState<Set<string>>(new Set());
   const [showAddSharedImageModal, setShowAddSharedImageModal] = useState(false);
 
+  // Campaign media upload state
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [uploadType, setUploadType] = useState<"image" | "video">("image");
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [uploadCampaignId, setUploadCampaignId] = useState<number | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+
   // Read tab from URL params (e.g., /library?tab=images)
   useEffect(() => {
     const tabParam = searchParams.get("tab");
@@ -1628,6 +1635,28 @@ export default function ContentLibraryPage() {
                       className="px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition"
                     >
                       ➕ Add Images
+                    </button>
+                    <button
+                      onClick={() => {
+                        setUploadType("image");
+                        setUploadFile(null);
+                        setUploadCampaignId(filterCampaignId);
+                        setShowUploadModal(true);
+                      }}
+                      className="px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium transition"
+                    >
+                      📤 Upload Image
+                    </button>
+                    <button
+                      onClick={() => {
+                        setUploadType("video");
+                        setUploadFile(null);
+                        setUploadCampaignId(filterCampaignId);
+                        setShowUploadModal(true);
+                      }}
+                      className="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition"
+                    >
+                      🎥 Upload Video
                     </button>
 
                     {/* Action buttons - only show when images are selected */}
@@ -3837,6 +3866,148 @@ export default function ContentLibraryPage() {
         }}
         imageUrls={selectedImageUrls}
       />
+
+      {/* Upload Modal */}
+      {showUploadModal && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+          <div className="card rounded-lg p-6 max-w-md w-full">
+            <div className="flex items-center justify-between mb-6">
+              <h2
+                className="text-2xl font-bold"
+                style={{ color: "var(--text-primary)" }}
+              >
+                Upload {uploadType === "image" ? "Image" : "Video"}
+              </h2>
+              <button
+                onClick={() => setShowUploadModal(false)}
+                className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+              >
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {/* Campaign Selector */}
+              <div>
+                <label
+                  className="block text-sm font-medium mb-2"
+                  style={{ color: "var(--text-primary)" }}
+                >
+                  Campaign
+                </label>
+                <select
+                  value={uploadCampaignId || ""}
+                  onChange={(e) =>
+                    setUploadCampaignId(e.target.value ? Number(e.target.value) : null)
+                  }
+                  className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
+                  style={{ color: "var(--text-primary)" }}
+                >
+                  <option value="">Select a campaign</option>
+                  {campaigns
+                    .filter((c) => c.id === filterCampaignId || !filterCampaignId)
+                    .map((campaign) => (
+                      <option key={campaign.id} value={campaign.id}>
+                        {campaign.name}
+                      </option>
+                    ))}
+                </select>
+              </div>
+
+              {/* File Input */}
+              <div>
+                <label
+                  className="block text-sm font-medium mb-2"
+                  style={{ color: "var(--text-primary)" }}
+                >
+                  {uploadType === "image" ? "Image" : "Video"} File
+                </label>
+                <input
+                  type="file"
+                  accept={uploadType === "image" ? "image/*" : "video/*"}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0] || null;
+                    setUploadFile(file);
+                  }}
+                  className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
+                  style={{ color: "var(--text-primary)" }}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  {uploadType === "image"
+                    ? "Supported: JPG, PNG, GIF, WebP (max 50MB)"
+                    : "Supported: MP4, WebM, OGG (max 50MB)"}
+                </p>
+              </div>
+
+              {/* Upload Button */}
+              <button
+                onClick={async () => {
+                  if (!uploadFile) {
+                    toast.error("Please select a file");
+                    return;
+                  }
+                  if (!uploadCampaignId) {
+                    toast.error("Please select a campaign");
+                    return;
+                  }
+
+                  setIsUploading(true);
+                  try {
+                    const formData = new FormData();
+                    formData.append("file", uploadFile);
+                    formData.append("campaign_id", uploadCampaignId.toString());
+                    formData.append("media_type", uploadType);
+
+                    const response = await api.post("/upload/campaign-media", formData, {
+                      headers: {
+                        "Content-Type": "multipart/form-data",
+                      },
+                    });
+
+                    toast.success(
+                      `${uploadType === "image" ? "Image" : "Video"} uploaded successfully!`
+                    );
+
+                    // Refresh data
+                    if (uploadType === "image") {
+                      refetchImages();
+                    } else {
+                      refetchVideos();
+                    }
+
+                    setShowUploadModal(false);
+                    setUploadFile(null);
+                  } catch (error: any) {
+                    console.error("Upload error:", error);
+                    toast.error(
+                      error.response?.data?.detail ||
+                        `Failed to upload ${uploadType}`
+                    );
+                  } finally {
+                    setIsUploading(false);
+                  }
+                }}
+                disabled={isUploading || !uploadFile || !uploadCampaignId}
+                className="w-full px-6 py-3 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+              >
+                {isUploading ? "Uploading..." : `Upload ${uploadType === "image" ? "Image" : "Video"}`}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </AuthGate>
   );
 }
