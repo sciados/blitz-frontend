@@ -79,7 +79,9 @@ export default function ImageEditorPage() {
   const [showFolderSelector, setShowFolderSelector] = useState(false);
 
   // Stock images for background selection
-  const [stockImages, setStockImages] = useState<Array<{ id: string; url: string; prompt?: string }>>([]);
+  const [stockImages, setStockImages] = useState<
+    Array<{ id: string; url: string; prompt?: string }>
+  >([]);
 
   // React Query: Fetch campaigns
   const { data: availableCampaigns = [], isLoading: isLoadingCampaigns } =
@@ -104,7 +106,7 @@ export default function ImageEditorPage() {
       return images.map((img: any) => ({
         id: img.id,
         url: img.image_url,
-        prompt: img.prompt
+        prompt: img.prompt,
       }));
     },
     enabled: !!campaignId,
@@ -291,13 +293,13 @@ export default function ImageEditorPage() {
           formData.append("prompt", prompt);
           if (negativePrompt)
             formData.append("negative_prompt", negativePrompt);
-          if (maskDataUrl) formData.append("mask_image_data", maskDataUrl);
+          if (maskDataUrl) formData.append("mask_data_base64", maskDataUrl);
           formData.append("seed", seed.toString());
           break;
 
         case "erase":
           endpoint = "/api/image-editor/erase";
-          if (maskDataUrl) formData.append("mask_image_data", maskDataUrl);
+          if (maskDataUrl) formData.append("mask_data_base64", maskDataUrl);
           formData.append("seed", seed.toString());
           break;
 
