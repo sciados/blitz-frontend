@@ -1893,6 +1893,98 @@ export const helpContent: Record<string, HelpContent> = {
       "Failed videos show error messages to help troubleshoot issues",
     ],
   },
+
+  // Image Editor - Inpaint Tool
+  "/image-editor/inpaint": {
+    title: "Image Inpainting Tool",
+    description: "Use AI to intelligently fill in or replace masked areas of your image. Perfect for removing objects, fixing imperfections, or adding new elements to photos.",
+    steps: [
+      {
+        number: 1,
+        title: "Upload Your Image",
+        description: "Click 'Choose File' or drag and drop an image onto the canvas. Supported formats: JPG, PNG, WebP. Maximum size: 10MB.",
+      },
+      {
+        number: 2,
+        title: "Create a Mask",
+        description: "Use the brush tool to paint over areas you want to inpaint. White areas will be replaced. Adjust brush size (5-100px) and hardness for precision.",
+      },
+      {
+        number: 3,
+        title: "Write Your Prompt",
+        description: "Describe what should fill the masked area. Be specific: 'wooden table', 'blue sky with clouds', 'modern office desk'. The more detailed, the better the result.",
+      },
+      {
+        number: 4,
+        title: "Adjust Settings (Optional)",
+        description: "Fine-tune: Brush size (5-100px), Brush hardness (0-100%), Seed (for reproducible results), and Output format (PNG for transparency, JPG for smaller size).",
+      },
+      {
+        number: 5,
+        title: "Generate & Preview",
+        description: "Click 'Apply Inpaint' to process. The AI automatically selects the best platform (Replicate, FAL, or Stability) for optimal quality and cost. Preview appears in 5-15 seconds.",
+      },
+      {
+        number: 6,
+        title: "Save Your Result",
+        description: "Download the edited image or save it to your campaign library. The system automatically uses the proxy for fast, secure storage via Cloudflare R2.",
+      },
+    ],
+    tips: [
+      "Paint precisely - only mask what you want to change for best results",
+      "Use descriptive prompts: 'old wooden floor' instead of just 'wood'",
+      "Negative prompts help avoid unwanted elements (e.g., 'no people, no text')",
+      "The system uses AI Platform Router - automatically selects cheapest/most reliable platform",
+      "Save masks for reuse if you plan to iterate on the same area",
+      "For object removal, use Erase tool instead (no prompt needed)",
+      "Regenerate with different prompts if first result isn't perfect",
+      "Higher resolution images produce better inpainting quality",
+      "The AI respects lighting and perspective for realistic results",
+    ],
+  },
+
+  // Image Editor - General
+  "/image-editor": {
+    title: "Image Editor",
+    description: "Professional AI-powered image editing toolkit. Remove objects, change backgrounds, upscale images, and more using advanced AI models.",
+    steps: [
+      {
+        number: 1,
+        title: "Choose Your Tool",
+        description: "Select from Inpaint (fill/replace), Erase (remove objects), Background Removal, Upscale, Outpaint, or Sketch-to-Image based on your needs.",
+      },
+      {
+        number: 2,
+        title: "Upload Image",
+        description: "Click 'Choose File' or drag and drop an image. Supports JPG, PNG, WebP up to 10MB.",
+      },
+      {
+        number: 3,
+        title: "Configure Settings",
+        description: "Each tool has specific options. Inpaint needs a prompt, Erase uses masks, Background Removal is automatic, etc.",
+      },
+      {
+        number: 4,
+        title: "Process with AI",
+        description: "Click the tool button to process. The system automatically selects the best AI platform (Replicate, FAL, or Stability) for optimal quality and cost.",
+      },
+      {
+        number: 5,
+        title: "Download or Save",
+        description: "Download your edited image or save it to your campaign library for future use.",
+      },
+    ],
+    tips: [
+      "All tools use AI Platform Router for automatic platform selection",
+      "Cost optimization: system routes to cheapest available platform (75% savings)",
+      "Multiple fallback platforms ensure reliability if one service fails",
+      "High-resolution images produce better results",
+      "All images stored securely via Cloudflare R2 with proxy access",
+      "Edit history is tracked for each campaign",
+      "Try different tools for different effects",
+      "Masks are automatically optimized for each AI platform",
+    ],
+  },
 };
 
 // Helper function to get help content by pathname

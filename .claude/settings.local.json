@@ -39,7 +39,9 @@
       "Bash(tail -200 \"/c/Users/shaun/OneDrive/Documents/GitHub/blitz-frontend/src/app/(dashboard)/library/page.tsx\")",
       "Bash(tail:*)",
       "WebSearch",
-      "WebFetch(domain:fal.run)"
+      "WebFetch(domain:fal.run)",
+      "WebFetch(domain:replicate.com)",
+      "Bash(curl:*)"
     ],
     "deny": [],
     "ask": []
