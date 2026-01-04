@@ -731,10 +731,10 @@ interface ImageEditorSidebarProps {
   selectedEditTool: EditTool;
   onEditToolChange: (tool: EditTool) => void;
   prompt: string;
-  negativePrompt: string;
+  // negativePrompt: string;
   searchPrompt: string;
   onPromptChange: (value: string) => void;
-  onNegativePromptChange: (value: string) => void;
+  // onNegativePromptChange: (value: string) => void;
   onSearchPromptChange: (value: string) => void;
   outpaintLeft: number;
   outpaintRight: number;
@@ -764,10 +764,10 @@ export function ImageEditorSidebar({
   selectedEditTool,
   onEditToolChange,
   prompt,
-  negativePrompt,
+  // negativePrompt,
   searchPrompt,
   onPromptChange,
-  onNegativePromptChange,
+  //  onNegativePromptChange,
   onSearchPromptChange,
   outpaintLeft,
   outpaintRight,
@@ -937,7 +937,10 @@ export function ImageEditorSidebar({
 
       {/* Overlay Tool - Full Width Layout */}
       {selectedEditTool === "overlay" && (
-        <OverlayToolControls isProcessing={isProcessing} libraryImages={libraryImages} />
+        <OverlayToolControls
+          isProcessing={isProcessing}
+          libraryImages={libraryImages}
+        />
       )}
 
       {/* Filters Tool - Full Width Layout */}
@@ -1035,19 +1038,6 @@ export function ImageEditorSidebar({
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:bg-gray-100"
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Negative Prompt
-                  </label>
-                  <textarea
-                    value={negativePrompt}
-                    onChange={(e) => onNegativePromptChange(e.target.value)}
-                    disabled={isProcessing}
-                    placeholder="What to avoid..."
-                    rows={2}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:bg-gray-100"
-                  />
-                </div>
               </div>
             )}
 
@@ -1097,19 +1087,6 @@ export function ImageEditorSidebar({
                     onChange={(e) => onPromptChange(e.target.value)}
                     disabled={isProcessing}
                     placeholder="e.g., 'a bicycle'"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:bg-gray-100"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Negative Prompt
-                  </label>
-                  <input
-                    type="text"
-                    value={negativePrompt}
-                    onChange={(e) => onNegativePromptChange(e.target.value)}
-                    disabled={isProcessing}
-                    placeholder="What to avoid..."
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:bg-gray-100"
                   />
                 </div>
@@ -1238,19 +1215,6 @@ export function ImageEditorSidebar({
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:bg-gray-100"
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Negative Prompt
-                  </label>
-                  <textarea
-                    value={negativePrompt}
-                    onChange={(e) => onNegativePromptChange(e.target.value)}
-                    disabled={isProcessing}
-                    placeholder="What to avoid..."
-                    rows={2}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:bg-gray-100"
-                  />
-                </div>
                 <p className="text-xs text-gray-500">
                   Upscales to higher resolution while enhancing quality
                 </p>
@@ -1270,19 +1234,6 @@ export function ImageEditorSidebar({
                     disabled={isProcessing}
                     placeholder="Describe what the sketch represents..."
                     rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:bg-gray-100"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Negative Prompt
-                  </label>
-                  <textarea
-                    value={negativePrompt}
-                    onChange={(e) => onNegativePromptChange(e.target.value)}
-                    disabled={isProcessing}
-                    placeholder="What to avoid..."
-                    rows={2}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:bg-gray-100"
                   />
                 </div>

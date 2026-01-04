@@ -58,7 +58,7 @@ export default function ImageEditorPage() {
 
   // Common parameters
   const [prompt, setPrompt] = useState("");
-  const [negativePrompt, setNegativePrompt] = useState("");
+  // const [negativePrompt, setNegativePrompt] = useState(""); // Removed - LaMa doesn't support negative prompts
   const [seed, setSeed] = useState(0);
 
   // Search & Replace specific
@@ -291,8 +291,8 @@ export default function ImageEditorPage() {
         case "inpaint":
           endpoint = "/api/image-editor/inpaint";
           formData.append("prompt", prompt);
-          if (negativePrompt)
-            formData.append("negative_prompt", negativePrompt);
+          //           if (negativePrompt)
+          //             formData.append("negative_prompt", negativePrompt);
           if (maskDataUrl) formData.append("mask_data_base64", maskDataUrl);
           formData.append("seed", seed.toString());
           break;
@@ -311,8 +311,8 @@ export default function ImageEditorPage() {
           endpoint = "/api/image-editor/search-replace";
           formData.append("search_prompt", searchPrompt);
           formData.append("prompt", prompt);
-          if (negativePrompt)
-            formData.append("negative_prompt", negativePrompt);
+          //           if (negativePrompt)
+          //             formData.append("negative_prompt", negativePrompt);
           formData.append("seed", seed.toString());
           break;
 
@@ -330,8 +330,8 @@ export default function ImageEditorPage() {
         case "upscale":
           endpoint = "/api/image-editor/upscale";
           formData.append("prompt", prompt);
-          if (negativePrompt)
-            formData.append("negative_prompt", negativePrompt);
+          //           if (negativePrompt)
+          //             formData.append("negative_prompt", negativePrompt);
           formData.append("creativity", "0.35");
           formData.append("seed", seed.toString());
           break;
@@ -339,8 +339,8 @@ export default function ImageEditorPage() {
         case "sketch-to-image":
           endpoint = "/api/image-editor/sketch-to-image";
           formData.append("prompt", prompt);
-          if (negativePrompt)
-            formData.append("negative_prompt", negativePrompt);
+          //           if (negativePrompt)
+          //             formData.append("negative_prompt", negativePrompt);
           formData.append("control_strength", "0.7");
           formData.append("seed", seed.toString());
           break;
@@ -762,7 +762,7 @@ export default function ImageEditorPage() {
     setEditedImage(null);
     setActiveImage(originalImage);
     setPrompt("");
-    setNegativePrompt("");
+    //     setNegativePrompt("");
     setSearchPrompt("");
   };
 
@@ -1046,10 +1046,10 @@ export default function ImageEditorPage() {
               selectedEditTool={selectedEditTool}
               onEditToolChange={setSelectedEditTool}
               prompt={prompt}
-              negativePrompt={negativePrompt}
+              //               negativePrompt={negativePrompt}
               searchPrompt={searchPrompt}
               onPromptChange={setPrompt}
-              onNegativePromptChange={setNegativePrompt}
+              //               onNegativePromptChange={setNegativePrompt}
               onSearchPromptChange={setSearchPrompt}
               outpaintLeft={outpaintLeft}
               outpaintRight={outpaintRight}
