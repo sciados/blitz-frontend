@@ -2350,6 +2350,13 @@ export default function ContentLibraryPage() {
                                   {toolName}
                                 </div>
                               );
+                            } else if (image.metadata?.is_edited) {
+                              // If it's edited but no edit_tool, show EDITED
+                              return (
+                                <div className="absolute top-3 right-3 bg-blue-600 to-blue-700 text-white px-2 py-1 rounded-full text-xs font-medium">
+                                  EDITED
+                                </div>
+                              );
                             } else {
                               return (
                                 <div className="absolute top-3 right-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white px-2 py-1 rounded-full text-xs font-medium">
