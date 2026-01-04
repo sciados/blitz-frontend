@@ -258,8 +258,11 @@ export type ImageStyle = "photorealistic" | "artistic" | "minimalist" | "lifesty
 
 export type AspectRatio = "1:1" | "16:9" | "9:16" | "21:9" | "4:3";
 
+export type ImageSource = "generated" | "edited" | "uploaded" | "stock";
+
 export type GeneratedImage = {
     id: number;
+    source?: ImageSource;  // Added for unified image responses
     campaign_id: number;
     image_type: ImageType;
     style: ImageStyle;
@@ -295,7 +298,7 @@ export type GeneratedImage = {
 
 // Extended type for images in the content library (combines original and edited)
 export type LibraryImage = GeneratedImage & {
-    source: 'original' | 'edited';
+    source: ImageSource;  // Updated from 'original' | 'edited' to use ImageSource
 };
 
 export type ImageGenerateRequest = {
@@ -353,3 +356,90 @@ export type ImageSaveDraftRequest = {
     model: string;
     prompt: string;
 };
+
+// ============================================================================
+// EDITED IMAGE TYPES (for image editor results)
+// ============================================================================
+
+export type EditedImage = {
+    id: number;
+    source: "edited";
+    campaign_id: number;
+    image_url: string;
+    thumbnail_url?: string | null;
+    operation_type: string;
+    parent_image_id?: number | null;
+    has_transparency?: boolean;
+    processing_time_ms?: number;
+    api_cost_credits?: number;
+    created_at: string;
+    // Optional generated image fields (for edited AI images)
+    image_type?: ImageType;
+    style?: ImageStyle;
+    aspect_ratio?: AspectRatio;
+    prompt?: string;
+    provider?: string;
+    model?: string;
+};
+
+// Unified image type that can be either generated or edited
+export type UnifiedImage = GeneratedImage | EditedImage;
+
+// Type guard to check if image is generated
+export function isGeneratedImage(image: UnifiedImage): image is GeneratedImage {
+    return !image.source || image.source === "generated";
+}
+
+// Type guard to check if image is edited
+export function isEditedImage(image: UnifiedImage): image is EditedImage {
+    return image.source === "edited";
+}
+
+// Helper to get display info for image source
+export function getImageSourceInfo(image: UnifiedImage) {
+    const source = image.source || "generated";
+
+    const config = {
+        generated: {
+            icon: "🎨",
+            label: "AI Generated",
+            badgeText: "Generated",
+            color: "blue" as const,
+        },
+        edited: {
+            icon: "✏️",
+            label: "Edited",
+            badgeText: isEditedImage(image)
+                ? `Edited · ${formatOperationType(image.operation_type)}`
+                : "Edited",
+            color: "purple" as const,
+        },
+        uploaded: {
+            icon: "📤",
+            label: "Uploaded",
+            badgeText: "Uploaded",
+            color: "green" as const,
+        },
+        stock: {
+            icon: "📚",
+            label: "Stock",
+            badgeText: "Stock",
+            color: "gray" as const,
+        },
+    };
+
+    return config[source];
+}
+
+// Format operation type for display
+function formatOperationType(operationType?: string): string {
+    if (!operationType) return "Unknown";
+
+    const formatted = operationType
+        .replace(/_/g, " ")
+        .split(" ")
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ");
+
+    return formatted;
+}
