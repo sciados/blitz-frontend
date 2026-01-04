@@ -43,13 +43,16 @@ interface OverlayToolControlsProps {
   libraryImages?: { id: string; url: string; prompt?: string }[];
 }
 
-function OverlayToolControls({ isProcessing, libraryImages = [] }: OverlayToolControlsProps) {
+function OverlayToolControls({
+  isProcessing,
+  libraryImages = [],
+}: OverlayToolControlsProps) {
   const [textOverlays, setTextOverlays] = useState<TextOverlay[]>([]);
   const [imageOverlays, setImageOverlays] = useState<ImageOverlay[]>([]);
   const [selectedOverlay, setSelectedOverlay] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"text" | "upload" | "library" | "stickers">(
-    "text"
-  );
+  const [activeTab, setActiveTab] = useState<
+    "text" | "upload" | "library" | "stickers"
+  >("text");
   const [selectedStickerCategory, setSelectedStickerCategory] =
     useState("badges");
 
@@ -731,10 +734,10 @@ interface ImageEditorSidebarProps {
   selectedEditTool: EditTool;
   onEditToolChange: (tool: EditTool) => void;
   prompt: string;
-  // negativePrompt: string;
+  // negativePrompt: string; // Removed - LaMa doesn't support negative prompts
   searchPrompt: string;
   onPromptChange: (value: string) => void;
-  // onNegativePromptChange: (value: string) => void;
+  // onNegativePromptChange: (value: string) => void; // Removed
   onSearchPromptChange: (value: string) => void;
   outpaintLeft: number;
   outpaintRight: number;
@@ -764,10 +767,10 @@ export function ImageEditorSidebar({
   selectedEditTool,
   onEditToolChange,
   prompt,
-  // negativePrompt,
+  // negativePrompt, // Removed
   searchPrompt,
   onPromptChange,
-  //  onNegativePromptChange,
+  // onNegativePromptChange, // Removed
   onSearchPromptChange,
   outpaintLeft,
   outpaintRight,
@@ -1215,6 +1218,7 @@ export function ImageEditorSidebar({
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:bg-gray-100"
                   />
                 </div>
+
                 <p className="text-xs text-gray-500">
                   Upscales to higher resolution while enhancing quality
                 </p>

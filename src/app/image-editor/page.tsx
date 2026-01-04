@@ -1046,10 +1046,6 @@ export default function ImageEditorPage() {
               selectedEditTool={selectedEditTool}
               onEditToolChange={setSelectedEditTool}
               prompt={prompt}
-              //               negativePrompt={negativePrompt}
-              searchPrompt={searchPrompt}
-              onPromptChange={setPrompt}
-              //               onNegativePromptChange={setNegativePrompt}
               onSearchPromptChange={setSearchPrompt}
               outpaintLeft={outpaintLeft}
               outpaintRight={outpaintRight}
