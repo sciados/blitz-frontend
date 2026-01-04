@@ -166,16 +166,25 @@ export default function ContentLibraryPage() {
 
   // Shared images folder filter
   const [sharedImageFolderFilter, setSharedImageFolderFilter] = useState<
-    "all" | "backgrounds" | "stock-images" | "overlays" | "frames" | "icons" | "templates"
+    | "all"
+    | "backgrounds"
+    | "stock-images"
+    | "overlays"
+    | "frames"
+    | "icons"
+    | "templates"
   >("all");
 
   // Campaign selector modal for shared images
   const [showCampaignSelector, setShowCampaignSelector] = useState(false);
   const [selectedSharedImage, setSelectedSharedImage] = useState<any>(null);
-  const [selectedCampaignForEdit, setSelectedCampaignForEdit] = useState<string>("");
+  const [selectedCampaignForEdit, setSelectedCampaignForEdit] =
+    useState<string>("");
 
   // Admin batch selection state for shared images
-  const [selectedSharedImages, setSelectedSharedImages] = useState<Set<string>>(new Set());
+  const [selectedSharedImages, setSelectedSharedImages] = useState<Set<string>>(
+    new Set()
+  );
   const [showAddSharedImageModal, setShowAddSharedImageModal] = useState(false);
 
   // Campaign media upload state
@@ -229,7 +238,10 @@ export default function ContentLibraryPage() {
   const [showDeleteImageConfirm, setShowDeleteImageConfirm] = useState(false);
   const [showDeleteVideoConfirm, setShowDeleteVideoConfirm] = useState(false);
   const [showBatchDeleteConfirm, setShowBatchDeleteConfirm] = useState(false);
-  const [showBatchDeleteSharedImagesConfirm, setShowBatchDeleteSharedImagesConfirm] = useState(false);
+  const [
+    showBatchDeleteSharedImagesConfirm,
+    setShowBatchDeleteSharedImagesConfirm,
+  ] = useState(false);
   const [contentToDelete, setContentToDelete] = useState<number | null>(null);
   const [imageToDelete, setImageToDelete] = useState<number | null>(null);
   const [videoToDelete, setVideoToDelete] = useState<number | null>(null);
@@ -529,7 +541,10 @@ export default function ContentLibraryPage() {
   const combinedImages: LibraryImage[] = allImages.map((img) => ({
     ...img,
     // Determine source based on prompt - image_edits have "Edited:" prefix in prompt
-    source: (img.prompt?.startsWith("Edited:") || img.has_transparency) ? "edited" as const : "original" as const
+    source:
+      img.prompt?.startsWith("Edited:") || img.has_transparency
+        ? ("edited" as const)
+        : ("generated" as const),
   }));
 
   // Filter images based on campaign and filter type
@@ -956,16 +971,20 @@ export default function ContentLibraryPage() {
       // Delete each image from R2 storage
       for (const imageUrl of imageUrls) {
         await api.delete(`/api/images/stock`, {
-          data: { url: imageUrl }
+          data: { url: imageUrl },
         });
       }
 
-      toast.success(`Successfully deleted ${selectedSharedImages.size} shared image(s)`);
+      toast.success(
+        `Successfully deleted ${selectedSharedImages.size} shared image(s)`
+      );
       setSelectedSharedImages(new Set());
       setShowBatchDeleteSharedImagesConfirm(false);
       refetchStockImages();
     } catch (err: any) {
-      toast.error(err.response?.data?.detail || "Failed to delete shared images");
+      toast.error(
+        err.response?.data?.detail || "Failed to delete shared images"
+      );
     }
   };
 
@@ -1242,7 +1261,7 @@ export default function ContentLibraryPage() {
                       (img) =>
                         img.metadata?.text_overlay !== true &&
                         !img.metadata?.edit_tool &&
-                        img.source === "original"
+                        img.source === "generated"
                     ).length
                   }
                 </span>
@@ -1500,7 +1519,10 @@ export default function ContentLibraryPage() {
             <div className="space-y-6">
               {/* Folder Filter Bar */}
               <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
-                <h3 className="text-sm font-semibold mb-3" style={{ color: "var(--text-primary)" }}>
+                <h3
+                  className="text-sm font-semibold mb-3"
+                  style={{ color: "var(--text-primary)" }}
+                >
                   Filter by Folder
                 </h3>
                 <div className="flex flex-wrap gap-2">
@@ -1581,10 +1603,16 @@ export default function ContentLibraryPage() {
               {getRoleFromToken() === "admin" && (
                 <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
                   <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
+                    <h3
+                      className="text-sm font-semibold"
+                      style={{ color: "var(--text-primary)" }}
+                    >
                       Admin Controls
                     </h3>
-                    <div className="text-xs" style={{ color: "var(--text-secondary)" }}>
+                    <div
+                      className="text-xs"
+                      style={{ color: "var(--text-secondary)" }}
+                    >
                       {selectedSharedImages.size} selected
                     </div>
                   </div>
@@ -1594,35 +1622,43 @@ export default function ContentLibraryPage() {
                         const filteredImages = stockImages.filter((image) => {
                           if (sharedImageFolderFilter === "all") return true;
                           const filterToFolderMap: Record<string, string> = {
-                            "backgrounds": "Backgrounds",
+                            backgrounds: "Backgrounds",
                             "stock-images": "Stock Images",
-                            "overlays": "Overlays",
-                            "frames": "Frames",
-                            "icons": "Icons",
-                            "templates": "Templates",
+                            overlays: "Overlays",
+                            frames: "Frames",
+                            icons: "Icons",
+                            templates: "Templates",
                           };
-                          const targetFolder = filterToFolderMap[sharedImageFolderFilter];
+                          const targetFolder =
+                            filterToFolderMap[sharedImageFolderFilter];
                           if (!targetFolder) return true;
                           return image.folder === targetFolder;
                         });
-                        setSelectedSharedImages(new Set(filteredImages.map(img => img.id)));
+                        setSelectedSharedImages(
+                          new Set(filteredImages.map((img) => img.id))
+                        );
                       }}
                       className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition"
                     >
-                      Select All ({stockImages.filter((image) => {
-                        if (sharedImageFolderFilter === "all") return true;
-                        const filterToFolderMap: Record<string, string> = {
-                          "backgrounds": "Backgrounds",
-                          "stock-images": "Stock Images",
-                          "overlays": "Overlays",
-                          "frames": "Frames",
-                          "icons": "Icons",
-                          "templates": "Templates",
-                        };
-                        const targetFolder = filterToFolderMap[sharedImageFolderFilter];
-                        if (!targetFolder) return true;
-                        return image.folder === targetFolder;
-                      }).length})
+                      Select All (
+                      {
+                        stockImages.filter((image) => {
+                          if (sharedImageFolderFilter === "all") return true;
+                          const filterToFolderMap: Record<string, string> = {
+                            backgrounds: "Backgrounds",
+                            "stock-images": "Stock Images",
+                            overlays: "Overlays",
+                            frames: "Frames",
+                            icons: "Icons",
+                            templates: "Templates",
+                          };
+                          const targetFolder =
+                            filterToFolderMap[sharedImageFolderFilter];
+                          if (!targetFolder) return true;
+                          return image.folder === targetFolder;
+                        }).length
+                      }
+                      )
                     </button>
                     <button
                       onClick={() => setSelectedSharedImages(new Set())}
@@ -1666,17 +1702,21 @@ export default function ContentLibraryPage() {
                           onClick={() => {
                             // Download each selected image
                             for (const imageId of selectedSharedImages) {
-                              const image = stockImages.find((img) => img.id === imageId);
+                              const image = stockImages.find(
+                                (img) => img.id === imageId
+                              );
                               if (image && image.url) {
-                                const link = document.createElement('a');
+                                const link = document.createElement("a");
                                 link.href = getProxiedImageUrl(image.url);
-                                link.download = image.name || 'image';
+                                link.download = image.name || "image";
                                 document.body.appendChild(link);
                                 link.click();
                                 document.body.removeChild(link);
                               }
                             }
-                            toast.success(`Downloaded ${selectedSharedImages.size} image(s)`);
+                            toast.success(
+                              `Downloaded ${selectedSharedImages.size} image(s)`
+                            );
                           }}
                           className="px-3 py-2 bg-gray-700 hover:bg-gray-800 text-white rounded-lg text-sm font-medium transition"
                         >
@@ -1705,14 +1745,15 @@ export default function ContentLibraryPage() {
                     if (sharedImageFolderFilter === "all") return true;
                     // Map filter values to folder names returned by backend
                     const filterToFolderMap: Record<string, string> = {
-                      "backgrounds": "Backgrounds",
+                      backgrounds: "Backgrounds",
                       "stock-images": "Stock Images",
-                      "overlays": "Overlays",
-                      "frames": "Frames",
-                      "icons": "Icons",
-                      "templates": "Templates",
+                      overlays: "Overlays",
+                      frames: "Frames",
+                      icons: "Icons",
+                      templates: "Templates",
                     };
-                    const targetFolder = filterToFolderMap[sharedImageFolderFilter];
+                    const targetFolder =
+                      filterToFolderMap[sharedImageFolderFilter];
                     if (!targetFolder) return true;
                     return image.folder === targetFolder;
                   });
@@ -1741,7 +1782,9 @@ export default function ContentLibraryPage() {
                                 type="checkbox"
                                 checked={selectedSharedImages.has(image.id)}
                                 onChange={(e) => {
-                                  const newSelection = new Set(selectedSharedImages);
+                                  const newSelection = new Set(
+                                    selectedSharedImages
+                                  );
                                   if (e.target.checked) {
                                     newSelection.add(image.id);
                                   } else {
@@ -1756,13 +1799,14 @@ export default function ContentLibraryPage() {
                         )}
 
                         {/* Selection Overlay */}
-                        {getRoleFromToken() === "admin" && selectedSharedImages.has(image.id) && (
-                          <div className="absolute inset-0 bg-blue-600/20 border-4 border-blue-600 rounded-lg flex items-center justify-center">
-                            <div className="bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-bold">
-                              Selected
+                        {getRoleFromToken() === "admin" &&
+                          selectedSharedImages.has(image.id) && (
+                            <div className="absolute inset-0 bg-blue-600/20 border-4 border-blue-600 rounded-lg flex items-center justify-center">
+                              <div className="bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-bold">
+                                Selected
+                              </div>
                             </div>
-                          </div>
-                        )}
+                          )}
 
                         <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition flex items-center justify-center opacity-0 group-hover:opacity-100">
                           <button
@@ -1777,10 +1821,16 @@ export default function ContentLibraryPage() {
                         </div>
                       </div>
                       <div className="p-3">
-                        <p className="text-sm font-medium truncate" style={{ color: "var(--text-primary)" }}>
+                        <p
+                          className="text-sm font-medium truncate"
+                          style={{ color: "var(--text-primary)" }}
+                        >
                           {image.name || "Untitled"}
                         </p>
-                        <p className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>
+                        <p
+                          className="text-xs mt-1"
+                          style={{ color: "var(--text-secondary)" }}
+                        >
                           {image.folder || "Uncategorized"}
                         </p>
                       </div>
@@ -1791,8 +1841,12 @@ export default function ContentLibraryPage() {
 
               {stockImages.length === 0 && (
                 <div className="text-center py-12">
-                  <div className="text-gray-400 dark:text-gray-600 text-lg mb-2">🖼️</div>
-                  <p style={{ color: "var(--text-secondary)" }}>No shared images available</p>
+                  <div className="text-gray-400 dark:text-gray-600 text-lg mb-2">
+                    🖼️
+                  </div>
+                  <p style={{ color: "var(--text-secondary)" }}>
+                    No shared images available
+                  </p>
                 </div>
               )}
             </div>
@@ -2264,7 +2318,9 @@ export default function ContentLibraryPage() {
                             ) {
                             }
 
-                            {/* Check has_transparency first for transparent images */}
+                            {
+                              /* Check has_transparency first for transparent images */
+                            }
                             if (image.has_transparency) {
                               return (
                                 <div className="absolute top-3 right-3 bg-emerald-600 text-white px-2 py-1 rounded-full text-xs font-medium">
@@ -3522,10 +3578,16 @@ export default function ContentLibraryPage() {
             <div className="p-6 border-b border-gray-200 dark:border-gray-700">
               <div className="flex items-start justify-between">
                 <div>
-                  <h2 className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>
+                  <h2
+                    className="text-2xl font-bold"
+                    style={{ color: "var(--text-primary)" }}
+                  >
                     Select Campaign
                   </h2>
-                  <p className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>
+                  <p
+                    className="text-sm mt-1"
+                    style={{ color: "var(--text-secondary)" }}
+                  >
                     Choose a campaign to edit this image for
                   </p>
                 </div>
@@ -3558,31 +3620,44 @@ export default function ContentLibraryPage() {
             <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex items-center gap-4">
               <img
                 src={getProxiedImageUrl(selectedSharedImage.url)}
-                alt={selectedSharedImage.name || 'Shared image'}
+                alt={selectedSharedImage.name || "Shared image"}
                 className="w-24 h-24 object-cover rounded-lg"
               />
               <div>
-                <p className="font-medium" style={{ color: "var(--text-primary)" }}>
-                  {selectedSharedImage.name || 'Shared Image'}
+                <p
+                  className="font-medium"
+                  style={{ color: "var(--text-primary)" }}
+                >
+                  {selectedSharedImage.name || "Shared Image"}
                 </p>
-                <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
-                  Folder: {selectedSharedImage.folder || 'Stock'}
+                <p
+                  className="text-sm"
+                  style={{ color: "var(--text-secondary)" }}
+                >
+                  Folder: {selectedSharedImage.folder || "Stock"}
                 </p>
               </div>
             </div>
 
             <div className="p-6">
-              <h3 className="font-medium mb-4" style={{ color: "var(--text-primary)" }}>
+              <h3
+                className="font-medium mb-4"
+                style={{ color: "var(--text-primary)" }}
+              >
                 Select a Campaign
               </h3>
               {isLoading ? (
                 <div className="text-center py-8">
                   <div className="animate-spin h-8 w-8 border-4 border-orange-600 border-t-transparent rounded-full mx-auto mb-4"></div>
-                  <p style={{ color: "var(--text-secondary)" }}>Loading campaigns...</p>
+                  <p style={{ color: "var(--text-secondary)" }}>
+                    Loading campaigns...
+                  </p>
                 </div>
               ) : campaigns.length === 0 ? (
                 <div className="text-center py-8">
-                  <p style={{ color: "var(--text-secondary)" }}>No campaigns available</p>
+                  <p style={{ color: "var(--text-secondary)" }}>
+                    No campaigns available
+                  </p>
                   <button
                     onClick={() => router.push("/campaigns")}
                     className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
@@ -3595,7 +3670,9 @@ export default function ContentLibraryPage() {
                   {campaigns.map((campaign: Campaign) => (
                     <button
                       key={campaign.id}
-                      onClick={() => setSelectedCampaignForEdit(String(campaign.id))}
+                      onClick={() =>
+                        setSelectedCampaignForEdit(String(campaign.id))
+                      }
                       className={`w-full flex items-center gap-4 p-3 rounded-lg border transition ${
                         selectedCampaignForEdit === String(campaign.id)
                           ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
@@ -3605,7 +3682,9 @@ export default function ContentLibraryPage() {
                       <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-lg overflow-hidden flex-shrink-0">
                         {campaign.thumbnail_image_url ? (
                           <img
-                            src={getProxiedImageUrl(campaign.thumbnail_image_url)}
+                            src={getProxiedImageUrl(
+                              campaign.thumbnail_image_url
+                            )}
                             alt={campaign.name}
                             className="w-full h-full object-cover"
                           />
@@ -3628,25 +3707,41 @@ export default function ContentLibraryPage() {
                         )}
                       </div>
                       <div className="flex-1 text-left">
-                        <p className="font-medium" style={{ color: "var(--text-primary)" }}>
+                        <p
+                          className="font-medium"
+                          style={{ color: "var(--text-primary)" }}
+                        >
                           {campaign.name}
                         </p>
                         <div className="flex items-center gap-2 mt-1">
-                          <span className={`px-2 py-0.5 text-xs rounded-full ${
-                            campaign.status === "active"
-                              ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                              : "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200"
-                          }`}>
+                          <span
+                            className={`px-2 py-0.5 text-xs rounded-full ${
+                              campaign.status === "active"
+                                ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                                : "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200"
+                            }`}
+                          >
                             {campaign.status}
                           </span>
-                          <span className="text-xs" style={{ color: "var(--text-secondary)" }}>
+                          <span
+                            className="text-xs"
+                            style={{ color: "var(--text-secondary)" }}
+                          >
                             {campaign.affiliate_network}
                           </span>
                         </div>
                       </div>
                       {selectedCampaignForEdit === String(campaign.id) && (
-                        <svg className="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        <svg
+                          className="w-5 h-5 text-blue-500"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                            clipRule="evenodd"
+                          />
                         </svg>
                       )}
                     </button>
@@ -3675,7 +3770,9 @@ export default function ContentLibraryPage() {
                     return;
                   }
                   // Navigate to Image Editor with both image URL and campaign ID
-                  const encodedUrl = encodeURIComponent(selectedSharedImage.url);
+                  const encodedUrl = encodeURIComponent(
+                    selectedSharedImage.url
+                  );
                   router.push(
                     `/image-editor?imageUrl=${encodedUrl}&campaignId=${selectedCampaignForEdit}`
                   );
@@ -3910,14 +4007,19 @@ export default function ContentLibraryPage() {
                 <select
                   value={uploadCampaignId || ""}
                   onChange={(e) =>
-                    setUploadCampaignId(e.target.value ? Number(e.target.value) : null)
+                    setUploadCampaignId(
+                      e.target.value ? Number(e.target.value) : null
+                    )
                   }
                   className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
                   style={{ color: "var(--text-primary)" }}
                 >
                   <option value="">Select a campaign</option>
                   {campaigns
-                    .filter((c: Campaign) => c.id === filterCampaignId || !filterCampaignId)
+                    .filter(
+                      (c: Campaign) =>
+                        c.id === filterCampaignId || !filterCampaignId
+                    )
                     .map((campaign: Campaign) => (
                       <option key={campaign.id} value={campaign.id}>
                         {campaign.name}
@@ -3970,14 +4072,20 @@ export default function ContentLibraryPage() {
                     formData.append("campaign_id", uploadCampaignId.toString());
                     formData.append("media_type", uploadType);
 
-                    const response = await api.post("/upload/campaign-media", formData, {
-                      headers: {
-                        "Content-Type": "multipart/form-data",
-                      },
-                    });
+                    const response = await api.post(
+                      "/upload/campaign-media",
+                      formData,
+                      {
+                        headers: {
+                          "Content-Type": "multipart/form-data",
+                        },
+                      }
+                    );
 
                     toast.success(
-                      `${uploadType === "image" ? "Image" : "Video"} uploaded successfully!`
+                      `${
+                        uploadType === "image" ? "Image" : "Video"
+                      } uploaded successfully!`
                     );
 
                     // Refresh data
@@ -4002,7 +4110,9 @@ export default function ContentLibraryPage() {
                 disabled={isUploading || !uploadFile || !uploadCampaignId}
                 className="w-full px-6 py-3 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
               >
-                {isUploading ? "Uploading..." : `Upload ${uploadType === "image" ? "Image" : "Video"}`}
+                {isUploading
+                  ? "Uploading..."
+                  : `Upload ${uploadType === "image" ? "Image" : "Video"}`}
               </button>
             </div>
           </div>

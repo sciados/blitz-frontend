@@ -1,10 +1,8 @@
 FRONTEND LISTER
 Get-ChildItem -Path src -Recurse -Include *.tsx,*.ts,*.js,*.jsx | Select-Object FullName | Sort-Object FullName
 
-
 FullName
 --------
-
 C:\Users\shaun\OneDrive\Documents\GitHub\blitz-frontend\src\app\(auth)\layout.tsx
 C:\Users\shaun\OneDrive\Documents\GitHub\blitz-frontend\src\app\(auth)\login\page.tsx
 C:\Users\shaun\OneDrive\Documents\GitHub\blitz-frontend\src\app\(auth)\register\page.tsx
@@ -86,6 +84,7 @@ C:\Users\shaun\OneDrive\Documents\GitHub\blitz-frontend\src\components\editor\Tr
 C:\Users\shaun\OneDrive\Documents\GitHub\blitz-frontend\src\components\EmailSignupForm.tsx
 C:\Users\shaun\OneDrive\Documents\GitHub\blitz-frontend\src\components\FolderSelectorModal.tsx
 C:\Users\shaun\OneDrive\Documents\GitHub\blitz-frontend\src\components\Footer.tsx
+C:\Users\shaun\OneDrive\Documents\GitHub\blitz-frontend\src\components\ImageCard.tsx
 C:\Users\shaun\OneDrive\Documents\GitHub\blitz-frontend\src\components\image-editor\Backgroun...
 C:\Users\shaun\OneDrive\Documents\GitHub\blitz-frontend\src\components\image-editor\BatchBack...
 C:\Users\shaun\OneDrive\Documents\GitHub\blitz-frontend\src\components\image-editor\BatchFilt...
@@ -107,6 +106,7 @@ C:\Users\shaun\OneDrive\Documents\GitHub\blitz-frontend\src\components\image-edi
 C:\Users\shaun\OneDrive\Documents\GitHub\blitz-frontend\src\components\image-editor\SmartResi...
 C:\Users\shaun\OneDrive\Documents\GitHub\blitz-frontend\src\components\image-editor\TemplateT...
 C:\Users\shaun\OneDrive\Documents\GitHub\blitz-frontend\src\components\image-editor\ToolSelec...
+C:\Users\shaun\OneDrive\Documents\GitHub\blitz-frontend\src\components\ImageLibrary.tsx
 C:\Users\shaun\OneDrive\Documents\GitHub\blitz-frontend\src\components\ImagePreviewModal.tsx
 C:\Users\shaun\OneDrive\Documents\GitHub\blitz-frontend\src\components\ImageVariationsModal.tsx
 C:\Users\shaun\OneDrive\Documents\GitHub\blitz-frontend\src\components\Layout.tsx
