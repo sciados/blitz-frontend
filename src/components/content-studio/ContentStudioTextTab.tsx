@@ -208,9 +208,22 @@ export function ContentStudioTextTab({ campaignId, prePopulatedData, onContentGe
     },
   });
 
+  // Fetch user signature for email content
+  const { data: userSignature } = useQuery({
+    queryKey: ["user-signature"],
+    queryFn: async () => {
+      const response = await api.get("/api/auth/me");
+      return response.data.signature || "";
+    },
+  });
+
   const handleGenerate = async () => {
     try {
       setIsGenerating(true);
+
+      // Include signature for email content types
+      const includeSignature = contentType === "email" || contentType === "email_sequence";
+
       const response = await api.post("/api/content/generate", {
         campaign_id: campaignId,
         content_type: contentType,
@@ -220,6 +233,8 @@ export function ContentStudioTextTab({ campaignId, prePopulatedData, onContentGe
         // Include calendar context if available
         context: prePopulatedData?.context,
         day: prePopulatedData?.day,
+        // Include user's email signature for email content
+        user_signature: includeSignature ? userSignature : undefined,
       });
 
       setGeneratedContent(response.data);

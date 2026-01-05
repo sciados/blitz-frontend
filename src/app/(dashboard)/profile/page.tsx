@@ -390,8 +390,10 @@ export default function ProfilePage() {
               ) : (
                 <div className="text-[var(--text-primary)]">
                   {user?.signature ? (
-                    <div className="bg-[var(--bg-secondary)] p-3 rounded-lg border border-[var(--border-color)] whitespace-pre-wrap">
-                      {user.signature}
+                    <div className="bg-[var(--bg-secondary)] p-3 rounded-lg border border-[var(--border-color)]">
+                      <pre className="text-[var(--text-primary)] text-sm whitespace-pre-wrap font-sans m-0">
+                        {user.signature}
+                      </pre>
                     </div>
                   ) : (
                     <p className="text-[var(--text-secondary)] italic">
