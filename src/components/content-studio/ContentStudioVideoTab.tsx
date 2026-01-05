@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "src/lib/appClient";
 import { toast } from "sonner";
@@ -120,6 +120,43 @@ export function ContentStudioVideoTab({
 
     // If no overlay guide found, return the full script
     return fullScript;
+  };
+
+  // Auto-generate script when coming from calendar queue
+  useEffect(() => {
+    if (prePopulatedData && !script && !selectedScriptId) {
+      // Auto-generate script for calendar-based video generation
+      handleGenerateScriptFromCalendar();
+    }
+  }, [prePopulatedData]);
+
+  const handleGenerateScriptFromCalendar = async () => {
+    if (!prePopulatedData?.context || !prePopulatedData?.marketingAngle) return;
+
+    try {
+      setIsGenerating(true);
+      const response = await api.post("/api/content/generate", {
+        campaign_id: campaignId,
+        content_type: "video_script",
+        marketing_angle: prePopulatedData.marketingAngle,
+        length: duration.toString(),
+        keywords: selectedKeywords,
+        context: prePopulatedData.context,
+        day: prePopulatedData.day,
+      });
+
+      const generatedScript = response.data;
+      if (generatedScript?.content_data?.text) {
+        const cleanScript = extractCleanNarrative(generatedScript.content_data.text);
+        setScript(cleanScript);
+        toast.success("Video script generated automatically! ✓");
+      }
+    } catch (error: any) {
+      console.error("Failed to auto-generate script:", error);
+      // Don't block video generation if script generation fails
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   // Handle script selection
@@ -726,6 +763,20 @@ export function ContentStudioVideoTab({
                 color: "var(--text-primary)",
               }}
             />
+            {/* Auto-generated Script Indicator */}
+            {prePopulatedData && script && !selectedScriptId && (
+              <div className="mt-2 p-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                <div className="text-xs flex items-center" style={{ color: "var(--text-primary)" }}>
+                  <svg className="w-4 h-4 mr-2 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                  <span className="font-semibold">Auto-generated from Marketing Calendar</span>
+                </div>
+                <p className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>
+                  Script generated automatically for Day {prePopulatedData.day} • {prePopulatedData.marketingAngle?.replace(/_/g, " ")} angle
+                </p>
+              </div>
+            )}
             {selectedScriptId && (
               <div className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>
                 <p className="flex items-center">
