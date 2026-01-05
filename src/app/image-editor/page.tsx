@@ -15,7 +15,7 @@ import { FolderSelectorModal } from "src/components/FolderSelectorModal";
 import { SmartResize } from "src/components/image-editor/SmartResize";
 
 export type EditTool =
-  | "inpaint"
+  // "inpaint" - REMOVED: Use Erase + Overlay workflow instead
   | "erase"
   | "background-remove"
   | "search-replace"
@@ -50,7 +50,7 @@ export default function ImageEditorPage() {
   );
 
   // Tool states
-  const [selectedEditTool, setSelectedEditTool] = useState<EditTool>("inpaint");
+  const [selectedEditTool, setSelectedEditTool] = useState<EditTool>("erase");
   const [selectedDrawTool, setSelectedDrawTool] = useState<"brush" | "eraser">(
     "brush"
   );
@@ -259,10 +259,7 @@ export default function ImageEditorPage() {
       return;
     }
 
-    if (
-      ["inpaint", "search-replace", "upscale"].includes(selectedEditTool) &&
-      !prompt
-    ) {
+    if (["search-replace", "upscale"].includes(selectedEditTool) && !prompt) {
       toast.error("Please enter a prompt");
       return;
     }
@@ -272,7 +269,7 @@ export default function ImageEditorPage() {
       return;
     }
 
-    if (["inpaint", "erase"].includes(selectedEditTool) && !maskDataUrl) {
+    if (["erase"].includes(selectedEditTool) && !maskDataUrl) {
       toast.error("Please paint a mask first");
       return;
     }
@@ -288,14 +285,14 @@ export default function ImageEditorPage() {
       let endpoint = "";
 
       switch (selectedEditTool) {
-        case "inpaint":
-          endpoint = "/api/image-editor/inpaint";
-          formData.append("prompt", prompt);
-          //           if (negativePrompt)
-          //             formData.append("negative_prompt", negativePrompt);
-          if (maskDataUrl) formData.append("mask_data_base64", maskDataUrl);
-          formData.append("seed", seed.toString());
-          break;
+        // REMOVED:         case "inpaint":
+        // REMOVED:           endpoint = "/api/image-editor/inpaint";
+        // REMOVED:           formData.append("prompt", prompt);
+        // REMOVED:           //           if (negativePrompt)
+        // REMOVED:           //             formData.append("negative_prompt", negativePrompt);
+        // REMOVED:           if (maskDataUrl) formData.append("mask_data_base64", maskDataUrl);
+        // REMOVED:           formData.append("seed", seed.toString());
+        // REMOVED:           break;
 
         case "erase":
           endpoint = "/api/image-editor/erase";

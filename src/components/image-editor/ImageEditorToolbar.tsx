@@ -36,7 +36,6 @@ export function ImageEditorToolbar({
 
   // Edit tool options with labels
   const editTools: { id: EditTool; label: string; icon: string }[] = [
-    { id: "inpaint", label: "Inpaint", icon: "🎨" },
     { id: "erase", label: "Erase", icon: "🧹" },
     { id: "background-remove", label: "Remove BG", icon: "🖼️" },
     { id: "search-replace", label: "Replace", icon: "🔄" },

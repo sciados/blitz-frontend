@@ -70,10 +70,17 @@ const ASPECT_RATIOS = [
 
 interface ContentStudioImagesTabProps {
   campaignId: number;
+  prePopulatedData?: {
+    contentType?: string;
+    marketingAngle?: string;
+    day?: number;
+    context?: string;
+  } | null;
 }
 
 export function ContentStudioImagesTab({
   campaignId,
+  prePopulatedData,
 }: ContentStudioImagesTabProps) {
   const [imageType, setImageType] = useState<ImageType>("hero");
   const [imageStyle, setImageStyle] = useState<ImageStyle>("photorealistic");

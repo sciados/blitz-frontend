@@ -25,9 +25,18 @@ const DURATIONS = [
 
 interface ContentStudioVideoTabProps {
   campaignId: number;
+  prePopulatedData?: {
+    contentType?: string;
+    marketingAngle?: string;
+    day?: number;
+    context?: string;
+  } | null;
 }
 
-export function ContentStudioVideoTab({ campaignId }: ContentStudioVideoTabProps) {
+export function ContentStudioVideoTab({
+  campaignId,
+  prePopulatedData,
+}: ContentStudioVideoTabProps) {
   const [generationMode, setGenerationMode] = useState<"text_to_video" | "image_to_video">("text_to_video");
   const [style, setStyle] = useState("marketing");
   const [aspectRatio, setAspectRatio] = useState("16:9");
