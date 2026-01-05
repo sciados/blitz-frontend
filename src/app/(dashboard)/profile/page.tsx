@@ -11,6 +11,7 @@ interface UserProfile {
   email: string;
   full_name?: string;
   profile_image_url?: string;
+  signature?: string;
   role: string;
   user_type: string;
   is_active: boolean;
@@ -23,6 +24,7 @@ export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [fullName, setFullName] = useState("");
   const [profileImageUrl, setProfileImageUrl] = useState("");
+  const [signature, setSignature] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -34,6 +36,7 @@ export default function ProfilePage() {
       const response = await api.get("/api/auth/me");
       setFullName(response.data.full_name || "");
       setProfileImageUrl(response.data.profile_image_url || "");
+      setSignature(response.data.signature || "");
       return response.data;
     },
   });
@@ -43,6 +46,7 @@ export default function ProfilePage() {
     mutationFn: async (data: {
       full_name: string;
       profile_image_url?: string;
+      signature?: string;
     }) => {
       return await api.patch("/api/auth/profile", data);
     },
@@ -83,12 +87,14 @@ export default function ProfilePage() {
     updateProfileMutation.mutate({
       full_name: fullName,
       profile_image_url: profileImageUrl || undefined,
+      signature: signature || undefined,
     });
   };
 
   const handleCancel = () => {
     setFullName(user?.full_name || "");
     setProfileImageUrl(user?.profile_image_url || "");
+    setSignature(user?.signature || "");
     setSelectedFile(null);
     setPreviewUrl(null);
     setIsEditing(false);
@@ -366,6 +372,39 @@ export default function ProfilePage() {
               <p className="text-xs text-[var(--text-secondary)] mt-1">
                 Email cannot be changed
               </p>
+            </div>
+
+            {/* Email Signature */}
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
+                Email Signature
+              </label>
+              {isEditing ? (
+                <textarea
+                  value={signature}
+                  onChange={(e) => setSignature(e.target.value)}
+                  rows={4}
+                  className="w-full px-4 py-2 border border-[var(--border-color)] rounded-lg bg-[var(--bg-primary)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter your email signature (e.g., your name, title, contact info, etc.)&#10;This will be automatically added to the end of your emails."
+                />
+              ) : (
+                <div className="text-[var(--text-primary)]">
+                  {user?.signature ? (
+                    <div className="bg-[var(--bg-secondary)] p-3 rounded-lg border border-[var(--border-color)] whitespace-pre-wrap">
+                      {user.signature}
+                    </div>
+                  ) : (
+                    <p className="text-[var(--text-secondary)] italic">
+                      No signature set
+                    </p>
+                  )}
+                </div>
+              )}
+              {isEditing && (
+                <p className="text-xs text-[var(--text-secondary)] mt-1">
+                  This signature will be automatically appended to the end of your emails
+                </p>
+              )}
             </div>
 
             {/* Role */}
