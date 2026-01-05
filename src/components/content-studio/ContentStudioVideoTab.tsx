@@ -31,11 +31,13 @@ interface ContentStudioVideoTabProps {
     day?: number;
     context?: string;
   } | null;
+  onContentGenerated?: () => void;
 }
 
 export function ContentStudioVideoTab({
   campaignId,
   prePopulatedData,
+  onContentGenerated,
 }: ContentStudioVideoTabProps) {
   const [generationMode, setGenerationMode] = useState<"text_to_video" | "image_to_video">("text_to_video");
   const [style, setStyle] = useState("marketing");
@@ -192,6 +194,11 @@ export function ContentStudioVideoTab({
       handleClearScript();
       handleClearImage();
       setScript("");
+
+      // Notify parent component that content was generated (for queue tracking)
+      if (onContentGenerated) {
+        onContentGenerated();
+      }
     } catch (error: any) {
       toast.error(error.response?.data?.detail || "Failed to start video generation");
     } finally {

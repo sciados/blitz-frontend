@@ -59,6 +59,30 @@ export default function MarketingCalendarPage() {
     router.push(`/content?${params.toString()}`);
   };
 
+  const handleGenerateAll = (campaignId: number | null, day: number, dayData: any) => {
+    if (!campaignId) {
+      toast.error("Please select a campaign first");
+      return;
+    }
+
+    // Build queue parameter with all content pieces
+    const contentQueue = dayData.contentToCreate.map((content: any) => ({
+      type: content.type,
+      details: content.details,
+    }));
+
+    const params = new URLSearchParams({
+      campaign: campaignId.toString(),
+      day: day.toString(),
+      marketingAngle: dayData.marketingAngle.toLowerCase().replace(/\s+/g, "_"),
+      context: dayData.description,
+      queue: JSON.stringify(contentQueue),
+    });
+
+    // Navigate to content page with queue
+    router.push(`/content?${params.toString()}`);
+  };
+
   return (
     <AuthGate requiredRole="user">
       <div className="p-6 space-y-6">
@@ -205,6 +229,7 @@ export default function MarketingCalendarPage() {
             data={marketingPlanData[selectedDay - 1]}
             selectedCampaignId={selectedCampaignId}
             onGenerateContent={handleGenerateContent}
+            onGenerateAll={handleGenerateAll}
           />
         )}
 
@@ -280,6 +305,7 @@ function DayDetails({
   data,
   selectedCampaignId,
   onGenerateContent,
+  onGenerateAll,
 }: {
   day: number;
   data: any;
@@ -290,6 +316,11 @@ function DayDetails({
     marketingAngle: string,
     day: number,
     details: string
+  ) => void;
+  onGenerateAll: (
+    campaignId: number | null,
+    day: number,
+    dayData: any
   ) => void;
 }) {
   const isPreLaunch = day <= 13;
@@ -332,10 +363,23 @@ function DayDetails({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Content to Create */}
         <div>
-          <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-3 flex items-center">
-            <span className="mr-2">📋</span>
-            Content to Create
-          </h3>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-lg font-semibold text-[var(--text-primary)] flex items-center">
+              <span className="mr-2">📋</span>
+              Content to Create
+            </h3>
+            {selectedCampaignId && (
+              <button
+                onClick={() => onGenerateAll(selectedCampaignId, day, data)}
+                className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-semibold transition-all duration-200 flex items-center space-x-2 shadow-md hover:shadow-lg"
+              >
+                <span>Generate All</span>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </button>
+            )}
+          </div>
           <div className="space-y-3">
             {data.contentToCreate.map((content: any, idx: number) => (
               <div key={idx} className="bg-[var(--bg-secondary)] p-3 rounded-lg border border-[var(--border-color)] flex items-start justify-between">

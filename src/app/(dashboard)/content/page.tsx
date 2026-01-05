@@ -60,12 +60,21 @@ export default function ContentStudio() {
   const urlMarketingAngle = searchParams.get("marketingAngle");
   const urlDay = searchParams.get("day");
   const urlContext = searchParams.get("context");
+  const urlQueue = searchParams.get("queue");
 
   // State
   const [campaignId, setCampaignId] = useState<number | null>(
     urlCampaignId ? Number(urlCampaignId) : null
   );
   const [activeContentType, setActiveContentType] = useState<ContentType>(urlType);
+
+  // Queue system for batch content generation
+  const [contentQueue, setContentQueue] = useState<Array<{
+    type: string;
+    details: string;
+  }>>(urlQueue ? JSON.parse(urlQueue) : []);
+  const [currentQueueIndex, setCurrentQueueIndex] = useState(0);
+  const [generatedItems, setGeneratedItems] = useState<Set<number>>(new Set());
 
   // Pre-population data from calendar
   const [prePopulatedData, setPrePopulatedData] = useState<{
@@ -83,6 +92,45 @@ export default function ContentStudio() {
         }
       : null
   );
+
+  // Get current queue item
+  const currentQueueItem = contentQueue[currentQueueIndex];
+
+  // Handle content generation completion
+  const handleQueueItemGenerated = (index: number) => {
+    setGeneratedItems(prev => new Set([...prev, index]));
+  };
+
+  // Move to next item in queue
+  const handleNextInQueue = () => {
+    if (currentQueueIndex < contentQueue.length - 1) {
+      const nextIndex = currentQueueIndex + 1;
+      setCurrentQueueIndex(nextIndex);
+
+      // Update prePopulatedData with next item
+      const nextItem = contentQueue[nextIndex];
+      setPrePopulatedData({
+        contentType: nextItem.type,
+        marketingAngle: urlMarketingAngle || undefined,
+        day: urlDay ? Number(urlDay) : undefined,
+        context: urlContext || undefined,
+      });
+
+      // Update active content type based on next item
+      if (nextItem.type === "Image") {
+        setActiveContentType("images");
+      } else if (nextItem.type === "Video") {
+        setActiveContentType("video");
+      } else {
+        setActiveContentType("text");
+      }
+
+      toast.success(`Moved to item ${nextIndex + 1} of ${contentQueue.length}`);
+    }
+  };
+
+  // Check if queue is complete
+  const isQueueComplete = generatedItems.size === contentQueue.length && contentQueue.length > 0;
 
   // Restore last campaign from localStorage on mount
   useEffect(() => {
@@ -198,6 +246,107 @@ export default function ContentStudio() {
             </div>
           )}
 
+          {/* Queue Progress Indicator */}
+          {contentQueue.length > 0 && (
+            <div className="card p-4 mb-6 bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 border border-green-200 dark:border-green-800">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center space-x-3 mb-2">
+                    <div className="text-2xl">🎯</div>
+                    <div>
+                      <h3 className="font-semibold text-[var(--text-primary)]">
+                        Batch Content Generation
+                      </h3>
+                      <p className="text-sm text-[var(--text-secondary)]">
+                        Item {currentQueueIndex + 1} of {contentQueue.length} • {generatedItems.size} completed
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Progress Bar */}
+                  <div className="mt-3">
+                    <div className="flex items-center justify-between text-xs mb-1">
+                      <span style={{ color: "var(--text-secondary)" }}>Progress</span>
+                      <span style={{ color: "var(--text-secondary)" }}>
+                        {Math.round((generatedItems.size / contentQueue.length) * 100)}%
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                      <div
+                        className="bg-green-600 h-2 rounded-full transition-all duration-300"
+                        style={{
+                          width: `${(generatedItems.size / contentQueue.length) * 100}%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Current Item Details */}
+                  {currentQueueItem && (
+                    <div className="mt-3 p-3 bg-white/50 dark:bg-gray-800/50 rounded-lg">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-[var(--text-primary)]">
+                            Current: {currentQueueItem.type}
+                          </p>
+                          <p className="text-xs text-[var(--text-secondary)]">
+                            {currentQueueItem.details}
+                          </p>
+                        </div>
+                        {generatedItems.has(currentQueueIndex) && (
+                          <div className="text-green-600 dark:text-green-400">
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Completion Message */}
+                  {isQueueComplete && (
+                    <div className="mt-3 p-3 bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700 rounded-lg">
+                      <div className="flex items-center space-x-2">
+                        <div className="text-green-600 dark:text-green-400 text-xl">✅</div>
+                        <p className="text-sm font-medium text-green-800 dark:text-green-300">
+                          Day completed! All {contentQueue.length} content pieces generated.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Queue Navigation */}
+                <div className="ml-4 flex flex-col space-y-2">
+                  {currentQueueIndex < contentQueue.length - 1 && (
+                    <button
+                      onClick={handleNextInQueue}
+                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition flex items-center space-x-2"
+                    >
+                      <span>Next Item</span>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
+                  )}
+                  {isQueueComplete && (
+                    <button
+                      onClick={() => {
+                        const params = new URLSearchParams();
+                        params.set("campaign", campaignId?.toString() || "");
+                        router.push(`/marketing-calendar?${params.toString()}`);
+                      }}
+                      className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition flex items-center space-x-2"
+                    >
+                      <span>Back to Calendar</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Main Content */}
           <div className="card rounded-lg overflow-hidden">
             {/* Header with Library Link */}
@@ -274,11 +423,23 @@ export default function ContentStudio() {
                   </p>
                 </div>
               ) : activeContentType === "text" ? (
-                <ContentStudioTextTab campaignId={campaignId} prePopulatedData={prePopulatedData} />
+                <ContentStudioTextTab
+                  campaignId={campaignId}
+                  prePopulatedData={prePopulatedData}
+                  onContentGenerated={() => handleQueueItemGenerated(currentQueueIndex)}
+                />
               ) : activeContentType === "images" ? (
-                <ContentStudioImagesTab campaignId={campaignId} prePopulatedData={prePopulatedData} />
+                <ContentStudioImagesTab
+                  campaignId={campaignId}
+                  prePopulatedData={prePopulatedData}
+                  onContentGenerated={() => handleQueueItemGenerated(currentQueueIndex)}
+                />
               ) : (
-                <ContentStudioVideoTab campaignId={campaignId} prePopulatedData={prePopulatedData} />
+                <ContentStudioVideoTab
+                  campaignId={campaignId}
+                  prePopulatedData={prePopulatedData}
+                  onContentGenerated={() => handleQueueItemGenerated(currentQueueIndex)}
+                />
               )}
             </div>
           </div>

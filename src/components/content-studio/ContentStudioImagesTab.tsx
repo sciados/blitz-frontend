@@ -76,11 +76,13 @@ interface ContentStudioImagesTabProps {
     day?: number;
     context?: string;
   } | null;
+  onContentGenerated?: () => void;
 }
 
 export function ContentStudioImagesTab({
   campaignId,
   prePopulatedData,
+  onContentGenerated,
 }: ContentStudioImagesTabProps) {
   const [imageType, setImageType] = useState<ImageType>("hero");
   const [imageStyle, setImageStyle] = useState<ImageStyle>("photorealistic");
@@ -197,6 +199,11 @@ export function ContentStudioImagesTab({
       setDraftImages([]);
       setSelectedDraftIndex(null);
       refetch();
+
+      // Notify parent component that content was generated (for queue tracking)
+      if (onContentGenerated) {
+        onContentGenerated();
+      }
     } catch (error: any) {
       toast.error(error?.response?.data?.detail || "Failed to enhance image");
     } finally {

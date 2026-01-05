@@ -115,9 +115,10 @@ interface ContentStudioTextTabProps {
     day?: number;
     context?: string;
   } | null;
+  onContentGenerated?: () => void;
 }
 
-export function ContentStudioTextTab({ campaignId, prePopulatedData }: ContentStudioTextTabProps) {
+export function ContentStudioTextTab({ campaignId, prePopulatedData, onContentGenerated }: ContentStudioTextTabProps) {
   const [contentType, setContentType] = useState<ContentType>("article");
   const [marketingAngle, setMarketingAngle] = useState<MarketingAngle>("problem_solution");
   const [length, setLength] = useState("medium");
@@ -224,6 +225,11 @@ export function ContentStudioTextTab({ campaignId, prePopulatedData }: ContentSt
       setGeneratedContent(response.data);
       toast.success("Content generated successfully!");
       refetch();
+
+      // Notify parent component that content was generated (for queue tracking)
+      if (onContentGenerated) {
+        onContentGenerated();
+      }
     } catch (error: any) {
       toast.error(error?.response?.data?.detail || "Failed to generate content");
     } finally {
