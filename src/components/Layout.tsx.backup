@@ -1,7 +1,10 @@
 // src/components/Layout.tsx
+// from old copy
+
 "use client";
 import { useState, useEffect, ReactNode } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { clearToken, getRoleFromToken, getUserFromToken } from "src/lib/auth";
 import { api } from "src/lib/appClient";
 import { useTheme } from "src/contexts/ThemeContext";
@@ -9,6 +12,7 @@ import { getHelpContent } from "src/config/helpContent";
 import Link from "next/link";
 import { Footer } from "src/components/Footer";
 import { TokenRefresh } from "src/components/TokenRefresh";
+import { MessageRequestNotification } from "src/components/MessageRequestNotification";
 
 type LayoutProps = {
   children: ReactNode;
@@ -18,6 +22,7 @@ type MenuItem = {
   href: string;
   label: string;
   icon: string;
+  children?: MenuItem[];
 };
 
 type UserInfo = {
@@ -25,7 +30,15 @@ type UserInfo = {
   role: string; // "user" | "business" | "affiliate" | "creator" | "admin"
   profile_image_url?: string;
   full_name?: string;
-  user_type?: string; // For backward compatibility
+  user_type?: string; // "Creator" | "Affiliate" | "Business" | "Admin" (for fallback matching)
+  affiliate_tier?: string | null;
+  subscription_tier?: string | null; // free, trial, standard, pro, business
+};
+
+// Helper to check if user is Pro (subscription_tier pro/business OR affiliate_tier pro)
+const isProUser = (user: UserInfo | null) => {
+  if (!user) return false;
+  return user.subscription_tier === "pro" || user.subscription_tier === "business" || user.affiliate_tier === "pro";
 };
 
 export default function Layout({ children }: LayoutProps) {
@@ -35,23 +48,73 @@ export default function Layout({ children }: LayoutProps) {
   const { theme } = useTheme();
   const role = getRoleFromToken();
   const isAdmin = role === "admin";
+  const queryClient = useQueryClient(); // Initialize query client for cache management
 
   const [profileOpen, setProfileOpen] = useState(false);
-  const [leftSidebarOpen, setLeftSidebarOpen] = useState(true);
-  const [rightSidebarOpen, setRightSidebarOpen] = useState(true);
+  // Initialize sidebars as closed by default, then load from localStorage
+  const [leftSidebarOpen, setLeftSidebarOpen] = useState(false);
+  const [rightSidebarOpen, setRightSidebarOpen] = useState(false);
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+  const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>(
+    {}
+  );
 
   // Check if current page is an auth page (login, register)
   const isAuthPage = pathname === "/login" || pathname === "/register";
 
   // Check if current page is a landing page (no header/sidebar)
-  const isLandingPage = pathname === "/" ||
-                        pathname.startsWith("/product-developers") ||
-                        pathname.startsWith("/affiliate") ||
-                        pathname.startsWith("/business");
+  const isLandingPage =
+    pathname === "/" ||
+    pathname.startsWith("/product-developers") ||
+    pathname === "/affiliate" ||
+    pathname.startsWith("/business");
 
-  // Get help content based on current pathname
-  const helpContent = getHelpContent(pathname);
+  // Get help content based on current pathname and user role
+  const helpContent = getHelpContent(pathname, role);
+
+  // Auto-expand menus when on related pages
+  useEffect(() => {
+    const isMessagesPage =
+      pathname === "/messages" ||
+      pathname === "/messages/compose" ||
+      pathname.startsWith("/messages/requests");
+
+    if (isMessagesPage) {
+      setExpandedMenus((prev) => ({
+        ...prev,
+        "/messages": true,
+      }));
+    }
+  }, [pathname]);
+
+  // Load sidebar states from localStorage on mount
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedLeftSidebar = localStorage.getItem("leftSidebarOpen");
+      const savedRightSidebar = localStorage.getItem("rightSidebarOpen");
+
+      if (savedLeftSidebar !== null) {
+        setLeftSidebarOpen(savedLeftSidebar === "true");
+      }
+      if (savedRightSidebar !== null) {
+        setRightSidebarOpen(savedRightSidebar === "true");
+      }
+    }
+  }, []);
+
+  // Save left sidebar state to localStorage when it changes
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("leftSidebarOpen", leftSidebarOpen.toString());
+    }
+  }, [leftSidebarOpen]);
+
+  // Save right sidebar state to localStorage when it changes
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("rightSidebarOpen", rightSidebarOpen.toString());
+    }
+  }, [rightSidebarOpen]);
 
   // Fetch user info on mount (only if token exists)
   useEffect(() => {
@@ -88,8 +151,78 @@ export default function Layout({ children }: LayoutProps) {
     };
   }, [role]);
 
+  // Check for pending message requests and new messages when user logs in
+  useEffect(() => {
+    if (!userInfo) return; // Wait until we have user info
+
+    const lastRequestCount = { current: 0 };
+    const lastMessageCount = { current: 0 };
+
+    const fetchPendingData = async () => {
+      try {
+        // Check for pending message requests
+        const requestsRes = await api.get(
+          "/api/message-requests/received?status=pending"
+        );
+        const pendingRequests = requestsRes.data as Array<{
+          id: number;
+          sender_id: number;
+          message_type: string;
+          subject: string;
+          created_at: string;
+        }>;
+
+        // Check for new/unread messages in inbox
+        const messagesRes = await api.get("/api/messages/inbox");
+        const inboxData = messagesRes.data;
+        const unreadCount = inboxData.unread_count;
+
+        // Show notification if there are new requests OR new messages
+        if (
+          (pendingRequests.length > 0 &&
+            pendingRequests.length > lastRequestCount.current) ||
+          unreadCount > lastMessageCount.current
+        ) {
+          // Show notification with combined data
+          const notification = new CustomEvent("showMessageNotification", {
+            detail: {
+              requests: pendingRequests,
+              unreadCount: unreadCount,
+              hasNewRequests: pendingRequests.length > lastRequestCount.current,
+              hasNewMessages: unreadCount > lastMessageCount.current,
+            },
+          });
+          window.dispatchEvent(notification);
+        }
+
+        // Store the counts for next check
+        lastRequestCount.current = pendingRequests.length;
+        lastMessageCount.current = unreadCount;
+      } catch (err) {
+        // Silent fail - not critical
+        console.error("Failed to fetch pending data:", err);
+      }
+    };
+
+    // Check immediately on userInfo load
+    fetchPendingData();
+
+    // Set up polling every 30 seconds to check for new requests and messages
+    const interval = setInterval(fetchPendingData, 30000);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [userInfo]);
+
   const handleLogout = () => {
+    // Clear React Query cache to prevent cache contamination between users
+    queryClient.clear();
+
+    // Clear auth token
     clearToken();
+
+    // Navigate to login
     router.push("/login");
   };
 
@@ -100,12 +233,29 @@ export default function Layout({ children }: LayoutProps) {
       return [
         { href: "/admin/dashboard", label: "Dashboard", icon: "🏠" },
         { href: "/admin/signups", label: "Email Signups", icon: "📧" },
-        { href: "/admin/email-templates", label: "Email Templates", icon: "📝" },
+        {
+          href: "/admin/email-templates",
+          label: "Email Templates",
+          icon: "📝",
+        },
         { href: "/admin/campaigns", label: "Campaigns", icon: "📢" },
         { href: "/products", label: "Product Library", icon: "📦" },
+        { href: "/library", label: "Content Library", icon: "📚" },
+        {
+          href: "/messages",
+          label: "Messages",
+          icon: "💬",
+          children: [
+            { href: "/messages", label: "Inbox & Sent", icon: "💬" },
+            { href: "/messages/compose", label: "Compose", icon: "✏️" },
+            { href: "/messages/requests", label: "Requests", icon: "🤝" },
+            { href: "/affiliates", label: "Networking", icon: "👥" },
+          ],
+        },
         { href: "/admin/tools", label: "Admin Tools", icon: "🔧" },
         { href: "/admin/images", label: "Image Management", icon: "🖼️" },
         { href: "/admin/config", label: "Configuration", icon: "🎛️" },
+        { href: "/admin/limits", label: "Usage Limits", icon: "📈" },
         { href: "/admin/ai_router", label: "AI Router", icon: "🤖" },
         { href: "/admin/credits", label: "AI Credits", icon: "💳" },
         { href: "/admin/users", label: "Users", icon: "👥" },
@@ -116,31 +266,100 @@ export default function Layout({ children }: LayoutProps) {
     }
 
     // Product Creator menu
-    if (userInfo?.role === "creator") {
+    if (userInfo?.role === "creator" || userInfo?.user_type === "Creator") {
       return [
         { href: "/dashboard", label: "Dashboard", icon: "🏠" },
         { href: "/products", label: "Product Library", icon: "📦" },
-        { href: "/intelligence", label: "Intelligence", icon: "🧠" },
-        { href: "/content", label: "Content", icon: "✍️" },
-        { href: "/campaigns", label: "Campaigns", icon: "📢" },
-        { href: "/compliance", label: "Compliance", icon: "✅" },
+        { href: "/library", label: "Content Library", icon: "📚" },
         { href: "/product-analytics", label: "Product Analytics", icon: "📊" },
-        { href: "/analytics", label: "Analytics", icon: "📈" },
-        { href: "/settings", label: "Settings", icon: "⚙️" },
+        { href: "/intelligence", label: "Intelligence", icon: "🧠" },
+        { href: "/affiliates", label: "Networking", icon: "👥" },
+        {
+          href: "/messages",
+          label: "Messages",
+          icon: "💬",
+          children: [
+            { href: "/messages", label: "Inbox & Sent", icon: "💬" },
+            { href: "/messages/compose", label: "Compose", icon: "✏️" },
+            { href: "/messages/requests", label: "Requests", icon: "🤝" },
+          ],
+        },
+        {
+          href: "/more",
+          label: "More",
+          icon: "📂",
+          children: [
+            { href: "/campaigns", label: "Campaigns", icon: "📢" },
+            { href: "/content", label: "Content", icon: "✍️" },
+            { href: "/image-editor", label: "AI Image Editor", icon: "🎨" },
+            { href: "/compliance", label: "Compliance", icon: "✅" },
+            { href: "/analytics", label: "Analytics", icon: "📈" },
+            { href: "/settings", label: "Settings", icon: "⚙️" },
+          ],
+        },
       ];
     }
 
-    // Affiliate/Business menu (default for regular users)
+    // Business Owner menu (promoting their own business)
+    if (userInfo?.role === "business" || userInfo?.user_type === "Business") {
+      return [
+        { href: "/dashboard", label: "Dashboard", icon: "🏠" },
+        { href: "/campaigns", label: "Business Campaigns", icon: "📢" },
+        { href: "/library", label: "Content", icon: "✍️" },
+        { href: "/intelligence", label: "Intelligence", icon: "🧠" },
+        { href: "/analytics", label: "Analytics", icon: "📈" },
+        { href: "/affiliates", label: "Networking", icon: "👥" },
+        {
+          href: "/messages",
+          label: "Messages",
+          icon: "💬",
+          children: [
+            { href: "/messages", label: "Inbox & Sent", icon: "💬" },
+            { href: "/messages/compose", label: "Compose", icon: "✏️" },
+            { href: "/messages/requests", label: "Requests", icon: "🤝" },
+          ],
+        },
+        {
+          href: "/more",
+          label: "More",
+          icon: "📂",
+          children: [
+            { href: "/compliance", label: "Compliance", icon: "✅" },
+            { href: "/settings", label: "Settings", icon: "⚙️" },
+          ],
+        },
+      ];
+    }
+
+    // Marketer menu (promoting others' products)
     return [
       { href: "/dashboard", label: "Dashboard", icon: "🏠" },
-      { href: "/campaigns", label: "Campaigns", icon: "📢" },
       { href: "/products", label: "Product Library", icon: "📦" },
-      { href: "/library", label: "Content Library", icon: "📚" },
-      { href: "/content", label: "Content Generation", icon: "✍️" },
+      { href: "/campaigns", label: "Campaigns", icon: "📢" },
+      { href: "/image-editor", label: "AI Image Editor", icon: "🎨" },
+      { href: "/library", label: "Content", icon: "✍️" },
       { href: "/intelligence", label: "Intelligence", icon: "🧠" },
-      { href: "/compliance", label: "Compliance", icon: "✓" },
       { href: "/analytics", label: "Analytics", icon: "📈" },
-      { href: "/settings", label: "Settings", icon: "⚙️" },
+      {
+        href: "/messages",
+        label: "Messages",
+        icon: "💬",
+        children: [
+          { href: "/messages", label: "Inbox & Sent", icon: "💬" },
+          { href: "/messages/compose", label: "Compose", icon: "✏️" },
+          { href: "/messages/requests", label: "Requests", icon: "🤝" },
+        ],
+      },
+      {
+        href: "/more",
+        label: "More",
+        icon: "📂",
+        children: [
+          { href: "/affiliates", label: "Networking", icon: "👥" },
+          { href: "/compliance", label: "Compliance", icon: "✅" },
+          { href: "/settings", label: "Settings", icon: "⚙️" },
+        ],
+      },
     ];
   };
 
@@ -152,17 +371,18 @@ export default function Layout({ children }: LayoutProps) {
     console.debug("[Layout] render");
   }
 
-  // If auth page or landing page, render children without layout chrome
-  // This comes AFTER all hooks to avoid violating Rules of Hooks
-  if (isAuthPage || isLandingPage) {
-    return <>{children}</>;
-  }
-
   return (
     // Use the same background for the shell and page canvas so the main page matches the sidebar
     <>
       {/* Automatic token refresh to prevent logout during active sessions */}
       {!isAuthPage && <TokenRefresh />}
+
+      {/* Message request notification banner */}
+      <div
+        style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100 }}
+      >
+        <MessageRequestNotification />
+      </div>
 
       <div className="min-h-screen flex flex-col bg-[var(--bg-secondary)]">
         {/* Header */}
@@ -190,8 +410,8 @@ export default function Layout({ children }: LayoutProps) {
             </button>
             <Link href={(isAdmin ? "/admin/dashboard" : "/dashboard") as any}>
               <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-gradient-to-br from-[var(--accent-primary)] to-[var(--accent-secondary)] rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-lg">B</span>
+                <div className="w-8 h-8 flex items-center justify-center">
+                  <span className="text-orange-500 text-2xl">⚡</span>
                 </div>
                 <span className="font-bold text-xl text-[var(--text-primary)]">
                   Blitz
@@ -200,23 +420,44 @@ export default function Layout({ children }: LayoutProps) {
             </Link>
           </div>
 
-          {/* Right: User Info + Profile Dropdown */}
+          {/* Right: User Info + Upgrade + Profile Dropdown */}
           <div className="flex items-center space-x-4">
+            {/* Upgrade Button for Non-Pro Affiliates */}
+            {!isProUser(userInfo) &&
+              (userInfo?.role === "affiliate" || userInfo?.user_type === "Affiliate") && (
+                <Link
+                  href="/billing/subscribe"
+                  className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400 hover:bg-orange-200 dark:hover:bg-orange-900/50 transition mr-[30px] -translate-x-[30px]"
+                >
+                  <svg
+                    className="w-4 h-4 mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 10V3L4 14h7v7l9-11h-7z"
+                    />
+                  </svg>
+                  Upgrade to Pro
+                </Link>
+              )}
+
             {userInfo && (
               <div className="hidden md:flex flex-col items-end">
                 <span className="text-sm font-semibold text-[var(--text-primary)]">
                   {userInfo.email}
                 </span>
                 <span className="text-xs text-[var(--text-secondary)] capitalize">
-                  {userInfo.role === "creator"
-                    ? "Product Developer"
-                    : userInfo.role === "affiliate"
-                    ? "Marketer"
-                    : userInfo.role === "business"
-                    ? "Business"
-                    : userInfo.role === "admin"
-                    ? "Admin"
-                    : userInfo.role}
+                  {(userInfo.user_type === "Affiliate" && isProUser(userInfo) && "Pro Marketer") ||
+                    (userInfo.user_type === "Affiliate" && "Marketer") ||
+                    (userInfo.user_type === "Creator" && "Product Developer") ||
+                    (userInfo.user_type === "Business" && "Business") ||
+                    userInfo.user_type ||
+                    (userInfo.role === "admin" ? "Admin" : "User")}
                 </span>
               </div>
             )}
@@ -303,13 +544,12 @@ export default function Layout({ children }: LayoutProps) {
                               "Loading..."}
                           </p>
                           <p className="text-xs text-[var(--text-secondary)] capitalize">
-                            {userInfo?.role === "creator"
-                              ? "Product Developer"
-                              : userInfo?.role === "affiliate"
-                              ? "Marketer"
-                              : userInfo?.role === "business"
-                              ? "Business"
-                              : userInfo?.role || "user"}
+                            {(userInfo?.user_type === "Affiliate" && isProUser(userInfo) && "Pro Marketer") ||
+                              (userInfo?.user_type === "Affiliate" && "Marketer") ||
+                              (userInfo?.user_type === "Creator" && "Product Developer") ||
+                              (userInfo?.user_type === "Business" && "Business") ||
+                              userInfo?.user_type ||
+                              (userInfo?.role === "admin" ? "Admin" : "User")}
                           </p>
                         </div>
                       </div>
@@ -342,11 +582,11 @@ export default function Layout({ children }: LayoutProps) {
         </header>
 
         <div className="flex flex-1 overflow-hidden">
-          {/* Left Sidebar */}
+          {/* Left Sidebar - Fixed position so it stays visible while scrolling */}
           <aside
             className={`${
               leftSidebarOpen ? "w-64" : "w-16"
-            } transition-all duration-300 border-r border-[var(--border-color)] bg-[var(--bg-primary)] overflow-y-auto`}
+            } fixed left-0 top-16 bottom-0 transition-all duration-300 border-r border-[var(--border-color)] bg-[var(--bg-primary)] overflow-y-auto z-40`}
           >
             {/* User Type Badge */}
             {leftSidebarOpen && userInfo && !isAdmin && (
@@ -358,17 +598,21 @@ export default function Layout({ children }: LayoutProps) {
                     </div>
                     <div
                       className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
-                        userInfo.role === "creator"
+                        userInfo.user_type === "Creator"
                           ? "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300"
-                          : userInfo.role === "business"
+                          : userInfo.user_type === "Business"
                           ? "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300"
+                          : isProUser(userInfo)
+                          ? "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300"
                           : "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
                       }`}
                     >
-                      {userInfo.role === "creator"
+                      {userInfo.user_type === "Creator"
                         ? "🎯 Product Developer"
-                        : userInfo.role === "business"
+                        : userInfo.user_type === "Business"
                         ? "💼 Business"
+                        : isProUser(userInfo)
+                        ? "⭐ Pro Marketer"
                         : "🚀 Marketer"}
                     </div>
                   </div>
@@ -379,48 +623,139 @@ export default function Layout({ children }: LayoutProps) {
             <nav className="p-2 space-y-1">
               {menuItems.map((item) => {
                 const isActive = pathname === item.href;
+                const isExpanded = expandedMenus[item.href] || false;
+                const hasChildren = item.children && item.children.length > 0;
+
                 return (
-                  <Link
-                    key={item.href}
-                    href={item.href as any}
-                    className={`flex items-center ${
-                      leftSidebarOpen ? "space-x-3 px-4" : "justify-center px-2"
-                    } py-3 rounded-lg transition-all duration-200 group relative border-l-4 ${
-                      isActive
-                        ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-semibold border-blue-600 dark:border-blue-400"
-                        : "border-transparent hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-transparent dark:hover:from-blue-900/20 dark:hover:to-transparent hover:border-blue-400 dark:hover:border-blue-500 text-[var(--text-primary)] hover:text-blue-600 dark:hover:text-blue-400 hover:scale-[1.02]"
-                    }`}
-                    title={!leftSidebarOpen ? item.label : undefined}
-                  >
-                    <span
-                      className={`text-xl transition-transform duration-200 ${
-                        !isActive && "group-hover:scale-110"
-                      }`}
-                    >
-                      {item.icon}
-                    </span>
-                    {leftSidebarOpen && (
-                      <span className="transition-all duration-200">
-                        {item.label}
-                      </span>
+                  <div key={item.href}>
+                    {hasChildren ? (
+                      <button
+                        onClick={() =>
+                          setExpandedMenus((prev) => ({
+                            ...prev,
+                            [item.href]: !prev[item.href],
+                          }))
+                        }
+                        className={`flex items-center w-full ${
+                          leftSidebarOpen
+                            ? "space-x-3 px-4"
+                            : "justify-center px-2"
+                        } py-3 rounded-lg transition-all duration-200 group relative border-l-4 ${
+                          isActive
+                            ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-semibold border-blue-600 dark:border-blue-400"
+                            : "border-transparent hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-transparent dark:hover:from-blue-900/20 dark:hover:to-transparent hover:border-blue-400 dark:hover:border-blue-500 text-[var(--text-primary)] hover:text-blue-600 dark:hover:text-blue-400 hover:scale-[1.02]"
+                        }`}
+                        title={!leftSidebarOpen ? item.label : undefined}
+                      >
+                        <span
+                          className={`text-xl transition-transform duration-200 ${
+                            !isActive && "group-hover:scale-110"
+                          }`}
+                        >
+                          {item.icon}
+                        </span>
+                        {leftSidebarOpen && (
+                          <div className="flex-1 flex items-center justify-between">
+                            <span className="transition-all duration-200">
+                              {item.label}
+                            </span>
+                            <svg
+                              className={`w-4 h-4 transition-transform duration-200 ${
+                                isExpanded ? "rotate-180" : ""
+                              }`}
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M19 9l-7 7-7-7"
+                              />
+                            </svg>
+                          </div>
+                        )}
+
+                        {/* Tooltip for collapsed state */}
+                        {!leftSidebarOpen && (
+                          <div className="absolute left-full ml-2 px-3 py-2 bg-gray-900 dark:bg-gray-800 border border-gray-700 rounded-lg shadow-xl text-sm text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none z-50 group-hover:translate-x-1">
+                            {item.label}
+                            {/* Tooltip arrow */}
+                            <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-gray-900 dark:border-r-gray-800"></div>
+                          </div>
+                        )}
+                      </button>
+                    ) : (
+                      <Link
+                        href={item.href as any}
+                        className={`flex items-center ${
+                          leftSidebarOpen
+                            ? "space-x-3 px-4"
+                            : "justify-center px-2"
+                        } py-3 rounded-lg transition-all duration-200 group relative border-l-4 ${
+                          isActive
+                            ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-semibold border-blue-600 dark:border-blue-400"
+                            : "border-transparent hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-transparent dark:hover:from-blue-900/20 dark:hover:to-transparent hover:border-blue-400 dark:hover:border-blue-500 text-[var(--text-primary)] hover:text-blue-600 dark:hover:text-blue-400 hover:scale-[1.02]"
+                        }`}
+                        title={!leftSidebarOpen ? item.label : undefined}
+                      >
+                        <span
+                          className={`text-xl transition-transform duration-200 ${
+                            !isActive && "group-hover:scale-110"
+                          }`}
+                        >
+                          {item.icon}
+                        </span>
+                        {leftSidebarOpen && (
+                          <span className="transition-all duration-200">
+                            {item.label}
+                          </span>
+                        )}
+
+                        {/* Tooltip for collapsed state */}
+                        {!leftSidebarOpen && (
+                          <div className="absolute left-full ml-2 px-3 py-2 bg-gray-900 dark:bg-gray-800 border border-gray-700 rounded-lg shadow-xl text-sm text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none z-50 group-hover:translate-x-1">
+                            {item.label}
+                            {/* Tooltip arrow */}
+                            <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-gray-900 dark:border-r-gray-800"></div>
+                          </div>
+                        )}
+                      </Link>
                     )}
 
-                    {/* Tooltip for collapsed state */}
-                    {!leftSidebarOpen && (
-                      <div className="absolute left-full ml-2 px-3 py-2 bg-gray-900 dark:bg-gray-800 border border-gray-700 rounded-lg shadow-xl text-sm text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none z-50 group-hover:translate-x-1">
-                        {item.label}
-                        {/* Tooltip arrow */}
-                        <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-gray-900 dark:border-r-gray-800"></div>
+                    {/* Render children if expanded and sidebar is open */}
+                    {hasChildren && leftSidebarOpen && isExpanded && (
+                      <div className="ml-4 mt-1 space-y-1">
+                        {item.children?.map((child) => {
+                          const isChildActive = pathname === child.href;
+                          return (
+                            <Link
+                              key={child.href}
+                              href={child.href as any}
+                              className={`flex items-center space-x-3 px-4 py-2 rounded-lg transition-all duration-200 group relative border-l-4 ${
+                                isChildActive
+                                  ? "bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 font-semibold border-blue-600 dark:border-blue-400"
+                                  : "border-transparent hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-300 dark:hover:border-blue-600 text-[var(--text-secondary)] hover:text-blue-600 dark:hover:text-blue-400"
+                              }`}
+                            >
+                              <span className="text-lg">{child.icon}</span>
+                              <span className="text-sm transition-all duration-200">
+                                {child.label}
+                              </span>
+                            </Link>
+                          );
+                        })}
                       </div>
                     )}
-                  </Link>
+                  </div>
                 );
               })}
             </nav>
           </aside>
 
           {/* Main Content */}
-          <main className="flex-1 overflow-y-auto bg-[var(--bg-secondary)] flex flex-col">
+          <main className={`flex-1 overflow-y-auto bg-[var(--bg-secondary)] flex flex-col transition-all duration-300 ${leftSidebarOpen ? 'ml-64' : 'ml-16'}`}>
             <div className="flex-1">{children}</div>
             <Footer />
           </main>

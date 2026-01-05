@@ -189,6 +189,26 @@ function ProductCreatorDashboard() {
           </p>
         </Link>
 
+        {/* Marketing Calendar */}
+        <Link
+          href="/marketing-calendar"
+          className="group block p-6 rounded-lg transition-all duration-300 card hover:shadow-xl hover:-translate-y-1 hover:border-orange-400 dark:hover:border-orange-500 border-2 border-transparent "
+        >
+          <div className="flex items-center space-x-3 mb-2">
+            <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+              <span className="text-orange-600 dark:text-orange-400 text-xl">
+                📅
+              </span>
+            </div>
+            <h2 className="text-xl font-semibold text-[var(--text-primary)] group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors duration-300">
+              Marketing Calendar
+            </h2>
+          </div>
+          <p className="text-sm text-[var(--text-secondary)]">
+            21-day campaign planning and content calendar
+          </p>
+        </Link>
+
         {/* Product Analytics */}
         <Link
           href="/product-analytics"

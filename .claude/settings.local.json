@@ -42,7 +42,8 @@
       "WebFetch(domain:fal.run)",
       "WebFetch(domain:replicate.com)",
       "Bash(curl:*)",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "Bash(grep:*)"
     ],
     "deny": [],
     "ask": []
