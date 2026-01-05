@@ -176,6 +176,9 @@ export function ContentStudioVideoTab({
         duration,
         script,
         keywords: selectedKeywords,
+        // Include calendar context if available
+        context: prePopulatedData?.context,
+        day: prePopulatedData?.day,
       };
 
       // Add image URL for image-to-video generation

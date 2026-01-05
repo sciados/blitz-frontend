@@ -144,6 +144,9 @@ export function ContentStudioImagesTab({
         aspect_ratio: aspectRatio,
         highlight_features: selectedKeywords,
         custom_prompt: customPrompt || null,
+        // Include calendar context if available
+        context: prePopulatedData?.context,
+        day: prePopulatedData?.day,
       });
 
       setDraftImages(response.data || []);

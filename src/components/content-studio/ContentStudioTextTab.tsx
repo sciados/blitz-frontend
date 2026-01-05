@@ -216,6 +216,9 @@ export function ContentStudioTextTab({ campaignId, prePopulatedData }: ContentSt
         marketing_angle: marketingAngle,
         length,
         keywords: selectedKeywords,
+        // Include calendar context if available
+        context: prePopulatedData?.context,
+        day: prePopulatedData?.day,
       });
 
       setGeneratedContent(response.data);
