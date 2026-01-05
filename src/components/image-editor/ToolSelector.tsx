@@ -11,16 +11,6 @@ export function ToolSelector({ selectedTool }: ToolSelectorProps) {
     EditTool,
     { name: string; description: string; useCases: string[] }
   > = {
-    inpaint: {
-      name: "Inpainting",
-      description: "Fill masked areas with AI-generated content",
-      useCases: [
-        "Add new objects to images",
-        "Modify specific areas",
-        "Fix imperfections",
-        "Change colors or textures",
-      ],
-    },
     erase: {
       name: "Erase Objects",
       description: "Remove unwanted objects cleanly",

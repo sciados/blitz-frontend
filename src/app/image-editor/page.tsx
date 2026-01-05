@@ -15,7 +15,6 @@ import { FolderSelectorModal } from "src/components/FolderSelectorModal";
 import { SmartResize } from "src/components/image-editor/SmartResize";
 
 export type EditTool =
-  // "inpaint" - REMOVED: Use Erase + Overlay workflow instead
   | "erase"
   | "background-remove"
   | "search-replace"
@@ -285,15 +284,6 @@ export default function ImageEditorPage() {
       let endpoint = "";
 
       switch (selectedEditTool) {
-        // REMOVED:         case "inpaint":
-        // REMOVED:           endpoint = "/api/image-editor/inpaint";
-        // REMOVED:           formData.append("prompt", prompt);
-        // REMOVED:           //           if (negativePrompt)
-        // REMOVED:           //             formData.append("negative_prompt", negativePrompt);
-        // REMOVED:           if (maskDataUrl) formData.append("mask_data_base64", maskDataUrl);
-        // REMOVED:           formData.append("seed", seed.toString());
-        // REMOVED:           break;
-
         case "erase":
           endpoint = "/api/image-editor/erase";
           if (maskDataUrl) formData.append("mask_data_base64", maskDataUrl);

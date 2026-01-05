@@ -893,12 +893,12 @@ export function ImageEditorSidebar({
     },
   ];
 
-  // Filter out inpaint and erase tools if image has transparency
+  // Filter out erase tools if image has transparency
   const tools = hasTransparency
     ? allTools.filter((tool) => tool.id !== "erase")
     : allTools;
 
-  // If transparency is detected and current tool is inpaint or erase, switch to background-remove
+  // If transparency is detected and current tool is erase, switch to background-remove
   useEffect(() => {
     if (hasTransparency && selectedEditTool === "erase") {
       onEditToolChange("background-remove");
@@ -920,9 +920,8 @@ export function ImageEditorSidebar({
                 Transparent Background Detected
               </p>
               <p className="text-xs text-amber-700 mt-1">
-                Inpaint and Erase tools are disabled on images with
-                transparency. Please use a non-transparent image for these
-                features.
+                Erase tools are disabled on images with transparency. Please use
+                a non-transparent image for these features.
               </p>
             </div>
           </div>

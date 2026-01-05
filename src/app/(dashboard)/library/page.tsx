@@ -146,7 +146,6 @@ export default function ContentLibraryPage() {
     | "filters"
     | "resize"
     | "overlays"
-    | "inpaint"
     | "erase"
     | "transparent"
     | "lineage"
@@ -353,8 +352,6 @@ export default function ContentLibraryPage() {
                       edited_layers: "overlay",
                       edited_filters: "filters",
                       edited_resize: "resize",
-                      edited_inpaint: "inpaint",
-                      inpainting: "inpaint", // Backend uses "inpainting"
                       edited_erase: "erase",
                       erase: "erase", // Backend uses "erase"
                       background_removal: "transparent",
@@ -569,8 +566,6 @@ export default function ContentLibraryPage() {
       if (!hasTextOverlay && !hasImageOverlay && !hasEditToolOverlay)
         return false;
     }
-    if (imageFilter === "inpaint" && image.metadata?.edit_tool !== "inpaint")
-      return false;
     if (imageFilter === "erase" && image.metadata?.edit_tool !== "erase")
       return false;
     if (imageFilter === "transparent" && image.has_transparency !== true) {
@@ -1316,23 +1311,6 @@ export default function ContentLibraryPage() {
                         img.metadata?.text_overlay === true ||
                         img.metadata?.image_overlay === true ||
                         img.metadata?.edit_tool === "overlay"
-                    ).length
-                  }
-                </span>
-              </button>
-              <button
-                onClick={() => setImageFilter("inpaint")}
-                className={`px-4 py-2 rounded-lg transition flex items-center gap-2 ${
-                  imageFilter === "inpaint"
-                    ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow"
-                    : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
-                }`}
-              >
-                <span>🖌️ Inpaint</span>
-                <span className="text-xs px-2 py-0.5 bg-gray-200 dark:bg-gray-600 rounded-full">
-                  {
-                    combinedImages.filter(
-                      (img) => img.metadata?.edit_tool === "inpaint"
                     ).length
                   }
                 </span>
@@ -2332,7 +2310,6 @@ export default function ContentLibraryPage() {
                               const toolNames: Record<string, string> = {
                                 filters: "Filters",
                                 resize: "Resize",
-                                inpaint: "Inpaint",
                                 erase: "Erase",
                                 overlay: "Overlays",
                                 background_removal: "TRANSPARENT",
@@ -2980,7 +2957,6 @@ export default function ContentLibraryPage() {
                     const toolNames: Record<string, string> = {
                       filters: "Filters",
                       resize: "Resize",
-                      inpaint: "Inpaint",
                       erase: "Erase",
                       overlay: "Overlays",
                       background_removal: "TRANSPARENT",

@@ -1894,64 +1894,136 @@ export const helpContent: Record<string, HelpContent> = {
     ],
   },
 
-  // Image Editor - Inpaint Tool
-  "/image-editor/inpaint": {
-    title: "Image Inpainting Tool",
-    description: "Use AI to intelligently fill in or replace masked areas of your image. Perfect for removing objects, fixing imperfections, or adding new elements to photos.",
+  // Image Editor - Object Replacement Workflow (Erase + Overlay)
+  "/image-editor/object-replacement": {
+    title: "Replace Objects in Images",
+    description: "Professional 2-step workflow to remove unwanted objects and replace them with product images. Fast, reliable, and gives you complete creative control.",
     steps: [
       {
         number: 1,
-        title: "Upload Your Image",
-        description: "Click 'Choose File' or drag and drop an image onto the canvas. Supported formats: JPG, PNG, WebP. Maximum size: 10MB.",
+        title: "Step 1: Erase Unwanted Object",
+        description: "Select the Erase tool and paint over the object you want to remove. The AI intelligently fills the area with matching background in 5-10 seconds. No prompts needed!",
       },
       {
         number: 2,
-        title: "Create a Mask",
-        description: "Use the brush tool to paint over areas you want to inpaint. White areas will be replaced. Adjust brush size (5-100px) and hardness for precision.",
+        title: "Step 2: Add Your Product Image",
+        description: "Select the Overlay tool, choose a transparent product image from Product Assets, and drag it onto the canvas. Resize, rotate, and position it perfectly.",
       },
       {
         number: 3,
-        title: "Write Your Prompt",
-        description: "Describe what should fill the masked area. Be specific: 'wooden table', 'blue sky with clouds', 'modern office desk'. The more detailed, the better the result.",
+        title: "Fine-Tune Position",
+        description: "Use the transform controls to resize, rotate, and precisely position your product. The transparent background ensures seamless blending with your image.",
       },
       {
         number: 4,
-        title: "Adjust Settings (Optional)",
-        description: "Fine-tune: Brush size (5-100px), Brush hardness (0-100%), Seed (for reproducible results), and Output format (PNG for transparency, JPG for smaller size).",
-      },
-      {
-        number: 5,
-        title: "Generate & Preview",
-        description: "Click 'Apply Inpaint' to process. The AI automatically selects the best platform (Replicate, FAL, or Stability) for optimal quality and cost. Preview appears in 5-15 seconds.",
-      },
-      {
-        number: 6,
-        title: "Save Your Result",
-        description: "Download the edited image or save it to your campaign library. The system automatically uses the proxy for fast, secure storage via Cloudflare R2.",
+        title: "Download Your Result",
+        description: "Click 'Download' to save your professionally edited image. The system preserves quality and transparency for pixel-perfect results.",
       },
     ],
     tips: [
-      "Paint precisely - only mask what you want to change for best results",
-      "Use descriptive prompts: 'old wooden floor' instead of just 'wood'",
-      "Negative prompts help avoid unwanted elements (e.g., 'no people, no text')",
-      "The system uses AI Platform Router - automatically selects cheapest/most reliable platform",
-      "Save masks for reuse if you plan to iterate on the same area",
-      "For object removal, use Erase tool instead (no prompt needed)",
-      "Regenerate with different prompts if first result isn't perfect",
-      "Higher resolution images produce better inpainting quality",
-      "The AI respects lighting and perspective for realistic results",
+      "Erase first, overlay second - this workflow is 20x faster than AI generation",
+      "Use Product Assets library for professional transparent product images",
+      "Product Developers: Upload 15+ product angles for best affiliate creativity",
+      "Adjust overlay opacity to blend naturally with your image",
+      "Save frequently used overlays for quick reuse",
+      "The Erase tool costs only $0.003 - 60% cheaper than alternatives",
+      "Transparent PNGs work best - remove backgrounds before uploading",
+      "Layer multiple overlays to create complex compositions",
+      "Use guides and snap-to-grid for precise alignment",
+    ],
+  },
+
+  // Image Editor - Erase Tool
+  "/image-editor/erase": {
+    title: "Erase Tool - AI Object Removal",
+    description: "Quickly remove unwanted objects, people, or blemishes from photos. AI intelligently fills the area with matching background. No prompts needed!",
+    steps: [
+      {
+        number: 1,
+        title: "Select Erase Tool",
+        description: "Click the Erase tool icon in the toolbar. This activates the brush for painting over objects to remove.",
+      },
+      {
+        number: 2,
+        title: "Paint Over Object",
+        description: "Use the brush to paint over anything you want to remove. Adjust brush size (5-100px) for precision. Don't worry about being perfect - AI understands intent.",
+      },
+      {
+        number: 3,
+        title: "Apply Erase",
+        description: "Click 'Apply Erase' button. The AI analyzes surrounding pixels and intelligently fills the masked area. Results appear in 5-10 seconds.",
+      },
+      {
+        number: 4,
+        title: "Review & Iterate",
+        description: "Check the result. If needed, erase again on the same area or use Undo to try a different mask. The tool learns from context for natural-looking fills.",
+      },
+    ],
+    tips: [
+      "Paint completely over the object - partial masks may leave artifacts",
+      "For large objects, use a bigger brush size (50-80px) for speed",
+      "For fine details, use smaller brush (10-20px) and higher hardness",
+      "The AI matches lighting, shadows, and texture automatically",
+      "After erasing, use Overlay tool to add new content",
+      "Costs only $0.003 per use - 60% cheaper than alternatives",
+      "Works best on photos with clear backgrounds",
+      "Multiple small erases often work better than one large erase",
+    ],
+  },
+
+  // Image Editor - Overlay Tool
+  "/image-editor/overlay": {
+    title: "Overlay Tool - Add Images & Products",
+    description: "Add transparent product images, logos, watermarks, or graphics to your photos. Perfect for product placement, branding, and creative compositions.",
+    steps: [
+      {
+        number: 1,
+        title: "Select Overlay Tool",
+        description: "Click the Overlay tool icon. This opens the image selection panel where you can choose from Product Assets, uploads, or stock images.",
+      },
+      {
+        number: 2,
+        title: "Choose Your Image",
+        description: "Select from: Product Assets (transparent product images from developers), My Uploads (your own images), or Stock Library. Click an image to add it to the canvas.",
+      },
+      {
+        number: 3,
+        title: "Position & Resize",
+        description: "Drag the overlay to position it. Use corner handles to resize. Hold Shift while resizing to maintain aspect ratio. Rotate using the rotation handle.",
+      },
+      {
+        number: 4,
+        title: "Adjust & Fine-Tune",
+        description: "Use opacity slider (0-100%) to blend naturally. Layer multiple overlays to create complex compositions. Use alignment guides for precision.",
+      },
+      {
+        number: 5,
+        title: "Finalize & Save",
+        description: "Click 'Apply' to merge the overlay. Download your final image or save it to your campaign library. Transparent backgrounds are preserved.",
+      },
+    ],
+    tips: [
+      "Product Assets: Access professional transparent product images",
+      "Transparent PNGs blend seamlessly - use them whenever possible",
+      "Lower opacity (60-80%) for subtle, natural-looking overlays",
+      "Use multiple overlays to create layered compositions",
+      "Snap-to-grid and alignment guides help with precision",
+      "Save your favorite overlays for quick reuse",
+      "Combine with Erase tool: Remove object first, add overlay second",
+      "For product placement: Erase competing product, overlay yours",
+      "Match perspective and lighting for realistic results",
     ],
   },
 
   // Image Editor - General
   "/image-editor": {
     title: "Image Editor",
-    description: "Professional AI-powered image editing toolkit. Remove objects, change backgrounds, upscale images, and more using advanced AI models.",
+    description: "Professional AI-powered image editing toolkit. Remove objects with Erase, add products with Overlay, change backgrounds, upscale images, and more using advanced AI models.",
     steps: [
       {
         number: 1,
         title: "Choose Your Tool",
-        description: "Select from Inpaint (fill/replace), Erase (remove objects), Background Removal, Upscale, Outpaint, or Sketch-to-Image based on your needs.",
+        description: "Select from Erase (remove objects), Overlay (add images/products), Background Removal, Upscale, Outpaint, or Sketch-to-Image based on your needs.",
       },
       {
         number: 2,
@@ -1961,7 +2033,7 @@ export const helpContent: Record<string, HelpContent> = {
       {
         number: 3,
         title: "Configure Settings",
-        description: "Each tool has specific options. Inpaint needs a prompt, Erase uses masks, Background Removal is automatic, etc.",
+        description: "Each tool has specific options. Erase uses masks, Overlay adds images, Background Removal is automatic, etc.",
       },
       {
         number: 4,
