@@ -43,7 +43,8 @@
       "WebFetch(domain:replicate.com)",
       "Bash(curl:*)",
       "WebFetch(domain:github.com)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(test:*)"
     ],
     "deny": [],
     "ask": []

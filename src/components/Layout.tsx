@@ -270,6 +270,7 @@ export default function Layout({ children }: LayoutProps) {
       return [
         { href: "/dashboard", label: "Dashboard", icon: "🏠" },
         { href: "/products", label: "Product Library", icon: "📦" },
+        { href: "/marketing-calendar", label: "Marketing Calendar", icon: "📅" },
         { href: "/library", label: "Content Library", icon: "📚" },
         { href: "/product-analytics", label: "Product Analytics", icon: "📊" },
         { href: "/intelligence", label: "Intelligence", icon: "🧠" },
@@ -303,6 +304,7 @@ export default function Layout({ children }: LayoutProps) {
     // Business Owner menu (promoting their own business)
     if (userInfo?.role === "business" || userInfo?.user_type === "Business") {
       return [
+        { href: "/marketing-calendar", label: "Marketing Calendar", icon: "📅" },
         { href: "/dashboard", label: "Dashboard", icon: "🏠" },
         { href: "/campaigns", label: "Business Campaigns", icon: "📢" },
         { href: "/library", label: "Content", icon: "✍️" },
@@ -333,6 +335,7 @@ export default function Layout({ children }: LayoutProps) {
 
     // Marketer menu (promoting others' products)
     return [
+        { href: "/marketing-calendar", label: "Marketing Calendar", icon: "📅" },
       { href: "/dashboard", label: "Dashboard", icon: "🏠" },
       { href: "/products", label: "Product Library", icon: "📦" },
       { href: "/campaigns", label: "Campaigns", icon: "📢" },

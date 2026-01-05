@@ -895,6 +895,23 @@ function BusinessOwnerDashboard() {
                 Connect with quality affiliates
               </p>
             </Link>
+
+            <Link
+              href="/marketing-calendar"
+              className="p-4 card hover:shadow-md transition-shadow border-2 border-transparent hover:border-orange-400 dark:hover:border-orange-500"
+            >
+              <div className="flex items-center space-x-3 mb-2">
+                <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center">
+                  <span className="text-xl">📅</span>
+                </div>
+                <h4 className="font-semibold text-[var(--text-primary)]">
+                  Marketing Calendar
+                </h4>
+              </div>
+              <p className="text-sm text-[var(--text-secondary)]">
+                21-day campaign planning guide
+              </p>
+            </Link>
           </div>
         </div>
 
@@ -1250,6 +1267,22 @@ function AffiliateMarketerDashboard() {
               </div>
               <p className="text-sm text-[var(--text-secondary)]">
                 Find products to promote
+              </p>
+            </Link>
+n            <Link
+              href="/marketing-calendar"
+              className="p-4 card hover:shadow-md transition-shadow border-2 border-transparent hover:border-orange-400 dark:hover:border-orange-500"
+            >
+              <div className="flex items-center space-x-3 mb-2">
+                <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center">
+                  <span className="text-xl">📅</span>
+                </div>
+                <h4 className="font-semibold text-[var(--text-primary)]">
+                  Marketing Calendar
+                </h4>
+              </div>
+              <p className="text-sm text-[var(--text-secondary)]">
+                21-day campaign planning guide
               </p>
             </Link>
           </div>
