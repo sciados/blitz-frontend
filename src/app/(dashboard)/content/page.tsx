@@ -132,6 +132,14 @@ export default function ContentStudio() {
   // Check if queue is complete
   const isQueueComplete = generatedItems.size === contentQueue.length && contentQueue.length > 0;
 
+  // Handle return to calendar with completion status
+  const handleReturnToCalendar = () => {
+    const params = new URLSearchParams();
+    if (campaignId) params.set("campaign", campaignId.toString());
+    if (urlDay) params.set("completedDay", urlDay);
+    router.push(`/marketing-calendar?${params.toString()}`);
+  };
+
   // Restore last campaign from localStorage on mount
   useEffect(() => {
     const lastCampaignId = localStorage.getItem("lastSelectedCampaign");
@@ -332,11 +340,7 @@ export default function ContentStudio() {
                   )}
                   {isQueueComplete && (
                     <button
-                      onClick={() => {
-                        const params = new URLSearchParams();
-                        params.set("campaign", campaignId?.toString() || "");
-                        router.push(`/marketing-calendar?${params.toString()}`);
-                      }}
+                      onClick={handleReturnToCalendar}
                       className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition flex items-center space-x-2"
                     >
                       <span>Back to Calendar</span>

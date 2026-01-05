@@ -2,14 +2,53 @@
 import { AuthGate } from "src/components/AuthGate";
 import { CampaignSelector } from "src/components/CampaignSelector";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { marketingPlanData } from "src/config/marketingPlanData";
 import { toast } from "sonner";
 
 export default function MarketingCalendarPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const urlCampaignId = searchParams.get("campaign");
+  const urlCompletedDay = searchParams.get("completedDay");
+
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
-  const [selectedCampaignId, setSelectedCampaignId] = useState<number | null>(null);
+  const [selectedCampaignId, setSelectedCampaignId] = useState<number | null>(
+    urlCampaignId ? Number(urlCampaignId) : null
+  );
+  const [completedDays, setCompletedDays] = useState<Set<number>>(new Set());
+
+  // Load completed days from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem("completedDays");
+    if (saved) {
+      try {
+        const daysArray = JSON.parse(saved);
+        setCompletedDays(new Set(daysArray));
+      } catch (e) {
+        console.error("Failed to parse completed days from localStorage");
+      }
+    }
+  }, []);
+
+  // Handle URL parameter for newly completed day
+  useEffect(() => {
+    if (urlCompletedDay) {
+      const dayNumber = Number(urlCompletedDay);
+      if (dayNumber && !completedDays.has(dayNumber)) {
+        const newCompleted = new Set(completedDays).add(dayNumber);
+        setCompletedDays(newCompleted);
+        localStorage.setItem("completedDays", JSON.stringify([...newCompleted]));
+        toast.success(`Day ${dayNumber} marked as completed! 🎉`, {
+          duration: 3000,
+        });
+      }
+      // Clean up URL parameter
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete("completedDay");
+      router.replace(`/marketing-calendar?${params.toString()}`, { scroll: false });
+    }
+  }, [urlCompletedDay, completedDays, router, searchParams]);
 
   const handleDayClick = (day: number) => {
     setSelectedDay(day);
@@ -96,6 +135,15 @@ export default function MarketingCalendarPage() {
               Select any day to view detailed content recommendations and marketing strategies
             </p>
           </div>
+          {completedDays.size > 0 && (
+            <div className="text-right">
+              <div className="text-sm text-[var(--text-secondary)]">Progress</div>
+              <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                {completedDays.size}/21
+              </div>
+              <div className="text-xs text-[var(--text-secondary)]">Days Completed</div>
+            </div>
+          )}
         </div>
 
         {/* Campaign Selection */}
@@ -172,6 +220,7 @@ export default function MarketingCalendarPage() {
               const isPreLaunch = dayData.day <= 13;
               const isLaunch = dayData.day === 14;
               const isPostLaunch = dayData.day >= 15;
+              const isCompleted = completedDays.has(dayData.day);
 
               let bgColor = "bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/40";
               let borderColor = "border-blue-200 dark:border-blue-800";
@@ -195,6 +244,15 @@ export default function MarketingCalendarPage() {
                   : "bg-blue-200 dark:bg-blue-800/60";
               }
 
+              // Add subtle overlay for completed days
+              if (isCompleted) {
+                bgColor = isLaunch
+                  ? "bg-green-100 dark:bg-green-800/40"
+                  : isPostLaunch
+                  ? "bg-orange-100 dark:bg-orange-800/40"
+                  : "bg-blue-100 dark:bg-blue-800/40";
+              }
+
               return (
                 <button
                   key={dayData.day}
@@ -202,20 +260,36 @@ export default function MarketingCalendarPage() {
                   className={`
                     ${bgColor}
                     ${borderColor}
-                    border-2 rounded-lg p-4 transition-all duration-200
+                    border-2 rounded-lg p-4 transition-all duration-200 relative
                     ${isSelected ? "ring-2 ring-offset-2 ring-blue-500 dark:ring-offset-gray-900" : ""}
+                    ${isCompleted ? "opacity-90" : ""}
                     hover:scale-105 hover:shadow-md
                   `}
                 >
+                  {/* Completion Badge */}
+                  {isCompleted && (
+                    <div className="absolute top-2 right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center shadow-lg">
+                      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                  )}
+
                   <div className={`text-sm font-semibold ${textColor} mb-1`}>
                     {isLaunch ? "🚀" : isPostLaunch ? "🔥" : "📝"}
                   </div>
                   <div className="text-lg font-bold text-[var(--text-primary)] mb-1">
                     Day {dayData.day}
+                    {isCompleted && <span className="ml-1 text-green-600 dark:text-green-400">✓</span>}
                   </div>
                   <div className="text-xs text-[var(--text-secondary)] text-left">
                     {dayData.title}
                   </div>
+                  {isCompleted && (
+                    <div className="mt-2 text-xs font-semibold text-green-600 dark:text-green-400">
+                      ✓ Completed
+                    </div>
+                  )}
                 </button>
               );
             })}
