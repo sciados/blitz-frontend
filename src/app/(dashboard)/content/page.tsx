@@ -56,12 +56,33 @@ export default function ContentStudio() {
   // Parse URL parameters
   const urlCampaignId = searchParams.get("campaign");
   const urlType = (searchParams.get("type") as ContentType) || "text";
+  const urlContentType = searchParams.get("contentType");
+  const urlMarketingAngle = searchParams.get("marketingAngle");
+  const urlDay = searchParams.get("day");
+  const urlContext = searchParams.get("context");
 
   // State
   const [campaignId, setCampaignId] = useState<number | null>(
     urlCampaignId ? Number(urlCampaignId) : null
   );
   const [activeContentType, setActiveContentType] = useState<ContentType>(urlType);
+
+  // Pre-population data from calendar
+  const [prePopulatedData, setPrePopulatedData] = useState<{
+    contentType?: string;
+    marketingAngle?: string;
+    day?: number;
+    context?: string;
+  } | null>(
+    urlContentType || urlMarketingAngle || urlDay || urlContext
+      ? {
+          contentType: urlContentType || undefined,
+          marketingAngle: urlMarketingAngle || undefined,
+          day: urlDay ? Number(urlDay) : undefined,
+          context: urlContext || undefined,
+        }
+      : null
+  );
 
   // Restore last campaign from localStorage on mount
   useEffect(() => {
@@ -132,6 +153,50 @@ export default function ContentStudio() {
             campaignId={campaignId}
             onSelectCampaign={handleSelectCampaign}
           />
+
+          {/* Calendar Context Banner */}
+          {prePopulatedData && (
+            <div className="card p-4 mb-6 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border border-blue-200 dark:border-blue-800">
+              <div className="flex items-start space-x-3">
+                <div className="text-2xl">📅</div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-[var(--text-primary)] mb-1">
+                    Generating Content from Marketing Calendar
+                  </h3>
+                  <div className="text-sm text-[var(--text-secondary)] space-y-1">
+                    {prePopulatedData.day && (
+                      <p>
+                        <span className="font-medium">Day {prePopulatedData.day}</span>
+                        {prePopulatedData.marketingAngle && (
+                          <span> • {prePopulatedData.marketingAngle.replace(/_/g, " ")} Marketing Angle</span>
+                        )}
+                      </p>
+                    )}
+                    {prePopulatedData.contentType && (
+                      <p>
+                        <span className="font-medium">Content Type:</span>{" "}
+                        {prePopulatedData.contentType.replace(/_/g, " ")}
+                      </p>
+                    )}
+                    {prePopulatedData.context && (
+                      <p>
+                        <span className="font-medium">Context:</span> {prePopulatedData.context}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                <button
+                  onClick={() => setPrePopulatedData(null)}
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  title="Dismiss"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Main Content */}
           <div className="card rounded-lg overflow-hidden">
@@ -209,11 +274,11 @@ export default function ContentStudio() {
                   </p>
                 </div>
               ) : activeContentType === "text" ? (
-                <ContentStudioTextTab campaignId={campaignId} />
+                <ContentStudioTextTab campaignId={campaignId} prePopulatedData={prePopulatedData} />
               ) : activeContentType === "images" ? (
-                <ContentStudioImagesTab campaignId={campaignId} />
+                <ContentStudioImagesTab campaignId={campaignId} prePopulatedData={prePopulatedData} />
               ) : (
-                <ContentStudioVideoTab campaignId={campaignId} />
+                <ContentStudioVideoTab campaignId={campaignId} prePopulatedData={prePopulatedData} />
               )}
             </div>
           </div>

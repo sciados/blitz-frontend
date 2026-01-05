@@ -109,9 +109,15 @@ const CONTENT_SETTINGS: Record<ContentType, {
 
 interface ContentStudioTextTabProps {
   campaignId: number;
+  prePopulatedData?: {
+    contentType?: string;
+    marketingAngle?: string;
+    day?: number;
+    context?: string;
+  } | null;
 }
 
-export function ContentStudioTextTab({ campaignId }: ContentStudioTextTabProps) {
+export function ContentStudioTextTab({ campaignId, prePopulatedData }: ContentStudioTextTabProps) {
   const [contentType, setContentType] = useState<ContentType>("article");
   const [marketingAngle, setMarketingAngle] = useState<MarketingAngle>("problem_solution");
   const [length, setLength] = useState("medium");
@@ -139,6 +145,45 @@ export function ContentStudioTextTab({ campaignId }: ContentStudioTextTabProps) 
     setMarketingAngle(settings.marketingAngles[0]?.value || "problem_solution");
     setLength(settings.lengthOptions[0]?.value || "medium");
   }, [contentType]);
+
+  // Apply pre-populated data from calendar
+  useEffect(() => {
+    if (!prePopulatedData) return;
+
+    // Map content type
+    if (prePopulatedData.contentType) {
+      const contentTypeMap: Record<string, ContentType> = {
+        article: "article",
+        email: "email",
+        email_sequence: "email_sequence",
+        video_script: "video_script",
+        social_post: "social_post",
+        landing_page: "landing_page",
+        ad_copy: "ad_copy",
+      };
+      const mappedType = contentTypeMap[prePopulatedData.contentType];
+      if (mappedType && mappedType !== contentType) {
+        setContentType(mappedType);
+      }
+    }
+
+    // Map marketing angle
+    if (prePopulatedData.marketingAngle) {
+      const angleMap: Record<string, MarketingAngle> = {
+        problem_solution: "problem_solution",
+        transformation: "transformation",
+        scarcity: "scarcity",
+        authority: "authority",
+        social_proof: "social_proof",
+        comparison: "comparison",
+        story: "story",
+      };
+      const mappedAngle = angleMap[prePopulatedData.marketingAngle];
+      if (mappedAngle && mappedAngle !== marketingAngle) {
+        setMarketingAngle(mappedAngle);
+      }
+    }
+  }, [prePopulatedData]);
 
   // Fetch content for this campaign
   const { data, refetch } = useQuery({

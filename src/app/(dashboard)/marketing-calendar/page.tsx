@@ -1,13 +1,62 @@
 "use client";
 import { AuthGate } from "src/components/AuthGate";
-import { useState } from "react";
+import { CampaignSelector } from "src/components/CampaignSelector";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { marketingPlanData } from "src/config/marketingPlanData";
+import { toast } from "sonner";
 
 export default function MarketingCalendarPage() {
+  const router = useRouter();
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
+  const [selectedCampaignId, setSelectedCampaignId] = useState<number | null>(null);
 
   const handleDayClick = (day: number) => {
     setSelectedDay(day);
+  };
+
+  const handleGenerateContent = (
+    campaignId: number | null,
+    contentType: string,
+    marketingAngle: string,
+    day: number,
+    details: string
+  ) => {
+    if (!campaignId) {
+      toast.error("Please select a campaign first");
+      return;
+    }
+
+    // Map content types to the appropriate type parameter
+    let typeParam = "text";
+    let specificType = contentType.toLowerCase();
+
+    if (contentType === "Image") {
+      typeParam = "images";
+      specificType = "image";
+    } else if (contentType === "Video") {
+      typeParam = "video";
+      specificType = "video_script";
+    } else {
+      typeParam = "text";
+      // Map content type names to the format expected by the content generator
+      if (contentType === "Email") specificType = "email";
+      if (contentType === "Social Post") specificType = "social_post";
+      if (contentType === "Article") specificType = "article";
+    }
+
+    // Build URL with parameters
+    const params = new URLSearchParams({
+      campaign: campaignId.toString(),
+      type: typeParam,
+      contentType: specificType,
+      marketingAngle: marketingAngle.toLowerCase().replace(/\s+/g, "_"),
+      day: day.toString(),
+      context: details,
+    });
+
+    // Navigate to content page with pre-populated parameters
+    router.push(`/content?${params.toString()}`);
   };
 
   return (
@@ -23,6 +72,33 @@ export default function MarketingCalendarPage() {
               Select any day to view detailed content recommendations and marketing strategies
             </p>
           </div>
+        </div>
+
+        {/* Campaign Selection */}
+        <div className="card p-6">
+          <h2 className="text-xl font-semibold text-[var(--text-primary)] mb-4">
+            Select Campaign
+          </h2>
+          <CampaignSelector
+            selectedCampaignId={selectedCampaignId}
+            onSelect={(id) => {
+              setSelectedCampaignId(id);
+              if (id) {
+                toast.success("Campaign selected for marketing calendar");
+              }
+            }}
+            label="Campaign *"
+            placeholder="Select a campaign to generate specific content..."
+            showAllOption={false}
+          />
+          {selectedCampaignId && (
+            <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+              <p className="text-sm text-[var(--text-primary)]">
+                <span className="font-semibold">✓ Campaign selected!</span>{" "}
+                Click "Generate" on any content suggestion below to auto-create content using this campaign's intelligence data.
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Campaign Overview */}
@@ -124,7 +200,12 @@ export default function MarketingCalendarPage() {
 
         {/* Selected Day Details */}
         {selectedDay && (
-          <DayDetails day={selectedDay} data={marketingPlanData[selectedDay - 1]} />
+          <DayDetails
+            day={selectedDay}
+            data={marketingPlanData[selectedDay - 1]}
+            selectedCampaignId={selectedCampaignId}
+            onGenerateContent={handleGenerateContent}
+          />
         )}
 
         {/* Marketing Angles Reference */}
@@ -194,7 +275,23 @@ export default function MarketingCalendarPage() {
   );
 }
 
-function DayDetails({ day, data }: { day: number; data: any }) {
+function DayDetails({
+  day,
+  data,
+  selectedCampaignId,
+  onGenerateContent,
+}: {
+  day: number;
+  data: any;
+  selectedCampaignId: number | null;
+  onGenerateContent: (
+    campaignId: number | null,
+    contentType: string,
+    marketingAngle: string,
+    day: number,
+    details: string
+  ) => void;
+}) {
   const isPreLaunch = day <= 13;
   const isLaunch = day === 14;
   const isPostLaunch = day >= 15;
@@ -241,11 +338,34 @@ function DayDetails({ day, data }: { day: number; data: any }) {
           </h3>
           <div className="space-y-3">
             {data.contentToCreate.map((content: any, idx: number) => (
-              <div key={idx} className="bg-[var(--bg-secondary)] p-3 rounded-lg border border-[var(--border-color)]">
-                <div className="font-semibold text-[var(--text-primary)] text-sm mb-1">
-                  {content.type}
+              <div key={idx} className="bg-[var(--bg-secondary)] p-3 rounded-lg border border-[var(--border-color)] flex items-start justify-between">
+                <div className="flex-1">
+                  <div className="font-semibold text-[var(--text-primary)] text-sm mb-1">
+                    {content.type}
+                  </div>
+                  <div className="text-[var(--text-secondary)] text-sm">{content.details}</div>
                 </div>
-                <div className="text-[var(--text-secondary)] text-sm">{content.details}</div>
+                <button
+                  onClick={() =>
+                    onGenerateContent(
+                      selectedCampaignId,
+                      content.type,
+                      data.marketingAngle,
+                      day,
+                      content.details
+                    )
+                  }
+                  disabled={!selectedCampaignId}
+                  className={`
+                    ml-3 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200
+                    ${selectedCampaignId
+                      ? "bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg"
+                      : "bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+                    }
+                  `}
+                >
+                  Generate
+                </button>
               </div>
             ))}
           </div>

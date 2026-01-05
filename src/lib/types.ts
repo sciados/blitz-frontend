@@ -358,6 +358,109 @@ export type ImageSaveDraftRequest = {
 };
 
 // ============================================================================
+// PRODUCT ASSETS TYPES
+// ============================================================================
+
+export type AssetType = "product_image" | "lifestyle" | "detail" | "packaging";
+
+export type ViewAngle = "front" | "side" | "angle" | "top" | "close_up" | "in_use" | "box" | "open";
+
+export type ProductAsset = {
+    id: number;
+    campaign_id: number;
+    asset_url: string;
+    filename: string;
+    asset_type: AssetType;
+    view_angle?: ViewAngle | null;
+    has_transparency: boolean;
+    width: number;
+    height: number;
+    title?: string | null;
+    description?: string | null;
+    is_featured: boolean;
+    display_order: number;
+    times_used: number;
+    created_at: string;
+};
+
+export type ProductAssetUploadRequest = {
+    file: File;
+    asset_type: AssetType;
+    view_angle?: ViewAngle;
+    title?: string;
+    description?: string;
+    is_featured?: boolean;
+};
+
+export type ProductAssetStats = {
+    total_assets: number;
+    transparent_assets: number;
+    featured_assets: number;
+    most_used_angle?: string | null;
+    total_uses: number;
+    quality_score: number;  // 0-100
+};
+
+export type AssetQualityFeedback = {
+    score: number;
+    rank: "bronze" | "silver" | "gold" | "platinum";
+    feedback: string[];
+    recommendations: string[];
+};
+
+// Helper to get quality rank from score
+export function getAssetQualityRank(score: number): "bronze" | "silver" | "gold" | "platinum" {
+    if (score >= 85) return "platinum";
+    if (score >= 70) return "gold";
+    if (score >= 50) return "silver";
+    return "bronze";
+}
+
+// Helper to get feedback based on stats
+export function getAssetQualityFeedback(stats: ProductAssetStats): AssetQualityFeedback {
+    const feedback: string[] = [];
+    const recommendations: string[] = [];
+
+    // Quantity feedback
+    if (stats.total_assets >= 15) {
+        feedback.push("✅ Excellent asset library size");
+    } else if (stats.total_assets >= 10) {
+        feedback.push("✅ Good number of assets");
+        recommendations.push("Add 5+ more assets for best results");
+    } else if (stats.total_assets >= 5) {
+        feedback.push("⚠️ Getting started");
+        recommendations.push("Add 10+ more assets to improve affiliate creativity");
+    } else {
+        feedback.push("⚠️ Limited assets");
+        recommendations.push("Need at least 5-10 transparent product images");
+    }
+
+    // Quality feedback
+    if (stats.transparent_assets === stats.total_assets) {
+        feedback.push("✅ All assets have transparency");
+    } else {
+        feedback.push("⚠️ Some assets missing transparency");
+        recommendations.push("Ensure all product images have transparent backgrounds");
+    }
+
+    // Usage feedback
+    if (stats.total_uses > 50) {
+        feedback.push(`🔥 Assets used ${stats.total_uses} times by affiliates!`);
+    } else if (stats.total_uses > 10) {
+        feedback.push(`📈 Assets used ${stats.total_uses} times`);
+    }
+
+    const rank = getAssetQualityRank(stats.quality_score);
+
+    return {
+        score: stats.quality_score,
+        rank,
+        feedback,
+        recommendations
+    };
+}
+
+// ============================================================================
 // EDITED IMAGE TYPES (for image editor results)
 // ============================================================================
 
