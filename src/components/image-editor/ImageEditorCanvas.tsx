@@ -67,7 +67,7 @@ export function ImageEditorCanvas({
   const [editingTextId, setEditingTextId] = useState<string | null>(null);
   const [editingTextValue, setEditingTextValue] = useState("");
 
-  const needsMask = ["inpaint", "erase"].includes(selectedEditTool);
+  const needsMask = ["erase"].includes(selectedEditTool);
 
   // Filter state
   const [filterSettings, setFilterSettings] = useState<{
@@ -1191,7 +1191,8 @@ export function ImageEditorCanvas({
     (window as any).imageEditorCanvas.getTemplateCanvas = getTemplateCanvas;
     (window as any).imageEditorCanvas.getFrameCanvas = getFrameCanvas;
     (window as any).imageEditorCanvas.getBackgroundCanvas = getBackgroundCanvas;
-    (window as any).imageEditorCanvas.setCropAspectRatio = handleSetCropAspectRatio;
+    (window as any).imageEditorCanvas.setCropAspectRatio =
+      handleSetCropAspectRatio;
     (window as any).imageEditorCanvas.applyCrop = applyCrop;
     (window as any).imageEditorCanvas.resetCrop = resetCrop;
   }, [applyFilter, collageSettings]);
@@ -1847,7 +1848,8 @@ export function ImageEditorCanvas({
     }
     (window as any).imageEditorCanvas.addTextOverlay = addTextOverlay;
     (window as any).imageEditorCanvas.addImageOverlay = addImageOverlay;
-    (window as any).imageEditorCanvas.addImageOverlayFromUrl = addImageOverlayFromUrl;
+    (window as any).imageEditorCanvas.addImageOverlayFromUrl =
+      addImageOverlayFromUrl;
     (window as any).imageEditorCanvas.handleSaveOverlays = handleSaveOverlays;
     (window as any).imageEditorCanvas.getCanvasWithFilters =
       getCanvasWithFilters;
@@ -1870,8 +1872,6 @@ export function ImageEditorCanvas({
 
   const getToolDescription = () => {
     switch (selectedEditTool) {
-      case "inpaint":
-        return "Paint over areas you want to modify, then enter a prompt";
       case "erase":
         return "Paint over objects you want to remove";
       case "background-remove":
