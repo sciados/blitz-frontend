@@ -79,12 +79,15 @@ export default function MarketingCalendarPage() {
       let intelligenceData: any = null;
       try {
         const intelResponse = await api.get(
-          `/api/intelligence/compiled/${campaignId}`
+          `/api/intelligence/campaigns/${campaignId}/intelligence`
         );
-        intelligenceData =
-          intelResponse.data?.intelligence_data || intelResponse.data;
+        intelligenceData = intelResponse.data;
       } catch (error) {
         console.log("No intelligence data available");
+        toast.error(
+          "No intelligence data found. Please compile campaign intelligence first.",
+          { id: "build-prompt" }
+        );
       }
 
       // Build structured prompt using universal template format
