@@ -26,17 +26,20 @@ export default function SmallBusinessPage() {
     {
       emoji: "⏰",
       problem: "No time to post on social media daily",
-      solution: "Auto-publishing posts to Google, Facebook, Instagram automatically",
+      solution:
+        "Auto-publishing posts to Google, Facebook, Instagram automatically",
     },
     {
       emoji: "🤷",
       problem: "Don't know what content to create",
-      solution: "AI generates 60+ posts, 4 articles, 2 videos per month for you",
+      solution:
+        "AI generates 60+ posts, 4 articles, 2 videos per month for you",
     },
     {
       emoji: "📉",
       problem: "Marketing isn't generating leads",
-      solution: "Lead-generation focused content with clear CTAs (call, book, quote)",
+      solution:
+        "Lead-generation focused content with clear CTAs (call, book, quote)",
     },
   ];
 
@@ -214,8 +217,7 @@ export default function SmallBusinessPage() {
         "Monitor phone calls and form submissions",
         "Calculate ROI ($2,100 revenue vs $147 cost)",
       ],
-      proTip:
-        "Most businesses see 10-25 new leads/month within 30 days!",
+      proTip: "Most businesses see 10-25 new leads/month within 30 days!",
     },
   ];
 
@@ -283,8 +285,9 @@ export default function SmallBusinessPage() {
               for Local Businesses
             </h1>
             <p className="text-xl md:text-2xl text-gray-300 max-w-3xl mx-auto">
-              Generate professional content and auto-publish to Google, Facebook,
-              and Instagram. Get more leads while focusing on your business.
+              Generate professional content and auto-publish to Google,
+              Facebook, and Instagram. Get more leads while focusing on your
+              business.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-6">
               <button className="group px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg font-semibold text-lg hover:shadow-2xl hover:shadow-blue-500/50 transition-all duration-300 flex items-center gap-2">
@@ -319,17 +322,23 @@ export default function SmallBusinessPage() {
             <div className="bg-gray-800/50 rounded-xl p-6">
               <div className="text-3xl mb-2">📝</div>
               <div className="font-bold mb-1">Unlimited Content</div>
-              <div className="text-sm text-gray-400">Articles, posts, emails, videos</div>
+              <div className="text-sm text-gray-400">
+                Articles, posts, emails, videos
+              </div>
             </div>
             <div className="bg-gray-800/50 rounded-xl p-6">
               <div className="text-3xl mb-2">📱</div>
               <div className="font-bold mb-1">Auto-Publishing</div>
-              <div className="text-sm text-gray-400">Google, Facebook, Instagram</div>
+              <div className="text-sm text-gray-400">
+                Google, Facebook, Instagram
+              </div>
             </div>
             <div className="bg-gray-800/50 rounded-xl p-6">
               <div className="text-3xl mb-2">📊</div>
               <div className="font-bold mb-1">Lead Tracking</div>
-              <div className="text-sm text-gray-400">Calls, clicks, ROI analytics</div>
+              <div className="text-sm text-gray-400">
+                Calls, clicks, ROI analytics
+              </div>
             </div>
           </div>
         </div>
@@ -644,8 +653,8 @@ export default function SmallBusinessPage() {
             <div className="text-6xl mb-6">💡</div>
             <h2 className="text-4xl font-bold mb-4">Calculate Your ROI</h2>
             <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-              Most local businesses spend $3K-5K/month on marketing. With
-              Blitz, you get better results for just $147/month.
+              Most local businesses spend $3K-5K/month on marketing. With Blitz,
+              you get better results for just $147/month.
             </p>
           </div>
 
@@ -722,7 +731,7 @@ export default function SmallBusinessPage() {
       {/* Footer */}
       <div className="border-t border-gray-800 mt-20">
         <div className="max-w-6xl mx-auto px-6 py-12 text-center text-gray-500">
-          <p>© 2024 Blitz. Simplify marketing, amplify results.</p>
+          <p>© 2026 Blitz. Simplify marketing, amplify results.</p>
         </div>
       </div>
     </div>

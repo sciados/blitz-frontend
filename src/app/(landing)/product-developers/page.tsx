@@ -26,9 +26,10 @@ export default function ProductDevelopersPage() {
         "View all your products and their promotion status",
         "Quick stats on views, clicks, and conversions",
         "Navigation to Products, Analytics, Settings, and Billing",
-        "Overview of affiliate performance across your catalog"
+        "Overview of affiliate performance across your catalog",
       ],
-      proTip: "The product dashboard gives you complete visibility into how your products are performing across the entire affiliate network."
+      proTip:
+        "The product dashboard gives you complete visibility into how your products are performing across the entire affiliate network.",
     },
     {
       step: 2,
@@ -41,9 +42,10 @@ export default function ProductDevelopersPage() {
         "AI automatically extracts product information",
         "Upload product images (or let AI capture them)",
         "Add category tags for better discoverability",
-        "Set product status (draft, published, or hidden)"
+        "Set product status (draft, published, or hidden)",
       ],
-      proTip: "Use high-quality product images—the better your visuals, the more attractive your product appears to affiliates!"
+      proTip:
+        "Use high-quality product images—the better your visuals, the more attractive your product appears to affiliates!",
     },
     {
       step: 3,
@@ -56,9 +58,10 @@ export default function ProductDevelopersPage() {
         "Identifies target audience and pain points",
         "Conducts competitor research and positioning",
         "Generates compelling product descriptions",
-        "Creates affiliate marketing materials automatically"
+        "Creates affiliate marketing materials automatically",
       ],
-      proTip: "Review the AI-generated intelligence—accurate product info leads to better affiliate promotions and higher conversions!"
+      proTip:
+        "Review the AI-generated intelligence—accurate product info leads to better affiliate promotions and higher conversions!",
     },
     {
       step: 4,
@@ -71,9 +74,10 @@ export default function ProductDevelopersPage() {
         "Set commission rate (industry standard: 30-50%)",
         "Enable recurring commissions for subscription products",
         "Configure bonus structures for top performers",
-        "Set minimum payout thresholds"
+        "Set minimum payout thresholds",
       ],
-      proTip: "Higher commission rates (40-50%) attract premium affiliates. Recurring commissions are especially effective for SaaS and subscription products!"
+      proTip:
+        "Higher commission rates (40-50%) attract premium affiliates. Recurring commissions are especially effective for SaaS and subscription products!",
     },
     {
       step: 5,
@@ -86,9 +90,10 @@ export default function ProductDevelopersPage() {
         "Affiliates can now discover and promote your product",
         "Set visibility (public, approved affiliates only, or hidden)",
         "Receive notifications when affiliates show interest",
-        "Monitor initial views and engagement"
+        "Monitor initial views and engagement",
       ],
-      proTip: "Start with a 'public' listing to build momentum, then you can switch to 'approved only' to curate your affiliate network."
+      proTip:
+        "Start with a 'public' listing to build momentum, then you can switch to 'approved only' to curate your affiliate network.",
     },
     {
       step: 6,
@@ -101,9 +106,10 @@ export default function ProductDevelopersPage() {
         "Track clicks, conversions, and revenue by affiliate",
         "Monitor which products are getting the most promotion",
         "Identify top-performing affiliates and campaigns",
-        "Review commission payouts and outstanding balances"
+        "Review commission payouts and outstanding balances",
       ],
-      proTip: "Check analytics daily. Reach out to high-performing affiliates with exclusive bonuses to strengthen those relationships!"
+      proTip:
+        "Check analytics daily. Reach out to high-performing affiliates with exclusive bonuses to strengthen those relationships!",
     },
     {
       step: 7,
@@ -116,10 +122,11 @@ export default function ProductDevelopersPage() {
         "Provide additional resources to top performers",
         "Launch new products to your active affiliate network",
         "Create affiliate-exclusive promotions and bonuses",
-        "Expand into new niches with complementary products"
+        "Expand into new niches with complementary products",
       ],
-      proTip: "Your top 20% of affiliates typically drive 80% of your sales. Focus on nurturing these relationships with special perks and higher rates!"
-    }
+      proTip:
+        "Your top 20% of affiliates typically drive 80% of your sales. Focus on nurturing these relationships with special perks and higher rates!",
+    },
   ];
   const features = [
     {
@@ -338,7 +345,9 @@ export default function ProductDevelopersPage() {
 
               <div className="p-6">
                 <div className="mb-4">
-                  <h4 className="font-semibold text-white mb-3">What you'll do:</h4>
+                  <h4 className="font-semibold text-white mb-3">
+                    What you'll do:
+                  </h4>
                   <ul className="space-y-2">
                     {step.details.map((detail, i) => (
                       <li
@@ -380,7 +389,8 @@ export default function ProductDevelopersPage() {
               Real Example: SaaS Tool Launch
             </h3>
             <p className="text-gray-300">
-              How one developer got 100+ affiliates promoting their product in 14 days
+              How one developer got 100+ affiliates promoting their product in
+              14 days
             </p>
           </div>
 
@@ -389,9 +399,12 @@ export default function ProductDevelopersPage() {
               <div className="text-5xl mb-3">📦</div>
               <h4 className="font-bold mb-2">Day 1</h4>
               <p className="text-sm text-gray-400">
-                Added project management SaaS to library<br />
-                Set 45% recurring commission<br />
-                AI generated product intelligence<br />
+                Added project management SaaS to library
+                <br />
+                Set 45% recurring commission
+                <br />
+                AI generated product intelligence
+                <br />
                 Published to marketplace
               </p>
             </div>
@@ -400,9 +413,12 @@ export default function ProductDevelopersPage() {
               <div className="text-5xl mb-3">👥</div>
               <h4 className="font-bold mb-2">Week 1</h4>
               <p className="text-sm text-gray-400">
-                37 affiliates promoting<br />
-                12 published review articles<br />
-                8 email sequences created<br />
+                37 affiliates promoting
+                <br />
+                12 published review articles
+                <br />
+                8 email sequences created
+                <br />
                 247 clicks generated
               </p>
             </div>
@@ -411,9 +427,12 @@ export default function ProductDevelopersPage() {
               <div className="text-5xl mb-3">📈</div>
               <h4 className="font-bold mb-2">Day 14</h4>
               <p className="text-sm text-gray-400">
-                103 active affiliates<br />
-                $89K in attributed sales<br />
-                $40K in commissions paid<br />
+                103 active affiliates
+                <br />
+                $89K in attributed sales
+                <br />
+                $40K in commissions paid
+                <br />
                 23% conversion rate
               </p>
             </div>
@@ -426,7 +445,10 @@ export default function ProductDevelopersPage() {
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
             <div className="flex items-start gap-3">
-              <Target className="text-purple-400 flex-shrink-0 mt-1" size={24} />
+              <Target
+                className="text-purple-400 flex-shrink-0 mt-1"
+                size={24}
+              />
               <div>
                 <h4 className="font-bold mb-1">
                   Competitive commissions (40-50%)
@@ -440,9 +462,7 @@ export default function ProductDevelopersPage() {
             <div className="flex items-start gap-3">
               <Users className="text-blue-400 flex-shrink-0 mt-1" size={24} />
               <div>
-                <h4 className="font-bold mb-1">
-                  High-quality product images
-                </h4>
+                <h4 className="font-bold mb-1">High-quality product images</h4>
                 <p className="text-gray-400 text-sm">
                   Visual appeal drives affiliate interest
                 </p>
@@ -470,9 +490,7 @@ export default function ProductDevelopersPage() {
                 size={24}
               />
               <div>
-                <h4 className="font-bold mb-1">
-                  Monitor and optimize daily
-                </h4>
+                <h4 className="font-bold mb-1">Monitor and optimize daily</h4>
                 <p className="text-gray-400 text-sm">
                   Data-driven decisions drive growth
                 </p>
@@ -555,7 +573,7 @@ export default function ProductDevelopersPage() {
       {/* Footer */}
       <div className="border-t border-gray-800 mt-20">
         <div className="max-w-6xl mx-auto px-6 py-12 text-center text-gray-500">
-          <p>© 2024 Blitz. Simplify marketing, amplify results.</p>
+          <p>© 2026 Blitz. Simplify marketing, amplify results.</p>
         </div>
       </div>
     </div>

@@ -220,7 +220,7 @@ export default function Home() {
       <div className="relative border-t border-gray-800 mt-20">
         <div className="max-w-6xl mx-auto px-6 py-12 text-center text-gray-500">
           <p className="mb-2">
-            © 2024 Blitz. Simplify marketing, amplify results.
+            © 2026 Blitz. Simplify marketing, amplify results.
           </p>
           <p className="text-sm">
             Built with ❤️ for creators, marketers, and entrepreneurs

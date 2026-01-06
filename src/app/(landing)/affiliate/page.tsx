@@ -650,7 +650,7 @@ export default function AffiliateMarketersPage() {
       {/* Footer */}
       <div className="border-t border-gray-800 mt-20">
         <div className="max-w-6xl mx-auto px-6 py-12 text-center text-gray-500">
-          <p>© 2024 Blitz. Simplify marketing, amplify results.</p>
+          <p>© 2026 Blitz. Simplify marketing, amplify results.</p>
         </div>
       </div>
     </div>

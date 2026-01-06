@@ -46,7 +46,9 @@ export default function RegisterPage() {
           <div className="text-center mb-8">
             <div className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600/20 to-blue-600/20 border border-purple-600/30 rounded-full px-6 py-2 mb-6">
               <Sparkles className="text-purple-400" size={20} />
-              <span className="text-purple-300 font-semibold">Get Started Today</span>
+              <span className="text-purple-300 font-semibold">
+                Get Started Today
+              </span>
             </div>
 
             <h1 className="text-5xl md:text-6xl font-bold mb-3">
@@ -157,7 +159,7 @@ export default function RegisterPage() {
           {/* Footer */}
           <div className="text-center mt-8">
             <p className="text-sm text-gray-500">
-              © 2024 Blitz. Simplify marketing, amplify results.
+              © 2026 Blitz. Simplify marketing, amplify results.
             </p>
           </div>
         </div>
