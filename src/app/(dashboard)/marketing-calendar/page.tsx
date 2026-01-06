@@ -58,7 +58,77 @@ export default function MarketingCalendarPage() {
     setSelectedDay(day);
   };
 
-  const handleGenerateContent = (
+  // Build an intelligent image prompt based on campaign data
+  const buildImagePrompt = async (campaignId: number, contentType: string, marketingAngle: string, context: string) => {
+    try {
+      // Fetch campaign intelligence from backend
+      const response = await api.get(`/api/campaigns/${campaignId}`);
+      const campaign = response.data;
+
+      // Get campaign intelligence
+      let intelligenceData: any = null;
+      try {
+        const intelResponse = await api.get(`/api/intelligence/compiled/${campaignId}`);
+        intelligenceData = intelResponse.data?.intelligence_data || intelResponse.data;
+      } catch (error) {
+        console.log("No intelligence data available");
+      }
+
+      // Build intelligent prompt
+      const promptParts = [];
+
+      // Add marketing angle context
+      if (marketingAngle) {
+        promptParts.push(`Marketing angle: ${marketingAngle.replace(/_/g, ' ')}`);
+      }
+
+      // Add campaign-specific info
+      if (campaign?.name) {
+        promptParts.push(`Product/Service: ${campaign.name}`);
+      }
+
+      // Add context from calendar
+      if (context) {
+        promptParts.push(`Focus: ${context}`);
+      }
+
+      // Add intelligence-based elements if available
+      if (intelligenceData?.product?.benefits) {
+        const topBenefits = intelligenceData.product.benefits.slice(0, 3);
+        if (topBenefits.length > 0) {
+          promptParts.push(`Key benefits to highlight: ${topBenefits.join(', ')}`);
+        }
+      }
+
+      if (intelligenceData?.market?.pain_points) {
+        const topPainPoints = intelligenceData.market.pain_points.slice(0, 2);
+        if (topPainPoints.length > 0) {
+          promptParts.push(`Target audience pain points: ${topPainPoints.join(', ')}`);
+        }
+      }
+
+      // Add content type specific guidance
+      if (contentType.toLowerCase().includes('hero')) {
+        promptParts.push("Create a compelling hero/banner image that captures attention and communicates value");
+      } else if (contentType.toLowerCase().includes('social')) {
+        promptParts.push("Create an eye-catching social media image suitable for Instagram, Facebook, or Twitter");
+      } else if (contentType.toLowerCase().includes('ad')) {
+        promptParts.push("Create a high-converting ad creative with strong visual hierarchy");
+      }
+
+      // Add style guidance
+      promptParts.push("Style: Professional, high-quality, visually appealing, modern design");
+
+      return promptParts.join('\n');
+
+    } catch (error) {
+      console.error("Error building image prompt:", error);
+      // Fallback to simple prompt
+      return `${contentType} for ${marketingAngle.replace(/_/g, ' ')} campaign. Professional, high-quality, visually appealing.`;
+    }
+  };
+
+  const handleGenerateContent = async (
     campaignId: number | null,
     contentType: string,
     marketingAngle: string,
@@ -97,6 +167,24 @@ export default function MarketingCalendarPage() {
       day: day.toString(),
       context: details,
     });
+
+    // For images, build an intelligent prompt and add it to URL
+    if (contentType === "Image") {
+      try {
+        toast.loading("Building intelligent image prompt...", { id: "build-prompt" });
+        const imagePrompt = await buildImagePrompt(
+          campaignId,
+          contentType,
+          marketingAngle,
+          details
+        );
+        params.set("custom_prompt", imagePrompt);
+        toast.success("Image prompt generated!", { id: "build-prompt" });
+      } catch (error) {
+        console.error("Error building image prompt:", error);
+        toast.error("Could not build prompt, but you can still edit it manually", { id: "build-prompt" });
+      }
+    }
 
     // Navigate to content page with pre-populated parameters
     router.push(`/content?${params.toString()}`);
@@ -219,20 +307,31 @@ export default function MarketingCalendarPage() {
         };
       });
 
-      setGenerationProgress(`Generating ${batchItems.length} content pieces...`);
-      const response = await api.post("/api/calendar/generate/batch", {
-        campaign_id: campaignId,
-        items: batchItems
+      // Filter to only text content (images and videos need manual generation)
+      const textBatchItems = batchItems.filter((item: any) => {
+        const contentType = item.content_type.toLowerCase();
+        return !contentType.includes('image') && contentType !== 'video_script';
       });
 
-      if (response.data.successful === batchItems.length) {
-        toast.success(`🎉 All ${batchItems.length} content pieces generated successfully for Day ${day}!`);
+      if (textBatchItems.length === 0) {
+        toast.warning("No text content available for auto-generation. Images and videos must be created manually.");
+        return;
+      }
+
+      setGenerationProgress(`Generating ${textBatchItems.length} text content pieces...`);
+      const response = await api.post("/api/calendar/generate/batch", {
+        campaign_id: campaignId,
+        items: textBatchItems
+      });
+
+      if (response.data.successful === textBatchItems.length) {
+        toast.success(`🎉 All ${textBatchItems.length} text content pieces generated successfully for Day ${day}! Images and videos can be created manually.`);
         // Mark day as completed
         const newCompleted = new Set(completedDays).add(day);
         setCompletedDays(newCompleted);
         localStorage.setItem("completedDays", JSON.stringify([...newCompleted]));
       } else if (response.data.successful > 0) {
-        toast.warning(`⚠️ Generated ${response.data.successful}/${batchItems.length} content pieces for Day ${day}`);
+        toast.warning(`⚠️ Generated ${response.data.successful}/${textBatchItems.length} text content pieces for Day ${day}`);
         // Mark day as completed if at least some content was generated
         const newCompleted = new Set(completedDays).add(day);
         setCompletedDays(newCompleted);
@@ -602,17 +701,18 @@ function DayDetails({
                   onClick={() => onGenerateAll(selectedCampaignId, day, data)}
                   className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg text-sm font-semibold transition-all duration-200 flex items-center space-x-2 shadow-md hover:shadow-lg"
                 >
-                  <span>Manual Mode</span>
+                  <span>Manual Mode (All)</span>
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                   </svg>
                 </button>
 
-                {/* Auto-Generate All - uses calendar API with intelligence */}
+                {/* Auto-Generate All - uses calendar API with intelligence - TEXT ONLY */}
                 <button
                   onClick={() => onAutoGenerateAll(selectedCampaignId, day, data)}
                   disabled={isGeneratingAll || isGenerating}
                   className="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white rounded-lg text-sm font-semibold transition-all duration-200 flex items-center space-x-2 shadow-md hover:shadow-lg disabled:cursor-not-allowed"
+                  title="Auto-generates text content only (emails, articles, social posts). Images and videos need manual generation."
                 >
                   {isGeneratingAll ? (
                     <>
@@ -620,17 +720,27 @@ function DayDetails({
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
-                      <span>Generating...</span>
+                      <span>Generating Text...</span>
                     </>
                   ) : (
                     <>
-                      <span>🤖 Auto-Generate All</span>
+                      <span>🤖 Auto Text Content</span>
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                       </svg>
                     </>
                   )}
                 </button>
+              </div>
+            )}
+
+            {/* Note about Auto-Generate */}
+            {selectedCampaignId && (
+              <div className="mt-3 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                <p className="text-xs text-[var(--text-primary)]">
+                  <span className="font-semibold">🤖 Auto-Generate</span> creates text content only (emails, articles, social posts).
+                  <span className="font-semibold"> Images & videos</span> must be created manually using the <span className="font-semibold">Manual Mode</span> button.
+                </p>
               </div>
             )}
 
@@ -649,66 +759,79 @@ function DayDetails({
               </div>
             )}
           </div>
-          <div className="space-y-3">
-            {data.contentToCreate.map((content: any, idx: number) => (
-              <div key={idx} className="bg-[var(--bg-secondary)] p-3 rounded-lg border border-[var(--border-color)] flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="font-semibold text-[var(--text-primary)] text-sm mb-1">
-                    {content.type}
-                  </div>
-                  <div className="text-[var(--text-secondary)] text-sm">{content.details}</div>
-                </div>
-                <div className="flex items-center space-x-2 ml-3">
-                  {/* Manual Generate - opens Content Studio */}
-                  <button
-                    onClick={() =>
-                      onGenerateContent(
-                        selectedCampaignId,
-                        content.type,
-                        data.marketingAngle,
-                        day,
-                        content.details
-                      )
-                    }
-                    disabled={!selectedCampaignId || isGeneratingAll || isGenerating}
-                    className={`
-                      px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200
-                      ${selectedCampaignId && !isGeneratingAll && !isGenerating
-                        ? "bg-gray-600 hover:bg-gray-700 text-white shadow-md hover:shadow-lg"
-                        : "bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
-                      }
-                    `}
-                  >
-                    Manual
-                  </button>
 
-                  {/* Auto-Generate - uses calendar API with intelligence */}
-                  <button
-                    onClick={() =>
-                      onAutoGenerate(
-                        selectedCampaignId,
-                        content.type,
-                        data.marketingAngle,
-                        day,
-                        content.details,
-                        data
-                      )
-                    }
-                    disabled={!selectedCampaignId || isGeneratingAll || isGenerating}
-                    className={`
-                      px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center space-x-1
-                      ${selectedCampaignId && !isGeneratingAll && !isGenerating
-                        ? "bg-green-600 hover:bg-green-700 text-white shadow-md hover:shadow-lg"
-                        : "bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
-                      }
-                    `}
-                  >
-                    <span>🤖 Auto</span>
-                  </button>
-                </div>
+          {/* Separate text and visual content */}
+          {(() => {
+            const textContent = data.contentToCreate.filter((content: any) => {
+              const type = content.type.toLowerCase();
+              return !type.includes('image') && type !== 'video';
+            });
+            const visualContent = data.contentToCreate.filter((content: any) => {
+              const type = content.type.toLowerCase();
+              return type.includes('image') || type === 'video';
+            });
+
+            return (
+              <div className="space-y-4">
+                {/* Text Content Section */}
+                {textContent.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-semibold text-[var(--text-primary)] mb-2 flex items-center">
+                      <span className="mr-2">📝</span>
+                      Text Content (Auto-Generate Available)
+                    </h4>
+                    <div className="space-y-3">
+                      {textContent.map((content: any, idx: number) => (
+                        <ContentItem
+                          key={idx}
+                          content={content}
+                          data={data}
+                          day={day}
+                          selectedCampaignId={selectedCampaignId}
+                          isGenerating={isGenerating}
+                          isGeneratingAll={isGeneratingAll}
+                          onGenerateContent={onGenerateContent}
+                          onAutoGenerate={onAutoGenerate}
+                          showAutoButton={true}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Visual Content Section */}
+                {visualContent.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-semibold text-[var(--text-primary)] mb-2 flex items-center">
+                      <span className="mr-2">🎨</span>
+                      Visual Content (Manual Generation with Smart Prompts)
+                    </h4>
+                    <div className="mb-3 p-3 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg">
+                      <p className="text-xs text-[var(--text-primary)]">
+                        💡 Clicking <span className="font-semibold">Manual</span> will open Content Studio with an <span className="font-semibold">intelligent prompt</span> pre-filled based on your campaign's intelligence data. You can then customize the Image Type, Style & Aspect Ratio!
+                      </p>
+                    </div>
+                    <div className="space-y-3">
+                      {visualContent.map((content: any, idx: number) => (
+                        <ContentItem
+                          key={idx}
+                          content={content}
+                          data={data}
+                          day={day}
+                          selectedCampaignId={selectedCampaignId}
+                          isGenerating={isGenerating}
+                          isGeneratingAll={isGeneratingAll}
+                          onGenerateContent={onGenerateContent}
+                          onAutoGenerate={onAutoGenerate}
+                          showAutoButton={false}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
-            ))}
-          </div>
+            );
+          })()}
         </div>
 
         {/* Marketing Angle */}
@@ -761,6 +884,104 @@ function DayDetails({
             ))}
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+// Content item component for rendering individual content pieces
+function ContentItem({
+  content,
+  data,
+  day,
+  selectedCampaignId,
+  isGenerating,
+  isGeneratingAll,
+  onGenerateContent,
+  onAutoGenerate,
+  showAutoButton
+}: {
+  content: any;
+  data: any;
+  day: number;
+  selectedCampaignId: number | null;
+  isGenerating: boolean;
+  isGeneratingAll: boolean;
+  onGenerateContent: (
+    campaignId: number | null,
+    contentType: string,
+    marketingAngle: string,
+    day: number,
+    details: string
+  ) => void;
+  onAutoGenerate: (
+    campaignId: number | null,
+    contentType: string,
+    marketingAngle: string,
+    day: number,
+    details: string,
+    dayData: any
+  ) => Promise<void>;
+  showAutoButton: boolean;
+}) {
+  return (
+    <div className="bg-[var(--bg-secondary)] p-3 rounded-lg border border-[var(--border-color)] flex items-start justify-between">
+      <div className="flex-1">
+        <div className="font-semibold text-[var(--text-primary)] text-sm mb-1">
+          {content.type}
+        </div>
+        <div className="text-[var(--text-secondary)] text-sm">{content.details}</div>
+      </div>
+      <div className="flex items-center space-x-2 ml-3">
+        {/* Manual Generate - opens Content Studio */}
+        <button
+          onClick={() =>
+            onGenerateContent(
+              selectedCampaignId,
+              content.type,
+              data.marketingAngle,
+              day,
+              content.details
+            )
+          }
+          disabled={!selectedCampaignId || isGeneratingAll || isGenerating}
+          className={`
+            px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200
+            ${selectedCampaignId && !isGeneratingAll && !isGenerating
+              ? "bg-gray-600 hover:bg-gray-700 text-white shadow-md hover:shadow-lg"
+              : "bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+            }
+          `}
+        >
+          Manual
+        </button>
+
+        {/* Auto-Generate - uses calendar API with intelligence */}
+        {showAutoButton && (
+          <button
+            onClick={() =>
+              onAutoGenerate(
+                selectedCampaignId,
+                content.type,
+                data.marketingAngle,
+                day,
+                content.details,
+                data
+              )
+            }
+            disabled={!selectedCampaignId || isGeneratingAll || isGenerating}
+            className={`
+              px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center space-x-1
+              ${selectedCampaignId && !isGeneratingAll && !isGenerating
+                ? "bg-green-600 hover:bg-green-700 text-white shadow-md hover:shadow-lg"
+                : "bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+              }
+            `}
+            title="Generate using campaign intelligence"
+          >
+            <span>🤖 Auto</span>
+          </button>
+        )}
       </div>
     </div>
   );

@@ -61,6 +61,7 @@ export default function ContentStudio() {
   const urlDay = searchParams.get("day");
   const urlContext = searchParams.get("context");
   const urlQueue = searchParams.get("queue");
+  const urlCustomPrompt = searchParams.get("custom_prompt");
 
   // State
   const [campaignId, setCampaignId] = useState<number | null>(
@@ -82,13 +83,15 @@ export default function ContentStudio() {
     marketingAngle?: string;
     day?: number;
     context?: string;
+    customPrompt?: string;
   } | null>(
-    urlContentType || urlMarketingAngle || urlDay || urlContext
+    urlContentType || urlMarketingAngle || urlDay || urlContext || urlCustomPrompt
       ? {
           contentType: urlContentType || undefined,
           marketingAngle: urlMarketingAngle || undefined,
           day: urlDay ? Number(urlDay) : undefined,
           context: urlContext || undefined,
+          customPrompt: urlCustomPrompt || undefined,
         }
       : null
   );

@@ -75,6 +75,7 @@ interface ContentStudioImagesTabProps {
     marketingAngle?: string;
     day?: number;
     context?: string;
+    customPrompt?: string;
   } | null;
   onContentGenerated?: () => void;
 }
@@ -104,7 +105,9 @@ export function ContentStudioImagesTab({
     null
   );
   const [isEnhancing, setIsEnhancing] = useState(false);
-  const [customPrompt, setCustomPrompt] = useState<string>("");
+  const [customPrompt, setCustomPrompt] = useState<string>(
+    prePopulatedData?.customPrompt || ""
+  );
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
   const [isGeneratingVariations, setIsGeneratingVariations] = useState(false);
 
