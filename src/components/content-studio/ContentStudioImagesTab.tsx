@@ -141,6 +141,7 @@ export function ContentStudioImagesTab({
       setIsGenerating(true);
       setDraftImages([]);
       setSelectedDraftIndex(null);
+      setSelectedDraftsForDownload(new Set());
 
       // Generate 4 draft images (free, not saved to database)
       const response = await api.post("/api/images/previews", {
@@ -254,6 +255,70 @@ export function ContentStudioImagesTab({
     } finally {
       setIsGeneratingVariations(false);
     }
+  };
+
+  // Download a single image
+  const downloadImage = async (image: GeneratedImage, index: number) => {
+    try {
+      const response = await fetch(image.image_url);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `draft-image-${index + 1}.jpg`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      toast.success(`Downloaded draft image ${index + 1}`);
+    } catch (error) {
+      toast.error("Failed to download image");
+    }
+  };
+
+  // Download all selected draft images
+  const downloadAllSelected = async () => {
+    if (selectedDraftsForDownload.size === 0) {
+      toast.error("Please select at least one image to download");
+      return;
+    }
+
+    toast.loading("Downloading images...", { id: "download-all" });
+
+    const downloadPromises = Array.from(selectedDraftsForDownload).map(
+      async (index) => {
+        const image = draftImages[index];
+        if (image) {
+          await downloadImage(image, index);
+        }
+      }
+    );
+
+    await Promise.all(downloadPromises);
+    toast.success("All selected images downloaded!", { id: "download-all" });
+  };
+
+  // Toggle selection of a draft for download
+  const toggleDraftSelection = (index: number) => {
+    setSelectedDraftsForDownload((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(index)) {
+        newSet.delete(index);
+      } else {
+        newSet.add(index);
+      }
+      return newSet;
+    });
+  };
+
+  // Select all drafts
+  const selectAllDrafts = () => {
+    setSelectedDraftsForDownload(new Set(draftImages.map((_, index) => index)));
+  };
+
+  // Deselect all drafts
+  const deselectAllDrafts = () => {
+    setSelectedDraftsForDownload(new Set());
   };
 
   return (
@@ -590,27 +655,49 @@ export function ContentStudioImagesTab({
         {/* Draft Images Section - shown when drafts exist */}
         {draftImages.length > 0 ? (
           <div className="card rounded-lg p-6 mb-6 bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 border-2 border-yellow-200 dark:border-yellow-800">
-            <div className="flex items-center mb-3">
-              <svg
-                className="w-5 h-5 mr-2 text-yellow-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-              <h4 className="font-semibold text-yellow-900 dark:text-yellow-100">
-                Draft Images (Free Preview)
-              </h4>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center">
+                <svg
+                  className="w-5 h-5 mr-2 text-yellow-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <h4 className="font-semibold text-yellow-900 dark:text-yellow-100">
+                  Draft Images (Free Preview)
+                </h4>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={selectAllDrafts}
+                  className="text-xs px-3 py-1.5 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg transition"
+                >
+                  Select All
+                </button>
+                <button
+                  onClick={deselectAllDrafts}
+                  className="text-xs px-3 py-1.5 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition"
+                >
+                  Deselect All
+                </button>
+                <button
+                  onClick={downloadAllSelected}
+                  disabled={selectedDraftsForDownload.size === 0}
+                  className="text-xs px-3 py-1.5 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg transition"
+                >
+                  Download Selected ({selectedDraftsForDownload.size})
+                </button>
+              </div>
             </div>
             <p className="text-sm text-yellow-800 dark:text-yellow-200 mb-4">
-              Select one draft image below to enhance it to premium quality and
-              save it to your library.
+              Select one draft image to enhance it, or choose multiple to download.
             </p>
             <div className="grid grid-cols-2 gap-4">
               {draftImages.map((image, index) => {
@@ -631,36 +718,85 @@ export function ContentStudioImagesTab({
                   cardHeight = 200;
                 }
 
+                const isSelectedForDownload = selectedDraftsForDownload.has(index);
+
                 return (
                   <div
                     key={index}
-                    onClick={() => setSelectedDraftIndex(index)}
-                    className={`relative cursor-pointer rounded-lg overflow-hidden border-2 transition ${
-                      selectedDraftIndex === index
-                        ? "border-green-500 ring-2 ring-green-300"
-                        : "border-transparent hover:border-yellow-400"
-                    }`}
-                    style={{ height: `${cardHeight}px` }}
+                    className="relative rounded-lg overflow-hidden border-2 transition bg-white dark:bg-gray-900"
                   >
-                    <div className="w-full h-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-                      <img
-                        src={image.thumbnail_url || image.image_url}
-                        alt={image.prompt}
-                        className="max-w-full max-h-full object-contain"
-                        style={{
-                          maxWidth: "100%",
-                          maxHeight: "100%",
+                    {/* Selection checkbox and Download button */}
+                    <div className="absolute top-2 left-2 right-2 z-10 flex justify-between items-center">
+                      <label
+                        onClick={(e) => e.stopPropagation()}
+                        className="flex items-center cursor-pointer"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isSelectedForDownload}
+                          onChange={() => toggleDraftSelection(index)}
+                          className="w-4 h-4 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500"
+                        />
+                        <span className="ml-2 text-xs font-medium text-white bg-black/60 px-2 py-1 rounded">
+                          Select
+                        </span>
+                      </label>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          downloadImage(image, index);
                         }}
-                      />
+                        className="text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 px-3 py-1.5 rounded-lg transition flex items-center gap-1"
+                      >
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                          />
+                        </svg>
+                        Download
+                      </button>
                     </div>
-                    {selectedDraftIndex === index && (
-                      <div className="absolute top-2 right-2 bg-green-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold">
-                        ✓
+
+                    {/* Image */}
+                    <div
+                      onClick={() => setSelectedDraftIndex(index)}
+                      className={`cursor-pointer ${
+                        selectedDraftIndex === index
+                          ? "border-green-500 ring-2 ring-green-300"
+                          : "border-transparent hover:border-yellow-400"
+                      } border-2 transition`}
+                      style={{ height: `${cardHeight}px` }}
+                    >
+                      <div className="w-full h-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                        <img
+                          src={image.thumbnail_url || image.image_url}
+                          alt={image.prompt}
+                          className="max-w-full max-h-full object-contain"
+                          style={{
+                            maxWidth: "100%",
+                            maxHeight: "100%",
+                          }}
+                        />
                       </div>
-                    )}
+                      {selectedDraftIndex === index && (
+                        <div className="absolute top-2 right-2 bg-green-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold">
+                          ✓
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Bottom bar */}
                     <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3">
                       <p className="text-white text-xs font-medium truncate">
-                        Click to select
+                        Click image to select for enhancement
                       </p>
                     </div>
                   </div>
