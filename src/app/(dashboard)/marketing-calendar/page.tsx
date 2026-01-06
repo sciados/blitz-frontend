@@ -17,39 +17,69 @@ export default function MarketingCalendarPage() {
   const [selectedCampaignId, setSelectedCampaignId] = useState<number | null>(
     urlCampaignId ? Number(urlCampaignId) : null
   );
-  const [completedDays, setCompletedDays] = useState<Set<number>>(new Set());
+  // Track generated content per day - Map<day, Set<contentType>>
+  const [generatedContentByDay, setGeneratedContentByDay] = useState<Map<number, Set<string>>>(new Map());
   const [isGenerating, setIsGenerating] = useState(false);
   const [isGeneratingAll, setIsGeneratingAll] = useState(false);
   const [generationProgress, setGenerationProgress] = useState<string>("");
 
-  // Load completed days from localStorage on mount
+  // Load generated content from localStorage on mount
   useEffect(() => {
-    const saved = localStorage.getItem("completedDays");
+    const saved = localStorage.getItem("generatedContentByDay");
     if (saved) {
       try {
-        const daysArray = JSON.parse(saved);
-        setCompletedDays(new Set(daysArray));
+        const contentMap = JSON.parse(saved);
+        const map = new Map<number, Set<string>>();
+        Object.entries(contentMap).forEach(([day, items]) => {
+          map.set(Number(day), new Set(items as string[]));
+        });
+        setGeneratedContentByDay(map);
       } catch (e) {
-        console.error("Failed to parse completed days from localStorage");
+        console.error("Failed to parse generated content from localStorage");
       }
+    }
+
+    // Clean up old localStorage key
+    const oldKey = localStorage.getItem("completedDays");
+    if (oldKey) {
+      localStorage.removeItem("completedDays");
     }
   }, []);
 
-  // Handle URL parameter for newly completed day
+  // Helper function to check if a day is fully completed (all 4 content items generated)
+  const isDayFullyCompleted = (dayNumber: number): boolean => {
+    const generatedContent = generatedContentByDay.get(dayNumber) || new Set();
+    // Each day should have 4 content items: Email, Social Post, Image, Video
+    return generatedContent.size >= 4;
+  };
+
+  // Helper function to add generated content for a day
+  const addGeneratedContent = (dayNumber: number, contentType: string) => {
+    setGeneratedContentByDay(prev => {
+      const newMap = new Map(prev);
+      const existing = new Set(newMap.get(dayNumber) || []);
+      existing.add(contentType);
+      newMap.set(dayNumber, existing);
+
+      // Save to localStorage
+      const plainObject: Record<string, string[]> = {};
+      newMap.forEach((value, key) => {
+        plainObject[key.toString()] = Array.from(value);
+      });
+      localStorage.setItem("generatedContentByDay", JSON.stringify(plainObject));
+
+      return newMap;
+    });
+  };
+
+  // Handle URL parameter for newly completed day (legacy support)
   useEffect(() => {
     if (urlCompletedDay) {
       const dayNumber = Number(urlCompletedDay);
-      if (dayNumber && !completedDays.has(dayNumber)) {
-        const newCompleted = new Set(completedDays).add(dayNumber);
-        setCompletedDays(newCompleted);
-        localStorage.setItem(
-          "completedDays",
-          JSON.stringify([...newCompleted])
-        );
-        toast.success(`Day ${dayNumber} marked as completed! 🎉`, {
-          duration: 3000,
-        });
-      }
+      // For backward compatibility, mark the day as having text content generated
+      // This handles old URLs from before the fix
+      addGeneratedContent(dayNumber, "text_content");
+
       // Clean up URL parameter
       const params = new URLSearchParams(searchParams.toString());
       params.delete("completedDay");
@@ -57,7 +87,7 @@ export default function MarketingCalendarPage() {
         scroll: false,
       });
     }
-  }, [urlCompletedDay, completedDays, router, searchParams]);
+  }, [urlCompletedDay, router, searchParams]);
 
   const handleDayClick = (day: number) => {
     setSelectedDay(day);
@@ -382,13 +412,8 @@ export default function MarketingCalendarPage() {
         toast.success(
           `✨ ${contentType} generated successfully for Day ${day}!`
         );
-        // Mark day as completed
-        const newCompleted = new Set(completedDays).add(day);
-        setCompletedDays(newCompleted);
-        localStorage.setItem(
-          "completedDays",
-          JSON.stringify([...newCompleted])
-        );
+        // Track this content type as generated
+        addGeneratedContent(day, contentType.toLowerCase());
       } else {
         throw new Error(response.data.error || "Generation failed");
       }
@@ -470,24 +495,20 @@ export default function MarketingCalendarPage() {
         toast.success(
           `🎉 All ${textBatchItems.length} text content pieces generated successfully for Day ${day}! Images and videos can be created manually.`
         );
-        // Mark day as completed
-        const newCompleted = new Set(completedDays).add(day);
-        setCompletedDays(newCompleted);
-        localStorage.setItem(
-          "completedDays",
-          JSON.stringify([...newCompleted])
-        );
+        // Track all text content types as generated
+        textBatchItems.forEach(item => {
+          addGeneratedContent(day, item.content_type.toLowerCase());
+        });
       } else if (response.data.successful > 0) {
         toast.warning(
           `⚠️ Generated ${response.data.successful}/${textBatchItems.length} text content pieces for Day ${day}`
         );
-        // Mark day as completed if at least some content was generated
-        const newCompleted = new Set(completedDays).add(day);
-        setCompletedDays(newCompleted);
-        localStorage.setItem(
-          "completedDays",
-          JSON.stringify([...newCompleted])
-        );
+        // Track only the successfully generated content
+        // Note: We don't have the list of successful items from the response,
+        // so we'll track based on the batch items
+        textBatchItems.slice(0, response.data.successful).forEach(item => {
+          addGeneratedContent(day, item.content_type.toLowerCase());
+        });
       } else {
         throw new Error("No content was generated");
       }
@@ -517,19 +538,26 @@ export default function MarketingCalendarPage() {
               marketing strategies
             </p>
           </div>
-          {completedDays.size > 0 && (
-            <div className="text-right">
-              <div className="text-sm text-[var(--text-secondary)]">
-                Progress
+          {(() => {
+            // Calculate completed days
+            const completedDaysCount = Array.from(generatedContentByDay.entries())
+              .filter(([day]) => isDayFullyCompleted(day))
+              .length;
+
+            return completedDaysCount > 0 && (
+              <div className="text-right">
+                <div className="text-sm text-[var(--text-secondary)]">
+                  Progress
+                </div>
+                <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                  {completedDaysCount}/21
+                </div>
+                <div className="text-xs text-[var(--text-secondary)]">
+                  Days Completed
+                </div>
               </div>
-              <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                {completedDays.size}/21
-              </div>
-              <div className="text-xs text-[var(--text-secondary)]">
-                Days Completed
-              </div>
-            </div>
-          )}
+            );
+          })()}
         </div>
 
         {/* Campaign Selection */}
@@ -613,7 +641,7 @@ export default function MarketingCalendarPage() {
               const isPreLaunch = dayData.day <= 13;
               const isLaunch = dayData.day === 14;
               const isPostLaunch = dayData.day >= 15;
-              const isCompleted = completedDays.has(dayData.day);
+              const isCompleted = isDayFullyCompleted(dayData.day);
 
               let bgColor =
                 "bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/40";
