@@ -90,37 +90,85 @@ export default function MarketingCalendarPage() {
       // Build structured prompt using universal template format
       const promptParts = [];
 
-      // [Subject]
+      // [Subject] - Make it product-specific using campaign intelligence
       let subject = "Marketing image";
+      const productName = campaign?.name || intelligenceData?.product?.product_name || "Product";
+
       if (contentType.toLowerCase().includes("hero")) {
-        subject = "Hero banner image";
+        subject = `Hero banner featuring ${productName}`;
       } else if (contentType.toLowerCase().includes("social")) {
-        subject = "Social media post image";
+        subject = `Social media post image for ${productName}`;
       } else if (contentType.toLowerCase().includes("ad")) {
-        subject = "Advertisement creative";
+        subject = `Advertisement creative showcasing ${productName}`;
+      } else {
+        subject = `Marketing image for ${productName}`;
       }
       promptParts.push(`[Subject]\n${subject}`);
 
-      // [Core Content]
+      // [Core Content] - Include comprehensive product details
       const coreContent = [];
-      if (campaign?.name) {
-        coreContent.push(`Product/Service: ${campaign.name}`);
+
+      // Product Information
+      if (campaign?.name || intelligenceData?.product?.product_name) {
+        const product = campaign?.name || intelligenceData?.product?.product_name;
+        coreContent.push(`Product/Service: ${product}`);
       }
+
+      // Product Category
+      if (intelligenceData?.product?.category) {
+        coreContent.push(`Category: ${intelligenceData.product.category}`);
+      }
+
+      // Key Benefits
       if (intelligenceData?.product?.benefits) {
         const topBenefits = intelligenceData.product.benefits.slice(0, 3);
         if (topBenefits.length > 0) {
           coreContent.push(`Key benefits: ${topBenefits.join(", ")}`);
         }
       }
+
+      // Unique Selling Points
+      if (intelligenceData?.product?.unique_selling_points) {
+        const usps = intelligenceData.product.unique_selling_points.slice(0, 2);
+        if (usps.length > 0) {
+          coreContent.push(`Unique selling points: ${usps.join(", ")}`);
+        }
+      }
+
+      // Pain Points Addressed
       if (intelligenceData?.market?.pain_points) {
         const topPainPoints = intelligenceData.market.pain_points.slice(0, 2);
         if (topPainPoints.length > 0) {
           coreContent.push(`Addresses: ${topPainPoints.join(", ")}`);
         }
       }
+
+      // Target Audience
+      if (intelligenceData?.market?.target_audience?.demographics) {
+        coreContent.push(`Target audience: ${intelligenceData.market.target_audience.demographics}`);
+      }
+
+      // Product Features (for physical products)
+      if (intelligenceData?.product?.features) {
+        const topFeatures = intelligenceData.product.features.slice(0, 3);
+        if (topFeatures.length > 0) {
+          coreContent.push(`Key features: ${topFeatures.join(", ")}`);
+        }
+      }
+
+      // Ingredients (for supplements/cosmetics)
+      if (intelligenceData?.product?.ingredients) {
+        const topIngredients = intelligenceData.product.ingredients.slice(0, 3);
+        if (topIngredients.length > 0) {
+          coreContent.push(`Key ingredients: ${topIngredients.join(", ")}`);
+        }
+      }
+
+      // Marketing Focus
       if (context) {
         coreContent.push(`Focus: ${context}`);
       }
+
       if (coreContent.length > 0) {
         promptParts.push(`[Core Content]\n${coreContent.join("\n")}`);
       }
