@@ -100,7 +100,7 @@ export default function ProfilePage() {
     setIsEditing(false);
   };
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -119,6 +119,7 @@ export default function ProfilePage() {
     }
 
     setSelectedFile(file);
+    setUploadingImage(true);
 
     // Create preview URL
     const reader = new FileReader();
@@ -126,6 +127,37 @@ export default function ProfilePage() {
       setPreviewUrl(reader.result as string);
     };
     reader.readAsDataURL(file);
+
+    // Auto-upload the file
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await api.post(
+        "/api/auth/upload-profile-image",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      toast.success("Profile image uploaded successfully");
+      setProfileImageUrl(response.data.profile_image_url);
+      setSelectedFile(null);
+      setPreviewUrl(null);
+
+      // Refresh user data
+      queryClient.invalidateQueries({ queryKey: ["userProfile"] });
+      queryClient.invalidateQueries({ queryKey: ["userInfo"] });
+    } catch (error: any) {
+      toast.error(error?.response?.data?.detail || "Failed to upload image");
+      setSelectedFile(null);
+      setPreviewUrl(null);
+    } finally {
+      setUploadingImage(false);
+    }
   };
 
   const handleImageUpload = async () => {
@@ -259,69 +291,58 @@ export default function ProfilePage() {
               </label>
               {isEditing ? (
                 <div className="space-y-3">
-                  <div className="flex items-center space-x-3">
-                    <label className="flex-1 cursor-pointer">
-                      <input
-                        type="file"
-                        accept="image/jpeg,image/png,image/gif,image/webp"
-                        onChange={handleFileSelect}
-                        className="hidden"
-                        disabled={uploadingImage}
-                      />
-                      <div className="flex items-center space-x-2 px-4 py-2 border-2 border-dashed border-[var(--border-color)] hover:border-blue-400 rounded-lg transition bg-[var(--bg-primary)] text-[var(--text-primary)]">
-                        <span className="text-xl">📁</span>
-                        <span className="text-sm">
-                          {selectedFile
-                            ? selectedFile.name
-                            : "Choose image file"}
+                  <label className="flex-1 cursor-pointer">
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/gif,image/webp"
+                      onChange={handleFileSelect}
+                      className="hidden"
+                      disabled={uploadingImage}
+                    />
+                    <div className="flex items-center justify-center space-x-2 px-4 py-3 border-2 border-dashed border-[var(--border-color)] hover:border-blue-400 rounded-lg transition bg-[var(--bg-primary)] text-[var(--text-primary)]">
+                      {uploadingImage ? (
+                        <span className="flex items-center space-x-2 text-sm">
+                          <svg
+                            className="animate-spin h-4 w-4"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                              fill="none"
+                            />
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                            />
+                          </svg>
+                          <span>Uploading...</span>
                         </span>
-                      </div>
-                    </label>
-                    {selectedFile && (
-                      <button
-                        onClick={handleImageUpload}
-                        disabled={uploadingImage}
-                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        {uploadingImage ? (
-                          <span className="flex items-center space-x-2">
-                            <svg
-                              className="animate-spin h-4 w-4"
-                              viewBox="0 0 24 24"
-                            >
-                              <circle
-                                className="opacity-25"
-                                cx="12"
-                                cy="12"
-                                r="10"
-                                stroke="currentColor"
-                                strokeWidth="4"
-                                fill="none"
-                              />
-                              <path
-                                className="opacity-75"
-                                fill="currentColor"
-                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                              />
-                            </svg>
-                            <span>Uploading...</span>
+                      ) : (
+                        <>
+                          <span className="text-xl">📁</span>
+                          <span className="text-sm">
+                            Click to upload or drag and drop
                           </span>
-                        ) : (
-                          "Upload"
-                        )}
-                      </button>
-                    )}
-                  </div>
+                        </>
+                      )}
+                    </div>
+                  </label>
                   <p className="text-xs text-[var(--text-secondary)]">
                     JPG, PNG, GIF or WebP. Max 5MB. Recommended size: 400x400px
                   </p>
-                  {selectedFile && (
-                    <div className="flex items-center space-x-2 text-xs text-green-600 dark:text-green-400">
-                      <span>✓</span>
-                      <span>
-                        {selectedFile.name} (
-                        {(selectedFile.size / 1024).toFixed(1)} KB)
-                      </span>
+                  {uploadingImage && (
+                    <div className="flex items-center space-x-2 text-xs text-blue-600 dark:text-blue-400">
+                      <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      </svg>
+                      <span>Uploading and saving...</span>
                     </div>
                   )}
                 </div>
