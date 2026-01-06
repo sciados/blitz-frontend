@@ -188,7 +188,7 @@ export default function MarketingCalendarPage() {
       campaign: campaignId.toString(),
       type: typeParam,
       contentType: specificType,
-      marketingAngle: marketingAngle.toLowerCase().replace(/\s+/g, "_"),
+      marketingAngle: marketingAngle.toLowerCase().replace(/\s+/g, "_").replace(/\//g, "_"),
       day: day.toString(),
       context: details,
     });
@@ -230,7 +230,7 @@ export default function MarketingCalendarPage() {
     const params = new URLSearchParams({
       campaign: campaignId.toString(),
       day: day.toString(),
-      marketingAngle: dayData.marketingAngle.toLowerCase().replace(/\s+/g, "_"),
+      marketingAngle: dayData.marketingAngle.toLowerCase().replace(/\s+/g, "_").replace(/\//g, "_"),
       context: dayData.description,
       queue: JSON.stringify(contentQueue),
     });
@@ -267,7 +267,7 @@ export default function MarketingCalendarPage() {
       if (contentType === "Image") mappedContentType = "image";
 
       // Map marketing angle
-      const mappedAngle = marketingAngle.toLowerCase().replace(/\s+/g, "_");
+      const mappedAngle = marketingAngle.toLowerCase().replace(/\s+/g, "_").replace(/\//g, "_");
 
       setGenerationProgress("Analyzing campaign intelligence...");
       const response = await api.post("/api/calendar/generate", {
@@ -319,7 +319,7 @@ export default function MarketingCalendarPage() {
         if (content.type === "Video") mappedContentType = "video_script";
         if (content.type === "Image") mappedContentType = "image";
 
-        const mappedAngle = dayData.marketingAngle.toLowerCase().replace(/\s+/g, "_");
+        const mappedAngle = dayData.marketingAngle.toLowerCase().replace(/\s+/g, "_").replace(/\//g, "_");
 
         return {
           campaign_id: campaignId,
