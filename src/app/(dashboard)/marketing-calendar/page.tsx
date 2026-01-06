@@ -218,7 +218,7 @@ export default function MarketingCalendarPage() {
 
       // [Negative Constraints]
       promptParts.push(
-        `[Negative Constraints]\nNo cluttered design, no low-quality elements, no irrelevant imagery`
+        `[Negative Constraints]\nNo cluttered design, no low-quality elements, no irrelevant imagery, NO TEXT, NO WORDS, NO LETTERS, NO NUMBERS, NO TYPOGRAPHY, NO EMBEDDED TEXT, no text overlays, no captions, no writing of any kind`
       );
 
       return promptParts.join("\n\n");
@@ -228,7 +228,7 @@ export default function MarketingCalendarPage() {
       return `[Subject]\nMarketing image\n\n[Core Content]\n${contentType} for ${marketingAngle.replace(
         /_/g,
         " "
-      )} campaign\n\n[Style & Aesthetic]\nProfessional, modern, clean, high-quality\n\n[Color Palette]\nProfessional color scheme with good contrast\n\n[Composition & Layout]\nWell-balanced composition, centered focal point\n\n[Background]\nClean, professional background\n\n[Technical Constraints]\nHigh resolution, print and web ready\n\n[Negative Constraints]\nNo cluttered design, no low-quality elements`;
+      )} campaign\n\n[Style & Aesthetic]\nProfessional, modern, clean, high-quality\n\n[Color Palette]\nProfessional color scheme with good contrast\n\n[Composition & Layout]\nWell-balanced composition, centered focal point\n\n[Background]\nClean, professional background\n\n[Technical Constraints]\nHigh resolution, print and web ready\n\n[Negative Constraints]\nNo cluttered design, no low-quality elements, NO TEXT, NO WORDS, NO LETTERS, NO NUMBERS, NO TYPOGRAPHY, NO EMBEDDED TEXT`;
     }
   };
 

@@ -110,6 +110,7 @@ export function ContentStudioImagesTab({
   );
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
   const [isGeneratingVariations, setIsGeneratingVariations] = useState(false);
+  const [selectedDraftsForDownload, setSelectedDraftsForDownload] = useState<Set<number>>(new Set());
 
   // Fetch images for this campaign
   const { data, refetch } = useQuery({
