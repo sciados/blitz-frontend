@@ -7,6 +7,21 @@ import { marketingPlanData } from "src/config/marketingPlanData";
 import { toast } from "sonner";
 import { api } from "src/lib/appClient";
 
+// Calendar config type from backend
+interface CalendarConfig {
+  total_days: number;
+  pre_launch_days: number;
+  launch_day_index: number;
+  post_launch_days: number;
+  day_mapping: Array<{
+    calendar_day: number;
+    default_day: number;
+    phase: string;
+    content_focus: string;
+  }>;
+  computed_at: string;
+}
+
 export default function MarketingCalendarPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -22,6 +37,69 @@ export default function MarketingCalendarPage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isGeneratingAll, setIsGeneratingAll] = useState(false);
   const [generationProgress, setGenerationProgress] = useState<string>("");
+
+  // Dynamic calendar config
+  const [calendarConfig, setCalendarConfig] = useState<CalendarConfig | null>(null);
+  const [isLoadingConfig, setIsLoadingConfig] = useState(false);
+  const [launchDate, setLaunchDate] = useState<string | null>(null);
+
+  // Fetch calendar config when campaign is selected
+  useEffect(() => {
+    const fetchCalendarConfig = async () => {
+      if (!selectedCampaignId) {
+        setCalendarConfig(null);
+        setLaunchDate(null);
+        return;
+      }
+
+      setIsLoadingConfig(true);
+      try {
+        const response = await api.get(`/api/calendar/config/${selectedCampaignId}`);
+        setCalendarConfig(response.data.calendar_config);
+        setLaunchDate(response.data.launch_date);
+        console.log("Calendar config loaded:", response.data);
+      } catch (error: any) {
+        console.error("Failed to load calendar config:", error);
+        // Fall back to default 21-day calendar
+        setCalendarConfig(null);
+        setLaunchDate(null);
+      } finally {
+        setIsLoadingConfig(false);
+      }
+    };
+
+    fetchCalendarConfig();
+  }, [selectedCampaignId]);
+
+  // Get effective calendar days based on config
+  const getCalendarDays = () => {
+    if (!calendarConfig || !calendarConfig.day_mapping) {
+      // Default: use full marketingPlanData
+      return marketingPlanData;
+    }
+
+    // Map calendar config to day data
+    return calendarConfig.day_mapping.map((mapping) => {
+      // Get the default day's content from marketingPlanData
+      const defaultDayData = marketingPlanData.find(d => d.day === mapping.default_day) || marketingPlanData[0];
+      return {
+        ...defaultDayData,
+        day: mapping.calendar_day, // Use the calendar day number
+        phase: mapping.phase,
+        content_focus: mapping.content_focus,
+        originalDay: mapping.default_day // Track which default day this maps to
+      };
+    });
+  };
+
+  // Get total days for display
+  const getTotalDays = () => calendarConfig?.total_days || 21;
+
+  // Get launch day index
+  const getLaunchDayIndex = () => calendarConfig?.launch_day_index || 14;
+
+  // Get pre-launch days count
+  const getPreLaunchDays = () => calendarConfig?.pre_launch_days || 13;
 
   // Load generated content from localStorage on mount
   useEffect(() => {
@@ -531,12 +609,18 @@ export default function MarketingCalendarPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-[var(--text-primary)] mb-2">
-              📅 21-Day Marketing Campaign Calendar
+              📅 {getTotalDays()}-Day Marketing Campaign Calendar
             </h1>
             <p className="text-[var(--text-secondary)]">
-              Select any day to view detailed content recommendations and
-              marketing strategies
+              {calendarConfig && calendarConfig.total_days < 21
+                ? "Optimized calendar based on your launch timeline"
+                : "Select any day to view detailed content recommendations and marketing strategies"}
             </p>
+            {launchDate && (
+              <p className="text-sm text-blue-600 dark:text-blue-400 mt-1">
+                🎯 Launch Date: {new Date(launchDate).toLocaleDateString()}
+              </p>
+            )}
           </div>
           {(() => {
             // Calculate completed days
@@ -550,7 +634,7 @@ export default function MarketingCalendarPage() {
                   Progress
                 </div>
                 <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                  {completedDaysCount}/21
+                  {completedDaysCount}/{getTotalDays()}
                 </div>
                 <div className="text-xs text-[var(--text-secondary)]">
                   Days Completed
@@ -569,6 +653,7 @@ export default function MarketingCalendarPage() {
             selectedCampaignId={selectedCampaignId}
             onSelect={(id) => {
               setSelectedCampaignId(id);
+              setSelectedDay(null); // Reset selected day when campaign changes
               if (id) {
                 toast.success("Campaign selected for marketing calendar");
               }
@@ -577,12 +662,22 @@ export default function MarketingCalendarPage() {
             placeholder="Select a campaign to generate specific content..."
             showAllOption={false}
           />
-          {selectedCampaignId && (
+          {isLoadingConfig && (
+            <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-900/20 border border-gray-200 dark:border-gray-800 rounded-lg">
+              <p className="text-sm text-[var(--text-secondary)]">
+                Loading calendar configuration...
+              </p>
+            </div>
+          )}
+          {selectedCampaignId && !isLoadingConfig && (
             <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
               <p className="text-sm text-[var(--text-primary)]">
                 <span className="font-semibold">✓ Campaign selected!</span>{" "}
-                Click "Generate" on any content suggestion below to auto-create
-                content using this campaign's intelligence data.
+                {calendarConfig && calendarConfig.total_days < 21 ? (
+                  <>Your calendar has been optimized to {calendarConfig.total_days} days based on your launch date.</>
+                ) : (
+                  <>Click "Generate" on any content suggestion below to auto-create content using this campaign's intelligence data.</>
+                )}
               </p>
             </div>
           )}
@@ -599,7 +694,7 @@ export default function MarketingCalendarPage() {
                 Pre-Launch Phase
               </div>
               <div className="text-2xl font-bold text-[var(--text-primary)]">
-                Days 1-13
+                Days 1-{getPreLaunchDays()}
               </div>
               <div className="text-sm text-[var(--text-secondary)] mt-1">
                 Build Awareness → Interest → Desire
@@ -607,10 +702,10 @@ export default function MarketingCalendarPage() {
             </div>
             <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
               <div className="text-green-600 dark:text-green-400 font-semibold mb-1">
-                Launch Day
+                {calendarConfig && calendarConfig.total_days < 21 ? "Pitch Day" : "Launch Day"}
               </div>
               <div className="text-2xl font-bold text-[var(--text-primary)]">
-                Day 14
+                Day {getLaunchDayIndex()}
               </div>
               <div className="text-sm text-[var(--text-secondary)] mt-1">
                 Maximum Conversion Push
@@ -621,7 +716,7 @@ export default function MarketingCalendarPage() {
                 Post-Launch Phase
               </div>
               <div className="text-2xl font-bold text-[var(--text-primary)]">
-                Days 15-21
+                Days {getLaunchDayIndex() + 1}-{getTotalDays()}
               </div>
               <div className="text-sm text-[var(--text-secondary)] mt-1">
                 Urgency → Scarcity → Final Conversion
@@ -630,17 +725,18 @@ export default function MarketingCalendarPage() {
           </div>
         </div>
 
-        {/* 21-Day Calendar Grid */}
+        {/* Dynamic Calendar Grid */}
         <div className="card p-6">
           <h2 className="text-xl font-semibold text-[var(--text-primary)] mb-4">
             Select a Day
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-3">
-            {marketingPlanData.map((dayData) => {
+            {getCalendarDays().map((dayData: any) => {
               const isSelected = selectedDay === dayData.day;
-              const isPreLaunch = dayData.day <= 13;
-              const isLaunch = dayData.day === 14;
-              const isPostLaunch = dayData.day >= 15;
+              const launchDay = getLaunchDayIndex();
+              const isPreLaunch = dayData.day < launchDay;
+              const isLaunch = dayData.day === launchDay;
+              const isPostLaunch = dayData.day > launchDay;
               const isCompleted = isDayFullyCompleted(dayData.day);
 
               let bgColor =
