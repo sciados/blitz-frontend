@@ -1072,6 +1072,7 @@ function DayDetails({
                           onGenerateContent={onGenerateContent}
                           onAutoGenerate={onAutoGenerate}
                           showAutoButton={false}
+                          generatedContentByDay={generatedContentByDay}
                         />
                       ))}
                     </div>
