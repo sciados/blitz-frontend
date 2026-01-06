@@ -42,7 +42,10 @@ export default function MarketingCalendarPage() {
       if (dayNumber && !completedDays.has(dayNumber)) {
         const newCompleted = new Set(completedDays).add(dayNumber);
         setCompletedDays(newCompleted);
-        localStorage.setItem("completedDays", JSON.stringify([...newCompleted]));
+        localStorage.setItem(
+          "completedDays",
+          JSON.stringify([...newCompleted])
+        );
         toast.success(`Day ${dayNumber} marked as completed! 🎉`, {
           duration: 3000,
         });
@@ -50,7 +53,9 @@ export default function MarketingCalendarPage() {
       // Clean up URL parameter
       const params = new URLSearchParams(searchParams.toString());
       params.delete("completedDay");
-      router.replace(`/marketing-calendar?${params.toString()}`, { scroll: false });
+      router.replace(`/marketing-calendar?${params.toString()}`, {
+        scroll: false,
+      });
     }
   }, [urlCompletedDay, completedDays, router, searchParams]);
 
@@ -59,7 +64,12 @@ export default function MarketingCalendarPage() {
   };
 
   // Build an intelligent image prompt based on campaign data
-  const buildImagePrompt = async (campaignId: number, contentType: string, marketingAngle: string, context: string) => {
+  const buildImagePrompt = async (
+    campaignId: number,
+    contentType: string,
+    marketingAngle: string,
+    context: string
+  ) => {
     try {
       // Fetch campaign intelligence from backend
       const response = await api.get(`/api/campaigns/${campaignId}`);
@@ -68,8 +78,11 @@ export default function MarketingCalendarPage() {
       // Get campaign intelligence
       let intelligenceData: any = null;
       try {
-        const intelResponse = await api.get(`/api/intelligence/compiled/${campaignId}`);
-        intelligenceData = intelResponse.data?.intelligence_data || intelResponse.data;
+        const intelResponse = await api.get(
+          `/api/intelligence/compiled/${campaignId}`
+        );
+        intelligenceData =
+          intelResponse.data?.intelligence_data || intelResponse.data;
       } catch (error) {
         console.log("No intelligence data available");
       }
@@ -79,11 +92,11 @@ export default function MarketingCalendarPage() {
 
       // [Subject]
       let subject = "Marketing image";
-      if (contentType.toLowerCase().includes('hero')) {
+      if (contentType.toLowerCase().includes("hero")) {
         subject = "Hero banner image";
-      } else if (contentType.toLowerCase().includes('social')) {
+      } else if (contentType.toLowerCase().includes("social")) {
         subject = "Social media post image";
-      } else if (contentType.toLowerCase().includes('ad')) {
+      } else if (contentType.toLowerCase().includes("ad")) {
         subject = "Advertisement creative";
       }
       promptParts.push(`[Subject]\n${subject}`);
@@ -96,60 +109,75 @@ export default function MarketingCalendarPage() {
       if (intelligenceData?.product?.benefits) {
         const topBenefits = intelligenceData.product.benefits.slice(0, 3);
         if (topBenefits.length > 0) {
-          coreContent.push(`Key benefits: ${topBenefits.join(', ')}`);
+          coreContent.push(`Key benefits: ${topBenefits.join(", ")}`);
         }
       }
       if (intelligenceData?.market?.pain_points) {
         const topPainPoints = intelligenceData.market.pain_points.slice(0, 2);
         if (topPainPoints.length > 0) {
-          coreContent.push(`Addresses: ${topPainPoints.join(', ')}`);
+          coreContent.push(`Addresses: ${topPainPoints.join(", ")}`);
         }
       }
       if (context) {
         coreContent.push(`Focus: ${context}`);
       }
       if (coreContent.length > 0) {
-        promptParts.push(`[Core Content]\n${coreContent.join('\n')}`);
+        promptParts.push(`[Core Content]\n${coreContent.join("\n")}`);
       }
 
       // [Style & Aesthetic]
       let styleAesthetic = "Professional, modern, clean, high-quality";
       if (marketingAngle === "problem_solution") {
-        styleAesthetic = "Professional, solution-focused, clean, trustworthy, medical-grade";
+        styleAesthetic =
+          "Professional, solution-focused, clean, trustworthy, medical-grade";
       } else if (marketingAngle === "transformation") {
-        styleAesthetic = "Before/after style, results-focused, inspiring, dramatic transformation";
+        styleAesthetic =
+          "Before/after style, results-focused, inspiring, dramatic transformation";
       } else if (marketingAngle === "social_proof") {
         styleAesthetic = "Clean, testimonial-style, trustworthy, authentic";
       }
       promptParts.push(`[Style & Aesthetic]\n${styleAesthetic}`);
 
       // [Color Palette]
-      promptParts.push(`[Color Palette]\nProfessional color scheme with good contrast, brand-appropriate colors`);
+      promptParts.push(
+        `[Color Palette]\nProfessional color scheme with good contrast, brand-appropriate colors`
+      );
 
       // [Composition & Layout]
-      let composition = "Well-balanced composition, centered focal point, clear hierarchy";
-      if (contentType.toLowerCase().includes('hero')) {
-        composition = "Wide banner format, clear focal point, text-friendly layout";
-      } else if (contentType.toLowerCase().includes('social')) {
-        composition = "Square or vertical format, social media optimized, eye-catching";
+      let composition =
+        "Well-balanced composition, centered focal point, clear hierarchy";
+      if (contentType.toLowerCase().includes("hero")) {
+        composition =
+          "Wide banner format, clear focal point, text-friendly layout";
+      } else if (contentType.toLowerCase().includes("social")) {
+        composition =
+          "Square or vertical format, social media optimized, eye-catching";
       }
       promptParts.push(`[Composition & Layout]\n${composition}`);
 
       // [Background]
-      promptParts.push(`[Background]\nClean, professional background that doesn't compete with main subject`);
+      promptParts.push(
+        `[Background]\nClean, professional background that doesn't compete with main subject`
+      );
 
       // [Technical Constraints]
-      promptParts.push(`[Technical Constraints]\nHigh resolution, print and web ready, scalable design`);
+      promptParts.push(
+        `[Technical Constraints]\nHigh resolution, print and web ready, scalable design`
+      );
 
       // [Negative Constraints]
-      promptParts.push(`[Negative Constraints]\nNo cluttered design, no low-quality elements, no irrelevant imagery`);
+      promptParts.push(
+        `[Negative Constraints]\nNo cluttered design, no low-quality elements, no irrelevant imagery`
+      );
 
-      return promptParts.join('\n\n');
-
+      return promptParts.join("\n\n");
     } catch (error) {
       console.error("Error building image prompt:", error);
       // Fallback to structured prompt
-      return `[Subject]\nMarketing image\n\n[Core Content]\n${contentType} for ${marketingAngle.replace(/_/g, ' ')} campaign\n\n[Style & Aesthetic]\nProfessional, modern, clean, high-quality\n\n[Color Palette]\nProfessional color scheme with good contrast\n\n[Composition & Layout]\nWell-balanced composition, centered focal point\n\n[Background]\nClean, professional background\n\n[Technical Constraints]\nHigh resolution, print and web ready\n\n[Negative Constraints]\nNo cluttered design, no low-quality elements`;
+      return `[Subject]\nMarketing image\n\n[Core Content]\n${contentType} for ${marketingAngle.replace(
+        /_/g,
+        " "
+      )} campaign\n\n[Style & Aesthetic]\nProfessional, modern, clean, high-quality\n\n[Color Palette]\nProfessional color scheme with good contrast\n\n[Composition & Layout]\nWell-balanced composition, centered focal point\n\n[Background]\nClean, professional background\n\n[Technical Constraints]\nHigh resolution, print and web ready\n\n[Negative Constraints]\nNo cluttered design, no low-quality elements`;
     }
   };
 
@@ -188,7 +216,10 @@ export default function MarketingCalendarPage() {
       campaign: campaignId.toString(),
       type: typeParam,
       contentType: specificType,
-      marketingAngle: marketingAngle.toLowerCase().replace(/\s+/g, "_").replace(/\//g, "_"),
+      marketingAngle: marketingAngle
+        .toLowerCase()
+        .replace(/\s+/g, "_")
+        .replace(/\//g, "_"),
       day: day.toString(),
       context: details,
     });
@@ -196,7 +227,9 @@ export default function MarketingCalendarPage() {
     // For images, build an intelligent prompt and add it to URL
     if (contentType === "Image") {
       try {
-        toast.loading("Building intelligent image prompt...", { id: "build-prompt" });
+        toast.loading("Building intelligent image prompt...", {
+          id: "build-prompt",
+        });
         const imagePrompt = await buildImagePrompt(
           campaignId,
           contentType,
@@ -207,7 +240,10 @@ export default function MarketingCalendarPage() {
         toast.success("Image prompt generated!", { id: "build-prompt" });
       } catch (error) {
         console.error("Error building image prompt:", error);
-        toast.error("Could not build prompt, but you can still edit it manually", { id: "build-prompt" });
+        toast.error(
+          "Could not build prompt, but you can still edit it manually",
+          { id: "build-prompt" }
+        );
       }
     }
 
@@ -215,7 +251,11 @@ export default function MarketingCalendarPage() {
     router.push(`/content?${params.toString()}`);
   };
 
-  const handleGenerateAll = (campaignId: number | null, day: number, dayData: any) => {
+  const handleGenerateAll = (
+    campaignId: number | null,
+    day: number,
+    dayData: any
+  ) => {
     if (!campaignId) {
       toast.error("Please select a campaign first");
       return;
@@ -230,7 +270,10 @@ export default function MarketingCalendarPage() {
     const params = new URLSearchParams({
       campaign: campaignId.toString(),
       day: day.toString(),
-      marketingAngle: dayData.marketingAngle.toLowerCase().replace(/\s+/g, "_").replace(/\//g, "_"),
+      marketingAngle: dayData.marketingAngle
+        .toLowerCase()
+        .replace(/\s+/g, "_")
+        .replace(/\//g, "_"),
       context: dayData.description,
       queue: JSON.stringify(contentQueue),
     });
@@ -260,14 +303,18 @@ export default function MarketingCalendarPage() {
       // Map content type to backend format
       let mappedContentType = contentType.toLowerCase();
       if (contentType === "Email") mappedContentType = "email";
-      if (contentType === "Email Sequence") mappedContentType = "email_sequence";
+      if (contentType === "Email Sequence")
+        mappedContentType = "email_sequence";
       if (contentType === "Article") mappedContentType = "article";
       if (contentType === "Social Post") mappedContentType = "social_post";
       if (contentType === "Video") mappedContentType = "video_script";
       if (contentType === "Image") mappedContentType = "image";
 
       // Map marketing angle
-      const mappedAngle = marketingAngle.toLowerCase().replace(/\s+/g, "_").replace(/\//g, "_");
+      const mappedAngle = marketingAngle
+        .toLowerCase()
+        .replace(/\s+/g, "_")
+        .replace(/\//g, "_");
 
       setGenerationProgress("Analyzing campaign intelligence...");
       const response = await api.post("/api/calendar/generate", {
@@ -277,21 +324,28 @@ export default function MarketingCalendarPage() {
         marketing_angle: mappedAngle,
         primary_goal: dayData.primaryGoal,
         context: details,
-        length: "medium" // Default length
+        length: "medium", // Default length
       });
 
       if (response.data.success) {
-        toast.success(`✨ ${contentType} generated successfully for Day ${day}!`);
+        toast.success(
+          `✨ ${contentType} generated successfully for Day ${day}!`
+        );
         // Mark day as completed
         const newCompleted = new Set(completedDays).add(day);
         setCompletedDays(newCompleted);
-        localStorage.setItem("completedDays", JSON.stringify([...newCompleted]));
+        localStorage.setItem(
+          "completedDays",
+          JSON.stringify([...newCompleted])
+        );
       } else {
         throw new Error(response.data.error || "Generation failed");
       }
     } catch (error: any) {
       console.error("Auto-generation error:", error);
-      toast.error(error?.response?.data?.detail || `Failed to generate ${contentType}`);
+      toast.error(
+        error?.response?.data?.detail || `Failed to generate ${contentType}`
+      );
     } finally {
       setIsGenerating(false);
       setGenerationProgress("");
@@ -299,7 +353,11 @@ export default function MarketingCalendarPage() {
   };
 
   // New handler for batch auto-generation
-  const handleAutoGenerateAll = async (campaignId: number | null, day: number, dayData: any) => {
+  const handleAutoGenerateAll = async (
+    campaignId: number | null,
+    day: number,
+    dayData: any
+  ) => {
     if (!campaignId) {
       toast.error("Please select a campaign first");
       return;
@@ -313,13 +371,17 @@ export default function MarketingCalendarPage() {
       const batchItems = dayData.contentToCreate.map((content: any) => {
         let mappedContentType = content.type.toLowerCase();
         if (content.type === "Email") mappedContentType = "email";
-        if (content.type === "Email Sequence") mappedContentType = "email_sequence";
+        if (content.type === "Email Sequence")
+          mappedContentType = "email_sequence";
         if (content.type === "Article") mappedContentType = "article";
         if (content.type === "Social Post") mappedContentType = "social_post";
         if (content.type === "Video") mappedContentType = "video_script";
         if (content.type === "Image") mappedContentType = "image";
 
-        const mappedAngle = dayData.marketingAngle.toLowerCase().replace(/\s+/g, "_").replace(/\//g, "_");
+        const mappedAngle = dayData.marketingAngle
+          .toLowerCase()
+          .replace(/\s+/g, "_")
+          .replace(/\//g, "_");
 
         return {
           campaign_id: campaignId,
@@ -328,45 +390,62 @@ export default function MarketingCalendarPage() {
           marketing_angle: mappedAngle,
           primary_goal: dayData.primaryGoal,
           context: content.details,
-          length: "medium"
+          length: "medium",
         };
       });
 
       // Filter to only text content (images and videos need manual generation)
       const textBatchItems = batchItems.filter((item: any) => {
         const contentType = item.content_type.toLowerCase();
-        return !contentType.includes('image') && contentType !== 'video_script';
+        return !contentType.includes("image") && contentType !== "video_script";
       });
 
       if (textBatchItems.length === 0) {
-        toast.warning("No text content available for auto-generation. Images and videos must be created manually.");
+        toast.warning(
+          "No text content available for auto-generation. Images and videos must be created manually."
+        );
         return;
       }
 
-      setGenerationProgress(`Generating ${textBatchItems.length} text content pieces...`);
+      setGenerationProgress(
+        `Generating ${textBatchItems.length} text content pieces...`
+      );
       const response = await api.post("/api/calendar/generate/batch", {
         campaign_id: campaignId,
-        items: textBatchItems
+        items: textBatchItems,
       });
 
       if (response.data.successful === textBatchItems.length) {
-        toast.success(`🎉 All ${textBatchItems.length} text content pieces generated successfully for Day ${day}! Images and videos can be created manually.`);
+        toast.success(
+          `🎉 All ${textBatchItems.length} text content pieces generated successfully for Day ${day}! Images and videos can be created manually.`
+        );
         // Mark day as completed
         const newCompleted = new Set(completedDays).add(day);
         setCompletedDays(newCompleted);
-        localStorage.setItem("completedDays", JSON.stringify([...newCompleted]));
+        localStorage.setItem(
+          "completedDays",
+          JSON.stringify([...newCompleted])
+        );
       } else if (response.data.successful > 0) {
-        toast.warning(`⚠️ Generated ${response.data.successful}/${textBatchItems.length} text content pieces for Day ${day}`);
+        toast.warning(
+          `⚠️ Generated ${response.data.successful}/${textBatchItems.length} text content pieces for Day ${day}`
+        );
         // Mark day as completed if at least some content was generated
         const newCompleted = new Set(completedDays).add(day);
         setCompletedDays(newCompleted);
-        localStorage.setItem("completedDays", JSON.stringify([...newCompleted]));
+        localStorage.setItem(
+          "completedDays",
+          JSON.stringify([...newCompleted])
+        );
       } else {
         throw new Error("No content was generated");
       }
     } catch (error: any) {
       console.error("Batch auto-generation error:", error);
-      toast.error(error?.response?.data?.detail || `Failed to generate content for Day ${day}`);
+      toast.error(
+        error?.response?.data?.detail ||
+          `Failed to generate content for Day ${day}`
+      );
     } finally {
       setIsGeneratingAll(false);
       setGenerationProgress("");
@@ -383,16 +462,21 @@ export default function MarketingCalendarPage() {
               📅 21-Day Marketing Campaign Calendar
             </h1>
             <p className="text-[var(--text-secondary)]">
-              Select any day to view detailed content recommendations and marketing strategies
+              Select any day to view detailed content recommendations and
+              marketing strategies
             </p>
           </div>
           {completedDays.size > 0 && (
             <div className="text-right">
-              <div className="text-sm text-[var(--text-secondary)]">Progress</div>
+              <div className="text-sm text-[var(--text-secondary)]">
+                Progress
+              </div>
               <div className="text-2xl font-bold text-green-600 dark:text-green-400">
                 {completedDays.size}/21
               </div>
-              <div className="text-xs text-[var(--text-secondary)]">Days Completed</div>
+              <div className="text-xs text-[var(--text-secondary)]">
+                Days Completed
+              </div>
             </div>
           )}
         </div>
@@ -418,7 +502,8 @@ export default function MarketingCalendarPage() {
             <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
               <p className="text-sm text-[var(--text-primary)]">
                 <span className="font-semibold">✓ Campaign selected!</span>{" "}
-                Click "Generate" on any content suggestion below to auto-create content using this campaign's intelligence data.
+                Click "Generate" on any content suggestion below to auto-create
+                content using this campaign's intelligence data.
               </p>
             </div>
           )}
@@ -434,7 +519,9 @@ export default function MarketingCalendarPage() {
               <div className="text-blue-600 dark:text-blue-400 font-semibold mb-1">
                 Pre-Launch Phase
               </div>
-              <div className="text-2xl font-bold text-[var(--text-primary)]">Days 1-13</div>
+              <div className="text-2xl font-bold text-[var(--text-primary)]">
+                Days 1-13
+              </div>
               <div className="text-sm text-[var(--text-secondary)] mt-1">
                 Build Awareness → Interest → Desire
               </div>
@@ -443,7 +530,9 @@ export default function MarketingCalendarPage() {
               <div className="text-green-600 dark:text-green-400 font-semibold mb-1">
                 Launch Day
               </div>
-              <div className="text-2xl font-bold text-[var(--text-primary)]">Day 14</div>
+              <div className="text-2xl font-bold text-[var(--text-primary)]">
+                Day 14
+              </div>
               <div className="text-sm text-[var(--text-secondary)] mt-1">
                 Maximum Conversion Push
               </div>
@@ -452,7 +541,9 @@ export default function MarketingCalendarPage() {
               <div className="text-orange-600 dark:text-orange-400 font-semibold mb-1">
                 Post-Launch Phase
               </div>
-              <div className="text-2xl font-bold text-[var(--text-primary)]">Days 15-21</div>
+              <div className="text-2xl font-bold text-[var(--text-primary)]">
+                Days 15-21
+              </div>
               <div className="text-sm text-[var(--text-secondary)] mt-1">
                 Urgency → Scarcity → Final Conversion
               </div>
@@ -473,16 +564,19 @@ export default function MarketingCalendarPage() {
               const isPostLaunch = dayData.day >= 15;
               const isCompleted = completedDays.has(dayData.day);
 
-              let bgColor = "bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/40";
+              let bgColor =
+                "bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/40";
               let borderColor = "border-blue-200 dark:border-blue-800";
               let textColor = "text-blue-600 dark:text-blue-400";
 
               if (isLaunch) {
-                bgColor = "bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/40";
+                bgColor =
+                  "bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/40";
                 borderColor = "border-green-200 dark:border-green-800";
                 textColor = "text-green-600 dark:text-green-400";
               } else if (isPostLaunch) {
-                bgColor = "bg-orange-50 dark:bg-orange-900/20 hover:bg-orange-100 dark:hover:bg-orange-900/40";
+                bgColor =
+                  "bg-orange-50 dark:bg-orange-900/20 hover:bg-orange-100 dark:hover:bg-orange-900/40";
                 borderColor = "border-orange-200 dark:border-orange-800";
                 textColor = "text-orange-600 dark:text-orange-400";
               }
@@ -512,7 +606,11 @@ export default function MarketingCalendarPage() {
                     ${bgColor}
                     ${borderColor}
                     border-2 rounded-lg p-4 transition-all duration-200 relative
-                    ${isSelected ? "ring-2 ring-offset-2 ring-blue-500 dark:ring-offset-gray-900" : ""}
+                    ${
+                      isSelected
+                        ? "ring-2 ring-offset-2 ring-blue-500 dark:ring-offset-gray-900"
+                        : ""
+                    }
                     ${isCompleted ? "opacity-90" : ""}
                     hover:scale-105 hover:shadow-md
                   `}
@@ -520,8 +618,18 @@ export default function MarketingCalendarPage() {
                   {/* Completion Badge */}
                   {isCompleted && (
                     <div className="absolute top-2 right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center shadow-lg">
-                      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                      <svg
+                        className="w-4 h-4 text-white"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={3}
+                          d="M5 13l4 4L19 7"
+                        />
                       </svg>
                     </div>
                   )}
@@ -531,7 +639,11 @@ export default function MarketingCalendarPage() {
                   </div>
                   <div className="text-lg font-bold text-[var(--text-primary)] mb-1">
                     Day {dayData.day}
-                    {isCompleted && <span className="ml-1 text-green-600 dark:text-green-400">✓</span>}
+                    {isCompleted && (
+                      <span className="ml-1 text-green-600 dark:text-green-400">
+                        ✓
+                      </span>
+                    )}
                   </div>
                   <div className="text-xs text-[var(--text-secondary)] text-left">
                     {dayData.title}
@@ -570,12 +682,36 @@ export default function MarketingCalendarPage() {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {[
-              { name: "Problem/Solution", icon: "🎯", desc: "Identify pain, present fix" },
-              { name: "Transformation", icon: "✨", desc: "Show before/after results" },
-              { name: "Social Proof", icon: "👥", desc: "Build credibility with testimonials" },
-              { name: "Authority", icon: "👑", desc: "Establish expertise and trust" },
-              { name: "Comparison", icon: "⚖️", desc: "Show why this product wins" },
-              { name: "Story", icon: "📖", desc: "Create emotional connection" },
+              {
+                name: "Problem/Solution",
+                icon: "🎯",
+                desc: "Identify pain, present fix",
+              },
+              {
+                name: "Transformation",
+                icon: "✨",
+                desc: "Show before/after results",
+              },
+              {
+                name: "Social Proof",
+                icon: "👥",
+                desc: "Build credibility with testimonials",
+              },
+              {
+                name: "Authority",
+                icon: "👑",
+                desc: "Establish expertise and trust",
+              },
+              {
+                name: "Comparison",
+                icon: "⚖️",
+                desc: "Show why this product wins",
+              },
+              {
+                name: "Story",
+                icon: "📖",
+                desc: "Create emotional connection",
+              },
               { name: "Scarcity", icon: "⏰", desc: "Create urgency and FOMO" },
               { name: "Value", icon: "💎", desc: "Show total value received" },
               { name: "Trust", icon: "🤝", desc: "Address objections" },
@@ -590,7 +726,9 @@ export default function MarketingCalendarPage() {
                     {angle.name}
                   </span>
                 </div>
-                <p className="text-xs text-[var(--text-secondary)]">{angle.desc}</p>
+                <p className="text-xs text-[var(--text-secondary)]">
+                  {angle.desc}
+                </p>
               </div>
             ))}
           </div>
@@ -609,7 +747,9 @@ export default function MarketingCalendarPage() {
             </li>
             <li className="flex items-start">
               <span className="text-blue-500 mr-2">•</span>
-              <span>Customize content with your product's specific details</span>
+              <span>
+                Customize content with your product's specific details
+              </span>
             </li>
             <li className="flex items-start">
               <span className="text-blue-500 mr-2">•</span>
@@ -652,11 +792,7 @@ function DayDetails({
     day: number,
     details: string
   ) => void;
-  onGenerateAll: (
-    campaignId: number | null,
-    day: number,
-    dayData: any
-  ) => void;
+  onGenerateAll: (campaignId: number | null, day: number, dayData: any) => void;
   onAutoGenerate: (
     campaignId: number | null,
     contentType: string,
@@ -695,16 +831,28 @@ function DayDetails({
       <div className="flex items-start justify-between mb-4">
         <div>
           <div className="flex items-center space-x-3 mb-2">
-            <span className={`text-2xl ${isLaunch ? "🚀" : isPostLaunch ? "🔥" : "📝"}`}></span>
+            <span
+              className={`text-2xl ${
+                isLaunch ? "🚀" : isPostLaunch ? "🔥" : "📝"
+              }`}
+            ></span>
             <h2 className="text-2xl font-bold text-[var(--text-primary)]">
               Day {day}: {data.title}
             </h2>
           </div>
-          <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${phaseBg} ${phaseColor}`}>
-            {isPreLaunch ? "Pre-Launch Phase" : isLaunch ? "Launch Day" : "Post-Launch Phase"}
+          <div
+            className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${phaseBg} ${phaseColor}`}
+          >
+            {isPreLaunch
+              ? "Pre-Launch Phase"
+              : isLaunch
+              ? "Launch Day"
+              : "Post-Launch Phase"}
           </div>
         </div>
-        <div className={`px-3 py-1 rounded-full text-sm font-semibold ${phaseBg} ${phaseColor}`}>
+        <div
+          className={`px-3 py-1 rounded-full text-sm font-semibold ${phaseBg} ${phaseColor}`}
+        >
           {data.journeyStage}
         </div>
       </div>
@@ -720,51 +868,18 @@ function DayDetails({
               Content to Create
             </h3>
             {selectedCampaignId && (
-              <div className="flex items-center space-x-2">
-                {/* Traditional Generate All - opens Content Studio */}
-                <button
-                  onClick={() => onGenerateAll(selectedCampaignId, day, data)}
-                  className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg text-sm font-semibold transition-all duration-200 flex items-center space-x-2 shadow-md hover:shadow-lg"
-                >
-                  <span>Manual Mode (All)</span>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                  </svg>
-                </button>
-
-                {/* Auto-Generate All - uses calendar API with intelligence - TEXT ONLY */}
-                <button
-                  onClick={() => onAutoGenerateAll(selectedCampaignId, day, data)}
-                  disabled={isGeneratingAll || isGenerating}
-                  className="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white rounded-lg text-sm font-semibold transition-all duration-200 flex items-center space-x-2 shadow-md hover:shadow-lg disabled:cursor-not-allowed"
-                  title="Auto-generates text content only (emails, articles, social posts). Images and videos need manual generation."
-                >
-                  {isGeneratingAll ? (
-                    <>
-                      <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      <span>Generating Text...</span>
-                    </>
-                  ) : (
-                    <>
-                      <span>🤖 Auto Text Content</span>
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                      </svg>
-                    </>
-                  )}
-                </button>
-              </div>
+              <div className="flex items-center space-x-2"></div>
             )}
 
             {/* Note about Auto-Generate */}
             {selectedCampaignId && (
               <div className="mt-3 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
                 <p className="text-xs text-[var(--text-primary)]">
-                  <span className="font-semibold">🤖 Auto-Generate</span> creates text content only (emails, articles, social posts).
-                  <span className="font-semibold"> Images & videos</span> must be created manually using the <span className="font-semibold">Manual Mode</span> button.
+                  <span className="font-semibold">🤖 Auto-Generate</span>{" "}
+                  creates text content only (emails, articles, social posts).
+                  <span className="font-semibold"> Images & videos</span> must
+                  be created manually using the{" "}
+                  <span className="font-semibold">Manual Mode</span> button.
                 </p>
               </div>
             )}
@@ -773,9 +888,24 @@ function DayDetails({
             {(isGeneratingAll || isGenerating || generationProgress) && (
               <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
                 <div className="flex items-center space-x-2">
-                  <svg className="w-4 h-4 animate-spin text-blue-600" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  <svg
+                    className="w-4 h-4 animate-spin text-blue-600"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
                   </svg>
                   <span className="text-sm font-medium text-[var(--text-primary)]">
                     {generationProgress || "Generating..."}
@@ -789,12 +919,14 @@ function DayDetails({
           {(() => {
             const textContent = data.contentToCreate.filter((content: any) => {
               const type = content.type.toLowerCase();
-              return !type.includes('image') && type !== 'video';
+              return !type.includes("image") && type !== "video";
             });
-            const visualContent = data.contentToCreate.filter((content: any) => {
-              const type = content.type.toLowerCase();
-              return type.includes('image') || type === 'video';
-            });
+            const visualContent = data.contentToCreate.filter(
+              (content: any) => {
+                const type = content.type.toLowerCase();
+                return type.includes("image") || type === "video";
+              }
+            );
 
             return (
               <div className="space-y-4">
@@ -833,7 +965,15 @@ function DayDetails({
                     </h4>
                     <div className="mb-3 p-3 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg">
                       <p className="text-xs text-[var(--text-primary)]">
-                        💡 Clicking <span className="font-semibold">Manual</span> will open Content Studio with an <span className="font-semibold">intelligent prompt</span> pre-filled based on your campaign's intelligence data. You can then customize the Image Type, Style & Aspect Ratio!
+                        💡 Clicking{" "}
+                        <span className="font-semibold">Manual</span> will open
+                        Content Studio with an{" "}
+                        <span className="font-semibold">
+                          intelligent prompt
+                        </span>{" "}
+                        pre-filled based on your campaign's intelligence data.
+                        You can then customize the Image Type, Style & Aspect
+                        Ratio!
                       </p>
                     </div>
                     <div className="space-y-3">
@@ -866,8 +1006,12 @@ function DayDetails({
             Marketing Angle
           </h3>
           <div className={`${phaseBg} p-4 rounded-lg mb-4`}>
-            <div className={`font-semibold ${phaseColor} mb-2`}>{data.marketingAngle}</div>
-            <div className="text-[var(--text-secondary)] text-sm">{data.marketingAngleDesc}</div>
+            <div className={`font-semibold ${phaseColor} mb-2`}>
+              {data.marketingAngle}
+            </div>
+            <div className="text-[var(--text-secondary)] text-sm">
+              {data.marketingAngleDesc}
+            </div>
           </div>
 
           <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-3 flex items-center">
@@ -875,7 +1019,9 @@ function DayDetails({
             Primary Goal
           </h3>
           <div className="bg-[var(--bg-secondary)] p-3 rounded-lg border border-[var(--border-color)]">
-            <div className="text-[var(--text-primary)] text-sm">{data.primaryGoal}</div>
+            <div className="text-[var(--text-primary)] text-sm">
+              {data.primaryGoal}
+            </div>
           </div>
         </div>
       </div>
@@ -887,7 +1033,9 @@ function DayDetails({
           CTA Direction
         </h3>
         <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg border border-purple-200 dark:border-purple-800">
-          <div className="text-[var(--text-primary)] font-medium">{data.ctaDirection}</div>
+          <div className="text-[var(--text-primary)] font-medium">
+            {data.ctaDirection}
+          </div>
         </div>
       </div>
 
@@ -904,7 +1052,9 @@ function DayDetails({
                 <div className="text-xs text-[var(--text-secondary)] mb-1 capitalize">
                   {key.replace(/([A-Z])/g, " $1")}
                 </div>
-                <div className="text-sm font-semibold text-[var(--text-primary)]">{value as string}</div>
+                <div className="text-sm font-semibold text-[var(--text-primary)]">
+                  {value as string}
+                </div>
               </div>
             ))}
           </div>
@@ -924,7 +1074,7 @@ function ContentItem({
   isGeneratingAll,
   onGenerateContent,
   onAutoGenerate,
-  showAutoButton
+  showAutoButton,
 }: {
   content: any;
   data: any;
@@ -955,7 +1105,9 @@ function ContentItem({
         <div className="font-semibold text-[var(--text-primary)] text-sm mb-1">
           {content.type}
         </div>
-        <div className="text-[var(--text-secondary)] text-sm">{content.details}</div>
+        <div className="text-[var(--text-secondary)] text-sm">
+          {content.details}
+        </div>
       </div>
       <div className="flex items-center space-x-2 ml-3">
         {/* Manual Generate - opens Content Studio */}
@@ -972,9 +1124,10 @@ function ContentItem({
           disabled={!selectedCampaignId || isGeneratingAll || isGenerating}
           className={`
             px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200
-            ${selectedCampaignId && !isGeneratingAll && !isGenerating
-              ? "bg-gray-600 hover:bg-gray-700 text-white shadow-md hover:shadow-lg"
-              : "bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+            ${
+              selectedCampaignId && !isGeneratingAll && !isGenerating
+                ? "bg-gray-600 hover:bg-gray-700 text-white shadow-md hover:shadow-lg"
+                : "bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
             }
           `}
         >
@@ -997,9 +1150,10 @@ function ContentItem({
             disabled={!selectedCampaignId || isGeneratingAll || isGenerating}
             className={`
               px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center space-x-1
-              ${selectedCampaignId && !isGeneratingAll && !isGenerating
-                ? "bg-green-600 hover:bg-green-700 text-white shadow-md hover:shadow-lg"
-                : "bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+              ${
+                selectedCampaignId && !isGeneratingAll && !isGenerating
+                  ? "bg-green-600 hover:bg-green-700 text-white shadow-md hover:shadow-lg"
+                  : "bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
               }
             `}
             title="Generate using campaign intelligence"
