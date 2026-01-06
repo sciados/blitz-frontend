@@ -751,6 +751,7 @@ export default function MarketingCalendarPage() {
             isGenerating={isGenerating}
             isGeneratingAll={isGeneratingAll}
             generationProgress={generationProgress}
+            generatedContentByDay={generatedContentByDay}
           />
         )}
 
@@ -860,6 +861,7 @@ function DayDetails({
   isGenerating,
   isGeneratingAll,
   generationProgress,
+  generatedContentByDay,
 }: {
   day: number;
   data: any;
@@ -888,6 +890,7 @@ function DayDetails({
   isGenerating: boolean;
   isGeneratingAll: boolean;
   generationProgress: string;
+  generatedContentByDay: Map<number, Set<string>>;
 }) {
   const isPreLaunch = day <= 13;
   const isLaunch = day === 14;
@@ -1029,6 +1032,7 @@ function DayDetails({
                           onGenerateContent={onGenerateContent}
                           onAutoGenerate={onAutoGenerate}
                           showAutoButton={true}
+                          generatedContentByDay={generatedContentByDay}
                         />
                       ))}
                     </div>
@@ -1154,6 +1158,7 @@ function ContentItem({
   onGenerateContent,
   onAutoGenerate,
   showAutoButton,
+  generatedContentByDay,
 }: {
   content: any;
   data: any;
@@ -1177,12 +1182,25 @@ function ContentItem({
     dayData: any
   ) => Promise<void>;
   showAutoButton: boolean;
+  generatedContentByDay: Map<number, Set<string>>;
 }) {
+  // Check if this content item is completed
+  const isCompleted = generatedContentByDay.get(day)?.has(content.type.toLowerCase()) || false;
   return (
-    <div className="bg-[var(--bg-secondary)] p-3 rounded-lg border border-[var(--border-color)] flex items-start justify-between">
+    <div className={`bg-[var(--bg-secondary)] p-3 rounded-lg border flex items-start justify-between ${
+      isCompleted ? 'border-green-500 dark:border-green-600' : 'border-[var(--border-color)]'
+    }`}>
       <div className="flex-1">
-        <div className="font-semibold text-[var(--text-primary)] text-sm mb-1">
+        <div className="font-semibold text-[var(--text-primary)] text-sm mb-1 flex items-center">
           {content.type}
+          {isCompleted && (
+            <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+              <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+              Completed
+            </span>
+          )}
         </div>
         <div className="text-[var(--text-secondary)] text-sm">
           {content.details}
