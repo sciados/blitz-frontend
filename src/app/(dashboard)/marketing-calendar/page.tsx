@@ -496,7 +496,7 @@ export default function MarketingCalendarPage() {
           `🎉 All ${textBatchItems.length} text content pieces generated successfully for Day ${day}! Images and videos can be created manually.`
         );
         // Track all text content types as generated
-        textBatchItems.forEach(item => {
+        textBatchItems.forEach((item: any) => {
           addGeneratedContent(day, item.content_type.toLowerCase());
         });
       } else if (response.data.successful > 0) {
@@ -506,7 +506,7 @@ export default function MarketingCalendarPage() {
         // Track only the successfully generated content
         // Note: We don't have the list of successful items from the response,
         // so we'll track based on the batch items
-        textBatchItems.slice(0, response.data.successful).forEach(item => {
+        textBatchItems.slice(0, response.data.successful).forEach((item: any) => {
           addGeneratedContent(day, item.content_type.toLowerCase());
         });
       } else {
