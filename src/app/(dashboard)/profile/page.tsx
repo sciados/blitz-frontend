@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "src/lib/appClient";
 import { useState } from "react";
 import { toast } from "sonner";
+import { getProxiedImageUrl } from "src/utils/imageProxy";
 
 interface UserProfile {
   id: number;
@@ -267,7 +268,7 @@ export default function ProfilePage() {
             <div className="flex-shrink-0">
               {previewUrl || user?.profile_image_url ? (
                 <img
-                  src={previewUrl || user?.profile_image_url}
+                  src={previewUrl || (user?.profile_image_url ? getProxiedImageUrl(user.profile_image_url) : "")}
                   alt="Profile"
                   className="w-24 h-24 rounded-full object-cover border-2 border-[var(--border-color)]"
                   onError={(e) => {

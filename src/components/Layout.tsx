@@ -9,6 +9,7 @@ import { clearToken, getRoleFromToken, getUserFromToken } from "src/lib/auth";
 import { api } from "src/lib/appClient";
 import { useTheme } from "src/contexts/ThemeContext";
 import { getHelpContent } from "src/config/helpContent";
+import { getProxiedImageUrl } from "src/utils/imageProxy";
 import Link from "next/link";
 import { Footer } from "src/components/Footer";
 import { TokenRefresh } from "src/components/TokenRefresh";
@@ -472,7 +473,7 @@ export default function Layout({ children }: LayoutProps) {
               >
                 {userInfo?.profile_image_url ? (
                   <img
-                    src={userInfo.profile_image_url}
+                    src={getProxiedImageUrl(userInfo.profile_image_url)}
                     alt="Profile"
                     className="w-8 h-8 rounded-full object-cover border border-[var(--border-color)]"
                     onError={(e) => {
@@ -524,7 +525,7 @@ export default function Layout({ children }: LayoutProps) {
                       <div className="flex items-center space-x-3">
                         {userInfo?.profile_image_url ? (
                           <img
-                            src={userInfo.profile_image_url}
+                            src={getProxiedImageUrl(userInfo.profile_image_url)}
                             alt="Profile"
                             className="w-12 h-12 rounded-full object-cover border border-[var(--border-color)]"
                             onError={(e) => {
