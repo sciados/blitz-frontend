@@ -74,57 +74,82 @@ export default function MarketingCalendarPage() {
         console.log("No intelligence data available");
       }
 
-      // Build intelligent prompt
+      // Build structured prompt using universal template format
       const promptParts = [];
 
-      // Add marketing angle context
-      if (marketingAngle) {
-        promptParts.push(`Marketing angle: ${marketingAngle.replace(/_/g, ' ')}`);
+      // [Subject]
+      let subject = "Marketing image";
+      if (contentType.toLowerCase().includes('hero')) {
+        subject = "Hero banner image";
+      } else if (contentType.toLowerCase().includes('social')) {
+        subject = "Social media post image";
+      } else if (contentType.toLowerCase().includes('ad')) {
+        subject = "Advertisement creative";
       }
+      promptParts.push(`[Subject]\n${subject}`);
 
-      // Add campaign-specific info
+      // [Core Content]
+      const coreContent = [];
       if (campaign?.name) {
-        promptParts.push(`Product/Service: ${campaign.name}`);
+        coreContent.push(`Product/Service: ${campaign.name}`);
       }
-
-      // Add context from calendar
-      if (context) {
-        promptParts.push(`Focus: ${context}`);
-      }
-
-      // Add intelligence-based elements if available
       if (intelligenceData?.product?.benefits) {
         const topBenefits = intelligenceData.product.benefits.slice(0, 3);
         if (topBenefits.length > 0) {
-          promptParts.push(`Key benefits to highlight: ${topBenefits.join(', ')}`);
+          coreContent.push(`Key benefits: ${topBenefits.join(', ')}`);
         }
       }
-
       if (intelligenceData?.market?.pain_points) {
         const topPainPoints = intelligenceData.market.pain_points.slice(0, 2);
         if (topPainPoints.length > 0) {
-          promptParts.push(`Target audience pain points: ${topPainPoints.join(', ')}`);
+          coreContent.push(`Addresses: ${topPainPoints.join(', ')}`);
         }
       }
-
-      // Add content type specific guidance
-      if (contentType.toLowerCase().includes('hero')) {
-        promptParts.push("Create a compelling hero/banner image that captures attention and communicates value");
-      } else if (contentType.toLowerCase().includes('social')) {
-        promptParts.push("Create an eye-catching social media image suitable for Instagram, Facebook, or Twitter");
-      } else if (contentType.toLowerCase().includes('ad')) {
-        promptParts.push("Create a high-converting ad creative with strong visual hierarchy");
+      if (context) {
+        coreContent.push(`Focus: ${context}`);
+      }
+      if (coreContent.length > 0) {
+        promptParts.push(`[Core Content]\n${coreContent.join('\n')}`);
       }
 
-      // Add style guidance
-      promptParts.push("Style: Professional, high-quality, visually appealing, modern design");
+      // [Style & Aesthetic]
+      let styleAesthetic = "Professional, modern, clean, high-quality";
+      if (marketingAngle === "problem_solution") {
+        styleAesthetic = "Professional, solution-focused, clean, trustworthy, medical-grade";
+      } else if (marketingAngle === "transformation") {
+        styleAesthetic = "Before/after style, results-focused, inspiring, dramatic transformation";
+      } else if (marketingAngle === "social_proof") {
+        styleAesthetic = "Clean, testimonial-style, trustworthy, authentic";
+      }
+      promptParts.push(`[Style & Aesthetic]\n${styleAesthetic}`);
 
-      return promptParts.join('\n');
+      // [Color Palette]
+      promptParts.push(`[Color Palette]\nProfessional color scheme with good contrast, brand-appropriate colors`);
+
+      // [Composition & Layout]
+      let composition = "Well-balanced composition, centered focal point, clear hierarchy";
+      if (contentType.toLowerCase().includes('hero')) {
+        composition = "Wide banner format, clear focal point, text-friendly layout";
+      } else if (contentType.toLowerCase().includes('social')) {
+        composition = "Square or vertical format, social media optimized, eye-catching";
+      }
+      promptParts.push(`[Composition & Layout]\n${composition}`);
+
+      // [Background]
+      promptParts.push(`[Background]\nClean, professional background that doesn't compete with main subject`);
+
+      // [Technical Constraints]
+      promptParts.push(`[Technical Constraints]\nHigh resolution, print and web ready, scalable design`);
+
+      // [Negative Constraints]
+      promptParts.push(`[Negative Constraints]\nNo cluttered design, no low-quality elements, no irrelevant imagery`);
+
+      return promptParts.join('\n\n');
 
     } catch (error) {
       console.error("Error building image prompt:", error);
-      // Fallback to simple prompt
-      return `${contentType} for ${marketingAngle.replace(/_/g, ' ')} campaign. Professional, high-quality, visually appealing.`;
+      // Fallback to structured prompt
+      return `[Subject]\nMarketing image\n\n[Core Content]\n${contentType} for ${marketingAngle.replace(/_/g, ' ')} campaign\n\n[Style & Aesthetic]\nProfessional, modern, clean, high-quality\n\n[Color Palette]\nProfessional color scheme with good contrast\n\n[Composition & Layout]\nWell-balanced composition, centered focal point\n\n[Background]\nClean, professional background\n\n[Technical Constraints]\nHigh resolution, print and web ready\n\n[Negative Constraints]\nNo cluttered design, no low-quality elements`;
     }
   };
 
