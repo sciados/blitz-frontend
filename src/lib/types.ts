@@ -21,6 +21,7 @@ export type Campaign = {
     commission_rate?: string | null;
     affiliate_link?: string | null; // User's full affiliate URL
     affiliate_link_short_code?: string | null; // Auto-generated short code (e.g., "abc123")
+    affiliate_link_short_url?: string | null; // Full shortened URL with domain (e.g., "https://blitz.surf/r/abc123")
     keywords?: string[];
     product_description?: string;
     product_type?: string;

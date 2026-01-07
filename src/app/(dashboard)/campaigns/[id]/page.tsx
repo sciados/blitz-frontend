@@ -34,9 +34,6 @@ export default function CampaignDetailPage() {
   const [marketingAngle, setMarketingAngle] = useState<MarketingAngle>("problem_solution");
   const [isGenerating, setIsGenerating] = useState(false);
 
-  // Get short link domain from environment variable
-  const shortLinkDomain = process.env.NEXT_PUBLIC_SHORT_LINK_DOMAIN || "https://blitz.surf";
-
   // Fetch campaign
   const { data: campaign, isLoading, error } = useQuery<Campaign>({
     queryKey: ["campaign", id],
@@ -464,18 +461,18 @@ export default function CampaignDetailPage() {
             </div>
 
             {/* Shortened Affiliate Link */}
-            {campaign.affiliate_link_short_code && (
+            {campaign.affiliate_link_short_url && (
               <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Trackable Short Link
                 </label>
                 <div className="flex items-center gap-2">
                   <code className="flex-1 bg-white dark:bg-gray-900 px-3 py-2 rounded border border-gray-300 dark:border-gray-600 text-sm font-mono text-gray-900 dark:text-gray-100">
-                    {shortLinkDomain}/r/{campaign.affiliate_link_short_code}
+                    {campaign.affiliate_link_short_url}
                   </code>
                   <button
                     onClick={() => {
-                      navigator.clipboard.writeText(`${shortLinkDomain}/r/${campaign.affiliate_link_short_code}`);
+                      navigator.clipboard.writeText(campaign.affiliate_link_short_url || "");
                       toast.success("Short link copied to clipboard!");
                     }}
                     className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition flex items-center gap-2"

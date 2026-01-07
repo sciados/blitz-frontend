@@ -54,7 +54,8 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(git push:*)",
-      "Bash(perl:*)"
+      "Bash(perl:*)",
+      "Bash(DATABASE_URL_ASYNC=\"postgresql+asyncpg://postgres:hKeJQiAMaMFRmUjqfeJQEqMkdgsaXNXe@centerbeam.proxy.rlwy.net:13378/railway\" python -c:*)"
     ],
     "deny": [],
     "ask": []
