@@ -35,7 +35,7 @@ export default function CampaignDetailPage() {
   const [isGenerating, setIsGenerating] = useState(false);
 
   // Get short link domain from environment variable
-  const shortLinkDomain = process.env.NEXT_PUBLIC_SHORT_LINK_DOMAIN || "https://blitzed.up.railway.app";
+  const shortLinkDomain = process.env.NEXT_PUBLIC_SHORT_LINK_DOMAIN || "https://blitz.link";
 
   // Fetch campaign
   const { data: campaign, isLoading, error } = useQuery<Campaign>({
