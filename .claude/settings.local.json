@@ -50,7 +50,10 @@
       "Bash(env:*)",
       "Bash(DATABASE_URL_ASYNC=\"postgresql://postgres:bEdZbMIuvZqgLOcZPtDQvbJtPjojrJyp@trolley.proxy.rlwy.net:34251/railway\" python:*)",
       "Bash(DATABASE_URL_ASYNC=\"postgresql+asyncpg://postgres:hKeJQiAMaMFRmUjqfeJQEqMkdgsaXNXe@centerbeam.proxy.rlwy.net:13378/railway\" python -m uvicorn:*)",
-      "Bash(pip install:*)"
+      "Bash(pip install:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": []
