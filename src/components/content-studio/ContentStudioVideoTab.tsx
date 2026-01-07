@@ -7,9 +7,21 @@ import { toast } from "sonner";
 import { VideoEditorModal } from "src/components/VideoEditorModal";
 
 const VIDEO_STYLES = [
-  { value: "marketing", label: "Marketing", description: "Professional, engaging" },
-  { value: "educational", label: "Educational", description: "Clear, informative" },
-  { value: "social", label: "Social Media", description: "Dynamic, eye-catching" },
+  {
+    value: "marketing",
+    label: "Marketing",
+    description: "Professional, engaging",
+  },
+  {
+    value: "educational",
+    label: "Educational",
+    description: "Clear, informative",
+  },
+  {
+    value: "social",
+    label: "Social Media",
+    description: "Dynamic, eye-catching",
+  },
 ];
 
 const ASPECT_RATIOS = [
@@ -39,7 +51,9 @@ export function ContentStudioVideoTab({
   prePopulatedData,
   onContentGenerated,
 }: ContentStudioVideoTabProps) {
-  const [generationMode, setGenerationMode] = useState<"text_to_video" | "image_to_video">("text_to_video");
+  const [generationMode, setGenerationMode] = useState<
+    "text_to_video" | "image_to_video"
+  >("text_to_video");
   const [style, setStyle] = useState("marketing");
   const [aspectRatio, setAspectRatio] = useState("16:9");
   const [duration, setDuration] = useState(5);
@@ -84,7 +98,9 @@ export function ContentStudioVideoTab({
     queryFn: async () => {
       const response = await api.get(`/api/content/campaign/${campaignId}`);
       // Filter for video scripts only
-      const scripts = response.data.filter((content: any) => content.content_type === "video_script");
+      const scripts = response.data.filter(
+        (content: any) => content.content_type === "video_script"
+      );
       return scripts;
     },
   });
@@ -111,7 +127,9 @@ export function ContentStudioVideoTab({
   // Helper function to extract clean narrative from script (remove overlay guide)
   const extractCleanNarrative = (fullScript: string): string => {
     // Find the overlay guide separator
-    const overlayGuideIndex = fullScript.indexOf("============================================================");
+    const overlayGuideIndex = fullScript.indexOf(
+      "============================================================"
+    );
 
     if (overlayGuideIndex !== -1) {
       // Return only the narrative part (before the overlay guide)
@@ -147,7 +165,9 @@ export function ContentStudioVideoTab({
 
       const generatedScript = response.data;
       if (generatedScript?.content_data?.text) {
-        const cleanScript = extractCleanNarrative(generatedScript.content_data.text);
+        const cleanScript = extractCleanNarrative(
+          generatedScript.content_data.text
+        );
         setScript(cleanScript);
         toast.success("Video script generated automatically! ✓");
       }
@@ -197,7 +217,9 @@ export function ContentStudioVideoTab({
   };
 
   // Reset form when generation mode changes
-  const handleGenerationModeChange = (mode: "text_to_video" | "image_to_video") => {
+  const handleGenerationModeChange = (
+    mode: "text_to_video" | "image_to_video"
+  ) => {
     setGenerationMode(mode);
     handleClearScript();
     handleClearImage();
@@ -226,7 +248,9 @@ export function ContentStudioVideoTab({
       }
 
       const response = await api.post("/api/video/generate", requestBody);
-      toast.success("Video generation started! Check the Content Library to view progress.");
+      toast.success(
+        "Video generation started! Check the Content Library to view progress."
+      );
       // Clear form after generation
       handleClearScript();
       handleClearImage();
@@ -237,7 +261,9 @@ export function ContentStudioVideoTab({
         onContentGenerated();
       }
     } catch (error: any) {
-      toast.error(error.response?.data?.detail || "Failed to start video generation");
+      toast.error(
+        error.response?.data?.detail || "Failed to start video generation"
+      );
     } finally {
       setIsGenerating(false);
     }
@@ -251,7 +277,7 @@ export function ContentStudioVideoTab({
         model: "Ray-v1",
         description: "High-quality 10s videos",
         estimatedTime: "~60-90 seconds",
-        color: "text-purple-600"
+        color: "text-purple-600",
       };
     } else if (duration === 5) {
       return {
@@ -259,7 +285,7 @@ export function ContentStudioVideoTab({
         model: "Fast Generation",
         description: "Quick 5s videos",
         estimatedTime: "~30-45 seconds",
-        color: "text-blue-600"
+        color: "text-blue-600",
       };
     } else {
       return {
@@ -267,7 +293,7 @@ export function ContentStudioVideoTab({
         model: "5s + FFmpeg Loop",
         description: "Extended duration video",
         estimatedTime: "~45-60 seconds",
-        color: "text-green-600"
+        color: "text-green-600",
       };
     }
   };
@@ -310,7 +336,11 @@ export function ContentStudioVideoTab({
             </label>
             <select
               value={generationMode}
-              onChange={(e) => handleGenerationModeChange(e.target.value as "text_to_video" | "image_to_video")}
+              onChange={(e) =>
+                handleGenerationModeChange(
+                  e.target.value as "text_to_video" | "image_to_video"
+                )
+              }
               className="w-full px-3 py-2 rounded-lg border"
               style={{
                 borderColor: "var(--card-border)",
@@ -349,7 +379,9 @@ export function ContentStudioVideoTab({
                   {campaignImages.map((image: any) => (
                     <div
                       key={image.id}
-                      onClick={() => handleImageSelect(image.id, image.image_url)}
+                      onClick={() =>
+                        handleImageSelect(image.id, image.image_url)
+                      }
                       className={`relative aspect-square rounded-lg overflow-hidden cursor-pointer border-2 transition ${
                         selectedImageId === image.id
                           ? "border-blue-500 ring-2 ring-blue-200"
@@ -383,7 +415,10 @@ export function ContentStudioVideoTab({
                 </div>
               ) : (
                 <div className="mb-3 p-3 bg-gray-100 dark:bg-gray-800 rounded-lg text-center">
-                  <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
+                  <p
+                    className="text-xs"
+                    style={{ color: "var(--text-secondary)" }}
+                  >
                     No campaign images found
                   </p>
                 </div>
@@ -422,10 +457,16 @@ export function ContentStudioVideoTab({
                       d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
                     />
                   </svg>
-                  <p className="text-sm" style={{ color: "var(--text-primary)" }}>
+                  <p
+                    className="text-sm"
+                    style={{ color: "var(--text-primary)" }}
+                  >
                     Click to upload an image
                   </p>
-                  <p className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>
+                  <p
+                    className="text-xs mt-1"
+                    style={{ color: "var(--text-secondary)" }}
+                  >
                     PNG, JPG, or GIF
                   </p>
                 </label>
@@ -434,7 +475,10 @@ export function ContentStudioVideoTab({
               {/* Selected Image Preview */}
               {selectedImageUrl && (
                 <div className="mt-3">
-                  <p className="text-xs mb-1" style={{ color: "var(--text-secondary)" }}>
+                  <p
+                    className="text-xs mb-1"
+                    style={{ color: "var(--text-secondary)" }}
+                  >
                     Selected Image:
                   </p>
                   <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800">
@@ -530,8 +574,12 @@ export function ContentStudioVideoTab({
                 </option>
               ))}
             </select>
-            <p className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>
-              Note: 10s videos use Luma AI (txt2video only) or extend 5s videos with ffmpeg
+            <p
+              className="text-xs mt-1"
+              style={{ color: "var(--text-secondary)" }}
+            >
+              Note: 10s videos use Luma AI (txt2video only) or extend 5s videos
+              with ffmpeg
             </p>
           </div>
 
@@ -543,59 +591,93 @@ export function ContentStudioVideoTab({
             >
               Focus Keywords (Optional)
             </label>
-            <p className="text-xs mb-3" style={{ color: "var(--text-secondary)" }}>
-              Select specific ingredients, features, or benefits to include in your video
+            <p
+              className="text-xs mb-3"
+              style={{ color: "var(--text-secondary)" }}
+            >
+              Select specific ingredients, features, or benefits to include in
+              your video
             </p>
 
             {keywordsLoading ? (
               <div className="text-center py-4">
                 <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
               </div>
-            ) : keywordsData && (keywordsData.ingredients?.length > 0 || keywordsData.features?.length > 0 || keywordsData.benefits?.length > 0 || keywordsData.pain_points?.length > 0) ? (
+            ) : keywordsData &&
+              (keywordsData.ingredients?.length > 0 ||
+                keywordsData.features?.length > 0 ||
+                keywordsData.benefits?.length > 0 ||
+                keywordsData.pain_points?.length > 0) ? (
               <div className="space-y-3">
                 {/* Ingredients */}
-                {keywordsData.ingredients && keywordsData.ingredients.length > 0 && (
-                  <div>
-                    <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-primary)" }}>
-                      Ingredients/Tech
-                    </label>
-                    <div className="flex flex-wrap gap-2">
-                      {keywordsData.ingredients.map((ingredient: string) => (
-                        <button
-                          key={ingredient}
-                          onClick={() => {
-                            const newIngredients = selectedKeywords.ingredients.includes(ingredient)
-                              ? selectedKeywords.ingredients.filter((i) => i !== ingredient)
-                              : [...selectedKeywords.ingredients, ingredient];
-                            setSelectedKeywords({ ...selectedKeywords, ingredients: newIngredients });
-                          }}
-                          className={`px-2 py-1 rounded-full text-xs border transition ${
-                            selectedKeywords.ingredients.includes(ingredient)
-                              ? "bg-blue-600 text-white border-blue-600"
-                              : "bg-transparent hover:bg-blue-50 border-gray-300"
-                          }`}
-                          style={{
-                            borderColor: selectedKeywords.ingredients.includes(ingredient)
-                              ? "var(--primary-color)"
-                              : "var(--card-border)",
-                            color: selectedKeywords.ingredients.includes(ingredient)
-                              ? "white"
-                              : "var(--text-primary)",
-                          }}
-                        >
-                          {ingredient}
-                        </button>
-                      ))}
+                {keywordsData.ingredients &&
+                  keywordsData.ingredients.length > 0 && (
+                    <div>
+                      <label
+                        className="block text-xs font-medium mb-1"
+                        style={{ color: "var(--text-primary)" }}
+                      >
+                        Ingredients/Tech
+                      </label>
+                      <div className="flex flex-wrap gap-2">
+                        {keywordsData.ingredients.map((ingredient: string) => (
+                          <button
+                            key={ingredient}
+                            onClick={() => {
+                              const newIngredients =
+                                selectedKeywords.ingredients.includes(
+                                  ingredient
+                                )
+                                  ? selectedKeywords.ingredients.filter(
+                                      (i) => i !== ingredient
+                                    )
+                                  : [
+                                      ...selectedKeywords.ingredients,
+                                      ingredient,
+                                    ];
+                              setSelectedKeywords({
+                                ...selectedKeywords,
+                                ingredients: newIngredients,
+                              });
+                            }}
+                            className={`px-2 py-1 rounded-full text-xs border transition ${
+                              selectedKeywords.ingredients.includes(ingredient)
+                                ? "bg-blue-600 text-white border-blue-600"
+                                : "bg-transparent hover:bg-blue-50 border-gray-300"
+                            }`}
+                            style={{
+                              borderColor:
+                                selectedKeywords.ingredients.includes(
+                                  ingredient
+                                )
+                                  ? "var(--primary-color)"
+                                  : "var(--card-border)",
+                              color: selectedKeywords.ingredients.includes(
+                                ingredient
+                              )
+                                ? "white"
+                                : "var(--text-primary)",
+                            }}
+                          >
+                            {ingredient}
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
                 {/* Features - Disabled for Videos */}
                 {keywordsData.features && keywordsData.features.length > 0 && (
                   <div>
-                    <label className="block text-xs font-medium mb-1 flex items-center" style={{ color: "var(--text-secondary)" }}>
+                    <label
+                      className="flex text-xs font-medium mb-1 items-center"
+                      style={{ color: "var(--text-secondary)" }}
+                    >
                       Features
-                      <span className="ml-2 text-xs px-2 py-0.5 rounded bg-gray-200 dark:bg-gray-700" style={{ color: "var(--text-secondary)" }}>
+                      <span
+                        className="ml-2 text-xs px-2 py-0.5 rounded bg-gray-200 dark:bg-gray-700"
+                        style={{ color: "var(--text-secondary)" }}
+                      >
                         Disabled for Videos
                       </span>
                     </label>
@@ -622,9 +704,15 @@ export function ContentStudioVideoTab({
                 {/* Benefits - Disabled for Videos */}
                 {keywordsData.benefits && keywordsData.benefits.length > 0 && (
                   <div>
-                    <label className="block text-xs font-medium mb-1 flex items-center" style={{ color: "var(--text-secondary)" }}>
+                    <label
+                      className="flex text-xs font-medium mb-1 items-center"
+                      style={{ color: "var(--text-secondary)" }}
+                    >
                       Benefits
-                      <span className="ml-2 text-xs px-2 py-0.5 rounded bg-gray-200 dark:bg-gray-700" style={{ color: "var(--text-secondary)" }}>
+                      <span
+                        className="ml-2 text-xs px-2 py-0.5 rounded bg-gray-200 dark:bg-gray-700"
+                        style={{ color: "var(--text-secondary)" }}
+                      >
                         Disabled for Videos
                       </span>
                     </label>
@@ -649,44 +737,58 @@ export function ContentStudioVideoTab({
                 )}
 
                 {/* Pain Points */}
-                {keywordsData.pain_points && keywordsData.pain_points.length > 0 && (
-                  <div>
-                    <label className="block text-xs font-medium mb-1" style={{ color: "var(--text-primary)" }}>
-                      Pain Points
-                    </label>
-                    <div className="flex flex-wrap gap-2">
-                      {keywordsData.pain_points.map((pain: string) => (
-                        <button
-                          key={pain}
-                          onClick={() => {
-                            const newPainPoints = selectedKeywords.pain_points.includes(pain)
-                              ? selectedKeywords.pain_points.filter((p) => p !== pain)
-                              : [...selectedKeywords.pain_points, pain];
-                            setSelectedKeywords({ ...selectedKeywords, pain_points: newPainPoints });
-                          }}
-                          className={`px-2 py-1 rounded-full text-xs border transition ${
-                            selectedKeywords.pain_points.includes(pain)
-                              ? "bg-blue-600 text-white border-blue-600"
-                              : "bg-transparent hover:bg-blue-50 border-gray-300"
-                          }`}
-                          style={{
-                            borderColor: selectedKeywords.pain_points.includes(pain)
-                              ? "var(--primary-color)"
-                              : "var(--card-border)",
-                            color: selectedKeywords.pain_points.includes(pain)
-                              ? "white"
-                              : "var(--text-primary)",
-                          }}
-                        >
-                          {pain}
-                        </button>
-                      ))}
+                {keywordsData.pain_points &&
+                  keywordsData.pain_points.length > 0 && (
+                    <div>
+                      <label
+                        className="block text-xs font-medium mb-1"
+                        style={{ color: "var(--text-primary)" }}
+                      >
+                        Pain Points
+                      </label>
+                      <div className="flex flex-wrap gap-2">
+                        {keywordsData.pain_points.map((pain: string) => (
+                          <button
+                            key={pain}
+                            onClick={() => {
+                              const newPainPoints =
+                                selectedKeywords.pain_points.includes(pain)
+                                  ? selectedKeywords.pain_points.filter(
+                                      (p) => p !== pain
+                                    )
+                                  : [...selectedKeywords.pain_points, pain];
+                              setSelectedKeywords({
+                                ...selectedKeywords,
+                                pain_points: newPainPoints,
+                              });
+                            }}
+                            className={`px-2 py-1 rounded-full text-xs border transition ${
+                              selectedKeywords.pain_points.includes(pain)
+                                ? "bg-blue-600 text-white border-blue-600"
+                                : "bg-transparent hover:bg-blue-50 border-gray-300"
+                            }`}
+                            style={{
+                              borderColor:
+                                selectedKeywords.pain_points.includes(pain)
+                                  ? "var(--primary-color)"
+                                  : "var(--card-border)",
+                              color: selectedKeywords.pain_points.includes(pain)
+                                ? "white"
+                                : "var(--text-primary)",
+                            }}
+                          >
+                            {pain}
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
               </div>
             ) : (
-              <p className="text-xs text-center py-2" style={{ color: "var(--text-secondary)" }}>
+              <p
+                className="text-xs text-center py-2"
+                style={{ color: "var(--text-secondary)" }}
+              >
                 No keywords available
               </p>
             )}
@@ -715,7 +817,9 @@ export function ContentStudioVideoTab({
                 value={selectedScriptId || ""}
                 onChange={(e) => {
                   const scriptId = Number(e.target.value);
-                  const script = videoScripts.find((s: any) => s.id === scriptId);
+                  const script = videoScripts.find(
+                    (s: any) => s.id === scriptId
+                  );
                   if (script) {
                     handleScriptSelect(scriptId, script.content_data.text);
                   }
@@ -766,14 +870,31 @@ export function ContentStudioVideoTab({
             {/* Manual Script Tips */}
             {!prePopulatedData && !selectedScriptId && script && (
               <div className="mt-2 p-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-                <div className="text-xs flex items-center" style={{ color: "var(--text-primary)" }}>
-                  <svg className="w-4 h-4 mr-2 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                <div
+                  className="text-xs flex items-center"
+                  style={{ color: "var(--text-primary)" }}
+                >
+                  <svg
+                    className="w-4 h-4 mr-2 text-green-600 dark:text-green-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 10V3L4 14h7v7l9-11h-7z"
+                    />
                   </svg>
                   <span className="font-semibold">Custom Script</span>
                 </div>
-                <p className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>
-                  💡 Tip: Include visual details (camera angles, lighting, transitions) for better AI-generated videos
+                <p
+                  className="text-xs mt-1"
+                  style={{ color: "var(--text-secondary)" }}
+                >
+                  💡 Tip: Include visual details (camera angles, lighting,
+                  transitions) for better AI-generated videos
                 </p>
               </div>
             )}
@@ -781,27 +902,61 @@ export function ContentStudioVideoTab({
             {/* Auto-generated Script Indicator */}
             {prePopulatedData && script && !selectedScriptId && (
               <div className="mt-2 p-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-                <div className="text-xs flex items-center" style={{ color: "var(--text-primary)" }}>
-                  <svg className="w-4 h-4 mr-2 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                <div
+                  className="text-xs flex items-center"
+                  style={{ color: "var(--text-primary)" }}
+                >
+                  <svg
+                    className="w-4 h-4 mr-2 text-blue-600 dark:text-blue-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 10V3L4 14h7v7l9-11h-7z"
+                    />
                   </svg>
-                  <span className="font-semibold">Auto-generated from Marketing Calendar</span>
+                  <span className="font-semibold">
+                    Auto-generated from Marketing Calendar
+                  </span>
                 </div>
-                <p className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>
-                  Script generated automatically for Day {prePopulatedData.day} • {prePopulatedData.marketingAngle?.replace(/_/g, " ")} angle
+                <p
+                  className="text-xs mt-1"
+                  style={{ color: "var(--text-secondary)" }}
+                >
+                  Script generated automatically for Day {prePopulatedData.day}{" "}
+                  • {prePopulatedData.marketingAngle?.replace(/_/g, " ")} angle
                 </p>
               </div>
             )}
             {selectedScriptId && (
-              <div className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>
+              <div
+                className="text-xs mt-1"
+                style={{ color: "var(--text-secondary)" }}
+              >
                 <p className="flex items-center">
-                  <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  <svg
+                    className="w-4 h-4 mr-1"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M5 13l4 4L19 7"
+                    />
                   </svg>
-                  ✓ Using selected video script (overlay guide stripped for clean generation)
+                  ✓ Using selected video script (overlay guide stripped for
+                  clean generation)
                 </p>
                 <p className="mt-1 text-xs">
-                  💡 Note: Only the narrative is sent to AI. Overlay guide is for your reference only.
+                  💡 Note: Only the narrative is sent to AI. Overlay guide is
+                  for your reference only.
                 </p>
               </div>
             )}
@@ -841,31 +996,83 @@ export function ContentStudioVideoTab({
               >
                 AI Provider
               </h4>
-              <span className={`text-xs px-2 py-1 rounded ${providerInfo.color} bg-opacity-20`}>
+              <span
+                className={`text-xs px-2 py-1 rounded ${providerInfo.color} bg-opacity-20`}
+              >
                 {providerInfo.name}
               </span>
             </div>
             <div className="space-y-2">
               <div className="flex items-center text-sm">
-                <svg className="w-4 h-4 mr-2" style={{ color: "var(--text-secondary)" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+                <svg
+                  className="w-4 h-4 mr-2"
+                  style={{ color: "var(--text-secondary)" }}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"
+                  />
                 </svg>
                 <span style={{ color: "var(--text-secondary)" }}>Model:</span>
-                <span className="ml-2 font-medium" style={{ color: "var(--text-primary)" }}>{providerInfo.model}</span>
+                <span
+                  className="ml-2 font-medium"
+                  style={{ color: "var(--text-primary)" }}
+                >
+                  {providerInfo.model}
+                </span>
               </div>
               <div className="flex items-center text-sm">
-                <svg className="w-4 h-4 mr-2" style={{ color: "var(--text-secondary)" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <svg
+                  className="w-4 h-4 mr-2"
+                  style={{ color: "var(--text-secondary)" }}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
                 </svg>
-                <span style={{ color: "var(--text-secondary)" }}>Est. Time:</span>
-                <span className="ml-2 font-medium" style={{ color: "var(--text-primary)" }}>{providerInfo.estimatedTime}</span>
+                <span style={{ color: "var(--text-secondary)" }}>
+                  Est. Time:
+                </span>
+                <span
+                  className="ml-2 font-medium"
+                  style={{ color: "var(--text-primary)" }}
+                >
+                  {providerInfo.estimatedTime}
+                </span>
               </div>
               <div className="flex items-center text-sm">
-                <svg className="w-4 h-4 mr-2" style={{ color: "var(--text-secondary)" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                <svg
+                  className="w-4 h-4 mr-2"
+                  style={{ color: "var(--text-secondary)" }}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13 10V3L4 14h7v7l9-11h-7z"
+                  />
                 </svg>
                 <span style={{ color: "var(--text-secondary)" }}>Quality:</span>
-                <span className="ml-2 font-medium" style={{ color: "var(--text-primary)" }}>{providerInfo.description}</span>
+                <span
+                  className="ml-2 font-medium"
+                  style={{ color: "var(--text-primary)" }}
+                >
+                  {providerInfo.description}
+                </span>
               </div>
             </div>
           </div>
@@ -880,27 +1087,59 @@ export function ContentStudioVideoTab({
             </h4>
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
-                <div className="text-xs" style={{ color: "var(--text-secondary)" }}>Duration</div>
-                <div className="text-lg font-semibold mt-1" style={{ color: "var(--text-primary)" }}>
+                <div
+                  className="text-xs"
+                  style={{ color: "var(--text-secondary)" }}
+                >
+                  Duration
+                </div>
+                <div
+                  className="text-lg font-semibold mt-1"
+                  style={{ color: "var(--text-primary)" }}
+                >
                   {duration} seconds
                 </div>
               </div>
               <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
-                <div className="text-xs" style={{ color: "var(--text-secondary)" }}>Resolution</div>
-                <div className="text-lg font-semibold mt-1" style={{ color: "var(--text-primary)" }}>
+                <div
+                  className="text-xs"
+                  style={{ color: "var(--text-secondary)" }}
+                >
+                  Resolution
+                </div>
+                <div
+                  className="text-lg font-semibold mt-1"
+                  style={{ color: "var(--text-primary)" }}
+                >
                   {getResolution()}
                 </div>
               </div>
               <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
-                <div className="text-xs" style={{ color: "var(--text-secondary)" }}>Aspect Ratio</div>
-                <div className="text-lg font-semibold mt-1" style={{ color: "var(--text-primary)" }}>
+                <div
+                  className="text-xs"
+                  style={{ color: "var(--text-secondary)" }}
+                >
+                  Aspect Ratio
+                </div>
+                <div
+                  className="text-lg font-semibold mt-1"
+                  style={{ color: "var(--text-primary)" }}
+                >
                   {aspectRatio}
                 </div>
               </div>
               <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
-                <div className="text-xs" style={{ color: "var(--text-secondary)" }}>Style</div>
-                <div className="text-lg font-semibold mt-1" style={{ color: "var(--text-primary)" }}>
-                  {VIDEO_STYLES.find(s => s.value === style)?.label || style}
+                <div
+                  className="text-xs"
+                  style={{ color: "var(--text-secondary)" }}
+                >
+                  Style
+                </div>
+                <div
+                  className="text-lg font-semibold mt-1"
+                  style={{ color: "var(--text-primary)" }}
+                >
+                  {VIDEO_STYLES.find((s) => s.value === style)?.label || style}
                 </div>
               </div>
             </div>
@@ -909,18 +1148,37 @@ export function ContentStudioVideoTab({
           {/* What to Expect */}
           <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
             <div className="flex items-start">
-              <svg className="w-5 h-5 text-blue-600 mt-0.5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <svg
+                className="w-5 h-5 text-blue-600 mt-0.5 mr-3 flex-shrink-0"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
               </svg>
               <div>
                 <h5 className="font-semibold text-blue-900 dark:text-blue-100 mb-1">
                   What to Expect
                 </h5>
                 <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
-                  <li>• Video generation will start immediately after clicking "Generate Video"</li>
-                  <li>• Check the Content Library for real-time progress updates</li>
-                  <li>• Generation time varies based on provider and server load</li>
-                  <li>• You'll receive a notification when your video is ready</li>
+                  <li>
+                    • Video generation will start immediately after clicking
+                    "Generate Video"
+                  </li>
+                  <li>
+                    • Check the Content Library for real-time progress updates
+                  </li>
+                  <li>
+                    • Generation time varies based on provider and server load
+                  </li>
+                  <li>
+                    • You'll receive a notification when your video is ready
+                  </li>
                 </ul>
               </div>
             </div>
@@ -937,18 +1195,42 @@ export function ContentStudioVideoTab({
             <div
               className="relative rounded-lg overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 flex items-center justify-center"
               style={{
-                aspectRatio: aspectRatio === "16:9" ? "16/9" : aspectRatio === "9:16" ? "9/16" : "1/1",
-                maxHeight: "300px"
+                aspectRatio:
+                  aspectRatio === "16:9"
+                    ? "16/9"
+                    : aspectRatio === "9:16"
+                    ? "9/16"
+                    : "1/1",
+                maxHeight: "300px",
               }}
             >
               <div className="text-center">
-                <svg className="w-16 h-16 mx-auto mb-3 opacity-30" style={{ color: "var(--text-secondary)" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                <svg
+                  className="w-16 h-16 mx-auto mb-3 opacity-30"
+                  style={{ color: "var(--text-secondary)" }}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+                  />
                 </svg>
-                <div className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>
-                  {generationMode === "text_to_video" ? "Text-to-Video" : "Image-to-Video"}
+                <div
+                  className="text-sm font-medium"
+                  style={{ color: "var(--text-primary)" }}
+                >
+                  {generationMode === "text_to_video"
+                    ? "Text-to-Video"
+                    : "Image-to-Video"}
                 </div>
-                <div className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>
+                <div
+                  className="text-xs mt-1"
+                  style={{ color: "var(--text-secondary)" }}
+                >
                   {duration}s • {aspectRatio}
                 </div>
               </div>
@@ -959,7 +1241,12 @@ export function ContentStudioVideoTab({
               </div>
 
               {/* Provider badge */}
-              <div className={`absolute top-3 left-3 px-2 py-1 rounded text-xs font-medium ${providerInfo.color.replace('text-', 'bg-')} bg-opacity-20`}>
+              <div
+                className={`absolute top-3 left-3 px-2 py-1 rounded text-xs font-medium ${providerInfo.color.replace(
+                  "text-",
+                  "bg-"
+                )} bg-opacity-20`}
+              >
                 {providerInfo.name}
               </div>
             </div>
