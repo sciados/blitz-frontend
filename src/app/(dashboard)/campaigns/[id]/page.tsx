@@ -471,11 +471,11 @@ export default function CampaignDetailPage() {
                 </label>
                 <div className="flex items-center gap-2">
                   <code className="flex-1 bg-white dark:bg-gray-900 px-3 py-2 rounded border border-gray-300 dark:border-gray-600 text-sm font-mono text-gray-900 dark:text-gray-100">
-                    {shortLinkDomain}/{campaign.affiliate_link_short_code}
+                    {shortLinkDomain}/r/{campaign.affiliate_link_short_code}
                   </code>
                   <button
                     onClick={() => {
-                      navigator.clipboard.writeText(`${shortLinkDomain}/${campaign.affiliate_link_short_code}`);
+                      navigator.clipboard.writeText(`${shortLinkDomain}/r/${campaign.affiliate_link_short_code}`);
                       toast.success("Short link copied to clipboard!");
                     }}
                     className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition flex items-center gap-2"
