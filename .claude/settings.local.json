@@ -55,7 +55,9 @@
       "Bash(git commit:*)",
       "Bash(git push:*)",
       "Bash(perl:*)",
-      "Bash(DATABASE_URL_ASYNC=\"postgresql+asyncpg://postgres:hKeJQiAMaMFRmUjqfeJQEqMkdgsaXNXe@centerbeam.proxy.rlwy.net:13378/railway\" python -c:*)"
+      "Bash(DATABASE_URL_ASYNC=\"postgresql+asyncpg://postgres:hKeJQiAMaMFRmUjqfeJQEqMkdgsaXNXe@centerbeam.proxy.rlwy.net:13378/railway\" python -c:*)",
+      "Bash(python3:*)",
+      "Bash(C:\\Users\\shaun\\AppData\\Local\\Programs\\Python\\Python312\\python.exe /tmp/improve_video_script.py:*)"
     ],
     "deny": [],
     "ask": []

@@ -755,7 +755,7 @@ export function ContentStudioVideoTab({
                   setSelectedScriptId(null);
                 }
               }}
-              placeholder="Example: A sleek product showcase opens with a close-up of the Mitolyn bottle on a clean white background. Smooth camera pull-back reveals the bottle prominently centered with soft, professional lighting. Gentle rotation shows the product from multiple angles as text appears: 'Feel the Difference.' End with a confident close-up of the bottle logo."
+              placeholder="Describe the video you want to create..."
               className="w-full px-3 py-2 rounded-lg border h-32 resize-none"
               style={{
                 borderColor: "var(--card-border)",
@@ -763,21 +763,6 @@ export function ContentStudioVideoTab({
                 color: "var(--text-primary)",
               }}
             />
-            {/* Manual Script Tips */}
-            {!prePopulatedData && !selectedScriptId && script && (
-              <div className="mt-2 p-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-                <div className="text-xs flex items-center" style={{ color: "var(--text-primary)" }}>
-                  <svg className="w-4 h-4 mr-2 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                  </svg>
-                  <span className="font-semibold">Custom Script</span>
-                </div>
-                <p className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>
-                  💡 Tip: Include visual details (camera angles, lighting, transitions) for better AI-generated videos
-                </p>
-              </div>
-            )}
-
             {/* Auto-generated Script Indicator */}
             {prePopulatedData && script && !selectedScriptId && (
               <div className="mt-2 p-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
