@@ -21,8 +21,38 @@ interface VideoTextLayer {
   duration: number;      // How long it stays (seconds)
   animation_in: string;  // "fade", "slide_up", "zoom", "none"
   animation_out: string; // "fade", "slide_down", "zoom", "none"
+  // Motion animation properties
+  scale_start?: number;  // Starting scale (e.g., 0.8)
+  scale_end?: number;    // Ending scale (e.g., 1.2)
+  x_start?: number;      // Starting X position
+  y_start?: number;      // Starting Y position
+  x_end?: number;        // Ending X position
+  y_end?: number;        // Ending Y position
   // Preview visibility
   visible: boolean;      // Whether to show this layer in preview
+}
+
+interface VideoImageLayer {
+  id: string;
+  image_url: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  opacity: number;
+  // Time-based properties
+  start_time: number;
+  duration: number;
+  animation_in: string;
+  animation_out: string;
+  // Motion animation properties
+  scale_start?: number;
+  scale_end?: number;
+  x_start?: number;
+  y_start?: number;
+  x_end?: number;
+  y_end?: number;
+  visible: boolean;
 }
 
 interface VideoEditorModalProps {
@@ -57,6 +87,7 @@ export function VideoEditorModal({
   onSave,
 }: VideoEditorModalProps) {
   const [textLayers, setTextLayers] = useState<VideoTextLayer[]>([]);
+  const [imageLayers, setImageLayers] = useState<VideoImageLayer[]>([]);
   const [activeLayerId, setActiveLayerId] = useState<string>("");
   const [expandedLayerId, setExpandedLayerId] = useState<string>(""); // Which layer card is expanded
   const [isProcessing, setIsProcessing] = useState(false);
@@ -261,6 +292,93 @@ export function VideoEditorModal({
     setTextLayers(textLayers.map((layer) => ({ ...layer, visible: false })));
   };
 
+  // Cinematic Motion Preset - Applies professional zoom/motion to all text layers
+  const applyCinematicMotion = () => {
+    const updatedLayers = textLayers.map((layer, index) => {
+      // Calculate motion based on layer position and video duration
+      const progress = (layer.start_time + layer.duration / 2) / videoDuration; // Mid-point of layer
+      const motionIntensity = 0.3 + (progress * 0.4); // 0.3 to 0.7 scale range
+
+      return {
+        ...layer,
+        // Zoom in motion: starts smaller, ends larger
+        scale_start: 1.0 - motionIntensity, // e.g., 0.7
+        scale_end: 1.0 + motionIntensity,   // e.g., 1.3
+        // Position shift for parallax effect
+        x_start: layer.x - 5, // Start 5% left
+        x_end: layer.x,       // End at original position
+        y_start: layer.y + 3, // Start 3% lower
+        y_end: layer.y,      // End at original position
+        animation_in: "zoom",
+        animation_out: "fade",
+      };
+    });
+
+    setTextLayers(updatedLayers);
+    toast.success("✨ Cinematic motion applied to all text layers!");
+  };
+
+  // Smart Product Preset - Creates product image overlay with motion
+  const applyProductImagePreset = async (imageUrl: string, closingText?: string) => {
+    if (!videoDuration) {
+      toast.error("Video not loaded yet");
+      return;
+    }
+
+    const layers: VideoImageLayer[] = [];
+
+    // Product image layer with zoom-in motion
+    const productLayer: VideoImageLayer = {
+      id: "product-image",
+      image_url: imageUrl,
+      x: 50, // Center
+      y: 70, // Lower third
+      width: 30, // 30% of video width
+      height: 40, // Auto-calc based on aspect
+      opacity: 1.0,
+      start_time: 0.5, // Appear after 0.5s
+      duration: videoDuration - 1, // Stay until near end
+      animation_in: "zoom",
+      animation_out: "fade",
+      scale_start: 0.6, // Start small
+      scale_end: 1.0,   // Zoom to full size
+      x_start: 70,       // Start from right
+      x_end: 50,         // Move to center
+      y_start: 80,       // Start lower
+      y_end: 70,         // Move up slightly
+      visible: true,
+    };
+
+    layers.push(productLayer);
+
+    // Closing text layer if provided
+    if (closingText) {
+      const textLayer: VideoTextLayer = {
+        id: "closing-text",
+        text: closingText,
+        x: 50, // Center
+        y: 20, // Top third
+        font_size: 36,
+        font_family: fonts[0]?.value || "Arial",
+        color: "#FFFFFF",
+        stroke_color: "#000000",
+        stroke_width: 2,
+        opacity: 1.0,
+        start_time: videoDuration - 2, // Last 2 seconds
+        duration: 1.8,
+        animation_in: "zoom",
+        animation_out: "fade",
+        scale_start: 0.8, // Zoom in effect
+        scale_end: 1.1,
+        visible: true,
+      };
+      setTextLayers([...textLayers, textLayer]);
+    }
+
+    setImageLayers(layers);
+    toast.success("🎬 Product image preset applied with cinematic motion!");
+  };
+
   const handleLayerChange = (id: string, updates: Partial<VideoTextLayer>) => {
     setTextLayers(
       textLayers.map((layer) => (layer.id === id ? { ...layer, ...updates } : layer))
@@ -334,7 +452,7 @@ export function VideoEditorModal({
   };
 
   const handleSave = async () => {
-    if (!activeLayer) return;
+    if (!activeLayer && imageLayers.length === 0) return;
 
     setIsProcessing(true);
 
@@ -342,18 +460,19 @@ export function VideoEditorModal({
       const payload = {
         video_url: videoUrl,
         text_layers: textLayers,
+        image_layers: imageLayers,
         campaign_id: campaignId,
         thumbnail_timestamp: selectedThumbnailTimestamp,
       };
 
       const { data } = await api.post("/api/videos/text-overlay", payload);
 
-      toast.success("Text overlay added to video successfully!");
+      toast.success("Overlays added to video successfully!");
       onSave(data);
       onClose();
     } catch (err: any) {
-      console.error("Error adding text overlay:", err);
-      toast.error(err.response?.data?.detail || "Failed to add text overlay");
+      console.error("Error adding overlays:", err);
+      toast.error(err.response?.data?.detail || "Failed to add overlays");
     } finally {
       setIsProcessing(false);
     }
@@ -601,6 +720,39 @@ export function VideoEditorModal({
                   </div>
                 )}
               </div>
+            </div>
+
+            {/* Smart Presets */}
+            <div className="mb-4 p-3 bg-white dark:bg-gray-900 rounded border">
+              <div className="text-xs font-medium mb-2 text-gray-600 dark:text-gray-400">
+                🎬 Smart Presets
+              </div>
+              <div className="space-y-2">
+                <button
+                  onClick={applyCinematicMotion}
+                  disabled={textLayers.length === 0}
+                  className="w-full px-3 py-2 rounded border transition text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed border-purple-300 dark:border-purple-700 hover:border-purple-400 text-purple-700 dark:text-purple-300"
+                  title="Apply zoom and motion effects to all text layers"
+                >
+                  ✨ Apply Cinematic Motion
+                </button>
+                <button
+                  onClick={() => {
+                    const imageUrl = prompt("Enter product image URL:");
+                    if (imageUrl) {
+                      const closingText = prompt("Enter closing text (optional):") || undefined;
+                      applyProductImagePreset(imageUrl, closingText);
+                    }
+                  }}
+                  className="w-full px-3 py-2 rounded border transition text-sm font-medium border-blue-300 dark:border-blue-700 hover:border-blue-400 text-blue-700 dark:text-blue-300"
+                  title="Add product image with motion and closing text"
+                >
+                  🖼️ Add Product + Motion
+                </button>
+              </div>
+              <p className="text-xs text-gray-600 dark:text-gray-400 mt-2">
+                💡 Presets add professional motion effects automatically
+              </p>
             </div>
 
             {/* Text Layers */}
@@ -926,6 +1078,35 @@ export function VideoEditorModal({
                   onMouseLeave={stopDrawingMask}
                 />
               )}
+
+              {/* Image Overlay Preview */}
+              {imageLayers
+                .filter((layer) => layer.visible)
+                .map((layer) => (
+                <div
+                  key={layer.id}
+                  className={`absolute cursor-move transition-opacity ${
+                    activeLayerId === layer.id ? "ring-2 ring-blue-500" : ""
+                  }`}
+                  style={{
+                    left: `${layer.x}%`,
+                    top: `${layer.y}%`,
+                    transform: "translate(-50%, -50%)",
+                    width: `${layer.width}%`,
+                    opacity: layer.opacity,
+                  }}
+                  onClick={() => setActiveLayerId(layer.id)}
+                >
+                  <img
+                    src={layer.image_url}
+                    alt="Product"
+                    className="w-full h-auto pointer-events-none"
+                    style={{
+                      filter: "drop-shadow(0 4px 6px rgba(0,0,0,0.3))",
+                    }}
+                  />
+                </div>
+              ))}
 
               {/* Text Overlay Preview */}
               {textLayers

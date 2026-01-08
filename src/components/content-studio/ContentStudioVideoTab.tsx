@@ -272,13 +272,26 @@ export function ContentStudioVideoTab({
       }
 
       const response = await api.post("/api/video/generate", requestBody);
+      const { video_url } = response.data;
+
       toast.success(
-        "Video generation started! Check the Content Library to view progress."
+        "Video generation started! Opening editor to add product image and closing text..."
       );
-      // Clear form after generation
-      handleClearScript();
-      handleClearImage();
-      setScript("");
+
+      // Auto-open video editor with smart presets
+      if (video_url) {
+        setEditorVideoUrl(video_url);
+        setEditorVideoScript(script);
+        // Clear form after generation
+        handleClearScript();
+        handleClearImage();
+        setScript("");
+        // Open editor after a short delay
+        setTimeout(() => {
+          setIsEditorOpen(true);
+          toast.info("💡 Use the 'Add Product + Motion' preset for professional results!");
+        }, 500);
+      }
 
       // Notify parent component that content was generated (for queue tracking)
       if (onContentGenerated) {
