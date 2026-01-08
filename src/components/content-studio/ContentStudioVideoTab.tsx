@@ -59,6 +59,7 @@ export function ContentStudioVideoTab({
   const [duration, setDuration] = useState(5);
   const [script, setScript] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isGeneratingScript, setIsGeneratingScript] = useState(false);
   const [selectedScriptId, setSelectedScriptId] = useState<number | null>(null);
   const [selectedImageId, setSelectedImageId] = useState<number | null>(null);
   const [selectedImageUrl, setSelectedImageUrl] = useState<string>("");
@@ -176,6 +177,29 @@ export function ContentStudioVideoTab({
       // Don't block video generation if script generation fails
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const handleGenerateScript = async () => {
+    try {
+      setIsGeneratingScript(true);
+      const response = await api.post("/api/prompt/generate", {
+        campaign_id: campaignId,
+        content_type: "video_script",
+      });
+
+      const generatedScript = response.data;
+      if (generatedScript?.prompt) {
+        setScript(generatedScript.prompt);
+        toast.success("Video script generated from campaign intelligence! ✓");
+      }
+    } catch (error: any) {
+      console.error("Failed to generate script:", error);
+      toast.error(
+        error.response?.data?.detail || "Failed to generate video script"
+      );
+    } finally {
+      setIsGeneratingScript(false);
     }
   };
 
@@ -844,12 +868,62 @@ export function ContentStudioVideoTab({
 
           {/* Script */}
           <div className="mb-6">
-            <label
-              className="block text-sm font-medium mb-2"
-              style={{ color: "var(--text-primary)" }}
-            >
-              Script / Description
-            </label>
+            <div className="flex items-center justify-between mb-2">
+              <label
+                className="block text-sm font-medium"
+                style={{ color: "var(--text-primary)" }}
+              >
+                Script / Description
+              </label>
+              <button
+                onClick={handleGenerateScript}
+                disabled={isGeneratingScript}
+                className="px-3 py-1.5 text-xs bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg font-medium transition flex items-center"
+              >
+                {isGeneratingScript ? (
+                  <>
+                    <svg
+                      className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <svg
+                      className="w-4 h-4 mr-1.5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M13 10V3L4 14h7v7l9-11h-7z"
+                      />
+                    </svg>
+                    Generate from Intelligence
+                  </>
+                )}
+              </button>
+            </div>
             <textarea
               value={script}
               onChange={(e) => {
