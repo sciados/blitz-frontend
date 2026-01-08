@@ -250,16 +250,50 @@ export function ContentStudioVideoTab({
     setScript("");
   };
 
+  // Clean script for video generation - removes text that AI might try to render
+  const createCleanVideoPrompt = (originalScript: string): string => {
+    // Strip out any direct text overlays or readable words
+    // Keep only visual/camera direction
+    let cleanPrompt = originalScript;
+
+    // Remove common text overlay phrases
+    cleanPrompt = cleanPrompt.replace(/Text:|Overlay:|Title:|Heading:/gi, '');
+    cleanPrompt = cleanPrompt.replace(/Display|Show|Render/gi, '');
+
+    // Convert specific text mentions to visual descriptions
+    cleanPrompt = cleanPrompt.replace(/"([^"]+)"/g, 'the text "$1"'); // Keep quotes for readability
+    cleanPrompt = cleanPrompt.replace(/appears:/gi, 'appears visually:');
+    cleanPrompt = cleanPrompt.replace(/reads:/gi, 'shows:');
+
+    // Remove any ALL CAPS phrases that might be interpreted as overlay text
+    cleanPrompt = cleanPrompt.replace(/\b[A-Z]{5,}\b/g, (match) => {
+      // If it's clearly meant to be overlay text, convert to lowercase
+      if (match.length < 15) {
+        return match.toLowerCase();
+      }
+      return match;
+    });
+
+    // Clean up extra whitespace
+    cleanPrompt = cleanPrompt.replace(/\s+/g, ' ').trim();
+
+    return cleanPrompt;
+  };
+
   const handleGenerate = async () => {
     try {
       setIsGenerating(true);
+
+      // Create clean video prompt (no text overlays)
+      const cleanVideoPrompt = createCleanVideoPrompt(script);
+
       const requestBody: any = {
         campaign_id: campaignId,
         generation_mode: generationMode,
         style,
         aspect_ratio: aspectRatio,
         duration,
-        script,
+        script: cleanVideoPrompt,
         keywords: selectedKeywords,
         // Include calendar context if available
         context: prePopulatedData?.context,
@@ -275,13 +309,13 @@ export function ContentStudioVideoTab({
       const { video_url } = response.data;
 
       toast.success(
-        "Video generation started! Opening editor to add product image and closing text..."
+        "Clean video generation started! (No text overlays) Opening editor to add professional text..."
       );
 
       // Auto-open video editor with smart presets
       if (video_url) {
         setEditorVideoUrl(video_url);
-        setEditorVideoScript(script);
+        setEditorVideoScript(script); // Keep original script for editor
         // Clear form after generation
         handleClearScript();
         handleClearImage();
@@ -289,7 +323,7 @@ export function ContentStudioVideoTab({
         // Open editor after a short delay
         setTimeout(() => {
           setIsEditorOpen(true);
-          toast.info("💡 Use the 'Add Product + Motion' preset for professional results!");
+          toast.info("💡 Use 'Apply Cinematic Motion' for professional text effects!");
         }, 500);
       }
 
@@ -946,7 +980,7 @@ export function ContentStudioVideoTab({
                   setSelectedScriptId(null);
                 }
               }}
-              placeholder="Example: A sleek product showcase opens with a close-up of the Mitolyn bottle on a clean white background. Smooth camera pull-back reveals the bottle prominently centered with soft, professional lighting. Gentle rotation shows the product from multiple angles as text appears: 'Feel the Difference.' End with a confident close-up of the bottle logo."
+              placeholder="Example: A sleek product showcase opens with a close-up of a bottle on a clean white background. Smooth camera pull-back reveals the bottle centered with soft, professional lighting. Gentle rotation shows the product from multiple angles. End with a confident close-up of the bottle logo. [Note: AI will generate clean video - add text overlays in editor]"
               className="w-full px-3 py-2 rounded-lg border h-32 resize-none"
               style={{
                 borderColor: "var(--card-border)",
@@ -980,8 +1014,7 @@ export function ContentStudioVideoTab({
                   className="text-xs mt-1"
                   style={{ color: "var(--text-secondary)" }}
                 >
-                  💡 Tip: Include visual details (camera angles, lighting,
-                  transitions) for better AI-generated videos
+                  💡 Tip: Describe visuals (camera angles, lighting, product motion) - AI will generate clean video without text. Add text in the editor for professional results.
                 </p>
               </div>
             )}
